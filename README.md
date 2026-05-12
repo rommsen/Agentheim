@@ -107,33 +107,56 @@ Tasks are plain markdown with frontmatter (`id`, `status`, `depends_on`, `type`)
 
 Scaffolding is English; your own domain language can be in any language.
 
-## Sound notifications
+## Spoken notifications via Mockingbird
 
-The plugin plays a short sound when Claude finishes a task (`Stop` hook) or is waiting for your input (`Notification` hook) — distinct sounds for each, using built-in Windows `SystemSounds`.
+The plugin speaks aloud when Claude finishes a task (`Stop` hook reads the assistant's last text) or needs your attention (`Notification` hook reads the prompt message). It POSTs to a local [Mockingbird](https://github.com/heimeshoff/mockingbird) sidecar at `http://127.0.0.1:7223/speak` — start the Mockingbird tray app for sound; without it the hooks silently no-op.
 
-Toggle with the slash command:
+### Picking a voice per repo
 
 ```
-/sound          # show current state
-/sound on       # enable
-/sound off      # mute
+/voice          # fetch the catalog and prompt
+/voice marius   # set directly by id
+/voice off      # mute this repo (also: none, -)
 ```
 
-State sentinel lives at `~/.agenthoff/sound-disabled` (present = muted, absent = on; default on). Windows-only for now (PowerShell + `System.Media.SystemSounds`).
+The choice is written to `./.claude/agenthoff-voice` and read on every hook fire — no Claude restart needed. Voice resolution order in `scripts/mockingbird-speak.ps1`:
 
-To use custom sound files, replace the two `SystemSounds.*` lines in `scripts/play-sound.ps1` with `(New-Object System.Media.SoundPlayer '<path>').PlaySync()`.
+1. Explicit `-Voice` parameter
+2. `./.claude/agenthoff-voice` (project-local, written by `/voice`)
+3. `$env:MOCKINGBIRD_VOICE`
+4. `alba` (pocket-tts default)
+
+A value of `off` / `none` / `-` in the file is an explicit disable: the speak script exits before making any HTTP call. Use it to mute one repo while leaving the global env-var default intact for others.
+
+Built-in voices shipped with pocket-tts: `alba`, `marius`, `javert`, `jean`, `fantine`, `cosette`, `eponine`, `azelma`. Cloned voices made through Mockingbird's Voices page also appear in `/voice`.
+
+### Muting everywhere
+
+```powershell
+# Global mute — both hooks honor this sentinel file
+New-Item -ItemType File "$env:USERPROFILE\.agenthoff\sound-disabled" -Force
+
+# Unmute
+Remove-Item "$env:USERPROFILE\.agenthoff\sound-disabled"
+```
+
+### Platform support
+
+Mockingbird is a Windows-only WPF app, and the hooks shell out to PowerShell. On **macOS / Linux** without PowerShell installed, the hook commands fail to spawn and Claude treats that as a no-op — you get silence by default, no opt-out needed. `/voice off` is mainly useful on Windows for per-repo muting.
 
 ## Layout of this repo
 
 ```
-.claude-plugin/plugin.json    # plugin manifest
-agents/                       # orchestrator + specialists
-skills/                       # brainstorm, model, research, work
-hooks/hooks.json              # Stop + Notification sound hooks
-scripts/play-sound.ps1        # sound player (reads toggle sentinel)
-commands/sound.md             # /sound slash command
-evals/                        # benchmarks against other harnesses
-references/                   # design notes and source material
+.claude-plugin/plugin.json         # plugin manifest
+agents/                            # orchestrator + specialists
+skills/                            # brainstorm, model, research, work
+hooks/hooks.json                   # Stop + Notification hooks → Mockingbird
+scripts/mockingbird-speak.ps1      # POSTs {text, voice} to Mockingbird
+scripts/mockingbird-stop.ps1       # speaks Claude's end-of-turn summary
+scripts/mockingbird-notification.ps1  # speaks attention prompts (filters idle nag)
+commands/voice.md                  # /voice slash command
+evals/                             # benchmarks against other harnesses
+references/                        # design notes and source material
 ```
 
 ## Status
