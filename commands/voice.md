@@ -1,7 +1,7 @@
 ---
 description: Pick the Mockingbird voice this repo uses for Claude Code TTS notifications (or `off` to disable)
 argument-hint: "[voice-id | off]"
-allowed-tools: PowerShell, Bash, AskUserQuestion, Write
+allowed-tools: PowerShell, Bash, Write
 ---
 
 Set the per-repo Mockingbird voice. The selection is written to `./.claude/agenthoff-voice` (a single line containing the voice id, or the literal `off` to mute this repo) and read on every hook fire by `scripts/mockingbird-speak.ps1` — no Claude restart needed.
@@ -12,9 +12,9 @@ Set the per-repo Mockingbird voice. The selection is written to `./.claude/agent
 
 Interpret `$ARGUMENTS`:
 
-- **`off` / `none` / `-`** — write `off` to `./.claude/agenthoff-voice`. The speak script honors this as an explicit disable.
-- **Any other non-empty value** — treat it as a voice id. Skip the prompt, validate that it's in the catalog (warn if not, but still write), persist it.
-- **Empty** — fetch the catalog, prompt the user with `AskUserQuestion` (include "Off — mute this repo" as the last option), persist their choice.
+- **`off` / `none` / `-`** — write `off` to `./.claude/agenthoff-voice`. Done.
+- **Any other non-empty value** — treat it as a voice id. Fetch the catalog to validate (warn if not found, but still write). Persist.
+- **Empty** — fetch the catalog, print it as a plain two-category text list, end the turn. Do **not** use `AskUserQuestion` — the user wants to read the list and type the voice they want.
 
 ## Step 1 — fetch the voice catalog
 
@@ -34,14 +34,35 @@ The response is a JSON array of voice objects: `{id, name, engine, isBuiltIn}`. 
 
 **If you get `UNREACHABLE:`** — Mockingbird isn't running. Tell the user "Mockingbird isn't reachable at 127.0.0.1:7223 — start the Mockingbird tray app and try again." Stop here.
 
-## Step 2 — prompt (only when no argument was given)
+## Step 2 — print the list (when no argument was given)
 
-Parse the JSON and present the voices via `AskUserQuestion`. Format each option as `<name>` with description `<id> · <built-in|cloned>`. Always include **"Off — mute this repo"** as the last option (writes `off`). If there are more than 4 voices, group sensibly (built-ins as the primary set; offer "Show cloned voices" as a follow-up if cloned voices exist and the user picks it) — but keep the "Off" option in the primary set so disabling is always one click away.
+Parse the JSON and partition into two groups by `isBuiltIn`. Print exactly this format (no fences, no AskUserQuestion, no extra commentary):
 
-## Step 3 — persist
+```
+Original voices:
+  alba, marius, javert, jean, fantine, cosette, eponine, azelma
 
-Write the chosen voice id to `./.claude/agenthoff-voice`. Create the `.claude/` directory if it doesn't exist. The file is a single line, no trailing newline required, plain UTF-8 (NOT UTF-16 BOM — pass `-Encoding utf8` if using PowerShell `Set-Content`/`Out-File`, or use the `Write` tool directly).
+Custom voices:
+  (none)
 
-## Step 4 — confirm
+Type `/voice <name>` to set, or `/voice off` to mute this repo.
+```
+
+Rules for the output:
+
+- Both categories always appear. Use `(none)` when a category is empty.
+- Names are the **ids**, comma-separated on a single indented line (wrap only if the line would exceed ~80 chars).
+- Sort each group by id alphabetically, except keep pocket-tts built-ins in their canonical order (`alba, marius, javert, jean, fantine, cosette, eponine, azelma`) since users tend to know that order.
+- No emojis. No bold. No tables. Plain prose so it reads cleanly in any client.
+
+End the turn after the print. The user will re-invoke `/voice <name>` with their pick.
+
+## Step 3 — persist (only when an argument was given)
+
+Write the chosen voice id (or the literal `off`) to `./.claude/agenthoff-voice`. Create the `.claude/` directory if it doesn't exist. The file is a single line, no trailing newline required, plain UTF-8 (NOT UTF-16 BOM — pass `-Encoding utf8` if using PowerShell `Set-Content`/`Out-File`, or use the `Write` tool directly).
+
+## Step 4 — confirm (only when persisting)
 
 Report in one short line, e.g. `voice: marius`, `voice: marius (cloned)`, or `voice: off (this repo is muted)`. Mention that it takes effect on the very next hook fire.
+
+If the supplied name wasn't in the catalog, persist it anyway but warn: `voice: <name> (warning: not in current catalog — typo, or voice was deleted?)`.
