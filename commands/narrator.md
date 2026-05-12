@@ -1,10 +1,10 @@
 ---
-description: Pick the Mockingbird voice this repo uses for Claude Code TTS notifications (or `off` to disable)
-argument-hint: "[voice-id | off]"
+description: Pick the narrator voice (via Mockingbird) for this repo's Claude Code TTS notifications, or `off` to mute
+argument-hint: "[voice-name | off]"
 allowed-tools: PowerShell, Bash, Write
 ---
 
-Set the per-repo Mockingbird voice. The selection is written to `./.claude/agenthoff-voice` (a single line containing the voice id, or the literal `off` to mute this repo) and read on every hook fire by `scripts/mockingbird-speak.ps1` — no Claude restart needed.
+Set the per-repo narrator voice (the one Mockingbird speaks Claude's end-of-turn summaries and attention prompts in). The selection is written to `./.claude/agenthoff-voice` (a single line containing the voice id, or the literal `off` to mute this repo) and read on every hook fire by `scripts/mockingbird-speak.ps1` — no Claude restart needed.
 
 **Cross-platform note:** Mockingbird is a Windows-only WPF app. On macOS / Linux the PowerShell hook scripts won't run at all (no `powershell` on PATH), so you'll get silent no-ops by default — no opt-out needed. The `off` value is mainly useful on Windows when you want to mute *this* repo while leaving the global default (`$env:MOCKINGBIRD_VOICE`) intact for other repos.
 
@@ -45,7 +45,7 @@ Original voices:
 Custom voices:
   (none)
 
-Type `/voice <name>` to set, or `/voice off` to mute this repo.
+Type `/narrator <name>` to set, or `/narrator off` to mute this repo.
 ```
 
 Rules for the output:
@@ -55,7 +55,7 @@ Rules for the output:
 - Sort each group by id alphabetically, except keep pocket-tts built-ins in their canonical order (`alba, marius, javert, jean, fantine, cosette, eponine, azelma`) since users tend to know that order.
 - No emojis. No bold. No tables. Plain prose so it reads cleanly in any client.
 
-End the turn after the print. The user will re-invoke `/voice <name>` with their pick.
+End the turn after the print. The user will re-invoke `/narrator <name>` with their pick.
 
 ## Step 3 — persist (only when an argument was given)
 
@@ -63,6 +63,6 @@ Write the chosen voice id (or the literal `off`) to `./.claude/agenthoff-voice`.
 
 ## Step 4 — confirm (only when persisting)
 
-Report in one short line, e.g. `voice: marius`, `voice: marius (cloned)`, or `voice: off (this repo is muted)`. Mention that it takes effect on the very next hook fire.
+Report in one short line, e.g. `narrator: marius`, `narrator: marius (cloned)`, or `narrator: off (this repo is muted)`. Mention that it takes effect on the very next hook fire.
 
-If the supplied name wasn't in the catalog, persist it anyway but warn: `voice: <name> (warning: not in current catalog — typo, or voice was deleted?)`.
+If the supplied name wasn't in the catalog, persist it anyway but warn: `narrator: <name> (warning: not in current catalog — typo, or voice was deleted?)`.

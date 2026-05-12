@@ -112,24 +112,24 @@ Scaffolding is English; your own domain language can be in any language.
 
 The plugin speaks aloud when Claude finishes a task (`Stop` hook reads the assistant's last text) or needs your attention (`Notification` hook reads the prompt message). It POSTs to a local [Mockingbird](https://github.com/heimeshoff/mockingbird) sidecar at `http://127.0.0.1:7223/speak` — start the Mockingbird tray app for sound; without it the hooks silently no-op.
 
-### Picking a voice per repo
+### Picking a narrator per repo
 
 ```
-/voice          # fetch the catalog and prompt
-/voice marius   # set directly by id
-/voice off      # mute this repo (also: none, -)
+/narrator          # print the voice catalog
+/narrator marius   # set directly by id
+/narrator off      # mute this repo (also: none, -)
 ```
 
 The choice is written to `./.claude/agenthoff-voice` and read on every hook fire — no Claude restart needed. Voice resolution order in `scripts/mockingbird-speak.ps1`:
 
 1. Explicit `-Voice` parameter
-2. `./.claude/agenthoff-voice` (project-local, written by `/voice`)
+2. `./.claude/agenthoff-voice` (project-local, written by `/narrator`)
 3. `$env:MOCKINGBIRD_VOICE`
 4. `alba` (pocket-tts default)
 
 A value of `off` / `none` / `-` in the file is an explicit disable: the speak script exits before making any HTTP call. Use it to mute one repo while leaving the global env-var default intact for others.
 
-Built-in voices shipped with pocket-tts: `alba`, `marius`, `javert`, `jean`, `fantine`, `cosette`, `eponine`, `azelma`. Cloned voices made through Mockingbird's Voices page also appear in `/voice`.
+Built-in voices shipped with pocket-tts: `alba`, `marius`, `javert`, `jean`, `fantine`, `cosette`, `eponine`, `azelma`. Cloned voices made through Mockingbird's Voices page also appear in `/narrator`.
 
 ### Muting everywhere
 
@@ -143,7 +143,7 @@ Remove-Item "$env:USERPROFILE\.agenthoff\sound-disabled"
 
 ### Platform support
 
-Mockingbird is a Windows-only WPF app, and the hooks shell out to PowerShell. On **macOS / Linux** without PowerShell installed, the hook commands fail to spawn and Claude treats that as a no-op — you get silence by default, no opt-out needed. `/voice off` is mainly useful on Windows for per-repo muting.
+Mockingbird is a Windows-only WPF app, and the hooks shell out to PowerShell. On **macOS / Linux** without PowerShell installed, the hook commands fail to spawn and Claude treats that as a no-op — you get silence by default, no opt-out needed. `/narrator off` is mainly useful on Windows for per-repo muting.
 
 ## Layout of this repo
 
@@ -155,7 +155,7 @@ hooks/hooks.json                   # Stop + Notification hooks → Mockingbird
 scripts/mockingbird-speak.ps1      # POSTs {text, voice} to Mockingbird
 scripts/mockingbird-stop.ps1       # speaks Claude's end-of-turn summary
 scripts/mockingbird-notification.ps1  # speaks attention prompts (filters idle nag)
-commands/voice.md                  # /voice slash command
+commands/narrator.md               # /narrator slash command
 evals/                             # benchmarks against other harnesses
 references/                        # design notes and source material
 ```

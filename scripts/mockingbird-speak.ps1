@@ -6,7 +6,7 @@
 #
 # Voice resolution order (first hit wins):
 #   1. -Voice parameter
-#   2. ./.claude/agenthoff-voice            (project-local, written by /voice)
+#   2. ./.claude/agenthoff-voice            (project-local, written by /narrator)
 #   3. $env:MOCKINGBIRD_VOICE
 #   4. "alba"                                (pocket-tts default)
 #
