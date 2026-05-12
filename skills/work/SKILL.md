@@ -1,6 +1,6 @@
 ---
 name: work
-description: Use whenever the user wants work executed on the todo backlog — running tasks, building features, implementing what has already been modeled. Triggers on phrases like "start working", "execute the todo", "work on it", "build it", "implement the backlog", "let's go", "run the workers", "pick up where you left off", "ship what's ready". Spawns parallel worker sub-agents that resolve task dependencies and claim ready tasks from `contexts/*/todo/`. New tasks promoted to todo during the run are picked up automatically as they become ready. Does not do modeling — only executes already-refined tasks.
+description: Use whenever the user wants work executed on the todo backlog — running tasks, building features, implementing what has already been modeled. Triggers on phrases like "start working", "execute the todo", "work on it", "build it", "implement the backlog", "let's go", "run the workers", "pick up where you left off", "ship what's ready". Spawns parallel worker sub-agents that resolve task dependencies and claim ready tasks from `contexts/*/todo/`. Workers follow TDD per `skills/test-driven-development/SKILL.md`. Every worker SUCCESS goes through a `verifier` agent (see `skills/verification-before-completion/SKILL.md`) before commit — failed verification re-dispatches the worker up to twice, then escalates to the user. New tasks promoted to todo during the run are picked up automatically as they become ready. Does not do modeling — only executes already-refined tasks.
 ---
 
 # Work — Parallel Dependency-Aware Worker Loop
@@ -46,22 +46,107 @@ For each dispatch wave:
 4. **Wait for all subagents to complete.** As each returns:
    - Parse its strict return format (see template).
    - For `RESULT: SUCCESS`:
-     - **Commit the result** (see "Git authority" section).
-     - Log "Task completed" to protocol.md.
+     - **Verify the result** (see "Verification gate" section below). Only commit after verification passes.
    - For `RESULT: BOUNCED`: the worker moved the task back to `backlog/` because it was under-refined. Log "Task bounced" to protocol.md. Do not commit — the worker made no changes.
    - For `RESULT: FAILED`: log "Task failed" to protocol.md with the error. Leave the task in `doing/` so it doesn't silently retry. Tell the user at the end.
    - One failure does not block the batch — the other subagents continue and are processed normally.
 
 5. **After the batch completes**, return to Phase 2 — re-scan. New tasks may have been promoted to todo (via parallel `model` invocations) or new dependencies may have unblocked.
 
+## Verification gate (post-SUCCESS, pre-commit)
+
+A worker returning `RESULT: SUCCESS` is not yet a commit. Every SUCCESS goes through the `verification-before-completion` gate — a separate `verifier` agent inspects the diff against the acceptance criteria with fresh context. This is the structural defense against plausible-but-wrong code.
+
+The full doctrine lives in `skills/verification-before-completion/SKILL.md`. The operational integration here is:
+
+### When to skip verification
+
+Skip the gate (commit immediately on SUCCESS) when any of these is true:
+
+- The project is not a git repo (no diff to inspect).
+- The user invoked `work` with `--no-verify` or said "skip verification this run" — opt-out is per-batch, never persistent.
+- The task is `type: decision` AND `FILES_CHANGED == 1` AND the single file is an ADR — auto-SKIP without spawning the verifier.
+
+Otherwise, verify.
+
+### Verifier dispatch
+
+For each SUCCESS that requires verification, in parallel where the workers ran in parallel:
+
+1. Capture the diff: run `git diff` (working tree against HEAD — the worker has not committed) and `git diff --stat`. Note the exact files changed.
+2. Track the iteration count for this task (start at 1; increments on each FAIL re-dispatch).
+3. Spawn one `verifier` subagent via Agent with `subagent_type: "verifier"` using the **Verifier Prompt Template** below. Launch verifiers for a batch's successes in the same message (parallel tool calls).
+4. Wait for each verifier's verdict.
+
+### Handling the verdict
+
+**`VERDICT: PASS`**
+1. Proceed to the existing "Git authority" section — `git add` + commit the worker's files.
+2. Log "Task verified and completed" to protocol.md (replaces the old "Task completed" entry — see Protocol logging below).
+
+**`VERDICT: SKIP`**
+1. Commit exactly as on PASS.
+2. Log "Task completed (verification skipped: <reason>)" to protocol.md.
+
+**`VERDICT: FAIL`, iteration 1 or 2**
+1. Do **not** commit. The worker's changes stay on the working tree but are not added or committed yet.
+2. Roll back the worker's completion claim on the task file:
+   - Move the task file from `done/` back to `doing/`
+   - Revert frontmatter: `status: done` → `status: doing`, clear the `completed:` date
+3. Append the verifier's output to the task file as a new `## Verifier note (iteration N)` section at the bottom, containing the REASONS, SUGGESTED_FIX, and ITERATION_HINT verbatim.
+4. Log "Verification failed (iteration N)" to protocol.md.
+5. Decide re-dispatch:
+   - If `ITERATION_HINT: task-under-specified` → do not re-dispatch even on iteration 1. Treat as iteration-3 below.
+   - Otherwise → **re-dispatch a worker** on this task. Use the standard Subagent Prompt Template, but prepend a paragraph telling the worker to read the task file's `## Verifier note` sections and address them. Set `iteration = N + 1` for the next verification.
+
+**`VERDICT: FAIL`, iteration 3 (or earlier with `ITERATION_HINT: task-under-specified`)**
+1. Do not commit. Do not re-dispatch.
+2. Leave the task in `doing/` with all accumulated verifier notes — the user will see them.
+3. Log "Verification failed — escalating to user" to protocol.md.
+4. Surface at end-of-batch (see End-of-run reporting): summarize the task, the iteration history, and the latest verifier's SUGGESTED_FIX. The user decides whether to refine the task (re-route via `model` REFINE) or abandon.
+
+### Verifier Prompt Template
+
+Spawn each verifier with `Agent(subagent_type: "verifier", prompt: <the-below>)`. Fill the placeholders.
+
+```
+You are a verifier agent auditing one worker's completed task with fresh context. You have no exposure to the worker's reasoning — only the task spec, the BC README, and the diff in front of you.
+
+## Your inputs
+Task file (currently in doing/ or done/): <ABSOLUTE-PATH>
+Bounded context: <BC-NAME>
+BC README: <ABSOLUTE-PATH-TO-BC-README>
+Iteration: <N> of max 3
+
+## The worker's strict SUCCESS return
+<paste the worker's full RESULT: SUCCESS block verbatim>
+
+## The diff to audit
+<paste `git diff --stat` output, then `git diff` output — or attach as text>
+
+## Project context (read on demand if needed)
+- .agenthoff/vision.md
+- .agenthoff/context-map.md (if exists)
+- .agenthoff/knowledge/decisions/ (ADRs)
+
+## Your job
+Follow the checks in `agents/verifier.md`, in order, stopping at the first failing check. Return exactly one verdict block — VERDICT: PASS, VERDICT: FAIL, or VERDICT: SKIP — per the strict formats in your agent definition.
+
+Do not use Write, Edit, or any git command. You are read-only.
+```
+
+### Parallel verification
+
+When the orchestrator dispatched a parallel batch of N workers and several return SUCCESS, capture each worker's diff independently (use `git diff -- <FILE_LIST>` per worker if needed to scope the patch), and spawn the verifiers as parallel Agent calls in one message. Each verifier sees only its own task's diff. Commit each verified-PASS sequentially in the order verifiers return — never parallelize git writes.
+
 ## Git authority (orchestrator only)
 
-Git is owned by `work`, not by workers. Workers only move files and write content. This is load-bearing for parallel safety — two workers committing concurrently can race.
+Git is owned by `work`, not by workers or verifiers. Workers only move files and write content; verifiers only read. This is load-bearing for parallel safety — two writes to git concurrently can race.
 
-After a worker returns `RESULT: SUCCESS`:
+After a verifier returns `VERDICT: PASS` (or `VERDICT: SKIP`, or when verification was bypassed per the skip rules above):
 
 1. `git status` to see what changed.
-2. `git add` — the files from `FILE_LIST` plus the moved task file, the updated BC README (if the worker reports `BC_README_UPDATED: yes`), and any ADRs listed in `ADRS_WRITTEN`. **Never `git add -A`** — it sweeps in unrelated changes (user's in-progress work, or a parallel sibling worker's files).
+2. `git add` — the files from the worker's `FILE_LIST` plus the moved task file, the updated BC README (if the worker reports `BC_README_UPDATED: yes`), and any ADRs listed in `ADRS_WRITTEN`. **Never `git add -A`** — it sweeps in unrelated changes (user's in-progress work, or a parallel sibling worker's files awaiting their own verification).
 3. Commit with message:
    ```
    <type>(<bc>): <summary> [<task-id>]
@@ -71,9 +156,9 @@ After a worker returns `RESULT: SUCCESS`:
 4. Capture the commit SHA.
 5. Update the task file's frontmatter with `commit: <sha>` (you do this — the worker already set status=done and moved the file, you add the SHA the worker didn't have).
 
-One task = one commit. Commit after each worker returns, not in a batch — that way if the next worker fails we haven't bundled it with a completed one.
+One task = one commit. Commit after each verifier passes, not in a batch — that way if the next verification fails we haven't bundled it with an already-passed one. In a parallel batch where verifiers return roughly simultaneously, commit sequentially in the order verifiers return PASS.
 
-If the project isn't a git repo, skip commits silently and note it in the end-of-run summary.
+If the project isn't a git repo, skip commits silently and note it in the end-of-run summary. (Verification is also auto-skipped in this case — see "When to skip verification".)
 
 ## Protocol logging
 
@@ -102,14 +187,38 @@ Entry formats:
 
 ---
 
-## YYYY-MM-DD HH:MM -- Task completed: <task-id> - [title]
+## YYYY-MM-DD HH:MM -- Task verified and completed: <task-id> - [title]
 
 **Type:** Work / Task completion
 **Task:** <task-id> - [title]
 **Summary:** [worker's 1-line SUMMARY]
+**Verification:** PASS (iteration N)
 **Commit:** <short-sha>
 **Files changed:** N
+**Tests added:** N
 **ADRs written:** [ids or "none"]
+
+---
+
+## YYYY-MM-DD HH:MM -- Task completed (verification skipped): <task-id> - [title]
+
+**Type:** Work / Task completion
+**Task:** <task-id> - [title]
+**Summary:** [worker's 1-line SUMMARY]
+**Verification:** SKIPPED — [reason: decision-only task | --no-verify | non-git project]
+**Commit:** <short-sha>
+**Files changed:** N
+
+---
+
+## YYYY-MM-DD HH:MM -- Verification failed: <task-id> - [title]
+
+**Type:** Work / Verification failure
+**Task:** <task-id> - [title]
+**Iteration:** N of 3
+**Reasons:** [verifier's REASONS, comma-joined]
+**Iteration hint:** likely-fixable | task-under-specified
+**Next:** re-dispatched worker | escalated to user
 
 ---
 
@@ -194,18 +303,20 @@ ERROR: <where and why it went wrong, one or two sentences>
 
 When `todo/` is empty and all `doing/` is resolved (or the user interrupts):
 
-1. Summarize in plain prose: tasks completed, tasks bounced (and why), tasks failed (and why), ADRs written, new backlog items created, total commits made.
-2. Surface anything that surprised you mid-run: cycles detected, dependency gaps, recovered sessions.
-3. Prepend a final protocol entry:
+1. Summarize in plain prose: tasks completed (with verification stats — how many passed first try vs. needed re-dispatch), tasks bounced (and why), tasks failed (and why), tasks escalated after 3 verification failures (these need user attention), ADRs written, new backlog items created, total commits made.
+2. For each task escalated to the user: name it, summarize the iteration history, and show the latest verifier's SUGGESTED_FIX. The user decides whether to REFINE via `model` or abandon.
+3. Surface anything that surprised you mid-run: cycles detected, dependency gaps, recovered sessions, repeated verification failures pointing at a common cause.
+4. Prepend a final protocol entry:
    ```markdown
    ## YYYY-MM-DD HH:MM -- Work session ended
-   
+
    **Type:** Work / Session end
-   **Completed:** N
+   **Completed:** N (first-try PASS: A, re-dispatched: B, skipped: C)
    **Bounced:** M
    **Failed:** K
+   **Escalated after verification:** E
    **Commits:** <count>
-   
+
    ---
    ```
 

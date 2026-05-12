@@ -46,9 +46,29 @@ Think about:
 
 Consult specialists when the task description points at a decision that isn't already made. Don't consult for implementation details — that's your job.
 
-## Third action: do the work
+## Third action: do the work — TDD by default
 
-Write code, edit files, run tests. Scope discipline:
+Follow the `test-driven-development` skill (see `skills/test-driven-development/SKILL.md`). The summary:
+
+For each acceptance criterion, in order:
+1. **Red** — write a test that asserts the criterion. Run it. Confirm it fails for the right reason (the assertion fails, not a missing import or compile error).
+2. **Green** — write the minimum production code to make the test pass.
+3. **Refactor** — improve structure without changing behavior. Run the test after each refactor step; revert immediately if it breaks.
+
+Then move to the next criterion. Don't write a second criterion's test until the first one is green and refactored.
+
+The verifier (post-success gate) will run the full test suite. Every acceptance criterion must map to a test that would fail without your production code change — otherwise verification will fail and the task will be re-dispatched.
+
+**Legitimate TDD-skip categories** (record which in your return as `TDD_SKIPPED`):
+- `type: decision` task — deliverable is an ADR, not code
+- `type: spike` task — exploratory; smoke test only if it's a walking-skeleton spike
+- Pure config / data migration where a single boot-and-validate check covers it
+- Pure documentation tasks
+- UI tasks where the project has no UI test infrastructure — create a backlog item to add UI test infra, exercise the change manually, and note that in the task's Outcome section
+
+If TDD doesn't apply for any other reason, that's a signal the acceptance criteria aren't testable — bounce the task back as under-refined.
+
+**Scope discipline:**
 - Stay in the files the task implies, unless a clear dependency forces you outward
 - No refactoring beyond what the task requires
 - No "while I'm here" cleanup
@@ -98,7 +118,12 @@ FILE_LIST: <comma-separated absolute paths of every file you created or modified
 BC_README_UPDATED: yes | no
 ADRS_WRITTEN: <comma-separated filenames under .agenthoff/knowledge/decisions/, or "none">
 NEW_BACKLOG_ITEMS: <comma-separated task ids created in a backlog/ during your work, or "none">
+TESTS_ADDED: <integer count of new tests written for this task>
+TESTS_PASSING: yes | no
+TDD_SKIPPED: <reason from the legitimate-skip categories, or "no" if TDD was followed>
 ```
+
+If `TESTS_PASSING: no`, do **not** return SUCCESS. That's either a FAIL (you couldn't get tests green) or a BOUNCE (the task as specified can't be satisfied). Returning SUCCESS with failing tests is a protocol violation the verifier will catch.
 
 ### For a bounce (task was under-refined)
 
