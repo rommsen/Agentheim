@@ -72,10 +72,11 @@ The Socratic brainstorm phase deliberately stays code-free *and* tech-choice-fre
 
 The closing step:
 
-1. **Calls the `architect` specialist** via the orchestrator with the vision and context map. The architect proposes options + trade-offs + ADR drafts across stack, persistence, integration, deployment, and obvious cross-cutting concerns.
-2. **Emits one `type: decision` task per area** (in `contexts/foundation/todo/` for cross-cutting, or the relevant BC for BC-local choices). The architect's ADR draft lives in the task's `Notes` — the user reviews it in queue, and `work` commits each ADR as its own commit. Foundation choices ride the same protocol/commit rail as features.
-3. **Emits a `type: spike` walking-skeleton task** that depends on every foundation decision. Feature-thin, architecture-thick: the stack runs, persistence connects, BCs talk to each other if there's more than one, a request makes it through end-to-end. This is the project's **first prototype** — the moment code first appears in the repo.
-4. **If the vision implies any frontend, emits a `design-system-001-styleguide` task** in `contexts/design-system/todo/`, depending on the walking skeleton. Acceptance includes a human-in-the-loop sign-off.
+1. **Creates the `contexts/infrastructure/` BC unconditionally** — the standing home for globally-true tech concerns (runtime, hosting, secrets, observability, CI/CD, shared transport, base persistence). Future infra-flavored captures land here unless they're BC-local; treating infra as a first-class BC means terraform, deploy scripts, and ops work flow through the same `model` → `work` → verifier rails as features.
+2. **Calls the `architect` specialist** via the orchestrator with the vision and context map. The architect proposes options + trade-offs + ADR drafts across stack, persistence, integration, deployment, and obvious cross-cutting concerns.
+3. **Emits one `type: decision` task per area**. Routing follows the global vs BC-local rule: globally-true decisions (runtime, deployment, observability) → `contexts/infrastructure/todo/`; BC-local decisions (this BC's persistence, this BC's own queue) → that BC's `todo/`. The architect's ADR draft lives in the task's `Notes` — the user reviews it in queue, and `work` commits each ADR as its own commit. Foundation choices ride the same protocol/commit rail as features.
+4. **Emits a `type: spike` walking-skeleton task** in `contexts/infrastructure/todo/`, depending on every decision task. Feature-thin, architecture-thick: the stack runs, persistence connects, BCs talk to each other if there's more than one, a request makes it through end-to-end. This is the project's **first prototype** — the moment code first appears in the repo.
+5. **If the vision implies any frontend, emits a `design-system-001-styleguide` task** in `contexts/design-system/todo/`, depending on the walking skeleton. Acceptance includes a human-in-the-loop sign-off.
 
 The closing step is skippable when it doesn't fit: mature project being adopted (offer ADR backfill of existing architecture instead), single-file script with no integration questions, no frontend (skip just the styleguide).
 

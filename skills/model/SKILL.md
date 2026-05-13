@@ -73,11 +73,22 @@ PROMOTE is mostly mechanical (readiness check + file move) and runs the same reg
 
 2. **Route to the right bounded context.** Match the idea's language to a BC's ubiquitous language. If it spans multiple BCs, say so and create a task in each (or a parent+child structure — see below). If it doesn't fit any BC and isn't trivial, that's a signal the context map needs revisiting — surface it.
 
+   **Infrastructure-flavored captures** (anything about runtime, hosting, persistence configuration, secrets, observability, CI/CD, deployment, shared transport, base library choice) get a sharper routing rule:
+
+   - **Globally true** — the concern applies across every BC, or stands on its own independent of any single BC. *Examples:* "switch from npm to pnpm", "add OpenTelemetry tracing", "rotate the production database password", "upgrade the base container image". → Capture in `contexts/infrastructure/`.
+   - **BC-local** — the concern is only true for one BC. *Examples:* "the Library BC needs full-text search via Postgres tsvector", "Transcription should retry failed jobs in its own queue", "Auth's session store should move to Redis (no other BC uses Redis)". → Capture in the originating BC.
+
+   The test: *"if this BC didn't exist, would the change still need to happen?"* — if yes, it's globally true and lands in `infrastructure/`; if no, it's BC-local and stays in the originating BC. When in genuine doubt (the change might go cross-cutting later but starts BC-local), prefer the originating BC — moving a task up to `infrastructure/` later is cheaper than retroactively scoping out a global decision that turned out not to apply.
+
+   **Do not spawn new infra-flavored BCs.** Captures that feel like they want their own `monitoring/`, `secrets/`, `deploy/` BC are global infra concerns — they go in `contexts/infrastructure/`, not a new BC. If a genuinely new BC seems warranted from an infra capture, surface it for a `brainstorm` extension session rather than letting `model` spawn it. The exception is `design-system/` — already a first-class BC for frontend infrastructure, and `model` may add tasks to it but does not create competing UI-infra BCs.
+
+   If `contexts/infrastructure/` doesn't exist (e.g., `brainstorm` was skipped), surface that — offer to run `brainstorm` in extension mode to add the infrastructure BC, or create the BC explicitly with a minimal README before capturing the task.
+
 3. **Decide refinement level.**
    - **Under-refined → backlog/**: The idea needs more thought, research, or breaking down before anyone could work on it.
    - **Ready → todo/**: The idea is small, well-understood, or already deeply discussed. A worker could pick it up and execute without ambiguity.
 
-4. **Delegate deep modeling if needed.** For complex ideas (new feature, domain change, architectural impact), spawn the **orchestrator** agent with the idea and current state. It will route to `tactical-modeler`, `strategic-modeler`, `architect`, or `researcher` as appropriate, and come back with a refined task (or task set) plus any ADRs.
+4. **Delegate deep modeling if needed.** For complex ideas (new feature, domain change, architectural impact), spawn the **orchestrator** agent with the idea and current state. It will route to `tactical-modeler`, `strategic-modeler`, `architect`, or `researcher` as appropriate, and come back with a refined task (or task set) plus any ADRs. For infrastructure-flavored captures, the orchestrator will typically route to `architect` first.
 
 5. **Write the task file(s).** See task format below.
 
