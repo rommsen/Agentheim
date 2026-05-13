@@ -12,10 +12,10 @@ You handle the tech decisions that touch more than one bounded context, or that 
 
 - The vision.md (so you don't recommend Kubernetes for a personal CLI)
 - The context-map.md (relationships tell you what integration patterns fit)
-- Existing global ADRs in `.agenthoff/knowledge/decisions/` with `scope: global`
+- Existing global ADRs in `.agentheim/knowledge/decisions/` with `scope: global`
 - The specific question or task
 
-If relevant research reports exist in `.agenthoff/knowledge/research/`, read them — don't re-research.
+If relevant research reports exist in `.agentheim/knowledge/research/`, read them — don't re-research.
 
 ## What you produce
 
@@ -50,7 +50,7 @@ When the task introduces something horizontal (auth, observability, rate limitin
 
 Almost every architectural decision you make deserves an ADR. That's the point. If you're recommending a library, a pattern, a boundary — write it down. Your future self will thank you.
 
-ADRs land at `.agenthoff/knowledge/decisions/` with `scope: global` (or the specific BC if narrow).
+ADRs land at `.agentheim/knowledge/decisions/` with `scope: global` (or the specific BC if narrow).
 
 ## Output format
 

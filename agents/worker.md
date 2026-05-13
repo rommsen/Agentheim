@@ -21,7 +21,7 @@ The orchestrator passes these in your spawn prompt:
 - **Related research block** — listing of research slugs from your task's `related_research`. Don't paste contents (reports can be long); read individual reports on demand only if their topic actually bears on your work.
 - **Recent activity block** — last ~100 lines of `protocol.md` for context. Skim, don't re-fetch.
 
-Read on demand only when something explicitly points there: `.agenthoff/vision.md`, `.agenthoff/context-map.md`, the wider `.agenthoff/knowledge/decisions/` directory (for ADRs *not* in your `related_adrs`), the wider `.agenthoff/knowledge/research/` directory, and your BC's `concepts/` directory (grep for the concept name your task touches).
+Read on demand only when something explicitly points there: `.agentheim/vision.md`, `.agentheim/context-map.md`, the wider `.agentheim/knowledge/decisions/` directory (for ADRs *not* in your `related_adrs`), the wider `.agentheim/knowledge/research/` directory, and your BC's `concepts/` directory (grep for the concept name your task touches).
 
 ## Context hygiene — IMPORTANT
 
@@ -85,7 +85,7 @@ If mid-work you discover follow-up tasks (bugs exposed, tech debt revealed, miss
 
 ## Fourth action: record decisions
 
-For any decision made during the work that deserves to be remembered, write an ADR in `.agenthoff/knowledge/decisions/`. Link it from the task's Notes section.
+For any decision made during the work that deserves to be remembered, write an ADR in `.agentheim/knowledge/decisions/`. Link it from the task's Notes section.
 
 Threshold: if a future maintainer would ask "why this, not the obvious alternative?", write the ADR. Trivial choices don't need one.
 
@@ -93,8 +93,8 @@ Threshold: if a future maintainer would ask "why this, not the obvious alternati
 
 Before marking the task done:
 
-- **BC README** — if the task introduced or changed ubiquitous language, aggregates, events, commands, or invariants, update `.agenthoff/contexts/<bc>/README.md`. Future sessions read the README first; stale README = poisoned future work.
-- **Context map** — rarely, a task reveals that a relationship between contexts changed (new event flow, ACL introduced). If so, update `.agenthoff/context-map.md`.
+- **BC README** — if the task introduced or changed ubiquitous language, aggregates, events, commands, or invariants, update `.agentheim/contexts/<bc>/README.md`. Future sessions read the README first; stale README = poisoned future work.
+- **Context map** — rarely, a task reveals that a relationship between contexts changed (new event flow, ACL introduced). If so, update `.agentheim/context-map.md`.
 
 Only touch *your* BC's README. Never modify another BC's README — cross-BC work means the task itself was scoped wrong; surface that as a new backlog item instead.
 
@@ -108,7 +108,7 @@ Only touch *your* BC's README. Never modify another BC's README — cross-BC wor
 
 **Do NOT run git commands.** Not `git add`, not `git commit`, not `git status` (unless you specifically need to check state — but do not `git add` or commit). The work skill owns all git writes.
 
-**Do NOT modify `.agenthoff/knowledge/protocol.md`.** The work skill owns protocol logging.
+**Do NOT modify `.agentheim/knowledge/protocol.md`.** The work skill owns protocol logging.
 
 ## Return format — STRICT
 
@@ -123,7 +123,7 @@ SUMMARY: <one or two sentences in domain language — what was achieved>
 FILES_CHANGED: <integer count>
 FILE_LIST: <comma-separated absolute paths of every file you created or modified, EXCLUDING the task file you moved>
 BC_README_UPDATED: yes | no
-ADRS_WRITTEN: <comma-separated filenames under .agenthoff/knowledge/decisions/, or "none">
+ADRS_WRITTEN: <comma-separated filenames under .agentheim/knowledge/decisions/, or "none">
 NEW_BACKLOG_ITEMS: <comma-separated task ids created in a backlog/ during your work, or "none">
 TESTS_ADDED: <integer count of new tests written for this task>
 TESTS_PASSING: yes | no
@@ -155,7 +155,7 @@ ERROR: <where it went wrong and why, one or two sentences>
 
 - No git writes (`add`, `commit`, `push`) — the work skill owns git
 - No protocol.md writes — the work skill owns protocol logging
-- No INDEX.md writes (neither `.agenthoff/knowledge/index.md` nor `.agenthoff/contexts/*/INDEX.md`) — the work skill owns indexes; touching an index is a structural violation the verifier will FAIL
+- No INDEX.md writes (neither `.agentheim/knowledge/index.md` nor `.agentheim/contexts/*/INDEX.md`) — the work skill owns indexes; touching an index is a structural violation the verifier will FAIL
 - No modeling (no strategic or tactical DDD changes — those are separate tasks of type `decision`)
 - No refining other tasks (even if they look under-refined — not your job)
 - No touching files outside the task's implied scope

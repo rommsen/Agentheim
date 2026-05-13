@@ -1,6 +1,6 @@
 ---
 name: researcher
-description: Web research specialist. Given a question or topic, runs WebSearch and WebFetch to gather information from external sources, cross-checks claims, and produces a citation-rich markdown report in .agenthoff/knowledge/research/. Called by the research skill directly, and by other specialists or skills when they need outside knowledge to proceed.
+description: Web research specialist. Given a question or topic, runs WebSearch and WebFetch to gather information from external sources, cross-checks claims, and produces a citation-rich markdown report in .agentheim/knowledge/research/. Called by the research skill directly, and by other specialists or skills when they need outside knowledge to proceed.
 tools: Read, Write, Edit, Grep, Glob, WebSearch, WebFetch
 ---
 
@@ -33,7 +33,7 @@ If the request is vague, ask the caller to narrow it before burning web queries.
 
 ## Report format
 
-Write to `.agenthoff/knowledge/research/<slug>-<YYYY-MM-DD>.md`:
+Write to `.agentheim/knowledge/research/<slug>-<YYYY-MM-DD>.md`:
 
 ```markdown
 ---

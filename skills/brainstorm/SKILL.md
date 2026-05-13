@@ -1,6 +1,6 @@
 ---
 name: brainstorm
-description: Use whenever the user wants to start a new project, create a vision, do a Socratic modeling or discovery session, explore a problem space from scratch, or set up an initial context map and bounded contexts. Triggers on phrases like "let's brainstorm", "start a new project", "create a vision", "I want to build X", "model this out from scratch", "help me think through", "what should the shape of this be". Produces .agenthoff/vision.md (and context-map.md if the domain is complex enough to warrant bounded contexts), and closes with an architecture foundation pass that unconditionally creates an `infrastructure/` BC (the standing home for globally-true tech concerns), emits decision tasks (globally-true → infrastructure BC, BC-local → originating BC), a walking-skeleton spike, and (when the vision implies frontend) a styleguide task. Deliberately produces no code — every output is markdown the user can review before `work` runs. Supports six switchable conversational modes (Interrogator [default], Suggestor, Challenger, Storyteller, Facilitator, Synthesizer) — see references/modes.md.
+description: Use whenever the user wants to start a new project, create a vision, do a Socratic modeling or discovery session, explore a problem space from scratch, or set up an initial context map and bounded contexts. Triggers on phrases like "let's brainstorm", "start a new project", "create a vision", "I want to build X", "model this out from scratch", "help me think through", "what should the shape of this be". Produces .agentheim/vision.md (and context-map.md if the domain is complex enough to warrant bounded contexts), and closes with an architecture foundation pass that unconditionally creates an `infrastructure/` BC (the standing home for globally-true tech concerns), emits decision tasks (globally-true → infrastructure BC, BC-local → originating BC), a walking-skeleton spike, and (when the vision implies frontend) a styleguide task. Deliberately produces no code — every output is markdown the user can review before `work` runs. Supports six switchable conversational modes (Interrogator [default], Suggestor, Challenger, Storyteller, Facilitator, Synthesizer) — see references/modes.md.
 ---
 
 # Brainstorm — Socratic Vision Session
@@ -31,9 +31,9 @@ The hard "no code" constraint, the dimensions to cover, the architecture foundat
 
 ## Before you start
 
-Check if `.agenthoff/vision.md` already exists in the target project:
-- **Doesn't exist** → fresh session, create `.agenthoff/` structure
-- **Exists** → ask the user: are we *revising* the vision (updating an existing one based on new learning) or *extending* it (adding a new dimension/subdomain)? Read the existing vision first so you don't re-ask what's already answered. Also read `.agenthoff/knowledge/index.md` (top-level catalog) and the first ~100 lines of `.agenthoff/knowledge/protocol.md` if they exist — recent activity context prevents you from re-litigating settled decisions during the revision/extension conversation.
+Check if `.agentheim/vision.md` already exists in the target project:
+- **Doesn't exist** → fresh session, create `.agentheim/` structure
+- **Exists** → ask the user: are we *revising* the vision (updating an existing one based on new learning) or *extending* it (adding a new dimension/subdomain)? Read the existing vision first so you don't re-ask what's already answered. Also read `.agentheim/knowledge/index.md` (top-level catalog) and the first ~100 lines of `.agentheim/knowledge/protocol.md` if they exist — recent activity context prevents you from re-litigating settled decisions during the revision/extension conversation.
 
 ## The Socratic loop
 
@@ -135,7 +135,7 @@ If a specific question requires outside knowledge (e.g., "how do other people so
 
 Once the vision (and context-map, if warranted) is locked, run an explicit architecture foundation pass before handing the project off to `model`. The point: stand up the infrastructure BC so cross-cutting tech concerns have a permanent home, surface the load-bearing tech decisions, get a walking-skeleton spec on the queue, and — if the project has any frontend — get a styleguide task scheduled before any BC builds its UI. Without this step, `model` and `work` end up making foundation calls under feature pressure, one task at a time, with no coherent first prototype.
 
-Skip only if the user explicitly says no (e.g., adding agenthoff to a mature project that already has its foundations, or a single-file script with no integration questions). In the mature-project case, offer to backfill ADRs documenting the existing architecture instead.
+Skip only if the user explicitly says no (e.g., adding agentheim to a mature project that already has its foundations, or a single-file script with no integration questions). In the mature-project case, offer to backfill ADRs documenting the existing architecture instead.
 
 ### Create the infrastructure BC (unconditional)
 
@@ -199,11 +199,11 @@ If the vision implies any UI — even a single admin dashboard — create a `typ
 
 ## Recording decisions made during brainstorm
 
-If a foundational decision is made during this session (e.g., "we'll treat Customer and Account as distinct contexts", "this is a personal tool, not a multi-tenant product"), write an ADR in `.agenthoff/knowledge/decisions/` using the format in `references/adr-template.md`. Vision-level decisions get `scope: global` in frontmatter.
+If a foundational decision is made during this session (e.g., "we'll treat Customer and Account as distinct contexts", "this is a personal tool, not a multi-tenant product"), write an ADR in `.agentheim/knowledge/decisions/` using the format in `references/adr-template.md`. Vision-level decisions get `scope: global` in frontmatter.
 
 ## Protocol logging
 
-After the session produces artifacts, prepend an entry to `.agenthoff/knowledge/protocol.md`. If the file doesn't exist, create it with:
+After the session produces artifacts, prepend an entry to `.agentheim/knowledge/protocol.md`. If the file doesn't exist, create it with:
 
 ```markdown
 # Protocol
@@ -235,7 +235,7 @@ One entry per session, not one per exchange.
 
 For each BC created during this session:
 - Create `contexts/<bc>/INDEX.md` from `references/index-template.md` (per-BC index, mostly empty initially).
-- Insert a line under `<!-- bc-list:start -->` in `.agenthoff/knowledge/index.md` (creating the file from the template first if needed).
+- Insert a line under `<!-- bc-list:start -->` in `.agentheim/knowledge/index.md` (creating the file from the template first if needed).
 
 For any global ADR written during the strategic phase (vision-level decisions), insert under `<!-- adr-global:start -->` in the top-level index.
 
@@ -244,15 +244,15 @@ For each `type: decision` / `type: spike` / `type: feature` task emitted during 
 ## What you leave behind
 
 At the end of a successful brainstorm:
-- `.agenthoff/vision.md` exists and is readable in under two minutes
-- `.agenthoff/context-map.md` exists if warranted
-- `.agenthoff/contexts/<name>/README.md` exists for each identified BC (frontend-bearing BCs note the styleguide-gate rule)
-- `.agenthoff/contexts/<name>/INDEX.md` exists for each identified BC (per-BC catalog, mostly empty at this point)
-- `.agenthoff/contexts/infrastructure/README.md` exists unconditionally (unless the user explicitly skipped the foundation step), with the note that it owns globally-true infra concerns and BC-local infra stays in the originating BC
-- `.agenthoff/knowledge/index.md` exists with the BC list populated and global ADRs listed
-- `.agenthoff/knowledge/decisions/` contains ADRs for any foundational *strategic* decisions made during the conversation (tech-foundation ADRs come later, via the decision tasks)
+- `.agentheim/vision.md` exists and is readable in under two minutes
+- `.agentheim/context-map.md` exists if warranted
+- `.agentheim/contexts/<name>/README.md` exists for each identified BC (frontend-bearing BCs note the styleguide-gate rule)
+- `.agentheim/contexts/<name>/INDEX.md` exists for each identified BC (per-BC catalog, mostly empty at this point)
+- `.agentheim/contexts/infrastructure/README.md` exists unconditionally (unless the user explicitly skipped the foundation step), with the note that it owns globally-true infra concerns and BC-local infra stays in the originating BC
+- `.agentheim/knowledge/index.md` exists with the BC list populated and global ADRs listed
+- `.agentheim/knowledge/decisions/` contains ADRs for any foundational *strategic* decisions made during the conversation (tech-foundation ADRs come later, via the decision tasks)
 - One `type: decision` task per area the architect surfaced — globally-true ones in `contexts/infrastructure/todo/`, BC-local ones in the originating BC's `todo/`, each with the ADR draft in Notes (or "foundation skipped" noted in the protocol entry)
 - A `type: spike` walking-skeleton task in `contexts/infrastructure/todo/`, depending on every decision task — the project's first prototype lives here
 - A `type: feature` styleguide task in `contexts/design-system/todo/` (only if the vision implies any frontend), depending on the walking-skeleton
-- `.agenthoff/knowledge/protocol.md` has a new entry at the top, including the foundation tasks emitted
+- `.agentheim/knowledge/protocol.md` has a new entry at the top, including the foundation tasks emitted
 - The user feels they discovered the shape of the thing, not that you told them what it is

@@ -1,4 +1,4 @@
-# agenthoff
+# agentheim
 
 A DDD-flavored agentic harness for Claude Code. Installed as a plugin once, used across projects. It turns a raw idea into a vision, a vision into a modeled backlog of bounded contexts, and a backlog into parallel, dependency-aware execution — with ADRs, a protocol log, and per-BC READMEs falling out naturally.
 
@@ -8,10 +8,10 @@ From inside Claude Code, in the project where you want the plugin:
 
 ```
 /plugin marketplace add <path-to-this-repo>
-/plugin install agenthoff@agenthoff
+/plugin install agentheim@agentheim
 ```
 
-`<path-to-this-repo>` is the absolute path to a local clone (e.g. `C:/src/heimeshoff/tooling/agenthoff`) or a `git` URL. The first command registers this repo as a marketplace; the second installs the plugin from it. Restart Claude Code afterward so hooks and skills are picked up.
+`<path-to-this-repo>` is the absolute path to a local clone (e.g. `C:/src/heimeshoff/agentic/agentheim`) or a `git` URL. The first command registers this repo as a marketplace; the second installs the plugin from it. Restart Claude Code afterward so hooks and skills are picked up.
 
 ### Updates
 
@@ -25,17 +25,26 @@ After committing (and pushing, if the marketplace points at a `git` URL rather t
 
 #### Pulling a change (consumer side)
 
-Local/third-party marketplaces have auto-update **disabled** by default. To enable it, run `/plugin`, go to the **Marketplaces** tab, select `agenthoff`, and choose "Enable auto-update". Claude Code will then refresh on startup and prompt you to run `/reload-plugins` when there's a new version.
+Local/third-party marketplaces have auto-update **disabled** by default. To enable it, run `/plugin`, go to the **Marketplaces** tab, select `agentheim`, and choose "Enable auto-update". Claude Code will then refresh on startup and prompt you to run `/reload-plugins` when there's a new version.
 
 To update manually:
 
 ```
-/plugin marketplace update agenthoff
-/plugin update agenthoff@agenthoff
+/plugin marketplace update agentheim
+/plugin update agentheim@agentheim
 /reload-plugins
 ```
 
 The first command refreshes the marketplace's view of the source repo, the second pulls the new plugin version into your project, and the third reloads skills/hooks so the change is live in the current session.
+
+### Migrating from agenthoff
+
+If you previously installed this as `agenthoff`:
+
+1. `/plugin uninstall agenthoff@agenthoff` in each project that had it.
+2. Install `agentheim` as shown above.
+3. In each consumer project that has accumulated state, rename the state directory: `mv .agenthoff .agentheim`. All skills and agents read from `.agentheim/` now.
+4. Spoken TTS notifications moved to a separate plugin — see [Spoken notifications](#spoken-notifications) below.
 
 ## The four skills
 
@@ -43,10 +52,10 @@ Skills auto-trigger from natural-language phrases — no slash commands to memor
 
 | Skill | Triggered by | Produces |
 |---|---|---|
-| **brainstorm** | "let's brainstorm", "start a new project", "create a vision", "model this from scratch" | `.agenthoff/vision.md` (+ `context-map.md` when warranted). Closes with an architecture foundation pass that emits `type: decision` tasks, a walking-skeleton spike, and (when frontend exists) a styleguide task. No code yet — those land in `todo/` for `work` to execute. |
+| **brainstorm** | "let's brainstorm", "start a new project", "create a vision", "model this from scratch" | `.agentheim/vision.md` (+ `context-map.md` when warranted). Closes with an architecture foundation pass that emits `type: decision` tasks, a walking-skeleton spike, and (when frontend exists) a styleguide task. No code yet — those land in `todo/` for `work` to execute. |
 | **model** | "I have an idea", "capture this", "refine the auth backlog", "promote X to todo", "there's a bug" | Task markdown files in `contexts/<bc>/backlog\|todo/` with status, dependencies, acceptance criteria. |
 | **work** | "start working", "execute the todo", "let's go", "pick up where you left off" | Code, commits, ADRs. Parallel workers respect the dependency DAG. |
-| **research** | "research X", "state of the art for", "compare options for" | A markdown report in `.agenthoff/knowledge/research/`. Cited by tasks and ADRs. |
+| **research** | "research X", "state of the art for", "compare options for" | A markdown report in `.agentheim/knowledge/research/`. Cited by tasks and ADRs. |
 
 ## The workflow
 
@@ -86,10 +95,10 @@ Once the styleguide task exists, **every frontend task in any BC must `depends_o
 
 ## Project state layout
 
-All state for a project lives in `.agenthoff/` inside that project — never in the plugin dir:
+All state for a project lives in `.agentheim/` inside that project — never in the plugin dir:
 
 ```
-.agenthoff/
+.agentheim/
 ├── vision.md
 ├── context-map.md                      # only for multi-BC domains
 ├── contexts/
@@ -109,42 +118,9 @@ Tasks are plain markdown with frontmatter (`id`, `status`, `depends_on`, `type`)
 
 Scaffolding is English; your own domain language can be in any language.
 
-## Spoken notifications via Mockingbird
+## Spoken notifications
 
-The plugin speaks aloud when Claude finishes a task (`Stop` hook reads the assistant's last text) or needs your attention (`Notification` hook reads the prompt message). It POSTs to a local [Mockingbird](https://github.com/heimeshoff/mockingbird) sidecar at `http://127.0.0.1:7223/speak` — start the Mockingbird tray app for sound; without it the hooks silently no-op.
-
-### Picking a narrator per repo
-
-```
-/narrator          # print the voice catalog
-/narrator marius   # set directly by id
-/narrator off      # mute this repo (also: none, -)
-```
-
-The choice is written to `./.claude/agenthoff-voice` and read on every hook fire — no Claude restart needed. Voice resolution order in `scripts/mockingbird-speak.ps1`:
-
-1. Explicit `-Voice` parameter
-2. `./.claude/agenthoff-voice` (project-local, written by `/narrator`)
-3. `$env:MOCKINGBIRD_VOICE`
-4. `alba` (pocket-tts default)
-
-A value of `off` / `none` / `-` in the file is an explicit disable: the speak script exits before making any HTTP call. Use it to mute one repo while leaving the global env-var default intact for others.
-
-Built-in voices shipped with pocket-tts: `alba`, `marius`, `javert`, `jean`, `fantine`, `cosette`, `eponine`, `azelma`. Cloned voices made through Mockingbird's Voices page also appear in `/narrator`.
-
-### Muting everywhere
-
-```powershell
-# Global mute — both hooks honor this sentinel file
-New-Item -ItemType File "$env:USERPROFILE\.agenthoff\sound-disabled" -Force
-
-# Unmute
-Remove-Item "$env:USERPROFILE\.agenthoff\sound-disabled"
-```
-
-### Platform support
-
-Mockingbird is a Windows-only WPF app, and the hooks shell out to PowerShell. On **macOS / Linux** without PowerShell installed, the hook commands fail to spawn and Claude treats that as a no-op — you get silence by default, no opt-out needed. `/narrator off` is mainly useful on Windows for per-repo muting.
+Want Claude Code to speak its end-of-turn summaries and attention prompts aloud? That's a separate plugin: **utterheim-narrator**, which lives in the [Utterheim](https://github.com/heimeshoff/utterheim) repo (the local TTS sidecar) and is installed independently. See `utterheim/claude-code-plugin/README.md` for setup and the `/narrator` voice picker.
 
 ## Layout of this repo
 
@@ -152,11 +128,7 @@ Mockingbird is a Windows-only WPF app, and the hooks shell out to PowerShell. On
 .claude-plugin/plugin.json         # plugin manifest
 agents/                            # orchestrator + specialists
 skills/                            # brainstorm, model, research, work
-hooks/hooks.json                   # Stop + Notification hooks → Mockingbird
-scripts/mockingbird-speak.ps1      # POSTs {text, voice} to Mockingbird
-scripts/mockingbird-stop.ps1       # speaks Claude's end-of-turn summary
-scripts/mockingbird-notification.ps1  # speaks attention prompts (filters idle nag)
-commands/narrator.md               # /narrator slash command
+scripts/backfill-indexes.ps1       # rebuilds .agentheim/ indexes from contexts/
 evals/                             # benchmarks against other harnesses
 references/                        # design notes and source material
 ```

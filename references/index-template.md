@@ -2,7 +2,7 @@
 
 Two flat, append-on-creation catalogs. Indexes only **point** — they never duplicate artifact content.
 
-## Top-level: `.agenthoff/knowledge/index.md`
+## Top-level: `.agentheim/knowledge/index.md`
 
 State-of-the-world entry point. Skills read this for orientation before any deep work.
 
@@ -49,7 +49,7 @@ reports are listed in each BC's `INDEX.md`.
 
 The `<!-- name:start --> ... <!-- name:end -->` markers are how the skills locate where to append. Do not remove them — the backfill script and append logic look for them.
 
-## Per-BC: `.agenthoff/contexts/<bc>/INDEX.md`
+## Per-BC: `.agentheim/contexts/<bc>/INDEX.md`
 
 BC-local catalog. Workers read this before designing; model reads it to find prior art and related decisions.
 

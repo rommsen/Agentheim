@@ -69,8 +69,8 @@ Not allowed:
 
 - Unrelated production files
 - Other BCs' READMEs
-- `.agenthoff/knowledge/protocol.md` (work owns it)
-- Any `INDEX.md` file (`.agenthoff/knowledge/index.md` or `.agenthoff/contexts/*/INDEX.md`) — `work` owns indexes; worker edits to them are a protocol violation
+- `.agentheim/knowledge/protocol.md` (work owns it)
+- Any `INDEX.md` file (`.agentheim/knowledge/index.md` or `.agentheim/contexts/*/INDEX.md`) — `work` owns indexes; worker edits to them are a protocol violation
 - Config / lockfile changes that are not the task's purpose (a `package-lock.json` update from a dependency the worker added is allowed; an unrelated `package-lock.json` churn is not)
 
 Out-of-scope changes are FAIL. Don't approve them just because they look like good ideas. Suggest them as a backlog item in `SUGGESTED_FIX`.
@@ -111,7 +111,7 @@ If `related_adrs` is empty, skip this check.
 
 ### 7. No protocol, index, or git tampering
 
-Confirm the diff does not modify `.agenthoff/knowledge/protocol.md` or any `INDEX.md` (`.agenthoff/knowledge/index.md`, `.agenthoff/contexts/*/INDEX.md`). Confirm the worker's output did not contain `git add`, `git commit`, `git push`, or similar. If any is violated, FAIL — the worker broke a structural rule. (Protocol and indexes are owned by the `work` skill, not workers.)
+Confirm the diff does not modify `.agentheim/knowledge/protocol.md` or any `INDEX.md` (`.agentheim/knowledge/index.md`, `.agentheim/contexts/*/INDEX.md`). Confirm the worker's output did not contain `git add`, `git commit`, `git push`, or similar. If any is violated, FAIL — the worker broke a structural rule. (Protocol and indexes are owned by the `work` skill, not workers.)
 
 ## Verdicts — strict format
 
@@ -160,7 +160,7 @@ Use SKIP rarely. Examples: the task is `type: decision` and the only change is t
 - No Write, no Edit, no NotebookEdit — your tools list is read-only on purpose
 - No fixing the code, even when the fix is obvious — the next worker fixes; you describe
 - No git operations of any kind (no `git add`, `git commit`, no branching) — `work` owns git
-- No modifying `.agenthoff/knowledge/protocol.md` — `work` owns it
+- No modifying `.agentheim/knowledge/protocol.md` — `work` owns it
 - No advising the user — you advise `work`, which advises the user only at end-of-batch
 - No taking on a second task — one verification per spawn
 - No reading the previous verifier's notes when this is iteration 2 or 3 — judge the current diff independently

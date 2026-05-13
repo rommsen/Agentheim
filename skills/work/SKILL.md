@@ -18,10 +18,10 @@ Before anything else, look at `contexts/*/doing/`:
 
 ## Phase 2: Build the dependency graph
 
-1. Read `.agenthoff/vision.md` and `.agenthoff/context-map.md` for orientation.
-2. Read `.agenthoff/knowledge/index.md` (top-level catalog — current BCs and recent ADRs). If missing, surface to user that the project hasn't been indexed and offer to run `scripts/backfill-indexes.ps1` (or `.sh`) before continuing — workers will be less effective without indexes.
-3. Read the first ~100 lines of `.agenthoff/knowledge/protocol.md` (newest entries are on top — this gives recent activity context). Skip if it doesn't exist yet. **Hold this excerpt in memory** — you pass it forward to each worker as `## Recent activity` so workers don't re-read the protocol themselves.
-4. Scan `.agenthoff/contexts/*/todo/` and `.agenthoff/contexts/*/doing/`.
+1. Read `.agentheim/vision.md` and `.agentheim/context-map.md` for orientation.
+2. Read `.agentheim/knowledge/index.md` (top-level catalog — current BCs and recent ADRs). If missing, surface to user that the project hasn't been indexed and offer to run `scripts/backfill-indexes.ps1` (or `.sh`) before continuing — workers will be less effective without indexes.
+3. Read the first ~100 lines of `.agentheim/knowledge/protocol.md` (newest entries are on top — this gives recent activity context). Skip if it doesn't exist yet. **Hold this excerpt in memory** — you pass it forward to each worker as `## Recent activity` so workers don't re-read the protocol themselves.
+4. Scan `.agentheim/contexts/*/todo/` and `.agentheim/contexts/*/doing/`.
 5. For every todo task, read `depends_on`. A task is *ready* if every id in `depends_on` is in `done/` (or doesn't exist — treat missing as satisfied, but warn the user).
 6. **Detect cycles.** If the graph has a cycle, stop and surface the cycle to the user. Do not "just pick one".
 7. Briefly tell the user what you found: "X tasks ready across N contexts, Y tasks blocked on Z."
@@ -41,7 +41,7 @@ For each dispatch wave:
 
 1. **Move all selected task files** from `todo/` to `doing/` (the orchestrator does this *before* spawning subagents — prevents workers racing for the same file).
 
-2. **Log "Batch started"** to `.agenthoff/knowledge/protocol.md` (prepend — see "Protocol logging" section below).
+2. **Log "Batch started"** to `.agentheim/knowledge/protocol.md` (prepend — see "Protocol logging" section below).
 
 3. **Spawn one subagent per task** using the Agent tool with `subagent_type: "worker"`. Launch all subagents in **one message** (parallel tool calls). Use the Subagent Prompt Template below.
 
@@ -127,9 +127,9 @@ Iteration: <N> of max 3
 <paste `git diff --stat` output, then `git diff` output — or attach as text>
 
 ## Project context (read on demand if needed)
-- .agenthoff/vision.md
-- .agenthoff/context-map.md (if exists)
-- .agenthoff/knowledge/decisions/ (ADRs)
+- .agentheim/vision.md
+- .agentheim/context-map.md (if exists)
+- .agentheim/knowledge/decisions/ (ADRs)
 
 ## Your job
 Follow the checks in `agents/verifier.md`, in order, stopping at the first failing check. Return exactly one verdict block — VERDICT: PASS, VERDICT: FAIL, or VERDICT: SKIP — per the strict formats in your agent definition.
@@ -180,16 +180,16 @@ Per ADR written (from `ADRS_WRITTEN` in worker SUCCESS):
 
 - Read the ADR's frontmatter `scope:` field.
 - `scope: <bc-name>` → insert under `<!-- adr-local:start -->` in `contexts/<bc-name>/INDEX.md`.
-- `scope: global` → insert under `<!-- adr-global:start -->` in `.agenthoff/knowledge/index.md`.
+- `scope: global` → insert under `<!-- adr-global:start -->` in `.agentheim/knowledge/index.md`.
 - **Bidirectional backlink:** append the ADR id to the task's `related_adrs` frontmatter, and append the task id to the ADR's `related_tasks` frontmatter. The worker writes the ADR but does not maintain these cross-links — the orchestrator does, atomically, alongside the index update.
 
-If `.agenthoff/knowledge/index.md` or the BC's `INDEX.md` does not exist yet, create it from `references/index-template.md` before inserting. Do not auto-rewrite the file — only insert/remove at markers.
+If `.agentheim/knowledge/index.md` or the BC's `INDEX.md` does not exist yet, create it from `references/index-template.md` before inserting. Do not auto-rewrite the file — only insert/remove at markers.
 
 If `NEW_BACKLOG_ITEMS` are non-empty in the worker SUCCESS, also insert those task lines under `<!-- backlog-list:start -->` in the appropriate BC's INDEX.md (counts +N).
 
 ## Protocol logging
 
-`.agenthoff/knowledge/protocol.md` is the project's chronological diary. Every `work` event prepends a new entry. Keep entries terse — the diff carries the detail.
+`.agentheim/knowledge/protocol.md` is the project's chronological diary. Every `work` event prepends a new entry. Keep entries terse — the diff carries the detail.
 
 If `protocol.md` doesn't exist, create it with:
 ```markdown
@@ -292,26 +292,26 @@ The task's `prior_art` frontmatter lists done-task ids that are close in subject
 <For each id in task.prior_art, list: id, title, path to done/ file, and the Outcome section excerpt (last 30 lines of the file). If prior_art is empty, write: "No prior art identified.">
 
 ## Related research (read on demand)
-The task's `related_research` frontmatter points at research reports under `.agenthoff/knowledge/research/`. Read the ones whose topic actually bears on your work.
+The task's `related_research` frontmatter points at research reports under `.agentheim/knowledge/research/`. Read the ones whose topic actually bears on your work.
 
 <List task.related_research entries by slug; do not paste contents — reports can be long.>
 
 ## Recent activity
-Last ~100 lines of `.agenthoff/knowledge/protocol.md` — the project's recent events. Use this for orientation; do not re-fetch the protocol yourself.
+Last ~100 lines of `.agentheim/knowledge/protocol.md` — the project's recent events. Use this for orientation; do not re-fetch the protocol yourself.
 
 <Paste the head -100 excerpt the orchestrator captured in Phase 2 verbatim.>
 
 ## Project context (read only if you need them)
-- .agenthoff/vision.md
-- .agenthoff/context-map.md (if exists)
-- .agenthoff/knowledge/decisions/ (other ADRs beyond the pre-loaded ones)
-- .agenthoff/knowledge/research/ (research reports)
-- .agenthoff/contexts/<bc>/concepts/ (opt-in synthesis pages — grep for relevant concepts before designing)
+- .agentheim/vision.md
+- .agentheim/context-map.md (if exists)
+- .agentheim/knowledge/decisions/ (other ADRs beyond the pre-loaded ones)
+- .agentheim/knowledge/research/ (research reports)
+- .agentheim/contexts/<bc>/concepts/ (opt-in synthesis pages — grep for relevant concepts before designing)
 
 ## Rules — CRITICAL
 1. Do NOT run `git add`, `git commit`, or any git write operation. The orchestrator owns git.
-2. Do NOT modify `.agenthoff/knowledge/protocol.md`. The orchestrator owns protocol logging.
-3. Do NOT modify any `INDEX.md` (`.agenthoff/knowledge/index.md` or `.agenthoff/contexts/*/INDEX.md`). The orchestrator owns indexes.
+2. Do NOT modify `.agentheim/knowledge/protocol.md`. The orchestrator owns protocol logging.
+3. Do NOT modify any `INDEX.md` (`.agentheim/knowledge/index.md` or `.agentheim/contexts/*/INDEX.md`). The orchestrator owns indexes.
 4. Do NOT touch any task file other than the one you were assigned.
 5. Do NOT modify other BCs' READMEs. Only the BC your task belongs to.
 6. DO write code, run tests, update YOUR BC's README, write ADRs for decisions you make.
@@ -335,7 +335,7 @@ SUMMARY: <one or two sentences, domain-language>
 FILES_CHANGED: <integer>
 FILE_LIST: <comma-separated absolute paths of all files you created or modified, EXCLUDING the moved task file>
 BC_README_UPDATED: yes | no
-ADRS_WRITTEN: <comma-separated filenames under .agenthoff/knowledge/decisions/, or "none">
+ADRS_WRITTEN: <comma-separated filenames under .agentheim/knowledge/decisions/, or "none">
 NEW_BACKLOG_ITEMS: <comma-separated task ids created in a backlog/ during your work, or "none">
 CONCEPT_CANDIDATE: <concept-name> — converging on N artifacts (<id list>) | none
 

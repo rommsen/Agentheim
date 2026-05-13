@@ -1,6 +1,6 @@
 # ADR template
 
-Use this shape for every architecture / domain decision record under `.agenthoff/knowledge/decisions/`.
+Use this shape for every architecture / domain decision record under `.agentheim/knowledge/decisions/`.
 
 Filename convention: `NNNN-kebab-slug.md`, zero-padded 4-digit sequential number. Look at existing ADRs to pick the next number.
 

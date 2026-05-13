@@ -9,7 +9,7 @@ The `model` skill is the main entry point for the user's stream of ideas. Every 
 
 ## The three actions
 
-Decide which action applies based on what the user said and the current state of `.agenthoff/`:
+Decide which action applies based on what the user said and the current state of `.agentheim/`:
 
 | Action | When | What it does |
 |---|---|---|
@@ -38,13 +38,13 @@ When there are multiple matches, show a compact summary (id, title, status, BC) 
 ## Before acting
 
 Read the current state:
-1. `.agenthoff/vision.md` (for context — if missing, offer to run `brainstorm` first)
-2. `.agenthoff/context-map.md` (if exists)
-3. `.agenthoff/contexts/*/README.md` (to know what BCs exist and their language)
-4. `.agenthoff/knowledge/index.md` (top-level catalog — current BCs, recent ADRs, global state) — if missing, the project hasn't been indexed; surface this and continue
-5. `.agenthoff/knowledge/protocol.md` — read the first ~100 lines (newest entries are on top, so this gives recent activity). Skip if it doesn't exist yet.
-6. `.agenthoff/contexts/*/backlog/*.md` (to understand what's pending)
-7. **For CAPTURE only:** once you've identified the candidate BC, scan `.agenthoff/contexts/<bc>/done/` for prior art on keywords/tags from the user's idea. See the "Prior art lookup" section.
+1. `.agentheim/vision.md` (for context — if missing, offer to run `brainstorm` first)
+2. `.agentheim/context-map.md` (if exists)
+3. `.agentheim/contexts/*/README.md` (to know what BCs exist and their language)
+4. `.agentheim/knowledge/index.md` (top-level catalog — current BCs, recent ADRs, global state) — if missing, the project hasn't been indexed; surface this and continue
+5. `.agentheim/knowledge/protocol.md` — read the first ~100 lines (newest entries are on top, so this gives recent activity). Skip if it doesn't exist yet.
+6. `.agentheim/contexts/*/backlog/*.md` (to understand what's pending)
+7. **For CAPTURE only:** once you've identified the candidate BC, scan `.agentheim/contexts/<bc>/done/` for prior art on keywords/tags from the user's idea. See the "Prior art lookup" section.
 
 If no bounded contexts exist yet, and the idea is non-trivial, propose running `brainstorm` first. Small ideas (bug fixes, copy changes) in a greenfield project can get a default `contexts/main/` until real structure emerges.
 
@@ -112,7 +112,7 @@ PROMOTE is mostly mechanical (readiness check + file move) and runs the same reg
 
 4. **Delegate to the orchestrator** for depth. Give it the task and the BC context. It will route to specialists.
 
-5. **Update the task file** with refined content. If it splits, create child tasks and update `depends_on`. If a decision was made, write an ADR to `.agenthoff/knowledge/decisions/`.
+5. **Update the task file** with refined content. If it splits, create child tasks and update `depends_on`. If a decision was made, write an ADR to `.agentheim/knowledge/decisions/`.
 
 6. **Promote if ready.** If refinement made the task ready, move it to `todo/`.
 
@@ -172,7 +172,7 @@ rough sketches — anything a worker or refiner would want.
 
 ## Decisions as tasks
 
-When modeling surfaces a genuine architectural or domain decision that deserves its own treatment (rather than being an implementation detail of a feature), create a task with `type: decision`. Its output when worked is an ADR in `.agenthoff/knowledge/decisions/`, not code. This lets decisions flow through the same backlog discipline as features.
+When modeling surfaces a genuine architectural or domain decision that deserves its own treatment (rather than being an implementation detail of a feature), create a task with `type: decision`. Its output when worked is an ADR in `.agentheim/knowledge/decisions/`, not code. This lets decisions flow through the same backlog discipline as features.
 
 ## Frontend tasks: styleguide gate
 
@@ -212,7 +212,7 @@ The point is to stop workers arriving in isolation. Whenever a task is being wri
 
 - The candidate task's `title`, `tags`, `What` body, and target BC.
 - The target BC's `INDEX.md` (already loaded in "Before acting") — has the per-BC ADR list, research list, done-task list.
-- The top-level `.agenthoff/knowledge/index.md` — has the global ADR list and cross-BC research list.
+- The top-level `.agentheim/knowledge/index.md` — has the global ADR list and cross-BC research list.
 
 ### Matcher (cheap-first)
 
@@ -266,11 +266,11 @@ If the BC's `INDEX.md` doesn't exist yet, create it from `references/index-templ
 - Do not auto-rewrite the entire file — only insert/remove at the markers. Preserve any human-added prose elsewhere.
 - Do not append duplicate entries — if the line is already present (same task-id), skip.
 
-If a brand-new BC is being created during CAPTURE (rare — model normally does not create BCs; that's brainstorm's job), also insert under `<!-- bc-list:start -->` in `.agenthoff/knowledge/index.md`.
+If a brand-new BC is being created during CAPTURE (rare — model normally does not create BCs; that's brainstorm's job), also insert under `<!-- bc-list:start -->` in `.agentheim/knowledge/index.md`.
 
 ## Protocol logging
 
-After each action — CAPTURE, REFINE, or PROMOTE — prepend an entry to `.agenthoff/knowledge/protocol.md`. If `protocol.md` doesn't exist, create it with:
+After each action — CAPTURE, REFINE, or PROMOTE — prepend an entry to `.agentheim/knowledge/protocol.md`. If `protocol.md` doesn't exist, create it with:
 
 ```markdown
 # Protocol

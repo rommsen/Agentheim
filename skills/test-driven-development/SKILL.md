@@ -9,7 +9,7 @@ TDD is the worker's default discipline. The worker writes a failing test that en
 
 ## Why TDD here
 
-The agenthoff workflow already has a strong gate after the worker returns (`verification-before-completion`). The verifier reads the diff against acceptance criteria with fresh context. Without TDD, the worker can produce code that *looks* like it satisfies the criteria but doesn't actually do so under any executed assertion — and the verifier has to re-derive the test space from scratch. With TDD, the verifier can confirm "the tests exist, they assert the criteria, they pass" and spend its energy on the harder question of "are these the right tests".
+The agentheim workflow already has a strong gate after the worker returns (`verification-before-completion`). The verifier reads the diff against acceptance criteria with fresh context. Without TDD, the worker can produce code that *looks* like it satisfies the criteria but doesn't actually do so under any executed assertion — and the verifier has to re-derive the test space from scratch. With TDD, the verifier can confirm "the tests exist, they assert the criteria, they pass" and spend its energy on the harder question of "are these the right tests".
 
 TDD also fixes the most common failure mode of LLM-generated code on domain-rich projects: plausibly-shaped but behaviorally wrong. A failing test before a single line of production code anchors the worker to *observable behavior*, not to "code that looks reasonable".
 

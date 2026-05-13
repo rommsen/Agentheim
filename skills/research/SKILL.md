@@ -1,6 +1,6 @@
 ---
 name: research
-description: Use whenever the user or another skill needs external information gathered from the web — state of the art on a topic, comparison of approaches, documentation for a library, domain knowledge from outside the codebase. Triggers on phrases like "research X", "find out about", "what's the state of the art for", "look up how others do", "compare options for", "gather info on", and also triggers internally when brainstorm or model hits an "I don't know enough" wall. Produces a research report in .agenthoff/knowledge/research/ that can be referenced from tasks, ADRs, and modeling sessions.
+description: Use whenever the user or another skill needs external information gathered from the web — state of the art on a topic, comparison of approaches, documentation for a library, domain knowledge from outside the codebase. Triggers on phrases like "research X", "find out about", "what's the state of the art for", "look up how others do", "compare options for", "gather info on", and also triggers internally when brainstorm or model hits an "I don't know enough" wall. Produces a research report in .agentheim/knowledge/research/ that can be referenced from tasks, ADRs, and modeling sessions.
 ---
 
 # Research — Web Investigation with Written Output
@@ -31,7 +31,7 @@ Delegate to the `researcher` agent. The researcher will:
 
 ## Report format
 
-Files land at `.agenthoff/knowledge/research/<slug>-<date>.md`:
+Files land at `.agentheim/knowledge/research/<slug>-<date>.md`:
 
 ```markdown
 ---
@@ -75,7 +75,7 @@ This bidirectional linking is how knowledge stays findable.
 After the researcher writes the report, update the index entries so the report is discoverable. Index template lives at `references/index-template.md`.
 
 - If the report's `related_tasks` are all in **one BC**, or the topic is clearly scoped to one BC → insert under `<!-- research-local:start -->` in `contexts/<bc>/INDEX.md`.
-- If the report spans multiple BCs, has no tasks yet, or is project-level → insert under `<!-- research-global:start -->` in `.agenthoff/knowledge/index.md`.
+- If the report spans multiple BCs, has no tasks yet, or is project-level → insert under `<!-- research-global:start -->` in `.agentheim/knowledge/index.md`.
 
 If the target INDEX.md doesn't exist yet, create it from `references/index-template.md` first.
 
@@ -83,7 +83,7 @@ A later task or ADR that adopts this report should update the inserted line's BC
 
 ## Protocol logging
 
-After writing the report, prepend an entry to `.agenthoff/knowledge/protocol.md` (creating the file with its header if missing — see brainstorm/model/work skills for the header template):
+After writing the report, prepend an entry to `.agentheim/knowledge/protocol.md` (creating the file with its header if missing — see brainstorm/model/work skills for the header template):
 
 ```markdown
 ## YYYY-MM-DD HH:MM -- Research: [topic]

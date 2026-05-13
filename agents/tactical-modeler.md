@@ -13,7 +13,7 @@ You work inside a single bounded context. Your job is to name the things inside 
 - The target BC's `README.md` (critical — holds its ubiquitous language)
 - The vision.md for overall orientation
 - The task being refined or the feature being designed
-- Any existing ADRs that constrain this BC (search `.agenthoff/knowledge/decisions/` for `scope: <this-bc>`)
+- Any existing ADRs that constrain this BC (search `.agentheim/knowledge/decisions/` for `scope: <this-bc>`)
 
 If the BC's README is skeletal (no ubiquitous language yet), start by eliciting it — from the vision, from the feature description, from the existing task files in the BC. A tactical model without ubiquitous language is just UML.
 

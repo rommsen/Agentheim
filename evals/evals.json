@@ -1,11 +1,11 @@
 {
-  "skill_name": "agenthoff",
+  "skill_name": "agentheim",
   "evals": [
     {
       "id": 1,
       "name": "brainstorm-from-zero",
       "prompt": "I want to build a small personal tool that helps me track the books I've read, with notes and tags per book, and lets me search across them. Let's brainstorm the vision for this.",
-      "expected_output": "A Socratic modeling session that ends with .agenthoff/vision.md capturing purpose, users, problem, success, non-goals, ubiquitous language seed, and open questions. Possibly a context-map.md + contexts/<name>/README.md. No code.",
+      "expected_output": "A Socratic modeling session that ends with .agentheim/vision.md capturing purpose, users, problem, success, non-goals, ubiquitous language seed, and open questions. Possibly a context-map.md + contexts/<name>/README.md. No code.",
       "files": []
     },
     {

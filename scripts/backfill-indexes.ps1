@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-Rebuilds .agenthoff/knowledge/index.md and .agenthoff/contexts/*/INDEX.md
+Rebuilds .agentheim/knowledge/index.md and .agentheim/contexts/*/INDEX.md
 by walking existing artifacts.
 
 .DESCRIPTION
-One-shot tool. Walks .agenthoff/contexts/*/{backlog,todo,doing,done}/ for tasks,
-.agenthoff/knowledge/decisions/ for ADRs (sorted by scope), and
-.agenthoff/knowledge/research/ for reports. Reconstructs indexes from the
+One-shot tool. Walks .agentheim/contexts/*/{backlog,todo,doing,done}/ for tasks,
+.agentheim/knowledge/decisions/ for ADRs (sorted by scope), and
+.agentheim/knowledge/research/ for reports. Reconstructs indexes from the
 template at references/index-template.md.
 
 Safe to run multiple times — replaces each INDEX.md atomically. Hand-edits
@@ -14,7 +14,7 @@ inside marker pairs are overwritten; hand-edits outside markers are preserved
 (except on first creation, where the file is created from the template).
 
 .PARAMETER ProjectRoot
-Path to the project root (containing .agenthoff/). Defaults to current directory.
+Path to the project root (containing .agentheim/). Defaults to current directory.
 
 .PARAMETER DryRun
 Show what would change without writing.
@@ -32,10 +32,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$agentRoot = Join-Path $ProjectRoot '.agenthoff'
+$agentRoot = Join-Path $ProjectRoot '.agentheim'
 
 if (-not (Test-Path $agentRoot)) {
-    Write-Error ".agenthoff/ not found in $ProjectRoot. Run brainstorm first."
+    Write-Error ".agentheim/ not found in $ProjectRoot. Run brainstorm first."
 }
 
 function Get-Frontmatter {

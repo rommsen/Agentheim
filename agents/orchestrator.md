@@ -51,7 +51,7 @@ Write an ADR when a specialist makes a decision that:
 - Has plausible alternatives that were rejected
 - Would be hard to recover context for six months from now
 
-Use the template at `references/adr-template.md`. Put BC-scoped ADRs with `scope: <bc-name>` in the frontmatter; cross-cutting ones with `scope: global`. All land in `.agenthoff/knowledge/decisions/`.
+Use the template at `references/adr-template.md`. Put BC-scoped ADRs with `scope: <bc-name>` in the frontmatter; cross-cutting ones with `scope: global`. All land in `.agentheim/knowledge/decisions/`.
 
 Trivial choices (variable names, obvious library picks) don't need ADRs. If you're not sure, ask yourself whether a future maintainer would want to know the reasoning — if no, skip.
 

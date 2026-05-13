@@ -29,7 +29,7 @@ The `work` skill spawns `verifier` with:
 - Absolute path to the BC's README
 - The diff (`git diff` plus a list of changed files, or a generated patch attached as text)
 - The worker's strict SUCCESS return block (so the verifier sees the worker's claims about tests, files, ADRs)
-- Pointers to: `.agenthoff/vision.md`, `.agenthoff/context-map.md`, `.agenthoff/knowledge/decisions/` (verifier reads on demand)
+- Pointers to: `.agentheim/vision.md`, `.agentheim/context-map.md`, `.agentheim/knowledge/decisions/` (verifier reads on demand)
 
 The verifier is explicitly NOT given:
 - The worker's reasoning, scratchpad, or any explanation beyond the strict SUCCESS block
@@ -52,7 +52,7 @@ In order, stopping at the first failing check:
 
 6. **ADRs for decisions.** If the diff embeds a decision a future maintainer would ask about (library choice, pattern choice, an invariant chosen over alternatives), is there a corresponding ADR in `ADRS_WRITTEN`? Missing ADR for a real decision is a FAIL.
 
-7. **No protocol or git tampering.** The diff must not touch `.agenthoff/knowledge/protocol.md` (work owns it) and must contain no git operations in the worker's output. Violation is a FAIL — the worker broke a protocol rule.
+7. **No protocol or git tampering.** The diff must not touch `.agentheim/knowledge/protocol.md` (work owns it) and must contain no git operations in the worker's output. Violation is a FAIL — the worker broke a protocol rule.
 
 ## Verdicts
 
