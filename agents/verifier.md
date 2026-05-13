@@ -70,6 +70,7 @@ Not allowed:
 - Unrelated production files
 - Other BCs' READMEs
 - `.agenthoff/knowledge/protocol.md` (work owns it)
+- Any `INDEX.md` file (`.agenthoff/knowledge/index.md` or `.agenthoff/contexts/*/INDEX.md`) — `work` owns indexes; worker edits to them are a protocol violation
 - Config / lockfile changes that are not the task's purpose (a `package-lock.json` update from a dependency the worker added is allowed; an unrelated `package-lock.json` churn is not)
 
 Out-of-scope changes are FAIL. Don't approve them just because they look like good ideas. Suggest them as a backlog item in `SUGGESTED_FIX`.
@@ -98,9 +99,19 @@ Read each ADR file listed in `ADRS_WRITTEN`. For each:
 
 If the diff embeds a decision a future maintainer would ask "why?" about, and no ADR covers it, FAIL.
 
-### 7. No protocol or git tampering
+### 6b. Honored related ADRs
 
-Confirm the diff does not modify `.agenthoff/knowledge/protocol.md`. Confirm the worker's output did not contain `git add`, `git commit`, `git push`, or similar. If either is violated, FAIL — the worker broke a structural rule.
+Read the task file's `related_adrs` frontmatter. For each id, read the ADR's `## Decision` section and verify the worker's diff is consistent with it. The worker was given the pre-loaded ADRs in their spawn prompt and was told reading them is mandatory.
+
+- Diff contradicts a related ADR (e.g., ADR 0007 says "Postgres for billing", diff introduces SQLite for billing) → FAIL with `SUGGESTED_FIX` naming the ADR.
+- Diff silently ignores a related ADR's constraint when the criterion clearly applies → FAIL.
+- Diff supersedes an ADR's decision intentionally → FAIL unless `ADRS_WRITTEN` includes a new ADR with the superseded ADR's id in its `supersedes` field.
+
+If `related_adrs` is empty, skip this check.
+
+### 7. No protocol, index, or git tampering
+
+Confirm the diff does not modify `.agenthoff/knowledge/protocol.md` or any `INDEX.md` (`.agenthoff/knowledge/index.md`, `.agenthoff/contexts/*/INDEX.md`). Confirm the worker's output did not contain `git add`, `git commit`, `git push`, or similar. If any is violated, FAIL — the worker broke a structural rule. (Protocol and indexes are owned by the `work` skill, not workers.)
 
 ## Verdicts — strict format
 

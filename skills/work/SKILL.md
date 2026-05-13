@@ -19,10 +19,12 @@ Before anything else, look at `contexts/*/doing/`:
 ## Phase 2: Build the dependency graph
 
 1. Read `.agenthoff/vision.md` and `.agenthoff/context-map.md` for orientation.
-2. Scan `.agenthoff/contexts/*/todo/` and `.agenthoff/contexts/*/doing/`.
-3. For every todo task, read `depends_on`. A task is *ready* if every id in `depends_on` is in `done/` (or doesn't exist — treat missing as satisfied, but warn the user).
-4. **Detect cycles.** If the graph has a cycle, stop and surface the cycle to the user. Do not "just pick one".
-5. Briefly tell the user what you found: "X tasks ready across N contexts, Y tasks blocked on Z."
+2. Read `.agenthoff/knowledge/index.md` (top-level catalog — current BCs and recent ADRs). If missing, surface to user that the project hasn't been indexed and offer to run `scripts/backfill-indexes.ps1` (or `.sh`) before continuing — workers will be less effective without indexes.
+3. Read the first ~100 lines of `.agenthoff/knowledge/protocol.md` (newest entries are on top — this gives recent activity context). Skip if it doesn't exist yet. **Hold this excerpt in memory** — you pass it forward to each worker as `## Recent activity` so workers don't re-read the protocol themselves.
+4. Scan `.agenthoff/contexts/*/todo/` and `.agenthoff/contexts/*/doing/`.
+5. For every todo task, read `depends_on`. A task is *ready* if every id in `depends_on` is in `done/` (or doesn't exist — treat missing as satisfied, but warn the user).
+6. **Detect cycles.** If the graph has a cycle, stop and surface the cycle to the user. Do not "just pick one".
+7. Briefly tell the user what you found: "X tasks ready across N contexts, Y tasks blocked on Z."
 
 ## Phase 3: Conflict detection before batch dispatch
 
@@ -160,6 +162,31 @@ One task = one commit. Commit after each verifier passes, not in a batch — tha
 
 If the project isn't a git repo, skip commits silently and note it in the end-of-run summary. (Verification is also auto-skipped in this case — see "When to skip verification".)
 
+## Index updates (orchestrator-owned)
+
+Indexes track artifact movement. The work skill — **never the worker** — updates them. The worker is scope-restricted; touching `INDEX.md` files from inside a worker would fail verification. Index template lives at `references/index-template.md`.
+
+Per state transition in `contexts/<bc>/INDEX.md`:
+
+| Transition | Marker edits | Counts |
+|---|---|---|
+| **todo → doing** (Phase 4 step 1) | remove from `<!-- todo-list:start -->` → insert into `<!-- doing-list:start -->` | Todo −1, Doing +1 |
+| **doing → done** (post-PASS commit) | remove from `<!-- doing-list:start -->` → insert at top of `<!-- done-list:start -->` (newest first) | Doing −1, Done +1 |
+| **doing → backlog** (BOUNCED) | remove from `<!-- doing-list:start -->` → insert into `<!-- backlog-list:start -->` | Doing −1, Backlog +1 |
+| **doing → doing** (FAIL iteration N, re-dispatched) | no list move; line stays in doing-list | no count change |
+| **doing → doing-final** (FAIL iteration 3, escalated) | no list move | no count change |
+
+Per ADR written (from `ADRS_WRITTEN` in worker SUCCESS):
+
+- Read the ADR's frontmatter `scope:` field.
+- `scope: <bc-name>` → insert under `<!-- adr-local:start -->` in `contexts/<bc-name>/INDEX.md`.
+- `scope: global` → insert under `<!-- adr-global:start -->` in `.agenthoff/knowledge/index.md`.
+- **Bidirectional backlink:** append the ADR id to the task's `related_adrs` frontmatter, and append the task id to the ADR's `related_tasks` frontmatter. The worker writes the ADR but does not maintain these cross-links — the orchestrator does, atomically, alongside the index update.
+
+If `.agenthoff/knowledge/index.md` or the BC's `INDEX.md` does not exist yet, create it from `references/index-template.md` before inserting. Do not auto-rewrite the file — only insert/remove at markers.
+
+If `NEW_BACKLOG_ITEMS` are non-empty in the worker SUCCESS, also insert those task lines under `<!-- backlog-list:start -->` in the appropriate BC's INDEX.md (counts +N).
+
 ## Protocol logging
 
 `.agenthoff/knowledge/protocol.md` is the project's chronological diary. Every `work` event prepends a new entry. Keep entries terse — the diff carries the detail.
@@ -252,21 +279,44 @@ You are a worker agent executing one refined task. Stay strictly within its scop
 Task file (currently in doing/): <ABSOLUTE-PATH>
 Bounded context: <BC-NAME>
 BC README: <ABSOLUTE-PATH-TO-BC-README>
+BC index: <ABSOLUTE-PATH-TO-CONTEXTS-BC-INDEX-MD>  # catalog of ADRs/research/concepts scoped to this BC
+
+## Pre-loaded ADRs (MUST READ before coding)
+The task's `related_adrs` frontmatter lists ADRs you must read. Their full content is below — do not re-fetch.
+
+<For each id in task.related_adrs, paste the full ADR file content here, separated by `---`. If related_adrs is empty, write: "No related ADRs.">
+
+## Pre-loaded prior art (SHOULD READ if non-empty)
+The task's `prior_art` frontmatter lists done-task ids that are close in subject. Read their `## Outcome` sections before designing yours — don't re-derive a solved problem.
+
+<For each id in task.prior_art, list: id, title, path to done/ file, and the Outcome section excerpt (last 30 lines of the file). If prior_art is empty, write: "No prior art identified.">
+
+## Related research (read on demand)
+The task's `related_research` frontmatter points at research reports under `.agenthoff/knowledge/research/`. Read the ones whose topic actually bears on your work.
+
+<List task.related_research entries by slug; do not paste contents — reports can be long.>
+
+## Recent activity
+Last ~100 lines of `.agenthoff/knowledge/protocol.md` — the project's recent events. Use this for orientation; do not re-fetch the protocol yourself.
+
+<Paste the head -100 excerpt the orchestrator captured in Phase 2 verbatim.>
 
 ## Project context (read only if you need them)
 - .agenthoff/vision.md
 - .agenthoff/context-map.md (if exists)
-- .agenthoff/knowledge/decisions/ (ADRs)
+- .agenthoff/knowledge/decisions/ (other ADRs beyond the pre-loaded ones)
 - .agenthoff/knowledge/research/ (research reports)
+- .agenthoff/contexts/<bc>/concepts/ (opt-in synthesis pages — grep for relevant concepts before designing)
 
 ## Rules — CRITICAL
 1. Do NOT run `git add`, `git commit`, or any git write operation. The orchestrator owns git.
 2. Do NOT modify `.agenthoff/knowledge/protocol.md`. The orchestrator owns protocol logging.
-3. Do NOT touch any task file other than the one you were assigned.
-4. Do NOT modify other BCs' READMEs. Only the BC your task belongs to.
-5. DO write code, run tests, update YOUR BC's README, write ADRs for decisions you make.
-6. DO move your task file from doing/ to done/ when acceptance criteria are met, and update its frontmatter (status: done, completed: YYYY-MM-DD).
-7. If the task is under-refined (no concrete acceptance criteria, unclear scope, unmet dependencies, insufficient BC language), MOVE IT BACK TO backlog/ with a `## Worker note` explaining what's missing, and return RESULT: BOUNCED. This is correct behavior, not a failure.
+3. Do NOT modify any `INDEX.md` (`.agenthoff/knowledge/index.md` or `.agenthoff/contexts/*/INDEX.md`). The orchestrator owns indexes.
+4. Do NOT touch any task file other than the one you were assigned.
+5. Do NOT modify other BCs' READMEs. Only the BC your task belongs to.
+6. DO write code, run tests, update YOUR BC's README, write ADRs for decisions you make.
+7. DO move your task file from doing/ to done/ when acceptance criteria are met, and update its frontmatter (status: done, completed: YYYY-MM-DD).
+8. If the task is under-refined (no concrete acceptance criteria, unclear scope, unmet dependencies, insufficient BC language), MOVE IT BACK TO backlog/ with a `## Worker note` explaining what's missing, and return RESULT: BOUNCED. This is correct behavior, not a failure.
 
 ## Context hygiene — IMPORTANT
 Your context window is finite. Respect it:
@@ -287,6 +337,7 @@ FILE_LIST: <comma-separated absolute paths of all files you created or modified,
 BC_README_UPDATED: yes | no
 ADRS_WRITTEN: <comma-separated filenames under .agenthoff/knowledge/decisions/, or "none">
 NEW_BACKLOG_ITEMS: <comma-separated task ids created in a backlog/ during your work, or "none">
+CONCEPT_CANDIDATE: <concept-name> — converging on N artifacts (<id list>) | none
 
 For a bounce, return:
 RESULT: BOUNCED
@@ -305,7 +356,8 @@ When `todo/` is empty and all `doing/` is resolved (or the user interrupts):
 
 1. Summarize in plain prose: tasks completed (with verification stats — how many passed first try vs. needed re-dispatch), tasks bounced (and why), tasks failed (and why), tasks escalated after 3 verification failures (these need user attention), ADRs written, new backlog items created, total commits made.
 2. For each task escalated to the user: name it, summarize the iteration history, and show the latest verifier's SUGGESTED_FIX. The user decides whether to REFINE via `model` or abandon.
-3. Surface anything that surprised you mid-run: cycles detected, dependency gaps, recovered sessions, repeated verification failures pointing at a common cause.
+3. **Concept candidates.** Aggregate every non-"none" `CONCEPT_CANDIDATE` from worker SUCCESS blocks across the run. If any concept name shows up in 2+ workers' returns, escalate the convergence signal more loudly. For each unique candidate: print the concept name, the BC, and the converging artifact ids. The user decides whether to create the page (per `references/concept-template.md`); never auto-create.
+4. Surface anything that surprised you mid-run: cycles detected, dependency gaps, recovered sessions, repeated verification failures pointing at a common cause.
 4. Prepend a final protocol entry:
    ```markdown
    ## YYYY-MM-DD HH:MM -- Work session ended

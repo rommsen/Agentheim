@@ -41,7 +41,10 @@ Read the current state:
 1. `.agenthoff/vision.md` (for context — if missing, offer to run `brainstorm` first)
 2. `.agenthoff/context-map.md` (if exists)
 3. `.agenthoff/contexts/*/README.md` (to know what BCs exist and their language)
-4. `.agenthoff/contexts/*/backlog/*.md` (to understand what's pending)
+4. `.agenthoff/knowledge/index.md` (top-level catalog — current BCs, recent ADRs, global state) — if missing, the project hasn't been indexed; surface this and continue
+5. `.agenthoff/knowledge/protocol.md` — read the first ~100 lines (newest entries are on top, so this gives recent activity). Skip if it doesn't exist yet.
+6. `.agenthoff/contexts/*/backlog/*.md` (to understand what's pending)
+7. **For CAPTURE only:** once you've identified the candidate BC, scan `.agenthoff/contexts/<bc>/done/` for prior art on keywords/tags from the user's idea. See the "Prior art lookup" section.
 
 If no bounded contexts exist yet, and the idea is non-trivial, propose running `brainstorm` first. Small ideas (bug fixes, copy changes) in a greenfield project can get a default `contexts/main/` until real structure emerges.
 
@@ -84,13 +87,15 @@ PROMOTE is mostly mechanical (readiness check + file move) and runs the same reg
 
    If `contexts/infrastructure/` doesn't exist (e.g., `brainstorm` was skipped), surface that — offer to run `brainstorm` in extension mode to add the infrastructure BC, or create the BC explicitly with a minimal README before capturing the task.
 
-3. **Decide refinement level.**
+3. **Prior-art lookup.** Run the matcher described in "Backlink lookup" below against the target BC's `INDEX.md` (ADRs, research, done tasks) and the top-level index (global ADRs, cross-BC research). Surface every match score ≥ 2 to the user *before* writing the task file. For each prior-art hit (done task), give the user three outcomes: "yes related", "not relevant", or "this is the same task — exit CAPTURE, REFINE that one instead". Skip this step for trivial captures (single-line copy changes, obvious bug fixes).
+
+4. **Decide refinement level.**
    - **Under-refined → backlog/**: The idea needs more thought, research, or breaking down before anyone could work on it.
    - **Ready → todo/**: The idea is small, well-understood, or already deeply discussed. A worker could pick it up and execute without ambiguity.
 
-4. **Delegate deep modeling if needed.** For complex ideas (new feature, domain change, architectural impact), spawn the **orchestrator** agent with the idea and current state. It will route to `tactical-modeler`, `strategic-modeler`, `architect`, or `researcher` as appropriate, and come back with a refined task (or task set) plus any ADRs. For infrastructure-flavored captures, the orchestrator will typically route to `architect` first.
+5. **Delegate deep modeling if needed.** For complex ideas (new feature, domain change, architectural impact), spawn the **orchestrator** agent with the idea and current state. It will route to `tactical-modeler`, `strategic-modeler`, `architect`, or `researcher` as appropriate, and come back with a refined task (or task set) plus any ADRs. For infrastructure-flavored captures, the orchestrator will typically route to `architect` first.
 
-5. **Write the task file(s).** See task format below.
+6. **Write the task file(s).** Include the user-confirmed `related_adrs`, `related_research`, `prior_art` from step 3 in the frontmatter. See task format below.
 
 ## REFINE flow
 
@@ -132,15 +137,18 @@ Files live as `contexts/<bc>/<status>/<id>-<slug>.md`. Example: `contexts/auth/b
 ---
 id: auth-003
 title: Password reset flow
-status: backlog         # backlog | todo | doing | done
-type: feature           # feature | bug | refactor | chore | spike | decision
+status: backlog              # backlog | todo | doing | done
+type: feature                # feature | bug | refactor | chore | spike | decision
 context: auth
 created: 2026-04-24
-completed:              # set by worker when done
-commit:                 # git SHA set by worker when done
-depends_on: []          # list of task ids
-blocks: []              # populated automatically by worker / refine
+completed:                   # set by worker when done
+commit:                      # git SHA set by worker when done
+depends_on: []               # list of task ids
+blocks: []                   # populated automatically by worker / refine
 tags: []
+related_adrs: []             # ADR ids (e.g., [0007]) — auto-populated by model at capture/refine; orchestrator appends ADRs it writes
+related_research: []         # research slugs (e.g., [auth-tokens-2026-04-24]) — auto-populated by model from research-index
+prior_art: []                # done task ids from same BC matching keyword/tags — auto-populated by model at capture
 ---
 
 ## Why
@@ -190,6 +198,75 @@ The orchestrator picks specialists. Respect its output and integrate it into the
 ## Research is fair game mid-model
 
 If the user or the orchestrator hits an "we don't know enough about X" wall, kick off the `research` skill in parallel. Continue modeling what you can while research runs; fold its report into the task's Notes section when ready.
+
+## Backlink lookup (auto-populate task frontmatter)
+
+The point is to stop workers arriving in isolation. Whenever a task is being written or updated, pre-compute its backlinks so the worker doesn't have to re-derive them.
+
+### When
+
+- **CAPTURE** — after the BC is decided, before writing the task file.
+- **REFINE** — after the orchestrator's specialist round, before writing the updated task file. Re-run from scratch each time (cheap; catches new ADRs/research that arrived since last refinement).
+
+### Inputs
+
+- The candidate task's `title`, `tags`, `What` body, and target BC.
+- The target BC's `INDEX.md` (already loaded in "Before acting") — has the per-BC ADR list, research list, done-task list.
+- The top-level `.agenthoff/knowledge/index.md` — has the global ADR list and cross-BC research list.
+
+### Matcher (cheap-first)
+
+For each candidate artifact in the indexes:
+
+1. **Slug overlap** — split the artifact's slug on `-` and the task's title on whitespace. Count words present in both (case-insensitive, ignore stopwords: `the / a / an / of / for / and / to / in / on`). Score = matches.
+2. **Tag overlap** — if the artifact's source file has any of the task's `tags` in its frontmatter, +2 per shared tag.
+3. **Threshold** — score ≥ 2 qualifies. Below that, do not auto-link.
+
+Cap each list at 5 entries. If you have more than 5 candidates above threshold, take the highest-scored.
+
+### What to populate
+
+- `related_adrs`: ADR ids from (BC-scoped ADRs + global ADRs) that scored ≥ 2.
+- `related_research`: research slugs from (BC-scoped + cross-BC research) that scored ≥ 2.
+- `prior_art`: done task ids in the same BC that scored ≥ 2. (CAPTURE only — REFINE may already have human-curated prior_art; only add new entries, never remove.)
+
+### Surface to user
+
+For CAPTURE: before writing the task, show the user a one-line block per matched item ("Found prior art: auth-002 (Login session pinning, completed 2026-03-14). Read it?"). Three short outcomes the user can pick:
+
+- "Yes, related" → keep in `prior_art` / `related_*`.
+- "No, not relevant" → drop from the list.
+- "This is the same — don't capture, update auth-002 instead" → exit CAPTURE, switch to REFINE on the prior task.
+
+For tiny captures (single-line copy changes, trivial bug fixes), skip the matcher entirely. Don't burn context on lookups for `change button color`.
+
+### Bidirectional link maintenance
+
+When the orchestrator writes an ADR scoped to this task during REFINE:
+1. Add the ADR id to `related_adrs` in the task frontmatter.
+2. Add the task id to `related_tasks` in the ADR frontmatter.
+
+When `work` records `ADRS_WRITTEN` for a SUCCESS task, do the same — append the ADR id to that task's `related_adrs` and update the ADR's `related_tasks`. (See `work/SKILL.md` "Index updates" — the bidirectional ADR↔task link maintenance lives in the same step.)
+
+## Updating indexes
+
+After writing or moving a task file, update the BC's `INDEX.md` so other skills (and you, on the next invocation) can find it without scanning directories. The template lives at `references/index-template.md`.
+
+**Where to update:**
+
+- **CAPTURE writing to `backlog/`:** insert under `<!-- backlog-list:start -->` in `contexts/<bc>/INDEX.md`. Increment Backlog count under `<!-- task-counts:start -->`.
+- **CAPTURE writing directly to `todo/`:** insert under `<!-- todo-list:start -->`. Increment Todo count.
+- **PROMOTE (backlog → todo):** remove the line from the backlog list, insert at the top of the todo list. Decrement Backlog, increment Todo.
+- **REFINE that splits a task:** remove the parent line, insert child task lines. Update counts.
+
+If the BC's `INDEX.md` doesn't exist yet, create it from `references/index-template.md` with the BC name filled in. Do not invent sections — only the templated markers are append targets.
+
+**What not to do:**
+- Do not edit the index across multiple BCs in one skill invocation unless a single capture genuinely lands in multiple BCs.
+- Do not auto-rewrite the entire file — only insert/remove at the markers. Preserve any human-added prose elsewhere.
+- Do not append duplicate entries — if the line is already present (same task-id), skip.
+
+If a brand-new BC is being created during CAPTURE (rare — model normally does not create BCs; that's brainstorm's job), also insert under `<!-- bc-list:start -->` in `.agenthoff/knowledge/index.md`.
 
 ## Protocol logging
 

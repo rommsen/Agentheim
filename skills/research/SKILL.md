@@ -64,10 +64,22 @@ Things we wanted to answer and couldn't, or that would need primary research.
 
 When a research report influences a task or decision:
 - The task's Notes section gets a link to the report
-- The ADR (if one results) gets the report in its references
+- The task's `related_research` frontmatter gets the report's slug (so workers pre-load it)
+- The ADR (if one results) gets the report in its references and its `related_research` frontmatter
 - The report's frontmatter `related_tasks` gets updated
 
 This bidirectional linking is how knowledge stays findable.
+
+## Updating indexes
+
+After the researcher writes the report, update the index entries so the report is discoverable. Index template lives at `references/index-template.md`.
+
+- If the report's `related_tasks` are all in **one BC**, or the topic is clearly scoped to one BC → insert under `<!-- research-local:start -->` in `contexts/<bc>/INDEX.md`.
+- If the report spans multiple BCs, has no tasks yet, or is project-level → insert under `<!-- research-global:start -->` in `.agenthoff/knowledge/index.md`.
+
+If the target INDEX.md doesn't exist yet, create it from `references/index-template.md` first.
+
+A later task or ADR that adopts this report should update the inserted line's BC scope if it migrates from global to BC-local (rare).
 
 ## Protocol logging
 

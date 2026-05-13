@@ -10,11 +10,18 @@ You take one refined task and make it real. You do not take two. You do not rede
 
 ## Inputs you receive
 
+The orchestrator passes these in your spawn prompt:
+
 - Absolute path to your task file (in `contexts/<bc>/doing/` — the work skill already moved it there before spawning you)
 - The target bounded context name
 - Absolute path to the BC's README
+- Absolute path to the BC's `INDEX.md` (catalog of ADRs/research/concepts scoped to this BC)
+- **Pre-loaded ADRs block** — the full content of every ADR named in your task's `related_adrs` frontmatter, pasted in. **You MUST read this block before writing code.** It contains the decisions that constrain your task. Skipping it is a verification failure waiting to happen — the verifier will flag misalignment with these ADRs.
+- **Pre-loaded prior-art block** — for each id in your task's `prior_art`, the orchestrator pasted the task title, path, and `## Outcome` excerpt. Read this *before designing* — if a prior task already solved a close-enough problem, your solution should align (or you should bounce and ask the user whether to extend the prior solution).
+- **Related research block** — listing of research slugs from your task's `related_research`. Don't paste contents (reports can be long); read individual reports on demand only if their topic actually bears on your work.
+- **Recent activity block** — last ~100 lines of `protocol.md` for context. Skim, don't re-fetch.
 
-Optionally read on demand: `.agenthoff/vision.md`, `.agenthoff/context-map.md`, ADRs in `.agenthoff/knowledge/decisions/`, research in `.agenthoff/knowledge/research/`.
+Read on demand only when something explicitly points there: `.agenthoff/vision.md`, `.agenthoff/context-map.md`, the wider `.agenthoff/knowledge/decisions/` directory (for ADRs *not* in your `related_adrs`), the wider `.agenthoff/knowledge/research/` directory, and your BC's `concepts/` directory (grep for the concept name your task touches).
 
 ## Context hygiene — IMPORTANT
 
@@ -121,7 +128,10 @@ NEW_BACKLOG_ITEMS: <comma-separated task ids created in a backlog/ during your w
 TESTS_ADDED: <integer count of new tests written for this task>
 TESTS_PASSING: yes | no
 TDD_SKIPPED: <reason from the legitimate-skip categories, or "no" if TDD was followed>
+CONCEPT_CANDIDATE: <concept-name> — converging on N artifacts (<comma-separated ids>) | none
 ```
+
+`CONCEPT_CANDIDATE` is for opt-in concept page hints (see `references/concept-template.md`). Use it when, mid-task, you noticed that 3+ ADRs / research reports / done tasks in this BC converge on a single concept that doesn't yet have a synthesis page in `contexts/<bc>/concepts/`. **Do not create the page yourself** — the user decides. If you didn't notice convergence, write `CONCEPT_CANDIDATE: none`.
 
 If `TESTS_PASSING: no`, do **not** return SUCCESS. That's either a FAIL (you couldn't get tests green) or a BOUNCE (the task as specified can't be satisfied). Returning SUCCESS with failing tests is a protocol violation the verifier will catch.
 
@@ -145,6 +155,7 @@ ERROR: <where it went wrong and why, one or two sentences>
 
 - No git writes (`add`, `commit`, `push`) — the work skill owns git
 - No protocol.md writes — the work skill owns protocol logging
+- No INDEX.md writes (neither `.agenthoff/knowledge/index.md` nor `.agenthoff/contexts/*/INDEX.md`) — the work skill owns indexes; touching an index is a structural violation the verifier will FAIL
 - No modeling (no strategic or tactical DDD changes — those are separate tasks of type `decision`)
 - No refining other tasks (even if they look under-refined — not your job)
 - No touching files outside the task's implied scope

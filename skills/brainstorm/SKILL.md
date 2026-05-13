@@ -33,7 +33,7 @@ The hard "no code" constraint, the dimensions to cover, the architecture foundat
 
 Check if `.agenthoff/vision.md` already exists in the target project:
 - **Doesn't exist** → fresh session, create `.agenthoff/` structure
-- **Exists** → ask the user: are we *revising* the vision (updating an existing one based on new learning) or *extending* it (adding a new dimension/subdomain)? Read the existing vision first so you don't re-ask what's already answered.
+- **Exists** → ask the user: are we *revising* the vision (updating an existing one based on new learning) or *extending* it (adding a new dimension/subdomain)? Read the existing vision first so you don't re-ask what's already answered. Also read `.agenthoff/knowledge/index.md` (top-level catalog) and the first ~100 lines of `.agenthoff/knowledge/protocol.md` if they exist — recent activity context prevents you from re-litigating settled decisions during the revision/extension conversation.
 
 ## The Socratic loop
 
@@ -231,13 +231,25 @@ Then prepend right after the `---` on line 4:
 
 One entry per session, not one per exchange.
 
+## Indexes
+
+For each BC created during this session:
+- Create `contexts/<bc>/INDEX.md` from `references/index-template.md` (per-BC index, mostly empty initially).
+- Insert a line under `<!-- bc-list:start -->` in `.agenthoff/knowledge/index.md` (creating the file from the template first if needed).
+
+For any global ADR written during the strategic phase (vision-level decisions), insert under `<!-- adr-global:start -->` in the top-level index.
+
+For each `type: decision` / `type: spike` / `type: feature` task emitted during the architecture-foundation step, insert under the appropriate BC's `<!-- todo-list:start -->` and increment Todo count.
+
 ## What you leave behind
 
 At the end of a successful brainstorm:
 - `.agenthoff/vision.md` exists and is readable in under two minutes
 - `.agenthoff/context-map.md` exists if warranted
 - `.agenthoff/contexts/<name>/README.md` exists for each identified BC (frontend-bearing BCs note the styleguide-gate rule)
+- `.agenthoff/contexts/<name>/INDEX.md` exists for each identified BC (per-BC catalog, mostly empty at this point)
 - `.agenthoff/contexts/infrastructure/README.md` exists unconditionally (unless the user explicitly skipped the foundation step), with the note that it owns globally-true infra concerns and BC-local infra stays in the originating BC
+- `.agenthoff/knowledge/index.md` exists with the BC list populated and global ADRs listed
 - `.agenthoff/knowledge/decisions/` contains ADRs for any foundational *strategic* decisions made during the conversation (tech-foundation ADRs come later, via the decision tasks)
 - One `type: decision` task per area the architect surfaced — globally-true ones in `contexts/infrastructure/todo/`, BC-local ones in the originating BC's `todo/`, each with the ADR draft in Notes (or "foundation skipped" noted in the protocol entry)
 - A `type: spike` walking-skeleton task in `contexts/infrastructure/todo/`, depending on every decision task — the project's first prototype lives here
