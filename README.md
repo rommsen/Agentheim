@@ -37,14 +37,28 @@ To update manually:
 
 The first command refreshes the marketplace's view of the source repo, the second pulls the new plugin version into your project, and the third reloads skills/hooks so the change is live in the current session.
 
-### Migrating from agenthoff
+### Migrating from older versions
 
-If you previously installed this as `agenthoff`:
+**From `agenthoff` (pre-0.5.0 plugin name):**
 
 1. `/plugin uninstall agenthoff@agenthoff` in each project that had it.
 2. Install `agentheim` as shown above.
 3. In each consumer project that has accumulated state, rename the state directory: `mv .agenthoff .agentheim`. All skills and agents read from `.agentheim/` now.
 4. Spoken TTS notifications moved to a separate plugin — see [Spoken notifications](#spoken-notifications) below.
+
+**Backfilling the memory-layer indexes (any project with state predating 0.6.0):**
+
+0.6.0 introduces a memory layer — `.agentheim/knowledge/index.md` at the top and `INDEX.md` inside each BC — that `model`, `work`, and `research` keep up-to-date as they run. For projects that already have tasks, ADRs, or research from earlier versions, run the one-shot backfill to materialize those indexes from existing artifacts:
+
+From a PowerShell prompt (Windows PowerShell 5.1 or PowerShell 7+):
+
+```
+.\scripts\backfill-indexes.ps1 -ProjectRoot <path-to-your-project>
+```
+
+From `cmd` or a non-PowerShell shell, wrap it: `powershell -File scripts\backfill-indexes.ps1 -ProjectRoot <path-to-your-project>` (or `pwsh -File ...` if you have PowerShell 7).
+
+The script is idempotent and replaces only the marker-delimited sections, so hand-edits outside markers survive. Pass `-DryRun` to preview. From then on the skills maintain the indexes incrementally.
 
 ## The four skills
 
@@ -54,7 +68,7 @@ Skills auto-trigger from natural-language phrases — no slash commands to memor
 |---|---|---|
 | **brainstorm** | "let's brainstorm", "start a new project", "create a vision", "model this from scratch" | `.agentheim/vision.md` (+ `context-map.md` when warranted). Closes with an architecture foundation pass that emits `type: decision` tasks, a walking-skeleton spike, and (when frontend exists) a styleguide task. No code yet — those land in `todo/` for `work` to execute. |
 | **model** | "I have an idea", "capture this", "refine the auth backlog", "promote X to todo", "there's a bug" | Task markdown files in `contexts/<bc>/backlog\|todo/` with status, dependencies, acceptance criteria. |
-| **work** | "start working", "execute the todo", "let's go", "pick up where you left off" | Code, commits, ADRs. Parallel workers respect the dependency DAG. |
+| **work** | "start working", "execute the todo", "let's go", "pick up where you left off" | Code, commits, ADRs. Parallel workers respect the dependency DAG. Each worker runs TDD (red-green-refactor) by default, and every `SUCCESS` passes through a fresh-context **verifier** agent before the commit. |
 | **research** | "research X", "state of the art for", "compare options for" | A markdown report in `.agentheim/knowledge/research/`. Cited by tasks and ADRs. |
 
 ## The workflow
@@ -104,17 +118,22 @@ All state for a project lives in `.agentheim/` inside that project — never in 
 ├── contexts/
 │   └── <bounded-context>/
 │       ├── README.md                   # ubiquitous language, aggregates, events
+│       ├── INDEX.md                    # auto-maintained catalog of this BC
 │       ├── backlog/                    # captured, not yet refined
 │       ├── todo/                       # ready to work
 │       ├── doing/                      # in flight (claimed by a worker)
-│       └── done/                       # completed, linked to commit SHA
+│       ├── done/                       # completed, linked to commit SHA
+│       └── concepts/                   # opt-in synthesis pages (rich-domain BCs)
 └── knowledge/
+    ├── index.md                        # top-level catalog (BCs, global ADRs, cross-BC research)
     ├── protocol.md                     # chronological diary, newest on top
-    ├── adrs/                           # architectural decision records
+    ├── decisions/                      # ADRs (global + BC-scoped)
     └── research/                       # research reports
 ```
 
-Tasks are plain markdown with frontmatter (`id`, `status`, `depends_on`, `type`). One task = one commit, made by the work skill after the worker reports `SUCCESS`. Workers return a strict `RESULT/TASK_ID/SUMMARY/FILES_CHANGED/...` format to keep the orchestrator context lean across long batches.
+Tasks are plain markdown with frontmatter (`id`, `status`, `depends_on`, `type`). One task = one commit, made by the work skill after the worker reports `SUCCESS` *and* the verifier returns `PASS`. Workers return a strict `RESULT/TASK_ID/SUMMARY/FILES_CHANGED/...` format to keep the orchestrator context lean across long batches.
+
+The `INDEX.md` per BC and the top-level `knowledge/index.md` are the **memory layer**: skills consult them for prior-art lookup before capture, for dependency hints, and for surfacing concept candidates. They're maintained incrementally by `model`/`work`/`research`; the backfill script in [Migrating from older versions](#migrating-from-older-versions) rebuilds them for pre-existing state.
 
 Scaffolding is English; your own domain language can be in any language.
 
@@ -126,9 +145,9 @@ Want Claude Code to speak its end-of-turn summaries and attention prompts aloud?
 
 ```
 .claude-plugin/plugin.json         # plugin manifest
-agents/                            # orchestrator + specialists
-skills/                            # brainstorm, model, research, work
-scripts/backfill-indexes.ps1       # rebuilds .agentheim/ indexes from contexts/
+agents/                            # orchestrator + specialists (incl. verifier)
+skills/                            # brainstorm, model, research, work, test-driven-development, verification-before-completion
+scripts/backfill-indexes.ps1       # one-shot rebuild of .agentheim/ indexes for projects predating 0.6.0
 evals/                             # benchmarks against other harnesses
 references/                        # design notes and source material
 ```
