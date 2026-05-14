@@ -7,11 +7,11 @@ A DDD-flavored agentic harness for Claude Code. Installed as a plugin once, used
 From inside Claude Code, in the project where you want the plugin:
 
 ```
-/plugin marketplace add <path-to-this-repo>
+/plugin marketplace add heimeshoff/agentheim
 /plugin install agentheim@agentheim
 ```
 
-`<path-to-this-repo>` is the absolute path to a local clone (e.g. `C:/src/heimeshoff/agentic/agentheim`) or a `git` URL. The first command registers this repo as a marketplace; the second installs the plugin from it. Restart Claude Code afterward so hooks and skills are picked up.
+The first command registers this repo as a marketplace — Claude Code clones it from GitHub for you, so no local download is needed. The `owner/repo` shorthand resolves to GitHub; the full `https://github.com/heimeshoff/agentheim` URL works too. The second command installs the plugin from the registered marketplace. Restart Claude Code afterward so hooks and skills are picked up.
 
 ### Updates
 
@@ -21,7 +21,7 @@ When you change anything that consumer projects should pick up — a skill, an a
 
 If you'd rather not bump by hand, omit the `version` field entirely and Claude Code falls back to the git commit SHA — every commit then counts as a new version. The trade-off is that consumers see noise from every internal commit, not just intentional releases.
 
-After committing (and pushing, if the marketplace points at a `git` URL rather than a local path), consumers can pull the change with the steps below.
+After committing and pushing to GitHub, consumers can pull the change with the steps below. Tagging the release (`git tag v0.6.0 && git push --tags`) is good practice so versions are pinnable.
 
 #### Pulling a change (consumer side)
 
