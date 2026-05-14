@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agentheim — How the Workflow Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f4f1ea;
+    --paper-2: #ebe6da;
+    --card: #ffffff;
+    --ink: #1c1a17;
+    --ink-soft: #4a4640;
+    --ink-faint: #7d776c;
+    --line: #d8d2c4;
+    --line-strong: #b8b1a0;
+
+    --brainstorm: #c2691a;
+    --brainstorm-bg: #fbeede;
+    --model: #6d3bd1;
+    --model-bg: #efe8fb;
+    --research: #0c8478;
+    --research-bg: #ddf1ee;
+    --work: #2f8a3e;
+    --work-bg: #e0f0e1;
+    --orch: #4a5568;
+    --orch-bg: #e7e9ee;
+    --danger: #c0392b;
+
+    --shadow: 0 1px 2px rgba(28,26,23,.04), 0 6px 22px rgba(28,26,23,.07);
+    --shadow-lg: 0 2px 6px rgba(28,26,23,.06), 0 18px 50px rgba(28,26,23,.12);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(28,26,23,.045) 1px, transparent 0);
+    background-size: 26px 26px;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  h1, h2, h3, .display { font-family: 'Fraunces', Georgia, serif; }
+
+  /* ---------- NAV ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(244,241,234,.86);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .wrap { display: flex; align-items: center; gap: 8px; height: 58px; flex-wrap: wrap; }
+  nav .brand { font-family: 'Fraunces', serif; font-weight: 900; font-size: 19px; margin-right: auto; letter-spacing: -.01em; }
+  nav .brand span { color: var(--brainstorm); }
+  nav a {
+    font-size: 12.5px; font-weight: 600; color: var(--ink-soft); text-decoration: none;
+    padding: 6px 11px; border-radius: 8px; transition: background .15s, color .15s;
+  }
+  nav a:hover { background: var(--paper-2); color: var(--ink); }
+
+  /* ---------- HERO ---------- */
+  header.hero { padding: 78px 0 54px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--brainstorm);
+    margin-bottom: 20px;
+  }
+  header.hero h1 {
+    font-size: clamp(46px, 7vw, 88px); font-weight: 900; line-height: 1.02;
+    letter-spacing: -.025em; margin-bottom: 22px;
+  }
+  header.hero h1 em { font-style: italic; font-weight: 400; color: var(--ink-soft); }
+  header.hero p.lead {
+    font-size: 19px; color: var(--ink-soft); max-width: 660px; line-height: 1.65;
+  }
+  header.hero .brand-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: clamp(72px, 12vw, 150px); font-weight: 900; line-height: .98;
+    letter-spacing: -.035em; margin-bottom: 18px;
+  }
+  header.hero .brand-title span { color: var(--brainstorm); }
+  header.hero p.tagline {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: clamp(28px, 3.6vw, 46px); font-weight: 400; line-height: 1.2;
+    color: var(--ink-soft); max-width: 680px; margin-bottom: 24px;
+  }
+  header.hero p.tagline em { font-style: italic; color: var(--ink); }
+  header.hero p.lead b { color: var(--ink); font-weight: 700; }
+  .legend { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 34px; }
+  .legend .item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .dot { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+
+  /* ---------- SECTION SCAFFOLD ---------- */
+  section { padding: 56px 0; border-top: 1px solid var(--line); }
+  .sec-head { margin-bottom: 40px; max-width: 720px; }
+  .sec-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;
+    color: var(--ink-faint); letter-spacing: .1em;
+  }
+  .sec-head h2 { font-size: clamp(30px, 4vw, 42px); font-weight: 600; letter-spacing: -.02em; margin: 6px 0 12px; }
+  .sec-head p { font-size: 16.5px; color: var(--ink-soft); }
+
+  /* ---------- THE MASTER PIPELINE ---------- */
+  .pipeline {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow-lg); padding: 38px 34px 30px;
+  }
+  .pipe-row { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; align-items: stretch; gap: 0; }
+  .stage {
+    border-radius: 12px; padding: 20px 18px; border: 1.5px solid; position: relative;
+    display: flex; flex-direction: column; gap: 7px; min-height: 156px;
+  }
+  .stage .tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .12em;
+  }
+  .stage h3 { font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+  .stage p { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+  .stage .when { margin-top: auto; font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: var(--ink-faint); }
+  .stage.s-brainstorm { background: var(--brainstorm-bg); border-color: var(--brainstorm); }
+  .stage.s-brainstorm .tag, .stage.s-brainstorm h3 { color: var(--brainstorm); }
+  .stage.s-model { background: var(--model-bg); border-color: var(--model); }
+  .stage.s-model .tag, .stage.s-model h3 { color: var(--model); }
+  .stage.s-research { background: var(--research-bg); border-color: var(--research); }
+  .stage.s-research .tag, .stage.s-research h3 { color: var(--research); }
+  .stage.s-work { background: var(--work-bg); border-color: var(--work); }
+  .stage.s-work .tag, .stage.s-work h3 { color: var(--work); }
+
+  .arrow { display: flex; align-items: center; justify-content: center; padding: 0 4px; color: var(--line-strong); }
+  .arrow svg { width: 38px; height: 24px; }
+
+  .pipe-foundation {
+    margin-top: 22px; border: 1.5px dashed var(--line-strong); border-radius: 12px;
+    background: var(--paper-2); padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .pipe-foundation .fl {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; flex: none;
+  }
+  .pipe-foundation .fitems { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500;
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 4px 12px; color: var(--ink-soft);
+  }
+  .pipe-note { font-size: 12.5px; color: var(--ink-faint); margin-left: auto; }
+
+  .loopback {
+    text-align: center; margin-top: 16px; font-size: 12.5px; color: var(--model);
+    font-weight: 600; font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ---------- GENERIC CARD ---------- */
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 28px;
+  }
+  .card-grid { display: grid; gap: 20px; }
+  .accent-bar { height: 4px; border-radius: 4px; width: 46px; margin-bottom: 16px; }
+
+  /* skill detail block */
+  .skill-block { display: grid; grid-template-columns: 270px 1fr; gap: 0; overflow: hidden; }
+  .skill-block .side {
+    padding: 30px 26px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .skill-block .side .kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase;
+  }
+  .skill-block .side h3 { font-size: 30px; font-weight: 600; letter-spacing: -.02em; }
+  .skill-block .side .summary { font-size: 13.5px; color: var(--ink-soft); }
+  .skill-block .side .meta {
+    margin-top: auto; font-size: 11.5px; font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-faint); line-height: 1.8;
+  }
+  .skill-block .side .meta b { color: var(--ink-soft); font-weight: 600; }
+  .skill-block .body { padding: 30px 30px; background: var(--card); }
+  .b-brainstorm .side { background: var(--brainstorm-bg); }
+  .b-brainstorm .kicker, .b-brainstorm h3 { color: var(--brainstorm); }
+  .b-model .side { background: var(--model-bg); }
+  .b-model .kicker, .b-model h3 { color: var(--model); }
+  .b-research .side { background: var(--research-bg); }
+  .b-research .kicker, .b-research h3 { color: var(--research); }
+  .b-work .side { background: var(--work-bg); }
+  .b-work .kicker, .b-work h3 { color: var(--work); }
+
+  .step-list { display: flex; flex-direction: column; gap: 2px; }
+  .step {
+    display: grid; grid-template-columns: 30px 1fr; gap: 14px; padding: 11px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .step:last-child { border-bottom: none; }
+  .step .n {
+    width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center;
+    justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    font-weight: 600; color: #fff; flex: none;
+  }
+  .step .txt strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 1px; }
+  .step .txt span { font-size: 13px; color: var(--ink-soft); }
+  .n-brainstorm { background: var(--brainstorm); }
+  .n-model { background: var(--model); }
+  .n-research { background: var(--research); }
+  .n-work { background: var(--work); }
+
+  /* three-action split (model) */
+  .actions3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  .action {
+    border: 1.5px solid var(--model); border-radius: 11px; padding: 16px; background: var(--model-bg);
+  }
+  .action h4 {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600;
+    color: var(--model); letter-spacing: .06em; margin-bottom: 7px;
+  }
+  .action p { font-size: 12.5px; color: var(--ink-soft); }
+  .action .out {
+    margin-top: 9px; font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- MODES GRID ---------- */
+  .modes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .mode {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .mode::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--model);
+  }
+  .mode .mname { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; margin-bottom: 2px; }
+  .mode .mdefault {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
+    color: var(--model); letter-spacing: .08em; text-transform: uppercase;
+  }
+  .mode p { font-size: 12.8px; color: var(--ink-soft); margin-top: 8px; }
+  .mode .mline { font-style: italic; color: var(--ink-faint); font-size: 12.5px; margin-top: 8px; padding-left: 10px; border-left: 2px solid var(--line); }
+
+  /* ---------- ORCHESTRATION HUB ---------- */
+  .hub {
+    display: grid; grid-template-columns: 1fr 320px 1fr; gap: 0; align-items: center;
+  }
+  .hub-callers, .hub-specialists { display: flex; flex-direction: column; gap: 12px; }
+  .caller-box, .spec-box {
+    border-radius: 10px; padding: 13px 16px; font-size: 13px; box-shadow: var(--shadow);
+  }
+  .caller-box {
+    background: var(--card); border: 1.5px solid var(--line-strong);
+  }
+  .caller-box .cn { font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .caller-box .cd { font-size: 11.5px; color: var(--ink-faint); }
+  .caller-box.cc-brainstorm { border-color: var(--brainstorm); }
+  .caller-box.cc-brainstorm .cn { color: var(--brainstorm); }
+  .caller-box.cc-model { border-color: var(--model); }
+  .caller-box.cc-model .cn { color: var(--model); }
+  .caller-box.cc-work { border-color: var(--work); }
+  .caller-box.cc-work .cn { color: var(--work); }
+
+  .hub-core {
+    background: var(--orch); color: #fff; border-radius: 16px; padding: 26px 22px;
+    text-align: center; box-shadow: var(--shadow-lg); margin: 0 26px;
+  }
+  .hub-core .hc-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; letter-spacing: .16em;
+    text-transform: uppercase; opacity: .65;
+  }
+  .hub-core h3 { font-size: 26px; font-weight: 600; margin: 4px 0 8px; color: #fff; }
+  .hub-core p { font-size: 12.5px; opacity: .82; line-height: 1.55; }
+  .hub-core .hc-rule {
+    margin-top: 14px; padding-top: 13px; border-top: 1px solid rgba(255,255,255,.18);
+    font-size: 11.5px; font-family: 'JetBrains Mono', monospace; opacity: .7;
+  }
+
+  .spec-box { background: var(--orch-bg); border: 1px solid var(--line); }
+  .spec-box .sn { font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--orch); }
+  .spec-box .sd { font-size: 11.5px; color: var(--ink-faint); }
+
+  .hub-label {
+    text-align: center; font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-faint); letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* ---------- WORK LOOP ---------- */
+  .phases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+  .phase {
+    border: 1.5px solid var(--work); border-radius: 11px; background: var(--work-bg); padding: 16px;
+  }
+  .phase .pn {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    color: var(--work); letter-spacing: .08em;
+  }
+  .phase h4 { font-size: 15px; font-weight: 600; margin: 4px 0 6px; letter-spacing: -.01em; }
+  .phase p { font-size: 12px; color: var(--ink-soft); }
+
+  /* verification flow */
+  .verify-flow {
+    background: var(--paper-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 24px; margin-top: 8px;
+  }
+  .verify-flow h4 {
+    font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; margin-bottom: 4px;
+  }
+  .verify-flow .vsub { font-size: 13px; color: var(--ink-soft); margin-bottom: 20px; }
+  .vrow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 0; }
+  .vnode {
+    background: var(--card); border: 1.5px solid var(--line-strong); border-radius: 10px;
+    padding: 14px; text-align: center; box-shadow: var(--shadow);
+  }
+  .vnode .vt { font-weight: 700; font-size: 13.5px; font-family: 'JetBrains Mono', monospace; }
+  .vnode .vd { font-size: 11.5px; color: var(--ink-faint); margin-top: 2px; }
+  .vnode.worker { border-color: var(--work); }
+  .vnode.worker .vt { color: var(--work); }
+  .vnode.verifier { border-color: var(--orch); }
+  .vnode.verifier .vt { color: var(--orch); }
+  .vnode.commit { border-color: var(--work); background: var(--work-bg); }
+  .vnode.commit .vt { color: var(--work); }
+  .vverdicts { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 18px; }
+  .verdict { border-radius: 9px; padding: 12px 14px; font-size: 12px; border: 1.5px solid; }
+  .verdict .vlabel { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 12px; margin-bottom: 3px; }
+  .verdict.pass { border-color: var(--work); background: var(--work-bg); }
+  .verdict.pass .vlabel { color: var(--work); }
+  .verdict.fail { border-color: var(--danger); background: #f9e6e3; }
+  .verdict.fail .vlabel { color: var(--danger); }
+  .verdict.skip { border-color: var(--line-strong); background: var(--card); }
+  .verdict.skip .vlabel { color: var(--ink-faint); }
+
+  /* TDD mini */
+  .tdd { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 18px; }
+  .tdd-step { border-radius: 10px; padding: 14px; border: 1.5px solid; }
+  .tdd-step h5 { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; margin-bottom: 4px; }
+  .tdd-step p { font-size: 11.8px; color: var(--ink-soft); }
+  .tdd-step.red { border-color: var(--danger); background: #f9e6e3; }
+  .tdd-step.red h5 { color: var(--danger); }
+  .tdd-step.green { border-color: var(--work); background: var(--work-bg); }
+  .tdd-step.green h5 { color: var(--work); }
+  .tdd-step.refactor { border-color: var(--model); background: var(--model-bg); }
+  .tdd-step.refactor h5 { color: var(--model); }
+
+  /* ---------- TASK LIFECYCLE ---------- */
+  .lifecycle { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; align-items: center; }
+  .lc-node {
+    border-radius: 11px; padding: 18px 16px; text-align: center; border: 1.5px solid var(--line-strong);
+    background: var(--card); box-shadow: var(--shadow);
+  }
+  .lc-node .lcname { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; }
+  .lc-node .lcd { font-size: 11.5px; color: var(--ink-faint); margin-top: 3px; }
+  .lc-node .lcby { font-size: 10.5px; font-family: 'JetBrains Mono', monospace; margin-top: 7px; padding-top: 6px; border-top: 1px dashed var(--line); color: var(--ink-soft); }
+  .lc-bounce {
+    text-align: center; margin-top: 14px; font-size: 12px; color: var(--danger);
+    font-family: 'JetBrains Mono', monospace; font-weight: 600;
+  }
+
+  /* ---------- WORKED EXAMPLE ---------- */
+  .example-track { display: flex; flex-direction: column; gap: 0; }
+  .ex-step {
+    display: grid; grid-template-columns: 54px 1fr; gap: 18px; position: relative;
+  }
+  .ex-step:not(:last-child) .ex-marker::after {
+    content: ""; position: absolute; left: 50%; top: 38px; bottom: -2px;
+    width: 2px; background: var(--line-strong); transform: translateX(-50%);
+  }
+  .ex-marker { position: relative; display: flex; justify-content: center; }
+  .ex-marker .em {
+    width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center;
+    justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    font-size: 15px; color: #fff; z-index: 1;
+  }
+  .ex-body { padding-bottom: 26px; }
+  .ex-body .ex-skill {
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+  .ex-body h4 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 1px 0 5px; }
+  .ex-body p { font-size: 13.5px; color: var(--ink-soft); }
+  .ex-body .ex-artifact {
+    margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    background: var(--paper-2); border: 1px solid var(--line); border-radius: 7px;
+    padding: 6px 11px; display: inline-block; color: var(--ink-soft);
+  }
+  .em-b { background: var(--model); } .skill-b { color: var(--model); }
+  .em-r { background: var(--research); } .skill-r { color: var(--research); }
+  .em-w { background: var(--work); } .skill-w { color: var(--work); }
+
+  /* ---------- KNOWLEDGE LAYER ---------- */
+  .knowledge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .kfile {
+    background: var(--card); border: 1px solid var(--line); border-radius: 11px;
+    padding: 16px 18px; box-shadow: var(--shadow);
+  }
+  .kfile .kpath {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+    color: var(--orch); margin-bottom: 4px;
+  }
+  .kfile p { font-size: 12.3px; color: var(--ink-soft); }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    border-top: 1px solid var(--line); padding: 40px 0 60px; margin-top: 20px;
+  }
+  footer p { font-size: 13px; color: var(--ink-faint); }
+  footer .fbig { font-family: 'Fraunces', serif; font-size: 22px; color: var(--ink); margin-bottom: 8px; font-weight: 600; }
+
+  .callout {
+    border-left: 3px solid var(--brainstorm); background: var(--brainstorm-bg);
+    padding: 14px 18px; border-radius: 0 10px 10px 0; font-size: 13.5px; color: var(--ink-soft);
+    margin-top: 18px;
+  }
+  .callout b { color: var(--ink); }
+  .callout.c-model { border-color: var(--model); background: var(--model-bg); }
+  .callout.c-work { border-color: var(--work); background: var(--work-bg); }
+  .callout.c-research { border-color: var(--research); background: var(--research-bg); }
+
+  /* responsive */
+  @media (max-width: 940px) {
+    .pipe-row, .lifecycle, .vrow { grid-template-columns: 1fr; gap: 10px; }
+    .pipe-row .arrow, .lifecycle .arrow, .vrow .arrow { transform: rotate(90deg); padding: 2px 0; }
+    .skill-block { grid-template-columns: 1fr; }
+    .modes-grid, .knowledge-grid, .actions3, .phases, .tdd, .vverdicts { grid-template-columns: 1fr; }
+    .hub { grid-template-columns: 1fr; gap: 18px; }
+    .hub-core { margin: 0; }
+    .wrap { padding: 0 20px; }
+  }
+
+  /* ---------- PRINT: one section per page ---------- */
+  @page { size: A4 landscape; margin: 8mm; }
+  @media print {
+    html { scroll-behavior: auto; }
+    body { background: var(--paper); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body::before { display: none; }
+    nav { display: none; }
+
+    header.hero, section, footer {
+      height: 194mm;
+      overflow: hidden;
+      border-top: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      break-after: page;
+      page-break-after: always;
+      break-inside: avoid;
+    }
+    footer { break-after: auto; page-break-after: auto; }
+
+    header.hero > .wrap,
+    section > .wrap,
+    footer > .wrap {
+      width: 1180px;
+      max-width: 1180px;
+      padding: 0 32px;
+      margin: 0;
+    }
+
+    /* per-section scale — tuned so each section fills one landscape page */
+    header.hero > .wrap    { zoom: 0.88; }
+    #pipeline > .wrap      { zoom: 0.84; }
+    #brainstorm > .wrap    { zoom: 0.82; }
+    #model > .wrap         { zoom: 0.70; }
+    #modes > .wrap         { zoom: 0.88; }
+    #research > .wrap      { zoom: 0.86; }
+    #work > .wrap          { zoom: 0.54; }
+    #orchestration > .wrap { zoom: 0.65; }
+    #lifecycle > .wrap     { zoom: 0.88; }
+    #example > .wrap       { zoom: 0.54; }
+    #knowledge > .wrap     { zoom: 0.88; }
+    footer > .wrap         { zoom: 0.88; }
+
+    .pipeline, .card, .stage, .mode, .caller-box, .spec-box,
+    .vnode, .lc-node, .kfile, .hub-core { box-shadow: none; }
+
+    /* the print viewport is narrow enough to trip the mobile
+       breakpoint — restore the widescreen layouts explicitly */
+    .pipe-row, .lifecycle { grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 0; }
+    .vrow { grid-template-columns: 1fr auto 1fr auto 1fr; gap: 0; }
+    .pipe-row .arrow, .lifecycle .arrow, .vrow .arrow { transform: none; padding: 0 4px; }
+    .skill-block { grid-template-columns: 270px 1fr; }
+    .modes-grid, .knowledge-grid, .actions3, .tdd, .vverdicts { grid-template-columns: repeat(3, 1fr); }
+    .phases { grid-template-columns: repeat(4, 1fr); }
+    .hub { grid-template-columns: 1fr 320px 1fr; gap: 0; }
+    .hub-core { margin: 0 26px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">Agent<span>heim</span></div>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#brainstorm">Brainstorm</a>
+    <a href="#model">Model</a>
+    <a href="#modes">Modes</a>
+    <a href="#research">Research</a>
+    <a href="#work">Work</a>
+    <a href="#orchestration">Orchestration</a>
+    <a href="#lifecycle">Task life</a>
+    <a href="#example">Example</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">A Domain-Driven Agentic Workflow</div>
+    <h1 class="brand-title">Agent<span>heim</span></h1>
+    <p class="tagline">Bounded contexts and ubiquitous language — from a thought to <em>committed code</em>.</p>
+    <p class="lead">
+      Agentheim makes <b>domain-driven design</b> the spine of the whole workflow: every idea is
+      modeled into the right <b>bounded context</b> and described in the domain's own
+      <b>ubiquitous language</b> before any code is written. Four skills, one orchestrator, and a
+      handful of specialist agents keep the model and the code in sync.
+    </p>
+    <div class="legend">
+      <div class="item"><span class="dot" style="background:var(--brainstorm)"></span>Brainstorm</div>
+      <div class="item"><span class="dot" style="background:var(--model)"></span>Model</div>
+      <div class="item"><span class="dot" style="background:var(--research)"></span>Research</div>
+      <div class="item"><span class="dot" style="background:var(--work)"></span>Work</div>
+      <div class="item"><span class="dot" style="background:var(--orch)"></span>Orchestrator &amp; specialists</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MASTER PIPELINE ============ -->
+<section id="pipeline">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">01 / THE BIG PICTURE</div>
+      <h2>Four skills, one direction of travel</h2>
+      <p>
+        <b>Brainstorm</b> runs once to give the project a shape. <b>Model</b> then runs
+        continuously, turning thoughts into refined tasks. <b>Research</b> is pulled in on
+        demand whenever knowledge runs out. <b>Work</b> loops over the ready tasks and ships them.
+      </p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipe-row">
+        <div class="stage s-brainstorm">
+          <div class="tag">/brainstorm</div>
+          <h3>Brainstorm</h3>
+          <p>Socratic vision session. Defines purpose, users, bounded contexts. <b>Writes no code.</b></p>
+          <div class="when">RUNS ONCE — at the start</div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 38 24"><path d="M2 12h30M26 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="stage s-model">
+          <div class="tag">/model</div>
+          <h3>Model</h3>
+          <p>Capture · Refine · Promote. Every idea becomes a task file in the right context.</p>
+          <div class="when">RUNS CONTINUOUSLY</div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 38 24"><path d="M2 12h30M26 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="stage s-research">
+          <div class="tag">/research</div>
+          <h3>Research</h3>
+          <p>Web investigation when the room hits an "I don't know enough" wall. Produces a cited report.</p>
+          <div class="when">RUNS ON DEMAND</div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 38 24"><path d="M2 12h30M26 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="stage s-work">
+          <div class="tag">/work</div>
+          <h3>Work</h3>
+          <p>Parallel, dependency-aware worker loop. TDD + a verifier gate before every commit.</p>
+          <div class="when">RUNS AS A LOOP</div>
+        </div>
+      </div>
+
+      <div class="loopback">↻ &nbsp; Work can spawn new backlog items · Model keeps feeding todo · the loop never formally "ends"</div>
+
+      <div class="pipe-foundation">
+        <div class="fl">The knowledge layer<br />everything reads &amp; writes</div>
+        <div class="fitems">
+          <span class="chip">vision.md</span>
+          <span class="chip">context-map.md</span>
+          <span class="chip">contexts/&lt;bc&gt;/</span>
+          <span class="chip">knowledge/decisions/ — ADRs</span>
+          <span class="chip">knowledge/research/</span>
+          <span class="chip">knowledge/protocol.md</span>
+          <span class="chip">INDEX.md ×N</span>
+        </div>
+        <div class="pipe-note">Markdown only — reviewable before any code runs</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BRAINSTORM ============ -->
+<section id="brainstorm">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">02 / SKILL ONE</div>
+      <h2>Brainstorm — finding the shape</h2>
+      <p>A Socratic sparring session, not a scribe. The user leaves feeling they <em>discovered</em>
+        the shape of the thing. The hard rule: <b>no code</b> — every output is reviewable markdown.</p>
+    </div>
+
+    <div class="card skill-block b-brainstorm">
+      <div class="side">
+        <div class="kicker">/brainstorm</div>
+        <h3>Socratic Vision Session</h3>
+        <div class="summary">Asks one question at a time across eight dimensions — purpose, users, the problem,
+          the domain language, success, non-goals, constraints, and the seeds of bounded contexts.</div>
+        <div class="meta">
+          <b>Triggers on:</b> "start a project",<br />"create a vision", "build X"<br /><br />
+          <b>Default mode:</b> Interrogator<br />
+          <b>Produces:</b> markdown, never code
+        </div>
+      </div>
+      <div class="body">
+        <div class="step-list">
+          <div class="step"><div class="n n-brainstorm">1</div><div class="txt"><strong>The Socratic loop</strong><span>Probe abstractions ("walk me through Alice's Tuesday"), surface conflations, question certainty. Stop when both sides describe the system in the same language.</span></div></div>
+          <div class="step"><div class="n n-brainstorm">2</div><div class="txt"><strong>Write vision.md</strong><span>Purpose · Users · The problem · What success looks like · Non-goals · Ubiquitous language seed · Open questions.</span></div></div>
+          <div class="step"><div class="n n-brainstorm">3</div><div class="txt"><strong>Write context-map.md — if warranted</strong><span>Only when the domain has more than one area of concern. Names the bounded contexts, classifies them core / supporting / generic, maps their relationships.</span></div></div>
+          <div class="step"><div class="n n-brainstorm">4</div><div class="txt"><strong>Architecture foundation pass</strong><span>The one structured exception to "no code is queued yet". Unconditionally creates the <code>infrastructure/</code> BC, then via the orchestrator runs the <b>architect</b> to surface load-bearing tech decisions.</span></div></div>
+          <div class="step"><div class="n n-brainstorm">5</div><div class="txt"><strong>Emit foundation tasks</strong><span>One <code>type: decision</code> task per area (global → infrastructure BC, BC-local → originating BC), one <code>type: spike</code> walking-skeleton, and a styleguide task if the vision implies any UI.</span></div></div>
+        </div>
+        <div class="callout">
+          <b>The walking skeleton</b> is the project's first prototype — feature-thin, architecture-thick.
+          It depends on every decision task, so the foundations are settled before the first real feature lands.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODEL ============ -->
+<section id="model">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">03 / SKILL TWO</div>
+      <h2>Model — the main entry point for ideas</h2>
+      <p>Every thought from here on enters through <b>Model</b> — a one-line bug, a feature request,
+        a refinement, a whole new subsystem. It does three things, and it routes deep thinking to the orchestrator.</p>
+    </div>
+
+    <div class="card skill-block b-model">
+      <div class="side">
+        <div class="kicker">/model</div>
+        <h3>Capture · Refine · Promote</h3>
+        <div class="summary">Decides which of three actions applies, routes the idea to the right bounded
+          context, and writes a task file with auto-populated backlinks.</div>
+        <div class="meta">
+          <b>Triggers on:</b> "I have an idea",<br />"there's a bug", "refine X",<br />"promote X to todo"<br /><br />
+          <b>Capture mode:</b> Facilitator<br />
+          <b>Refine mode:</b> Interrogator
+        </div>
+      </div>
+      <div class="body">
+        <div class="actions3">
+          <div class="action">
+            <h4>CAPTURE</h4>
+            <p>An idea arrives. Route it to a BC, run a prior-art lookup, decide refinement level.</p>
+            <div class="out">→ backlog/ or todo/</div>
+          </div>
+          <div class="action">
+            <h4>REFINE</h4>
+            <p>Deepen a backlog item via the orchestrator. Split it, sharpen acceptance criteria, pull in research.</p>
+            <div class="out">→ stays backlog/ or → todo/</div>
+          </div>
+          <div class="action">
+            <h4>PROMOTE</h4>
+            <p>Readiness check, then move. Concrete criteria, clear scope, dependencies known.</p>
+            <div class="out">→ backlog/ → todo/</div>
+          </div>
+        </div>
+        <div class="step-list">
+          <div class="step"><div class="n n-model">→</div><div class="txt"><strong>Routing: global vs BC-local</strong><span>The test — "if this BC didn't exist, would the change still need to happen?" Yes → <code>infrastructure/</code>. No → the originating BC.</span></div></div>
+          <div class="step"><div class="n n-model">→</div><div class="txt"><strong>Backlink lookup</strong><span>Before writing the task, the matcher scans BC and global indexes. It auto-populates <code>related_adrs</code>, <code>related_research</code>, and <code>prior_art</code> — so workers never arrive in isolation.</span></div></div>
+          <div class="step"><div class="n n-model">→</div><div class="txt"><strong>Delegate the hard thinking</strong><span>For anything non-trivial, Model hands off to the <b>orchestrator</b>, which routes to strategic / tactical / architect / research specialists and returns a refined task.</span></div></div>
+        </div>
+        <div class="callout c-model">
+          <b>Task types</b> carried in frontmatter: <code>feature · bug · refactor · chore · spike · decision</code>.
+          A <code>decision</code> task's deliverable is an ADR, not code — but it still flows through the same backlog discipline.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODES ============ -->
+<section id="modes">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">04 / THE CONVERSATIONAL MODES</div>
+      <h2>Six stances — same artifact, different conversation</h2>
+      <p>Modes apply only to <b>Brainstorm</b> and the conversational parts of <b>Model</b>
+        (Capture &amp; Refine). They change the <em>path</em> to the artifact, never its format.
+        The user switches them mid-session — "switch to challenger", "synthesize what we have".</p>
+    </div>
+
+    <div class="modes-grid">
+      <div class="mode">
+        <div class="mname">Interrogator</div>
+        <div class="mdefault">Default · Brainstorm + Refine</div>
+        <p>Naive, curious, critical questions — one at a time. The classic Socratic stance.</p>
+        <div class="mline">"What would have to be true for this to be wrong?"</div>
+      </div>
+      <div class="mode">
+        <div class="mname">Suggestor</div>
+        <div class="mdefault">For stuck rooms</div>
+        <p>Makes smart assumptions and concrete proposals. The user accepts, rejects, or refines.</p>
+        <div class="mline">"Sounds like you want X. Push back if your domain breaks that."</div>
+      </div>
+      <div class="mode">
+        <div class="mname">Challenger</div>
+        <div class="mdefault">Use sparingly</div>
+        <p>Adversarial skeptic. Plays a stakeholder who isn't buying it — presses the weakest part.</p>
+        <div class="mline">"This breaks the moment a user has two accounts. Convince me."</div>
+      </div>
+      <div class="mode">
+        <div class="mname">Storyteller</div>
+        <div class="mdefault">When it's gone abstract</div>
+        <p>Narrates concrete scenarios with named characters to pull the conversation down to specifics.</p>
+        <div class="mline">"Tuesday morning. Alice opens the app before her coffee's done…"</div>
+      </div>
+      <div class="mode">
+        <div class="mname">Facilitator</div>
+        <div class="mdefault">Default · Model Capture</div>
+        <p>Scribe stance. Minimal interjection — the humans drive, the skill captures and structures.</p>
+        <div class="mline">"I'm hearing three points — A, B, C. Which do we go deeper on?"</div>
+      </div>
+      <div class="mode">
+        <div class="mname">Synthesizer</div>
+        <div class="mdefault">Periodic switch-into</div>
+        <p>Reflects back tensions, contradictions, and emergent themes. Best after a long stretch.</p>
+        <div class="mline">"Two things don't quite fit: X from earlier, Y just now. How do they relate?"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESEARCH ============ -->
+<section id="research">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">05 / SKILL THREE</div>
+      <h2>Research — how outside knowledge enters</h2>
+      <p>Research is about <em>understanding</em>, not deciding. It produces a cited report — never an ADR.
+        Decisions come later, in Model or Work, and they <em>cite</em> the report.</p>
+    </div>
+
+    <div class="card skill-block b-research">
+      <div class="side">
+        <div class="kicker">/research</div>
+        <h3>Web Investigation, Written Down</h3>
+        <div class="summary">The <b>researcher</b> agent runs a breadth pass, fetches the best sources,
+          cross-checks claims, and writes a structured report.</div>
+        <div class="meta">
+          <b>Triggers:</b> "research X",<br />"what's the state of the art",<br />or internally when brainstorm /<br />model / work hit a knowledge wall<br /><br />
+          <b>Output:</b> knowledge/research/
+        </div>
+      </div>
+      <div class="body">
+        <div class="step-list">
+          <div class="step"><div class="n n-research">1</div><div class="txt"><strong>Breadth, then depth</strong><span>WebSearch for a wide pass, then WebFetch on the most promising 3–7 sources. Independent angles run in parallel.</span></div></div>
+          <div class="step"><div class="n n-research">2</div><div class="txt"><strong>Cross-check &amp; write</strong><span>Single-source claims are flagged as such; disagreements between sources are named, not hidden. Report lands at <code>knowledge/research/&lt;slug&gt;-&lt;date&gt;.md</code>.</span></div></div>
+          <div class="step"><div class="n n-research">3</div><div class="txt"><strong>Link back — bidirectionally</strong><span>The task's Notes get a link, the task's <code>related_research</code> frontmatter gets the slug (so workers pre-load it), and the report's <code>related_tasks</code> gets the task id.</span></div></div>
+          <div class="step"><div class="n n-research">4</div><div class="txt"><strong>Index &amp; log</strong><span>BC-scoped reports go in the BC index; cross-cutting ones go global. A protocol entry records who requested it.</span></div></div>
+        </div>
+        <div class="callout c-research">
+          <b>The bidirectional link is the whole point.</b> It is how a research finding stops being a
+          dead document and becomes something a worker arrives already knowing — without re-deriving it.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WORK ============ -->
+<section id="work">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">06 / SKILL FOUR</div>
+      <h2>Work — the parallel, verified loop</h2>
+      <p>Work turns refined <code>todo/</code> tasks into real code. The orchestrating skill <b>never writes
+        code</b> — it scans, builds the dependency graph, dispatches workers, and owns git. Staying lean is
+        what lets it run long batches without exhausting context.</p>
+    </div>
+
+    <div class="card">
+      <div class="accent-bar" style="background:var(--work)"></div>
+      <div class="phases">
+        <div class="phase">
+          <div class="pn">PHASE 1</div>
+          <h4>Recovery check</h4>
+          <p>Inspect <code>doing/</code>. An interrupted task is resumed before any new dispatch.</p>
+        </div>
+        <div class="phase">
+          <div class="pn">PHASE 2</div>
+          <h4>Build the DAG</h4>
+          <p>Read every <code>depends_on</code>. A task is <em>ready</em> when its dependencies are <code>done/</code>. Cycles stop the run.</p>
+        </div>
+        <div class="phase">
+          <div class="pn">PHASE 3</div>
+          <h4>Conflict detection</h4>
+          <p>Two workers touching one file = merge pain. Conflicting tasks are demoted to the next wave. Cap: 3 parallel.</p>
+        </div>
+        <div class="phase">
+          <div class="pn">PHASE 4</div>
+          <h4>Batch dispatch</h4>
+          <p>Move tasks to <code>doing/</code>, spawn one <b>worker</b> per task in parallel, wait, verify, commit. Re-scan.</p>
+        </div>
+      </div>
+
+      <div class="tdd">
+        <div class="tdd-step red">
+          <h5>RED</h5>
+          <p>Each worker writes a failing test that encodes one acceptance criterion — and confirms it fails for the right reason.</p>
+        </div>
+        <div class="tdd-step green">
+          <h5>GREEN</h5>
+          <p>The minimum production code to pass. Not the elegant code — the minimum.</p>
+        </div>
+        <div class="tdd-step refactor">
+          <h5>REFACTOR</h5>
+          <p>Improve structure with the test green. Repeat per criterion. TDD is the worker's default discipline.</p>
+        </div>
+      </div>
+
+      <div class="verify-flow">
+        <h4>The verification gate</h4>
+        <div class="vsub">A worker returning SUCCESS is <em>not</em> a commit. Every success goes through a fresh-eyes
+          <b>verifier</b> agent — the structural defense against plausible-but-wrong code.</div>
+        <div class="vrow">
+          <div class="vnode worker">
+            <div class="vt">worker</div>
+            <div class="vd">writes code TDD-style, moves task to done/, returns SUCCESS</div>
+          </div>
+          <div class="arrow"><svg viewBox="0 0 38 24"><path d="M2 12h30M26 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="vnode verifier">
+            <div class="vt">verifier</div>
+            <div class="vd">reads the diff vs. acceptance criteria with no exposure to the worker's reasoning · runs the test suite</div>
+          </div>
+          <div class="arrow"><svg viewBox="0 0 38 24"><path d="M2 12h30M26 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="vnode commit">
+            <div class="vt">git commit</div>
+            <div class="vd">work owns git — one task, one commit, with the task id</div>
+          </div>
+        </div>
+        <div class="vverdicts">
+          <div class="verdict pass">
+            <div class="vlabel">VERDICT: PASS</div>
+            Work runs <code>git add</code> + commit, captures the SHA, logs "verified and completed".
+          </div>
+          <div class="verdict fail">
+            <div class="vlabel">VERDICT: FAIL</div>
+            Task rolls back to <code>doing/</code>, the verifier note is appended, a worker is re-dispatched.
+            Iteration 3 → escalate to the user.
+          </div>
+          <div class="verdict skip">
+            <div class="vlabel">VERDICT: SKIP</div>
+            Decision-only tasks, <code>--no-verify</code> runs, or non-git projects. Commit as on PASS.
+          </div>
+        </div>
+      </div>
+
+      <div class="callout c-work">
+        <b>Git and indexes are owned by Work alone</b> — never by workers or verifiers. Workers only move
+        files and write content; verifiers only read. That single rule is what makes the parallel batch safe.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ORCHESTRATION ============ -->
+<section id="orchestration">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">07 / THE ORCHESTRATION LAYER</div>
+      <h2>The orchestrator routes — it does not decide</h2>
+      <p>Skills don't talk to specialists directly. They hand a question to the <b>orchestrator</b>, which
+        picks which specialist(s) should answer, runs them (in parallel when independent), resolves conflicts,
+        and returns something concrete the caller can act on.</p>
+    </div>
+
+    <div class="card">
+      <div class="hub">
+        <div class="hub-callers">
+          <div class="hub-label">Callers</div>
+          <div class="caller-box cc-brainstorm">
+            <div class="cn">brainstorm</div>
+            <div class="cd">"run the architecture foundation pass"</div>
+          </div>
+          <div class="caller-box cc-model">
+            <div class="cn">model</div>
+            <div class="cd">"refine this task" · "decompose this idea"</div>
+          </div>
+          <div class="caller-box cc-work">
+            <div class="cn">work</div>
+            <div class="cd">"execute this todo task" — dispatches workers</div>
+          </div>
+        </div>
+
+        <div class="hub-core">
+          <div class="hc-tag">The Router</div>
+          <h3>orchestrator</h3>
+          <p>Takes a task + project context. Decides which specialists to consult, runs them in parallel
+            when their questions are independent, integrates results, drafts ADRs.</p>
+          <div class="hc-rule">Does no modeling, architecture, or coding itself</div>
+        </div>
+
+        <div class="hub-specialists">
+          <div class="hub-label">Specialists</div>
+          <div class="spec-box">
+            <div class="sn">strategic-modeler</div>
+            <div class="sd">Bounded contexts, the context map, core/supporting/generic, upstream/downstream</div>
+          </div>
+          <div class="spec-box">
+            <div class="sn">tactical-modeler</div>
+            <div class="sd">Aggregates, entities, value objects, events, invariants — inside one BC</div>
+          </div>
+          <div class="spec-box">
+            <div class="sn">architect</div>
+            <div class="sd">Persistence, messaging, transport, deployment, library choice, cross-cutting concerns</div>
+          </div>
+          <div class="spec-box">
+            <div class="sn">researcher</div>
+            <div class="sd">"We don't know enough from outside" — runs the research skill's investigation</div>
+          </div>
+          <div class="spec-box">
+            <div class="sn">worker</div>
+            <div class="sd">Concrete implementation of one refined task, TDD-style</div>
+          </div>
+          <div class="spec-box">
+            <div class="sn">verifier</div>
+            <div class="sd">Fresh-eyes audit of a worker's diff — read-only, emits PASS / FAIL / SKIP</div>
+          </div>
+        </div>
+      </div>
+      <div class="callout">
+        A feature often flows <b>strategic-modeler → tactical-modeler → architect → maybe researcher</b> —
+        but the orchestrator never mechanically runs all four. It picks based on what is actually uncertain,
+        and surfaces disagreements between specialists rather than silently picking one.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TASK LIFECYCLE ============ -->
+<section id="lifecycle">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">08 / THE TASK LIFECYCLE</div>
+      <h2>One task, four folders</h2>
+      <p>Every idea becomes a markdown file that physically moves between directories inside its bounded
+        context. The folder <em>is</em> the status — and which actor is allowed to move it is fixed.</p>
+    </div>
+
+    <div class="card">
+      <div class="lifecycle">
+        <div class="lc-node">
+          <div class="lcname">backlog/</div>
+          <div class="lcd">Captured but under-refined — needs thought, research, or splitting.</div>
+          <div class="lcby">model · CAPTURE</div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 38 24"><path d="M2 12h30M26 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="lc-node">
+          <div class="lcname">todo/</div>
+          <div class="lcd">Refined and ready — concrete acceptance criteria, clear scope, dependencies known.</div>
+          <div class="lcby">model · PROMOTE</div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 38 24"><path d="M2 12h30M26 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="lc-node">
+          <div class="lcname">doing/</div>
+          <div class="lcd">Claimed by a worker for this batch. Recovery check looks here first on the next run.</div>
+          <div class="lcby">work · Phase 4</div>
+        </div>
+        <div class="arrow"><svg viewBox="0 0 38 24"><path d="M2 12h30M26 5l8 7-8 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="lc-node">
+          <div class="lcname">done/</div>
+          <div class="lcd">Verified and committed. Frontmatter carries the commit SHA. Becomes prior art for future tasks.</div>
+          <div class="lcby">worker → verifier → work</div>
+        </div>
+      </div>
+      <div class="lc-bounce">↩ &nbsp; If a worker finds a task under-refined, it bounces it straight back to backlog/ — it never guesses</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WORKED EXAMPLE ============ -->
+<section id="example">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">09 / A WORKED EXAMPLE</div>
+      <h2>A bug that needs research</h2>
+      <p>The clearest way to see the whole rail in motion: you find a bug, it can't be fixed without
+        outside knowledge, and that knowledge has to reach the worker who fixes it.</p>
+    </div>
+
+    <div class="card">
+      <div class="example-track">
+        <div class="ex-step">
+          <div class="ex-marker"><div class="em em-b">1</div></div>
+          <div class="ex-body">
+            <div class="ex-skill skill-b">model · CAPTURE</div>
+            <h4>The bug is captured</h4>
+            <p>You say "there's a bug: X happens when Y." Model routes it to the right bounded context,
+              sets <code>type: bug</code> in the frontmatter, and — because it's not yet clear how to fix —
+              files it under <code>backlog/</code>.</p>
+            <div class="ex-artifact">contexts/&lt;bc&gt;/backlog/&lt;bc&gt;-014-bug.md &nbsp;·&nbsp; related_research: []</div>
+          </div>
+        </div>
+
+        <div class="ex-step">
+          <div class="ex-marker"><div class="em em-b">2</div></div>
+          <div class="ex-body">
+            <div class="ex-skill skill-b">model · REFINE</div>
+            <h4>Refinement hits a knowledge wall</h4>
+            <p>You refine the bug. Model delegates depth to the orchestrator — and the orchestrator (or you)
+              hits an "we don't know enough about X" wall. That is the explicit trigger for Research.</p>
+          </div>
+        </div>
+
+        <div class="ex-step">
+          <div class="ex-marker"><div class="em em-r">3</div></div>
+          <div class="ex-body">
+            <div class="ex-skill skill-r">research</div>
+            <h4>Research runs in parallel</h4>
+            <p>The researcher agent investigates while modeling continues on whatever doesn't depend on the
+              answer. It writes a cited report to the knowledge layer.</p>
+            <div class="ex-artifact">knowledge/research/&lt;slug&gt;-2026-05-14.md</div>
+          </div>
+        </div>
+
+        <div class="ex-step">
+          <div class="ex-marker"><div class="em em-r">4</div></div>
+          <div class="ex-body">
+            <div class="ex-skill skill-r">research · LINK BACK</div>
+            <h4>The findings attach to the task</h4>
+            <p>Bidirectional linking fires: the task's Notes get a link, its <code>related_research</code>
+              frontmatter gets the report slug, and the report's <code>related_tasks</code> gets the bug's id.
+              The research is now <em>part of the task</em>, not a document beside it.</p>
+            <div class="ex-artifact">&lt;bc&gt;-014-bug.md &nbsp;·&nbsp; related_research: [&lt;slug&gt;-2026-05-14]</div>
+          </div>
+        </div>
+
+        <div class="ex-step">
+          <div class="ex-marker"><div class="em em-b">5</div></div>
+          <div class="ex-body">
+            <div class="ex-skill skill-b">model · REFINE → PROMOTE</div>
+            <h4>The description gets sharper, then promoted</h4>
+            <p>With the findings folded in, Refine rewrites the bug — concrete root cause in Notes, testable
+              acceptance criteria. Now that it's genuinely ready, it's promoted to <code>todo/</code>.</p>
+            <div class="ex-artifact">contexts/&lt;bc&gt;/todo/&lt;bc&gt;-014-bug.md</div>
+          </div>
+        </div>
+
+        <div class="ex-step">
+          <div class="ex-marker"><div class="em em-w">6</div></div>
+          <div class="ex-body">
+            <div class="ex-skill skill-w">work · worker</div>
+            <h4>The worker arrives already knowing</h4>
+            <p>Work picks the bug up. The worker pre-loads <code>related_research</code> from the frontmatter —
+              it starts the fix already holding the research conclusion instead of re-deriving it. TDD turns the
+              bug repro into a failing test first, then green.</p>
+          </div>
+        </div>
+
+        <div class="ex-step">
+          <div class="ex-marker"><div class="em em-w">7</div></div>
+          <div class="ex-body">
+            <div class="ex-skill skill-w">work · verifier → commit</div>
+            <h4>Verified, then committed</h4>
+            <p>The verifier audits the diff against the acceptance criteria with fresh context and runs the
+              suite. On PASS, Work commits — one task, one commit — and the bug file lands in <code>done/</code>,
+              now itself prior art for the next related task.</p>
+            <div class="ex-artifact">bug(&lt;bc&gt;): fix X when Y [&lt;bc&gt;-014]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KNOWLEDGE LAYER ============ -->
+<section id="knowledge">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">10 / THE KNOWLEDGE LAYER</div>
+      <h2>The shared memory under everything</h2>
+      <p>All four skills and every agent read and write the same <code>.agentheim/</code> tree. It is what
+        keeps the workflow coherent across sessions — and it is all reviewable markdown.</p>
+    </div>
+
+    <div class="knowledge-grid">
+      <div class="kfile">
+        <div class="kpath">vision.md</div>
+        <p>Purpose, users, the problem, success, non-goals, ubiquitous language seed. Written by brainstorm.</p>
+      </div>
+      <div class="kfile">
+        <div class="kpath">context-map.md</div>
+        <p>The bounded contexts, their classification, and the relationships between them.</p>
+      </div>
+      <div class="kfile">
+        <div class="kpath">contexts/&lt;bc&gt;/</div>
+        <p>Per-context home: README (ubiquitous language), INDEX, and the backlog / todo / doing / done folders.</p>
+      </div>
+      <div class="kfile">
+        <div class="kpath">knowledge/decisions/</div>
+        <p>ADRs — scoped <code>global</code> or to a BC. Written by the orchestrator and workers, committed by work.</p>
+      </div>
+      <div class="kfile">
+        <div class="kpath">knowledge/research/</div>
+        <p>Cited research reports. Linked bidirectionally to the tasks and ADRs that cite them.</p>
+      </div>
+      <div class="kfile">
+        <div class="kpath">knowledge/protocol.md</div>
+        <p>The project's chronological diary — every capture, refine, batch, commit, and bounce, newest on top.</p>
+      </div>
+      <div class="kfile">
+        <div class="kpath">knowledge/index.md</div>
+        <p>Top-level catalog: current BCs, global ADRs, cross-BC research. The map skills read first.</p>
+      </div>
+      <div class="kfile">
+        <div class="kpath">contexts/&lt;bc&gt;/INDEX.md</div>
+        <p>Per-BC catalog of tasks, ADRs, research and concepts — kept current by model and work.</p>
+      </div>
+      <div class="kfile">
+        <div class="kpath">contexts/&lt;bc&gt;/concepts/</div>
+        <p>Opt-in synthesis pages — created only when work spots several artifacts converging on one concept.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="fbig">Agentheim — measure twice, cut once.</p>
+    <p>Brainstorm finds the shape · Model turns thoughts into tasks · Research fills the gaps ·
+       Work ships verified code. The orchestrator routes; the specialists think; the knowledge layer remembers.</p>
+  </div>
+</footer>
+
+</body>
+</html>
