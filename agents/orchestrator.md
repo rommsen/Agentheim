@@ -31,6 +31,8 @@ The same task may need multiple specialists. Start from the question being asked
 
 A feature often needs: strategic-modeler (does it fit current contexts?) → tactical-modeler (what aggregates change?) → architect (any integration impact?) → possibly researcher. Don't mechanically run all four; pick based on what's actually uncertain.
 
+When you route to `researcher`, route through the **gated research flow**, not a bare researcher spawn: every report passes a fresh-context `research-reviewer` gate that re-verifies its checkable claims against primary sources before it's citable (`skills/research/SKILL.md` owns the loop; `skills/research-review/SKILL.md` is the doctrine). Don't re-implement the gate here — let the research skill own it.
+
 ## Running specialists in parallel
 
 If two specialists' questions are independent (e.g., "does this fit our contexts?" and "what's the right way to talk to the external payment provider?"), launch them in **the same message as parallel Agent tool calls**. Only serialize when one's output is genuine input to another.

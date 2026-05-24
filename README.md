@@ -39,14 +39,14 @@ The first command refreshes the marketplace's view of the source repo, the secon
 
 ## The four skills
 
-Skills auto-trigger from natural-language phrases — no slash commands to memorize. The orchestrator agent routes work to specialists (strategic-modeler, tactical-modeler, architect, researcher, worker).
+Skills auto-trigger from natural-language phrases — no slash commands to memorize. The orchestrator agent routes work to specialists (strategic-modeler, tactical-modeler, architect, researcher, worker). Two of those specialists are paired with a fresh-context **gate** that re-checks their output before it's trusted: the `verifier` audits a worker's code, and the `research-reviewer` re-verifies a researcher's factual claims against primary sources.
 
 | Skill | Triggered by | Produces |
 |---|---|---|
 | **brainstorm** | "let's brainstorm", "start a new project", "create a vision", "model this from scratch" | `.agentheim/vision.md` (+ `context-map.md` when warranted). Closes with an architecture foundation pass that emits `type: decision` tasks, a walking-skeleton spike, and (when frontend exists) a styleguide task. No code yet — those land in `todo/` for `work` to execute. |
 | **model** | "I have an idea", "capture this", "refine the auth backlog", "promote X to todo", "there's a bug" | Task markdown files in `contexts/<bc>/backlog\|todo/` with status, dependencies, acceptance criteria. |
 | **work** | "start working", "execute the todo", "let's go", "pick up where you left off" | Code, commits, ADRs. Parallel workers respect the dependency DAG. Each worker runs TDD (red-green-refactor) by default, and every `SUCCESS` passes through a fresh-context **verifier** agent before the commit. |
-| **research** | "research X", "state of the art for", "compare options for" | A markdown report in `.agentheim/knowledge/research/`. Cited by tasks and ADRs. |
+| **research** | "research X", "state of the art for", "compare options for" | A markdown report in `.agentheim/knowledge/research/`. Every report passes through a fresh-context **research-reviewer** agent that re-verifies its checkable claims (versions, prices, package names, API surface) against primary sources before the report is citable. Cited by tasks and ADRs. |
 
 ## How the workflow works
 
@@ -93,8 +93,8 @@ Want Claude Code to speak its end-of-turn summaries and attention prompts aloud?
 
 ```
 .claude-plugin/plugin.json         # plugin manifest
-agents/                            # orchestrator + specialists (incl. verifier)
-skills/                            # brainstorm, model, research, work, test-driven-development, verification-before-completion
+agents/                            # orchestrator + specialists (incl. verifier, research-reviewer)
+skills/                            # brainstorm, model, research, work, test-driven-development, verification-before-completion, research-review
 scripts/backfill-indexes.ps1       # one-shot rebuild of .agentheim/ indexes for projects predating 0.6.0
 evals/                             # benchmarks against other harnesses
 references/                        # design notes and source material
