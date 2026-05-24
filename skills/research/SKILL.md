@@ -1,6 +1,6 @@
 ---
 name: research
-description: Use whenever the user or another skill needs external information gathered from the web — state of the art on a topic, comparison of approaches, documentation for a library, domain knowledge from outside the codebase. Triggers on phrases like "research X", "find out about", "what's the state of the art for", "look up how others do", "compare options for", "gather info on", and also triggers internally when brainstorm or model hits an "I don't know enough" wall. Produces a research report in .agentheim/knowledge/research/ that can be referenced from tasks, ADRs, and modeling sessions.
+description: Use whenever the user or another skill needs external information gathered from the web — state of the art on a topic, comparison of approaches, documentation for a library, domain knowledge from outside the codebase. Triggers on phrases like "research X", "find out about", "what's the state of the art for", "look up how others do", "compare options for", "gather info on", and also triggers internally when brainstorm or model hits an "I don't know enough" wall. Produces a research report in .agentheim/knowledge/research/ that can be referenced from tasks, ADRs, and modeling sessions. Every report passes through a fresh-context `research-reviewer` agent (see `skills/research-review/SKILL.md`) that re-verifies its checkable claims against primary sources before the report is citable.
 ---
 
 # Research — Web Investigation with Written Output
@@ -29,6 +29,8 @@ Delegate to the `researcher` agent. The researcher will:
 4. Cross-check claims across sources — single-source claims get flagged as such
 5. Write the report
 
+When the researcher returns, the report is **not yet citable.** Every report goes through the **review gate** (below) before any task, ADR, or modeling session is allowed to cite it. Keep this gate inside the research skill — at the researcher-spawn boundary — so every caller (`brainstorm`, `model`, `work` all trigger research internally) inherits it without each one re-implementing the check.
+
 ## Report format
 
 Files land at `.agentheim/knowledge/research/<slug>-<date>.md`:
@@ -56,9 +58,65 @@ between sources are named, not hidden.
 ## Sources
 Numbered list with URL, title, and one-line relevance note per source.
 
+## Unverified claims
+Only present when the review gate hit its cap with claims no primary
+source could settle. Each is also marked inline in Findings as
+`⚠️ UNVERIFIED`. (Omit this section entirely when there are none.)
+
 ## Open questions
 Things we wanted to answer and couldn't, or that would need primary research.
 ```
+
+A checkable claim that survived the gate without a primary source is marked **inline** where it appears — `… the price is $0.40 / M tokens ⚠️ UNVERIFIED (no public pricing page found)` — and collected in the `## Unverified claims` subsection. This is the terminal state for the genuinely-uncheckable: labeled, never silently asserted.
+
+## Review gate (post-write, pre-cite)
+
+A report the researcher returns is not yet citable. Every report goes through the `research-review` gate — a separate `research-reviewer` agent re-verifies the report's decision-critical checkable claims against primary sources, with fresh context and its own web access. This is the structural defense against plausible-but-wrong *facts*, mirroring how `work` gates plausible-but-wrong *code* through the `verifier`.
+
+The full doctrine lives in `skills/research-review/SKILL.md`. The operational integration here:
+
+### When to skip the gate
+
+Skip (ship immediately) only when:
+
+- The user invoked research with `--no-verify` or said "skip review this run" — opt-out is per-run, never persistent.
+- The report makes no checkable claims at all (pure synthesis of the user's own context) — rare; when unsure, run the gate.
+
+Otherwise, gate.
+
+### Gate dispatch and the loop
+
+1. Track the iteration count for this report (start at 1).
+2. Spawn a `research-reviewer` subagent via Agent with `subagent_type: "research-reviewer"` using the **Research-Reviewer Prompt Template** below. It runs on `opus` (set in the agent's frontmatter) — a different model than the researcher's `sonnet`, to decorrelate blind spots. Hand it only the report path, the original question, and the iteration number — never the researcher's reasoning trail.
+3. Wait for the verdict and handle it:
+
+**`VERDICT: PASS`** → the report is citable. Proceed to indexing and protocol logging below.
+
+**`VERDICT: SKIP`** → ship as on PASS; note "review skipped: no checkable claims" in the protocol entry.
+
+**`VERDICT: FAIL`, iteration 1 or 2, `ITERATION_HINT: likely-fixable`** → re-dispatch the **researcher** (not the reviewer) with the reviewer's `CHALLENGED_CLAIMS` block verbatim. Instruct it to re-verify each challenged claim against the named `PRIMARY_SOURCE`, correct what's wrong, and re-run the gate (`iteration = N + 1`). Cap at **3 iterations** — mirror `work`'s verifier cap.
+
+**`VERDICT: FAIL`, iteration 3 (or any iteration with `ITERATION_HINT: genuinely-unverifiable`)** → stop looping. Re-dispatch the researcher one final time to **label, not block**: for each surviving challenged claim, mark it inline `⚠️ UNVERIFIED` (with a one-line reason) and add it to the report's `## Unverified claims` subsection. Then ship. Surviving unverified claims are never silently passed and never infinitely looped.
+
+### Research-Reviewer Prompt Template
+
+Spawn each reviewer with `Agent(subagent_type: "research-reviewer", prompt: <the-below>)`. Fill the placeholders.
+
+```
+You are a research-reviewer agent auditing one report with fresh context and your own web access. You have no exposure to the researcher's reasoning — only the report and the original question. Re-verify; do not proofread.
+
+## Your inputs
+Report (read-only — do NOT edit it): <ABSOLUTE-PATH>
+Original question the research was meant to answer: <QUESTION>
+Iteration: <N> of max 3
+
+## Your job
+Follow the checks in `agents/research-reviewer.md`, in order. Inventory the report's checkable claims, then independently re-verify the decision-critical ones against PRIMARY sources using your own WebSearch/WebFetch — do not trust the report's adjacent citations. Return exactly one verdict block — VERDICT: PASS, VERDICT: FAIL, or VERDICT: SKIP — per the strict formats in your agent definition.
+
+Do not use Write or Edit — you are read-only on the report. Re-verify with the web; do not fix the report.
+```
+
+When the research skill spawned multiple researchers in parallel for independent topics, gate each report with its own reviewer; launch the reviewers as parallel Agent calls in one message. Each reviewer sees only its own report.
 
 ## Linking back
 
@@ -83,7 +141,7 @@ A later task or ADR that adopts this report should update the inserted line's BC
 
 ## Protocol logging
 
-After writing the report, prepend an entry to `.agentheim/knowledge/protocol.md` (creating the file with its header if missing — see brainstorm/model/work skills for the header template):
+After the report clears the review gate, prepend an entry to `.agentheim/knowledge/protocol.md` (creating the file with its header if missing — see brainstorm/model/work skills for the header template):
 
 ```markdown
 ## YYYY-MM-DD HH:MM -- Research: [topic]
@@ -91,6 +149,7 @@ After writing the report, prepend an entry to `.agentheim/knowledge/protocol.md`
 **Type:** Research
 **Requested by:** brainstorm | model | work | user
 **Report:** knowledge/research/<slug>-<date>.md
+**Review:** PASS (iteration N) | labeled-unverified (iteration 3) | skipped (no checkable claims)
 **Summary:** [2-3 bullet findings]
 
 ---
