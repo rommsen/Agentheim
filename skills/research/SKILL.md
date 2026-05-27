@@ -87,7 +87,7 @@ Otherwise, gate.
 ### Gate dispatch and the loop
 
 1. Track the iteration count for this report (start at 1).
-2. Spawn a `research-reviewer` subagent via Agent with `subagent_type: "research-reviewer"` using the **Research-Reviewer Prompt Template** below. It runs on `opus` (set in the agent's frontmatter) — a different model than the researcher's `sonnet`, to decorrelate blind spots. Hand it only the report path, the original question, and the iteration number — never the researcher's reasoning trail.
+2. Spawn a `research-reviewer` subagent via Agent with `subagent_type: "research-reviewer"` using the **Research-Reviewer Prompt Template** below. Hand it only the report path, the original question, and the iteration number — never the researcher's reasoning trail. (agentheim pins no model, to stay provider-agnostic; if your setup lets you route the reviewer to a different or more skeptical model than the researcher, prefer that — it decorrelates shared blind spots. See `skills/research-review/SKILL.md`.)
 3. Wait for the verdict and handle it:
 
 **`VERDICT: PASS`** → the report is citable. Proceed to indexing and protocol logging below.

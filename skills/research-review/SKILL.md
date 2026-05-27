@@ -20,11 +20,11 @@ The researcher fails in one distinctive, domain-independent way that its own sel
 
 The thread is not "deploy" or any single domain. It is: *a checkable claim treated as settled without checking the source of truth.* The reviewer catches it because it reads only the report and the question — it has no investment in the report's conclusions — and because it re-runs the verification itself rather than trusting the report's citation.
 
-## Why a separate agent — and a different model
+## Why a separate agent — and, if you can, a different model
 
-If `research` ran the checks inline, it would do so in the same context that just produced the report and is leaning toward shipping it. That context shares the researcher's blind spots. A separately spawned agent reads only what it's handed and produces a verdict without that momentum.
+If `research` ran the checks inline, it would do so in the same context that just produced the report and is leaning toward shipping it. That context shares the researcher's blind spots. A separately spawned agent reads only what it's handed and produces a verdict without that momentum. This fresh-context separation is the **load-bearing** property; do not collapse it into a function call or a same-context self-review.
 
-The reviewer also runs on a **different model** (researcher: `sonnet`; reviewer: `opus`). This is deliberate. Researcher and reviewer on the *same* model share training-memory confabulations — if Sonnet "knows" a version that doesn't exist, a second Sonnet may wave it through. A different model decorrelates those blind spots. (The reviewer's web re-verification catches most hallucinations regardless of model; the model split is insurance against the failures both would otherwise miss.) This is the load-bearing structural property; do not collapse it into a function call or a same-model self-review.
+There is a second, weaker lever: the model. Researcher and reviewer on the *same* model share training-memory confabulations — if a model "knows" a version that doesn't exist, a second instance of it may wave the claim through. Running the reviewer on a **different** (or more skeptical) model decorrelates those blind spots. agentheim **pins no model** — it stays provider-agnostic, and the primary defense is the reviewer's independent web re-verification, which catches most hallucinations regardless of model. But if your setup lets you route the reviewer to a different model than the researcher, prefer that: it's cheap insurance against the failures both would otherwise miss.
 
 ## What the reviewer is given
 
