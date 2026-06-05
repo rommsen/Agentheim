@@ -1,4 +1,4 @@
-# Agentic Workflow — Index
+# Infrastructure — Index
 
 Catalog of everything in this bounded context: tasks by status, ADRs scoped to this BC,
 research touching this BC, and concept synthesis pages.
@@ -10,7 +10,7 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
+- **Backlog:** 1
 - **Todo:** 1
 - **Doing:** 0
 - **Done:** 0
@@ -18,7 +18,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-002** — Decide dashboard write-semantics: legal Task moves, shared mover, concurrency (decision) — `todo/agentic-workflow-002-dashboard-write-semantics.md`
+- **infrastructure-001** — Dashboard runtime: Node static+JSON transport, launch/stop, project discovery (decision) — `todo/infrastructure-001-dashboard-runtime-transport.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -31,8 +31,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-001** — Dashboard — local web UI over the project's .agentheim folder — `backlog/agentic-workflow-001-dashboard.md`
-- **agentic-workflow-003** — Extract applyTaskMove: one shared Task-lifecycle mover for skills and the dashboard (refactor) — `backlog/agentic-workflow-003-extract-apply-task-move.md`
+- **infrastructure-002** — Pre-bundle the dashboard's frontend assets (committed build output, drop in-browser Babel) (chore) — `backlog/infrastructure-002-pre-bundle-dashboard-assets.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
@@ -52,4 +51,4 @@ research touching this BC, and concept synthesis pages.
 
 ## Pointers
 
-- BC README (ubiquitous language, invariants): `README.md`
+- BC README (purpose, transport-vs-meaning boundary): `README.md`

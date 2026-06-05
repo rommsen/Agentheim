@@ -1,4 +1,4 @@
-# Agentic Workflow — Index
+# Design System — Index
 
 Catalog of everything in this bounded context: tasks by status, ADRs scoped to this BC,
 research touching this BC, and concept synthesis pages.
@@ -10,15 +10,14 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
-- **Todo:** 1
+- **Backlog:** 0
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 0
+- **Done:** 1
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-002** — Decide dashboard write-semantics: legal Task moves, shared mover, concurrency (decision) — `todo/agentic-workflow-002-dashboard-write-semantics.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,12 +26,11 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **design-system-001** — Dashboard styleguide (visual language for Agentheim's UI) — _approved 2026-06-05_ — `done/design-system-001-styleguide.md`
 <!-- done-list:end -->
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-001** — Dashboard — local web UI over the project's .agentheim folder — `backlog/agentic-workflow-001-dashboard.md`
-- **agentic-workflow-003** — Extract applyTaskMove: one shared Task-lifecycle mover for skills and the dashboard (refactor) — `backlog/agentic-workflow-003-extract-apply-task-move.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
@@ -52,4 +50,5 @@ research touching this BC, and concept synthesis pages.
 
 ## Pointers
 
-- BC README (ubiquitous language, invariants): `README.md`
+- Styleguide artifact: `styleguide/index.html` (+ `styleguide/styles/`, `styleguide/app/`)
+- BC README (purpose, styleguide gate): `README.md`

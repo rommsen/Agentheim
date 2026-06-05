@@ -71,8 +71,13 @@ Intents entering the context. Brainstorm · Capture · Refine · Promote · Work
 
 ## Relationships with other contexts
 
-None — Agentheim is a single-BC domain today. No `context-map.md` is warranted until a
-second context (e.g., a split-out `infrastructure/`) actually earns its existence.
+- **design-system** — this BC's first UI-bearing feature (the `dashboard`,
+  agentic-workflow-001) depends on the design-system styleguide. **Frontend gate:** every
+  UI/frontend task here must list `design-system-001-styleguide` in its `depends_on`, and
+  no frontend task may be promoted to `todo` ahead of the approved styleguide.
+
+A `context-map.md` may now be warranted as the BC count grows beyond one; revisit during
+the next modeling pass.
 
 ## Open questions
 
