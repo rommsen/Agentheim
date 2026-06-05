@@ -1,16 +1,16 @@
 ---
 id: agentic-workflow-002
 title: Decide dashboard write-semantics — legal Task moves, shared move logic, concurrency
-status: todo
+status: done
 type: decision
 context: agentic-workflow
 created: 2026-06-05
-completed:
+completed: 2026-06-05
 commit:
 depends_on: []
 blocks: [agentic-workflow-001, agentic-workflow-003]
 tags: [dashboard, task-lifecycle, invariants, concurrency, write-semantics]
-related_adrs: []
+related_adrs: [ADR-0001]
 related_research: []
 prior_art: []
 ---
@@ -174,3 +174,30 @@ The UI and the skills can edit `.agentheim/` files at the same time. Named failu
 - **`applyTaskMove`** — the single lifecycle-transition operation shared by the skills and
   the dashboard; sole enforcer of *status matches folder* and the legal-move policy. Built
   in agentic-workflow-003.
+
+## Outcome
+
+Recorded the dashboard write-semantics decision as **ADR-0001**
+(`.agentheim/knowledge/decisions/0001-dashboard-write-semantics.md`):
+
+- **Legal v1 UI move set = `backlog→todo` (Promote) only**, honoring existing promotion
+  guards including the `depends_on`/styleguide frontend gate. Every other transition
+  (`todo→doing` Claim, `doing→done` Complete, backward moves, skips) is a non-drop target and
+  is rejected with a structured domain reason.
+- `doing→done` is rejected from the UI to defend *one task = one commit* (completion rides the
+  `work` commit after the verifier gate).
+- A single **`applyTaskMove`** operation (to be built in agentic-workflow-003) is mandated as
+  the **only** writer of task lifecycle state, called by both the skills' worker and the
+  dashboard's `POST /api/task/move`; no parallel UI writer. It updates folder **and**
+  frontmatter `status` atomically (*status matches folder* preserved).
+- **Optimistic concurrency**: each UI move carries the believed `from` folder plus an mtime;
+  `applyTaskMove` rejects (409-style, no mutation) if disk disagrees and the UI refetches. No
+  locks, no DB, no live file-watching in v1.
+
+The two ubiquitous-language entries (**Card move**, **`applyTaskMove`**) were added to the
+agentic-workflow BC README. No runtime code written — implementation belongs to
+agentic-workflow-003.
+
+Key files:
+- `.agentheim/knowledge/decisions/0001-dashboard-write-semantics.md`
+- `.agentheim/contexts/agentic-workflow/README.md`

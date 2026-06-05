@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-05 -- Task verified and completed: agentic-workflow-002 - Decide dashboard write-semantics
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-002 - Decide dashboard write-semantics — legal Task moves, shared move logic, concurrency
+**Summary:** Recorded ADR-0001 — v1 UI card moves are Promote-only (`backlog→todo`) honoring the styleguide/`depends_on` frontend gate; all other transitions rejected with domain reasons; a single shared `applyTaskMove` is mandated as the sole lifecycle writer; optimistic concurrency via `from`+mtime precondition with refetch-on-reject.
+**Verification:** PASS (iteration 1)
+**Commit:** <pending>
+**Files changed:** 2 (ADR-0001, agentic-workflow README)
+**Tests added:** 0 (decision task)
+**ADRs written:** ADR-0001 (0001-dashboard-write-semantics.md)
+
+---
+
+## 2026-06-05 -- Batch started: [agentic-workflow-002]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-002 - Decide dashboard write-semantics — legal Task moves, shared move logic, concurrency
+**Parallel:** no (1 worker) — sequenced ahead of infrastructure-001 to avoid first-ADR collision in an empty decisions/ dir
+
+---
+
 ## 2026-06-05 -- Modeling / Refined: dependency edge infrastructure-002 → agentic-workflow-001
 
 **Type:** Modeling / Refine

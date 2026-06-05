@@ -48,6 +48,13 @@ separate BC, but today the whole tool lives in this one.
 - **Protocol** — the chronological project diary, newest on top; every action appends.
 - **Index** — a flat catalog (`knowledge/index.md` + per-BC `INDEX.md`) that *points*,
   never duplicates. The memory layer for prior-art and dependency lookup.
+- **Card move** — a UI drag of a task card between lifecycle columns; semantically a Task
+  transition command (v1: Promote / `backlog→todo` only), never a raw file operation. Every
+  other transition is a non-drop target, rejected with a domain reason. See ADR-0001.
+- **`applyTaskMove`** — the single lifecycle-transition operation shared by the skills and the
+  dashboard write endpoint; the sole writer of task lifecycle state and sole enforcer of
+  *status matches folder* and the legal-move policy. Built in agentic-workflow-003. See
+  ADR-0001.
 
 ## Aggregates
 
