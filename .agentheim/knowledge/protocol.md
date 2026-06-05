@@ -5,6 +5,22 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Styleguide gate re-approved (design-system-002)
+
+**Type:** Gate / Builder approval
+**BC:** design-system
+**Summary:** The builder reviewed the migrated ESM styleguide canvas (`styleguide/index.html`)
+and re-approved it ("looks good, everything works"). This closes `design-system-002`'s last
+open acceptance criterion (criterion 8). **The styleguide gate is now OPEN against the
+migrated ES-module source** — frontend tasks aw-006/007/008 may promote (each still subject
+to its own other deps). Recorded in the design-system README, INDEX, and the ds-002 done file.
+**Also noted:** running the dashboard server (aw-004) currently serves the graceful
+"assets not built (dist/ absent)" fallback — the dashboard UI cannot render until
+`infrastructure-002` (esbuild → committed `dist/`) is built. infrastructure-002's deps
+(infrastructure-001, design-system-001, design-system-002) are now all satisfied.
+
+---
+
 ## 2026-06-06 -- Work session ended
 
 **Type:** Work / Session end

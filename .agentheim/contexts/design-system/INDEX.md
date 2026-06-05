@@ -26,7 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
-- **design-system-002** — Migrate the styleguide to ES modules (buildless htm + import-map canvas, single source) — _gate CLOSED pending builder re-approval_ — `done/design-system-002-styleguide-esm-migration.md`
+- **design-system-002** — Migrate the styleguide to ES modules (buildless htm + import-map canvas, single source) — _re-approved 2026-06-06; gate OPEN_ — `done/design-system-002-styleguide-esm-migration.md`
 - **design-system-001** — Dashboard styleguide (visual language for Agentheim's UI) — _approved 2026-06-05_ — `done/design-system-001-styleguide.md`
 <!-- done-list:end -->
 

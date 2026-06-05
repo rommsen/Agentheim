@@ -78,10 +78,9 @@ not a redesign.
 - [x] The ES-module source is **importable by a bundler** with no global-script assumptions
       (plain `import`/`export`, htm as a runtime function call — no JSX, no globals). This is
       what `infrastructure-002` consumes — the single source of truth.
-- [ ] The migrated styleguide is **re-reviewed and explicitly re-approved by the builder**
-      through the styleguide gate. **Remaining — human gate.** Engineering complete; gate is
-      CLOSED pending the builder's visual re-approval of `styleguide/index.html` (see Outcome
-      and the BC README gate-status note).
+- [x] The migrated styleguide is **re-reviewed and explicitly re-approved by the builder**
+      through the styleguide gate. **Re-approved by the builder 2026-06-06** ("looks good,
+      everything works") — the gate is OPEN against the migrated ESM source.
 
 ## Notes
 
@@ -151,14 +150,12 @@ root `App` + bootstrap.
   (`HeaderContextual`) now uses `html\`<${Fragment}>…<//>\``. (This htm-vs-JSX gotcha,
   invisible to `node --check`, is documented in ADR-0005.)
 
-**Criterion 8 — REMAINS THE BUILDER'S ACTION (human gate).** The ESM migration reopened
-the approved `design-system-001` artifact by design. The **styleguide gate is CLOSED
-pending builder re-approval of the migrated canvas.** To re-open it: open
-`styleguide/index.html` and verify sections 05–10 plus the live kanban→drawer demo
-(open/close, Esc, theme toggle) render with visual parity to the approved styleguide. The
-engineering is complete and render-verified; only the human visual sign-off is outstanding.
-The original 2026-06-05 approval line in the BC README was deliberately **not** rewritten
-to claim the new source is approved.
+**Criterion 8 — DONE (builder re-approved 2026-06-06).** The ESM migration reopened the
+approved `design-system-001` artifact by design; the builder reviewed the migrated canvas
+(`styleguide/index.html` — sections 05–10 + the live kanban→drawer demo) and re-approved
+it ("looks good, everything works"). **The styleguide gate is OPEN against the migrated ESM
+source.** Frontend tasks (aw-006/007/008) may now promote, each still subject to its own
+other dependencies.
 
 **Unblocks** `infrastructure-002` (esbuild bundle of `app/app.js` → committed `dist/`),
 which can proceed in parallel with the builder's visual re-approval since it consumes the

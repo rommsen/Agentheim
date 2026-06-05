@@ -47,13 +47,11 @@ at runtime — **no JSX is shipped to the browser** (ADR-0005). The canvas
 **import map** resolving `react`, `react-dom/client`, `marked`, and `htm` to pinned esm.sh
 URLs; opening the file needs no toolchain. Tokens (`styles/*.css`) are unchanged.
 
-> **Gate status after the ESM migration (`design-system-002`): CLOSED — pending builder
-> re-approval of the migrated canvas.** The migration reopened the approved artifact by
-> design (ADR-0003). To re-open the gate, the builder opens `styleguide/index.html` and
-> checks sections 05–10 plus the live kanban→drawer demo (open/close, Esc, theme toggle)
-> for visual parity. The engineering (criteria 1–7) is complete and render-verified; only
-> the human visual sign-off (criterion 8) remains. The 2026-06-05 approval line below was
-> for the *original* in-browser-Babel artifact (`design-system-001`), not the new source.
+> **Gate status after the ESM migration (`design-system-002`): OPEN — re-approved by the
+> builder 2026-06-06** ("looks good, everything works"). The builder reviewed the migrated
+> canvas (`styleguide/index.html` — sections 05–10 + the live kanban→drawer demo) and
+> confirmed visual parity. The gate now stands open against the **migrated ESM source**, not
+> just the original in-browser-Babel artifact.
 
 > **Approved by the builder 2026-06-05** — the styleguide gate is open. Frontend tasks in
 > any BC may now be promoted (each still subject to its own other dependencies). See
