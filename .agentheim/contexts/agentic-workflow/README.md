@@ -53,8 +53,17 @@ separate BC, but today the whole tool lives in this one.
   other transition is a non-drop target, rejected with a domain reason. See ADR-0001.
 - **`applyTaskMove`** — the single lifecycle-transition operation shared by the skills and the
   dashboard write endpoint; the sole writer of task lifecycle state and sole enforcer of
-  *status matches folder* and the legal-move policy. Built in agentic-workflow-003. See
-  ADR-0001.
+  *status matches folder* and the legal-move policy. Built in agentic-workflow-003 as
+  `lib/task-lifecycle.mjs` (BC-owned domain logic, node stdlib only; the dashboard runtime
+  imports it). Signature `applyTaskMove(rootDir, id, from, to, options)` — takes `rootDir`
+  explicitly (no ambient cwd) so a skill context and the dashboard call it identically;
+  `options.policy` is `'ui'` (default — Promote `backlog→todo` only) or `'skill'` (the fuller
+  forward set: Promote, Claim, Complete); `options.expectedMtimeMs` is the optimistic mtime
+  precondition. Returns `{ ok: true, state }` or a structured rejection
+  `{ ok: false, code, reason }` (`code` ∈ illegal-move | blocked-dependency |
+  stale-precondition | not-found). It owns ONLY the move + status rewrite + precondition;
+  INDEX/protocol side-effects stay with the skills/orchestrator (ADR-0007). See ADR-0001,
+  ADR-0007.
 
 ## Aggregates
 
