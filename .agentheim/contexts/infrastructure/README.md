@@ -110,7 +110,9 @@ Apply write request.
 
 - **design-system** — the dashboard UI served over this transport conforms to the
   design-system styleguide. The visual language is supplied by design-system; this BC only
-  serves the assets.
+  serves the assets. The dashboard's committed `dist/` is **built from** the design-system
+  ES-module styleguide source by this BC's esbuild pipeline (ADR-0003) — it is a *derived*
+  artifact, never a hand-maintained copy, so it cannot drift from the approved styleguide.
 
 ## Decisions
 
@@ -122,6 +124,20 @@ Apply write request.
   → `applyTaskMove`, and concurrency (optimistic precondition + refetch) is owned by
   `agentic-workflow` per ADR-0001 — the transport carries `from` so the precondition can run
   but invents no rule of its own.
+
+- **ADR-0003 — Dashboard asset build (esbuild → committed `dist/`).** The dashboard UI ships
+  as a **pre-bundled, committed `dashboard/dist/`** produced by an **esbuild** pipeline
+  (`dashboard/build.mjs`) from the design-system ES-module styleguide source. esbuild bundles
+  React (production) / ReactDOM / `marked` / `htm` IN, minifies, and writes `dist/` (index.html
+  + `app.js` + token CSS) — **no runtime CDN for the framework, no import map, no in-browser
+  Babel**. The static handler (ADR-0002) serves this `dist/` directly: **no install step to
+  run**. esbuild + the framework deps are **build-time only** (`dashboard/package.json`
+  devDependencies; `dashboard/node_modules/` gitignored). One command regenerates `dist/`:
+  `cd dashboard && npm install && npm run build`. Known residual: the styleguide token CSS
+  `@import`s Google Fonts (Inter Tight / JetBrains Mono) from a CDN — inherited unchanged from
+  the source of truth; the framework itself is fully local. (Architecture decided in ADR-0003,
+  owned by design-system; the pipeline + committed `dist/` are infrastructure's, per
+  infrastructure-002.)
 
 - **ADR-0006 — Dashboard live-update (SSE + file-watcher).** Adds a server→client push channel
   (`GET /api/events`, Server-Sent Events) backed by an `.agentheim/` file-watcher
