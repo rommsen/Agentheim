@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Modeling / Promoted: design-system-003 - Vendor the dashboard's webfonts offline
+
+**Type:** Modeling / Promote
+**BC:** design-system
+**From → To:** backlog → todo
+**Summary:** Promoted on builder request. Readiness confirmed — concrete acceptance criteria, clear scope, no unmet deps, styleguide gate open. Ready for `work`. (Note: working it reopens the styleguide gate for a lightweight visual re-confirm, and needs an infrastructure-002 dist rebuild downstream — both recorded in the task Notes.)
+
+---
+
 ## 2026-06-06 -- Modeling / Captured: design-system-003 - Vendor the dashboard's webfonts offline
 
 **Type:** Modeling / Capture

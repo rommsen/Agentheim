@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 2
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **design-system-003** — Vendor the dashboard's webfonts offline (local @font-face, drop the Google Fonts CDN @import) (chore) — `todo/design-system-003-offline-webfonts.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -32,7 +33,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **design-system-003** — Vendor the dashboard's webfonts offline (local @font-face, drop the Google Fonts CDN @import) (chore) — `backlog/design-system-003-offline-webfonts.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
