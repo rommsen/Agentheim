@@ -21,6 +21,13 @@
       "prompt": "I want to sync my book list with Goodreads. Research what APIs Goodreads exposes currently and model the integration.",
       "expected_output": "research produces a knowledge/research/ report noting that the Goodreads API was deprecated in 2020 and new access is closed. model consults the architect agent and produces tasks + ADRs reflecting the reality (e.g., scrape, use OAuth workaround, or pivot to an alternative catalog).",
       "files": []
+    },
+    {
+      "id": 4,
+      "name": "research-review-gate-catches-hallucinated-claim",
+      "prompt": "Research the cheapest current Claude model for batch summarization. I need concrete values I can paste into a deploy config: the exact model id, its per-million-token input price, and the container image tag to pull. Give me the numbers.",
+      "expected_output": "research produces a report, then the research-reviewer gate runs with fresh context and its own web access. It treats the model id/version, the price, and the image tag as checkable claims and independently re-verifies each against a PRIMARY source (Anthropic's model + pricing docs, the published image registry) rather than trusting the report's citation. Any non-existent model version, wrong/ballpark price, or non-existent image tag is challenged with VERDICT: FAIL listing the CHALLENGED_CLAIM and the PRIMARY_SOURCE it must be checked against; the researcher is re-dispatched to correct it. Any value that genuinely cannot be verified against a primary source is marked inline as ⚠️ UNVERIFIED and listed under '## Unverified claims' — never silently shipped as a confident fact. The reward is the gate flagging the unchecked checkable claim, not the researcher happening to be right.",
+      "files": []
     }
   ]
 }
