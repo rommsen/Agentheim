@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Modeling / Captured: design-system-003 - Vendor the dashboard's webfonts offline
+
+**Type:** Modeling / Capture
+**BC:** design-system
+**Filed to:** backlog
+**Summary:** Captured the residual surfaced by infrastructure-002: the styleguide token CSS still @imports Inter Tight + JetBrains Mono from the Google Fonts CDN, so fonts hit the network at view time even though the framework is now fully offline. Fix = commit woff2 locally + local @font-face, drop the CDN @import (design-system-owned source). Linked prior art ds-001/ds-002 and ADR-0003. Kept in backlog per builder; notes the gate re-approval implication and the downstream infrastructure-002 dist rebuild.
+
+---
+
 ## 2026-06-06 -- Task verified and completed: infrastructure-002 - esbuild → committed dashboard/dist
 
 **Type:** Work / Task completion
