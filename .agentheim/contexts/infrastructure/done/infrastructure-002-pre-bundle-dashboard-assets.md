@@ -6,7 +6,7 @@ type: chore
 context: infrastructure
 created: 2026-06-05
 completed: 2026-06-06
-commit:
+commit: e37dac9
 depends_on: [infrastructure-001, design-system-001, design-system-002]
 blocks: [agentic-workflow-001, agentic-workflow-006, agentic-workflow-007, agentic-workflow-008]
 tags: [dashboard, build, bundling, esbuild, static-assets, frontend, runtime]

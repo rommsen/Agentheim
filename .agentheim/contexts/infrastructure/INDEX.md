@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 2
+- **Done:** 3
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,13 +26,13 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-002** — Bundle the styleguide ESM source into the dashboard's committed static assets (esbuild → committed dist/) (chore) — `done/infrastructure-002-pre-bundle-dashboard-assets.md`
 - **infrastructure-003** — Dashboard live-update transport: SSE endpoint + .agentheim file-watcher (supersedes ADR-0002 req/resp-only) (decision) — `done/infrastructure-003-dashboard-live-update-sse.md`
 - **infrastructure-001** — Dashboard runtime: Node static+JSON transport, launch/stop, project discovery (decision) — `done/infrastructure-001-dashboard-runtime-transport.md`
 <!-- done-list:end -->
 
 ### Backlog
 <!-- backlog-list:start -->
-- **infrastructure-002** — Bundle the styleguide ESM source into the dashboard's committed static assets (esbuild → dist) (chore) — `backlog/infrastructure-002-pre-bundle-dashboard-assets.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

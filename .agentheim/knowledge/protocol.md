@@ -5,6 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Task verified and completed: infrastructure-002 - esbuild → committed dashboard/dist
+
+**Type:** Work / Task completion
+**Task:** infrastructure-002 - Bundle the styleguide ESM source into the dashboard's committed static assets (esbuild → dist)
+**Summary:** Added the esbuild build pipeline (dashboard/build.mjs + package.json devDeps) that bundles the design-system ESM styleguide source — React production / ReactDOM / marked / htm bundled in, no CDN, no Babel, minified — into a committed `dashboard/dist/` that aw-004's static handler serves directly. The dashboard now renders offline; no install to run. node_modules gitignored.
+**Verification:** PASS (iteration 1) — full dashboard suite 43/43 green; render-verified live (GET / → 200 real UI, GET /app.js → 200, 0 CDN/Babel refs).
+**Commit:** e37dac9
+**Files changed:** 11 (build.mjs, package.json, package-lock.json, dist-build test, dist/ {index.html, app.js, 2 css}, .gitignore, infra README)
+**Tests added:** ~6 (dist-build assertions)
+**ADRs written:** none (ADR-0003 already covers the architecture)
+**Residual:** the token CSS still `@import`s Google Fonts (Inter Tight / JetBrains Mono) from the CDN — a webfont in the design-system-owned source CSS, not editable by infrastructure. The framework is fully offline; only fonts hit the network at view time. Worth a design-system follow-up if true offline is required.
+
+---
+
+## 2026-06-06 -- Task started: infrastructure-002 (promoted from backlog + claimed)
+
+**Type:** Work / Task start
+**Task:** infrastructure-002 - Bundle the styleguide ESM source into the dashboard's committed static assets (esbuild → dist)
+**Parallel:** no (single task)
+**Note:** Builder asked to make the dashboard render. All deps now satisfied (infrastructure-001, design-system-001, design-system-002 + gate re-approved). Promoted backlog→doing and dispatched one worker. Output: a committed `dashboard/dist/` that aw-004's static handler serves; esbuild as a build-time-only dev dependency (ADR-0003).
+
+---
+
 ## 2026-06-06 -- Styleguide gate re-approved (design-system-002)
 
 **Type:** Gate / Builder approval
