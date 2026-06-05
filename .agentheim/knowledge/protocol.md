@@ -5,13 +5,25 @@ Newest entries on top.
 
 ---
 
+## 2026-06-05 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (526aa12 agentic-workflow-002, fd486c7 infrastructure-001)
+**Note:** The two dashboard decision tasks were run sequentially (not parallel) to avoid a first-ADR collision in an empty `decisions/` dir. infrastructure-001 was scoped decision-only by builder choice — its implementation acceptance criteria defer to agentic-workflow-001. todo/ is now empty across all BCs.
+
+---
+
 ## 2026-06-05 -- Task verified and completed: infrastructure-001 - Decide the dashboard runtime
 
 **Type:** Work / Task completion
 **Task:** infrastructure-001 - Decide the dashboard runtime — Node static+JSON transport, launch/stop, project discovery
 **Summary:** Recorded ADR-0002 — Node-stdlib (no deps/install), `127.0.0.1`-only HTTP transport; single detached `launch.mjs` on an ephemeral port recorded in `.agentheim/.dashboard/runtime.json`; explicit stop (kill-by-pid + clear runfile, Windows `taskkill` fallback); project discovery by walking up for `.agentheim/` with absolute-root path validation; write endpoint delegates to `applyTaskMove` (transport-only, never decides legality).
 **Verification:** PASS (iteration 1)
-**Commit:** <pending>
+**Commit:** fd486c7
 **Files changed:** 2 (ADR-0002, infrastructure README)
 **Tests added:** 0 (decision task)
 **ADRs written:** ADR-0002 (0002-dashboard-runtime-transport.md)

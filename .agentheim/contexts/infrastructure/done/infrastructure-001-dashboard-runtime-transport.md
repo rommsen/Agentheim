@@ -6,7 +6,7 @@ type: decision
 context: infrastructure
 created: 2026-06-05
 completed: 2026-06-05
-commit:
+commit: fd486c7
 depends_on: []
 blocks: [agentic-workflow-001]
 tags: [dashboard, runtime, web-server, transport, launch, cross-platform]
