@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 0
+- **Done:** 1
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **infrastructure-001** — Dashboard runtime: Node static+JSON transport, launch/stop, project discovery (decision) — `todo/infrastructure-001-dashboard-runtime-transport.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-001** — Dashboard runtime: Node static+JSON transport, launch/stop, project discovery (decision) — `done/infrastructure-001-dashboard-runtime-transport.md`
 <!-- done-list:end -->
 
 ### Backlog
@@ -37,6 +37,7 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0002** — Dashboard runtime — Node-stdlib localhost transport with detached launch (proposed) — `../../knowledge/decisions/0002-dashboard-runtime-transport.md`
 <!-- adr-local:end -->
 
 ## Research touching this BC

@@ -1,16 +1,16 @@
 ---
 id: infrastructure-001
 title: Decide the dashboard runtime — Node static+JSON transport, launch/stop, project discovery
-status: todo
+status: done
 type: decision
 context: infrastructure
 created: 2026-06-05
-completed:
+completed: 2026-06-05
 commit:
 depends_on: []
 blocks: [agentic-workflow-001]
 tags: [dashboard, runtime, web-server, transport, launch, cross-platform]
-related_adrs: []
+related_adrs: [ADR-0002]
 related_research: []
 prior_art: []
 ---
@@ -108,26 +108,29 @@ This keeps a single writer of `.agentheim/` task state shared by skills and UI.
 
 ## Acceptance criteria
 
-- [ ] A BC-scoped ADR is recorded in `knowledge/decisions/` choosing Node-stdlib transport,
+- [x] A BC-scoped ADR is recorded in `knowledge/decisions/` choosing Node-stdlib transport,
       the launch/stop mechanism, and project discovery, with alternatives and reasoning.
-- [ ] Running the launch path starts a server bound to `127.0.0.1` only, on macOS, Linux,
-      **and Windows**, using the same single Node launcher (verified on the builder's
-      Windows box and at least one POSIX OS).
-- [ ] The launch is backgrounded: the spawning terminal returns to a prompt and the server
-      keeps serving; a `runtime.json` with `{pid, port}` is written under
-      `.agentheim/.dashboard/`.
-- [ ] A documented **stop** path terminates the server by pid and removes the runfile, on
-      Windows and POSIX. Relaunch over a live/stale runfile does not orphan a process.
-- [ ] `GET /api/tree` returns the BC/lifecycle/task structure of the discovered project;
-      `GET /api/doc?path=` returns raw markdown for a valid in-root path and rejects any
-      path that escapes the root.
-- [ ] `POST /api/task/move` performs the move **only** by delegating to `applyTaskMove`
-      (agentic-workflow-003); on rejection it returns a 4xx with the domain's reason and
-      makes **no** filesystem change.
-- [ ] Project discovery walks up for `.agentheim/`, resolves an absolute root, and every
-      read/write path is validated against it (a traversal attempt returns 4xx, touches no
-      file).
-- [ ] No `node_modules` / no install step is required to launch (stdlib-only verified).
+      **→ ADR-0002.**
+- [ ] _(deferred to agentic-workflow-001)_ Running the launch path starts a server bound to
+      `127.0.0.1` only, on macOS, Linux, **and Windows**, using the same single Node launcher
+      (verified on the builder's Windows box and at least one POSIX OS).
+- [ ] _(deferred to agentic-workflow-001)_ The launch is backgrounded: the spawning terminal
+      returns to a prompt and the server keeps serving; a `runtime.json` with `{pid, port}` is
+      written under `.agentheim/.dashboard/`.
+- [ ] _(deferred to agentic-workflow-001)_ A documented **stop** path terminates the server by
+      pid and removes the runfile, on Windows and POSIX. Relaunch over a live/stale runfile does
+      not orphan a process.
+- [ ] _(deferred to agentic-workflow-001)_ `GET /api/tree` returns the BC/lifecycle/task
+      structure of the discovered project; `GET /api/doc?path=` returns raw markdown for a valid
+      in-root path and rejects any path that escapes the root.
+- [ ] _(deferred to agentic-workflow-001)_ `POST /api/task/move` performs the move **only** by
+      delegating to `applyTaskMove` (agentic-workflow-003); on rejection it returns a 4xx with
+      the domain's reason and makes **no** filesystem change.
+- [ ] _(deferred to agentic-workflow-001)_ Project discovery walks up for `.agentheim/`,
+      resolves an absolute root, and every read/write path is validated against it (a traversal
+      attempt returns 4xx, touches no file).
+- [ ] _(deferred to agentic-workflow-001)_ No `node_modules` / no install step is required to
+      launch (stdlib-only verified).
 
 ## Notes
 
@@ -188,3 +191,34 @@ This keeps a single writer of `.agentheim/` task state shared by skills and UI.
 - Confine OS branching to spawn options + the kill path; test launch+stop on Windows first.
 - Do not implement the move in the endpoint — call `applyTaskMove` (agentic-workflow-003)
   and translate its result to HTTP.
+
+## Outcome
+
+**Scope: decision-only.** This run delivered the runtime/transport *decision*, not the
+runtime code. The builder explicitly scoped the run to the ADR + BC README update; the
+actual server (`launch.mjs`, the HTTP server, the static handler, `/api/tree`, `/api/doc`,
+`/api/task/move`, the stop path) is carried by **agentic-workflow-001** once
+**agentic-workflow-003** (`applyTaskMove`) and the pre-bundled UI assets
+(**infrastructure-002**) land — the write endpoint cannot exist before the operation it
+delegates to.
+
+- **ADR-0002** (`.agentheim/knowledge/decisions/0002-dashboard-runtime-transport.md`,
+  status `proposed`) records the transport/launch/discovery decision: Node-stdlib localhost
+  HTTP server (no deps, no install); single detached `launch.mjs` bound to `127.0.0.1` on an
+  ephemeral port recorded in `runtime.json`; explicit `stop` path with `taskkill` fallback on
+  Windows; project discovery by walking up for `.agentheim/` with every path validated
+  against the resolved root; write endpoint as a dumb carrier delegating to `applyTaskMove`
+  (per ADR-0001). Alternatives (framework, self-contained binary, foreground+Ctrl+C, sh/bat
+  launcher pair, fixed port) are recorded with reasoning.
+- **Infrastructure BC README** updated: project-discovery and write-API ubiquitous language
+  sharpened, the runfile added as a term, the runtime/transport invariants made concrete
+  (127.0.0.1-only, stdlib-only, in-root path validation, `applyTaskMove` delegation), and the
+  former *transport/meaning seam* and *concurrency* open questions resolved into a new
+  **Decisions** section pointing at ADR-0002 / ADR-0001.
+
+The **ADR acceptance criterion is met (ticked)**; the seven implementation criteria are
+marked *deferred to agentic-workflow-001* rather than checked.
+
+**Key files:**
+- `.agentheim/knowledge/decisions/0002-dashboard-runtime-transport.md`
+- `.agentheim/contexts/infrastructure/README.md`

@@ -6,7 +6,7 @@ type: decision
 context: agentic-workflow
 created: 2026-06-05
 completed: 2026-06-05
-commit:
+commit: 526aa12
 depends_on: []
 blocks: [agentic-workflow-001, agentic-workflow-003]
 tags: [dashboard, task-lifecycle, invariants, concurrency, write-semantics]

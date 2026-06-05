@@ -5,13 +5,36 @@ Newest entries on top.
 
 ---
 
+## 2026-06-05 -- Task verified and completed: infrastructure-001 - Decide the dashboard runtime
+
+**Type:** Work / Task completion
+**Task:** infrastructure-001 - Decide the dashboard runtime — Node static+JSON transport, launch/stop, project discovery
+**Summary:** Recorded ADR-0002 — Node-stdlib (no deps/install), `127.0.0.1`-only HTTP transport; single detached `launch.mjs` on an ephemeral port recorded in `.agentheim/.dashboard/runtime.json`; explicit stop (kill-by-pid + clear runfile, Windows `taskkill` fallback); project discovery by walking up for `.agentheim/` with absolute-root path validation; write endpoint delegates to `applyTaskMove` (transport-only, never decides legality).
+**Verification:** PASS (iteration 1)
+**Commit:** <pending>
+**Files changed:** 2 (ADR-0002, infrastructure README)
+**Tests added:** 0 (decision task)
+**ADRs written:** ADR-0002 (0002-dashboard-runtime-transport.md)
+**Scope:** decision-only this run (builder decision); implementation + its acceptance criteria deferred to agentic-workflow-001.
+
+---
+
+## 2026-06-05 -- Batch started: [infrastructure-001]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-001 - Decide the dashboard runtime — Node static+JSON transport, launch/stop, project discovery
+**Parallel:** no (1 worker)
+**Scope note:** Builder set scope to **decision-only** this run — deliver ADR-0002 + infra README. The implementation acceptance criteria (running server, write endpoint delegating to `applyTaskMove`) defer to agentic-workflow-001, since agentic-workflow-003 (`applyTaskMove`) and the pre-bundled assets are not yet built.
+
+---
+
 ## 2026-06-05 -- Task verified and completed: agentic-workflow-002 - Decide dashboard write-semantics
 
 **Type:** Work / Task completion
 **Task:** agentic-workflow-002 - Decide dashboard write-semantics — legal Task moves, shared move logic, concurrency
 **Summary:** Recorded ADR-0001 — v1 UI card moves are Promote-only (`backlog→todo`) honoring the styleguide/`depends_on` frontend gate; all other transitions rejected with domain reasons; a single shared `applyTaskMove` is mandated as the sole lifecycle writer; optimistic concurrency via `from`+mtime precondition with refetch-on-reject.
 **Verification:** PASS (iteration 1)
-**Commit:** <pending>
+**Commit:** 526aa12
 **Files changed:** 2 (ADR-0001, agentic-workflow README)
 **Tests added:** 0 (decision task)
 **ADRs written:** ADR-0001 (0001-dashboard-write-semantics.md)
