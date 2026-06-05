@@ -10,3 +10,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### Agentheim dashboard runtime
+# Sole runtime state on disk (pid/port runfile); never committed. See ADR-0002.
+.agentheim/.dashboard/
