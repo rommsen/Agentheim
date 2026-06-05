@@ -6,7 +6,7 @@ type: decision
 context: infrastructure
 created: 2026-06-06
 completed: 2026-06-06
-commit:
+commit: 1e192ba
 depends_on: [infrastructure-001]
 blocks: [agentic-workflow-001, agentic-workflow-009]
 tags: [dashboard, runtime, transport, sse, file-watcher, push, live-update]

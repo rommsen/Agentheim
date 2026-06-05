@@ -6,11 +6,11 @@ type: chore
 context: design-system
 created: 2026-06-05
 completed: 2026-06-06
-commit:
+commit: 58fafcf
 depends_on: [design-system-001]
 blocks: [infrastructure-002, agentic-workflow-006, agentic-workflow-007, agentic-workflow-008]
 tags: [styleguide, design-system, esm, frontend, refactor, build]
-related_adrs: [ADR-0003]
+related_adrs: [ADR-0003, ADR-0005]
 related_research: []
 prior_art: []
 ---

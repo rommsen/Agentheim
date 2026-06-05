@@ -13,7 +13,7 @@ research touching this BC, and concept synthesis pages.
 - **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 1
+- **Done:** 2
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **design-system-002** — Migrate the styleguide to ES modules (buildless htm + import-map canvas, single source) — _gate CLOSED pending builder re-approval_ — `done/design-system-002-styleguide-esm-migration.md`
 - **design-system-001** — Dashboard styleguide (visual language for Agentheim's UI) — _approved 2026-06-05_ — `done/design-system-001-styleguide.md`
 <!-- done-list:end -->
 
@@ -36,6 +37,8 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0003** — Styleguide as ES-module single source — buildless canvas, esbuild-bundled dashboard (proposed) — `../../knowledge/decisions/0003-styleguide-esm-single-source.md`
+- **ADR-0005** — Styleguide views authored with htm tagged templates (buildless, no JSX runtime compile) (accepted) — `../../knowledge/decisions/0005-styleguide-htm-buildless-viewfactory.md`
 <!-- adr-local:end -->
 
 ## Research touching this BC

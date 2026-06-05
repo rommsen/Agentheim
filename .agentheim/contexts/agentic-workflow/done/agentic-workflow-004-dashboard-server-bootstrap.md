@@ -6,11 +6,11 @@ type: feature
 context: agentic-workflow
 created: 2026-06-06
 completed: 2026-06-06
-commit:
+commit: 9b09b3e
 depends_on: [infrastructure-001]
 blocks: [agentic-workflow-001]
 tags: [dashboard, runtime, launch, server, cross-platform]
-related_adrs: [ADR-0002]
+related_adrs: [ADR-0002, ADR-0004]
 related_research: []
 prior_art: []
 ---

@@ -6,7 +6,7 @@ type: refactor
 context: agentic-workflow
 created: 2026-06-05
 completed: 2026-06-06
-commit:
+commit: 2378b0b
 depends_on: [agentic-workflow-002]
 blocks: [agentic-workflow-001, agentic-workflow-009]
 tags: [task-lifecycle, invariants, refactor, shared-logic, dashboard]
