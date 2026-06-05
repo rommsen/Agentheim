@@ -1,12 +1,13 @@
-// Dashboard HTTP server skeleton (ADR-0002): node:http, stdlib-only, no deps.
-// Scope of THIS task (agentic-workflow-004): static assets + a health check.
-// NO /api/tree, NO /api/doc (agentic-workflow-005), NO SSE (infrastructure-003),
-// NO write path (agentic-workflow-009). Those routes are intentionally absent
-// and fall through to a 404 here.
+// Dashboard HTTP server (ADR-0002 + ADR-0006): node:http, stdlib-only, no deps.
+// Routes now live here: static assets + health check (agentic-workflow-004) and
+// the SSE live-update channel GET /api/events (infrastructure-003, ADR-0006).
+// NO /api/tree, NO /api/doc (agentic-workflow-005), NO write path (aw-009) — those
+// are intentionally absent and fall through to a 404 here.
 
 import http from 'node:http';
 import path from 'node:path';
 import { serveStatic } from './static.mjs';
+import { handleEvents } from './events.mjs';
 
 /** Default asset root: the committed dashboard build output. */
 export function defaultAssetRoot(root) {
@@ -15,17 +16,26 @@ export function defaultAssetRoot(root) {
 
 /**
  * Build (do not start) the dashboard HTTP server.
- * @param {{ root: string, assetRoot?: string }} opts
+ * @param {{ root: string, assetRoot?: string, sse?: object }} opts
  *   root      — discovered project root (.agentheim/ holder), absolute.
  *   assetRoot — committed asset directory; defaults to <root>/dashboard/dist.
+ *   sse       — options forwarded to the SSE handler (heartbeatMs, debounceMs,
+ *               pollMs); see events.mjs / watcher.mjs.
  */
-export function createDashboardServer({ root, assetRoot = defaultAssetRoot(root) }) {
+export function createDashboardServer({ root, assetRoot = defaultAssetRoot(root), sse = {} }) {
   return http.createServer((req, res) => {
     const pathname = (req.url || '/').split('?')[0];
 
     if (pathname === '/healthz') {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ status: 'ok', root }));
+      return;
+    }
+
+    // Live-update push channel (ADR-0006). Long-lived SSE stream rooted at the
+    // discovered project; emits tree-changed pointers + heartbeats.
+    if (pathname === '/api/events' && req.method === 'GET') {
+      handleEvents(req, res, root, sse);
       return;
     }
 

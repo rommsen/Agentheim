@@ -5,9 +5,18 @@ scope: infrastructure
 status: proposed
 date: 2026-06-05
 related_tasks: [infrastructure-001, agentic-workflow-001, agentic-workflow-002, agentic-workflow-003]
+related_adrs: [ADR-0006]
+superseded_in_part_by: [ADR-0006]
 ---
 
 # ADR-0002: Dashboard runtime — Node-stdlib localhost transport with detached launch
+
+> **Superseded in part by [ADR-0006](0006-dashboard-live-update-sse.md).** This ADR chose
+> request/response only and listed live file-watch as *deferred*. ADR-0006 reverses **that one
+> clause** by adding a Server-Sent-Events push channel (`GET /api/events`) backed by an
+> `.agentheim/` file-watcher. **Every other clause below still stands**: Node-stdlib / zero
+> dependencies, `127.0.0.1` binding, detached launch + runfile + explicit stop, walk-up project
+> discovery, in-root path validation, and the `applyTaskMove` write seam.
 
 ## Context
 

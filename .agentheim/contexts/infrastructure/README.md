@@ -57,6 +57,14 @@ for an infrastructure BC.
 - **Runfile** — `.agentheim/.dashboard/runtime.json` = `{ pid, port, startedAt }`, the
   **sole** runtime artifact on disk. Basis for "open the URL" and "stop the runtime";
   gitignored. Relaunch over a live/stale runfile reuses-or-replaces rather than orphaning.
+- **Live-update transport** — a server→client push channel (`GET /api/events`, Server-Sent
+  Events) backed by an `.agentheim/` **file-watcher**. When the project tree changes (a task
+  moved by `work`/`modeling` in another terminal, or by the dashboard's own write), the server
+  pushes a debounced **`tree-changed` pointer** `{ type, path }` so an open board re-fetches
+  `/api/tree` and re-renders in near-real-time. The watcher uses `node:fs.watch` (recursive)
+  with a debounced stat-poll fallback where recursive watch is unreliable (Linux, some Windows
+  / network-drive cases). The pointer is **raw transport** — what a change *means* (which task
+  transitioned) is `agentic-workflow`'s job. (ADR-0006.)
 
 ## Owned mechanisms
 
@@ -76,7 +84,7 @@ This BC has no domain aggregates. What it protects instead:
 ## Key events
 
 Past-tense, domain-language. Runtime started · Runtime stopped · Project discovered ·
-Asset served · Write request received · Write request applied.
+Asset served · Write request received · Write request applied · Project tree changed.
 
 ## Key commands
 
@@ -114,6 +122,14 @@ Apply write request.
   → `applyTaskMove`, and concurrency (optimistic precondition + refetch) is owned by
   `agentic-workflow` per ADR-0001 — the transport carries `from` so the precondition can run
   but invents no rule of its own.
+
+- **ADR-0006 — Dashboard live-update (SSE + file-watcher).** Adds a server→client push channel
+  (`GET /api/events`, Server-Sent Events) backed by an `.agentheim/` file-watcher
+  (`node:fs.watch` recursive + debounced poll fallback) emitting debounced, path-validated
+  `tree-changed` pointers. **Supersedes in part** ADR-0002's request/response-only clause
+  (which deferred live file-watch); every other ADR-0002 clause stands. SSE chosen over
+  WebSocket (no upgrade handshake; one-directional push) and over client polling (laggy /
+  wasteful). The board stays a projection rebuilt from disk (ADR-0001), now event-driven.
 
 ## Open questions
 
