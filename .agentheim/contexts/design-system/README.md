@@ -35,6 +35,26 @@ from the Ledger design system. Tokens are the source of truth in
 reading scale). The canvas (`styleguide/index.html`) documents the tokens and renders every
 component pattern in context.
 
+### Source architecture (ESM single source — ADR-0003, ADR-0005)
+
+As of `design-system-002`, the styleguide source under `styleguide/app/*.js` is **native
+ES modules** — the single source of truth feeding two consumers (ADR-0003): the buildless
+reviewable canvas and the esbuild-bundled dashboard dist (`infrastructure-002`). Every
+cross-file symbol is an explicit `export`/`import`; there are no `window.*` globals and no
+in-browser Babel. Views are authored with **htm tagged templates** (`app/html.js`), parsed
+at runtime — **no JSX is shipped to the browser** (ADR-0005). The canvas
+(`styleguide/index.html`) loads `app/app.js` via `<script type="module">` with an
+**import map** resolving `react`, `react-dom/client`, `marked`, and `htm` to pinned esm.sh
+URLs; opening the file needs no toolchain. Tokens (`styles/*.css`) are unchanged.
+
+> **Gate status after the ESM migration (`design-system-002`): CLOSED — pending builder
+> re-approval of the migrated canvas.** The migration reopened the approved artifact by
+> design (ADR-0003). To re-open the gate, the builder opens `styleguide/index.html` and
+> checks sections 05–10 plus the live kanban→drawer demo (open/close, Esc, theme toggle)
+> for visual parity. The engineering (criteria 1–7) is complete and render-verified; only
+> the human visual sign-off (criterion 8) remains. The 2026-06-05 approval line below was
+> for the *original* in-browser-Babel artifact (`design-system-001`), not the new source.
+
 > **Approved by the builder 2026-06-05** — the styleguide gate is open. Frontend tasks in
 > any BC may now be promoted (each still subject to its own other dependencies). See
 > `design-system-001` (done).
@@ -48,5 +68,5 @@ component pattern in context.
 
 ## Pointers
 
-- Styleguide artifact: `styleguide/index.html` (+ `styleguide/styles/`, `styleguide/app/`)
+- Styleguide artifact: `styleguide/index.html` (+ `styleguide/styles/`, `styleguide/app/*.js` ES modules; entry `app/app.js`)
 - BC index: `INDEX.md`

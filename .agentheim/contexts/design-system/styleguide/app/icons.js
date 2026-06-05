@@ -1,10 +1,11 @@
-/* eslint-disable */
 /* ============================================================
    Agentheim — inline SVG icon set (Lucide geometry, no runtime).
    Rendering icons as static SVG avoids any DOM-mutation library,
    so there is no observer/createIcons feedback loop.
    ============================================================ */
-const LUCIDE = {
+import { html } from "./html.js";
+
+export const LUCIDE = {
   "square-kanban": '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/>',
   "library": '<path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/>',
   "search": '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
@@ -30,14 +31,11 @@ const LUCIDE = {
   "file-text": '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
 };
 
-function Icon({ name, size = 16, stroke = 1.5, color = "currentColor", style }) {
+export function Icon({ name, size = 16, stroke = 1.5, color = "currentColor", style }) {
   const inner = LUCIDE[name] || "";
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" style="display:block">${inner}</svg>`;
-  return (
+  return html`
     <span aria-hidden="true"
-      style={{ width: size, height: size, color, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, ...style }}
-      dangerouslySetInnerHTML={{ __html: svg }} />
-  );
+      style=${{ width: size, height: size, color, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, ...style }}
+      dangerouslySetInnerHTML=${{ __html: svg }} />`;
 }
-
-Object.assign(window, { LUCIDE, Icon });

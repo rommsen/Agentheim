@@ -1,4 +1,3 @@
-/* eslint-disable */
 /* ============================================================
    Agentheim — demo content
    Tickets, library documents, and markdown bodies used to
@@ -6,7 +5,7 @@
    ============================================================ */
 
 // ---- Content-type registry: token + Lucide icon + label ----
-const CONTENT_TYPES = {
+export const CONTENT_TYPES = {
   ticket:   { label: "Ticket",          icon: "square-kanban", color: "var(--ct-ticket)",   tint: "var(--ct-ticket-tint)" },
   context:  { label: "Bounded context", icon: "box",           color: "var(--ct-context)",  tint: "var(--ct-context-tint)" },
   vision:   { label: "Vision",          icon: "compass",       color: "var(--ct-vision)",   tint: "var(--ct-vision-tint)" },
@@ -16,20 +15,20 @@ const CONTENT_TYPES = {
 };
 
 // ---- Status registry ----
-const STATUSES = {
+export const STATUSES = {
   backlog: { label: "Backlog", color: "var(--st-backlog)", tint: "var(--st-backlog-tint)" },
   todo:    { label: "To do",   color: "var(--st-todo)",    tint: "var(--st-todo-tint)" },
   doing:   { label: "Doing",   color: "var(--st-doing)",   tint: "var(--st-doing-tint)" },
   done:    { label: "Done",    color: "var(--st-done)",    tint: "var(--st-done-tint)" },
 };
 
-const COLUMN_ORDER = ["backlog", "todo", "doing", "done"];
+export const COLUMN_ORDER = ["backlog", "todo", "doing", "done"];
 
 // ============================================================
 // Markdown bodies
 // ============================================================
 
-const MD_ADR = `# ADR-0007 — Adopt event sourcing for the billing context
+export const MD_ADR = `# ADR-0007 — Adopt event sourcing for the billing context
 
 \`Accepted\` · supersedes \`ADR-0004\` · context: \`billing\` · 2026-05-28
 
@@ -93,7 +92,7 @@ resolves.
 See the [billing context README](#) and the [context map](#) for how this
 aggregate relates to **Identity** and **Catalog**.`;
 
-const MD_TICKET = `# Implement the ticket drawer markdown renderer
+export const MD_TICKET = `# Implement the ticket drawer markdown renderer
 
 Render a ticket's full markdown description inside the right-hand slide-over,
 tuned for comfortable long reading. This is the surface ADRs and research notes
@@ -122,7 +121,7 @@ workspace/
 > Keep the measure near \`68ch\`. Past that, line tracking gets tiring on the
 > long ADRs.`;
 
-const MD_VISION = `# Product vision
+export const MD_VISION = `# Product vision
 
 **Agentheim** is the control panel for an agentic software-development workflow.
 It reads a project's agent workspace folder and surfaces it through one calm,
@@ -146,7 +145,7 @@ over files the agents already write.
 > A developer should be able to open Agentheim cold and, within a minute, know
 > where the work stands and where the important decisions live.`;
 
-const MD_CONTEXT = `# Billing — bounded context
+export const MD_CONTEXT = `# Billing — bounded context
 
 Owns invoices, payments, and contractor tax records. Event-sourced as of
 \`ADR-0007\`.
@@ -174,7 +173,7 @@ billable services (that is **Catalog**). It references them by ID only.
 - \`line item\` — a single billable entry on an invoice.
 - \`reconciliation\` — matching a received payment to an issued invoice.`;
 
-const MD_RESEARCH = `# Retrieval strategies for the agent runtime
+export const MD_RESEARCH = `# Retrieval strategies for the agent runtime
 
 A comparison of retrieval approaches for grounding the agent's edits in
 project context. Bench run on the Agentheim workspace corpus (1,240 documents).
@@ -201,7 +200,7 @@ project context. Bench run on the Agentheim workspace corpus (1,240 documents).
 Ship **hybrid** behind a flag; default to full-text for workspaces under ~500
 documents where the recall gap is negligible. Revisit once the corpus grows.`;
 
-const MD_MAP = `# Context map
+export const MD_MAP = `# Context map
 
 How Agentheim's bounded contexts relate. Read top-down: upstream contexts
 constrain the contexts below them.
@@ -222,7 +221,7 @@ constrain the contexts below them.
 // Tickets
 // ============================================================
 
-const TICKETS = [
+export const TICKETS = [
   // ---- Doing ----
   { id: "AGH-128", status: "doing", title: "Implement the ticket drawer markdown renderer",
     context: "platform", est: "3", agent: true, updated: "2h ago", body: MD_TICKET },
@@ -256,7 +255,7 @@ const TICKETS = [
 // Library — documents by group, each opens in the drawer
 // ============================================================
 
-const LIBRARY = [
+export const LIBRARY = [
   {
     group: "Product",
     items: [
@@ -289,8 +288,3 @@ const LIBRARY = [
     ],
   },
 ];
-
-Object.assign(window, {
-  CONTENT_TYPES, STATUSES, COLUMN_ORDER, TICKETS, LIBRARY,
-  MD_ADR, MD_TICKET, MD_VISION, MD_CONTEXT, MD_RESEARCH, MD_MAP,
-});

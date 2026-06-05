@@ -1,80 +1,77 @@
-/* eslint-disable */
 /* ============================================================
    Agentheim — shared primitives
    Icon, content-type badge, status dot, meta chip, and the
    Markdown renderer used inside the drawer.
    ============================================================ */
-const { useState, useRef, useEffect, useMemo, useCallback } = React;
-// Icon is provided by app/icons.jsx (inline SVG, no runtime library).
+import { useRef, useEffect, useMemo } from "react";
+import { marked } from "marked";
+import { html } from "./html.js";
+import { Icon } from "./icons.js";
+import { CONTENT_TYPES, STATUSES } from "./data.js";
 
 // ---- Content-type badge: colored icon + optional label ----
-function TypeBadge({ type, showLabel = true, size = 15 }) {
+export function TypeBadge({ type, showLabel = true, size = 15 }) {
   const t = CONTENT_TYPES[type];
   if (!t) return null;
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 7, color: t.color, minWidth: 0 }}>
-      <Icon name={t.icon} size={size} color={t.color} />
-      {showLabel && (
-        <span style={{ fontFamily: "var(--font-ui)", fontSize: 12.5, fontWeight: 500, color: t.color, whiteSpace: "nowrap" }}>
-          {t.label}
-        </span>
-      )}
-    </span>
-  );
+  return html`
+    <span style=${{ display: "inline-flex", alignItems: "center", gap: 7, color: t.color, minWidth: 0 }}>
+      <${Icon} name=${t.icon} size=${size} color=${t.color} />
+      ${showLabel && html`
+        <span style=${{ fontFamily: "var(--font-ui)", fontSize: 12.5, fontWeight: 500, color: t.color, whiteSpace: "nowrap" }}>
+          ${t.label}
+        </span>`}
+    </span>`;
 }
 
 // ---- Content-type pill (tinted chip with icon) ----
-function TypePill({ type }) {
+export function TypePill({ type }) {
   const t = CONTENT_TYPES[type];
   if (!t) return null;
-  return (
-    <span style={{
+  return html`
+    <span style=${{
       display: "inline-flex", alignItems: "center", gap: 6,
       padding: "3px 9px 3px 7px", borderRadius: "var(--radius-sm)",
       background: t.tint, color: t.color,
       fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 500, letterSpacing: "0.01em",
     }}>
-      <Icon name={t.icon} size={13} color={t.color} />
-      {t.label}
-    </span>
-  );
+      <${Icon} name=${t.icon} size=${13} color=${t.color} />
+      ${t.label}
+    </span>`;
 }
 
 // ---- Status dot ----
-function StatusDot({ status, size = 8 }) {
+export function StatusDot({ status, size = 8 }) {
   const s = STATUSES[status];
   if (!s) return null;
   const isBacklog = status === "backlog";
-  return (
-    <span style={{
+  return html`
+    <span style=${{
       width: size, height: size, borderRadius: 99, flexShrink: 0,
       background: isBacklog ? "transparent" : s.color,
       boxShadow: isBacklog ? `inset 0 0 0 1.5px ${s.color}` : "none",
-    }} />
-  );
+    }} />`;
 }
 
 // ---- Status chip ----
-function StatusChip({ status }) {
+export function StatusChip({ status }) {
   const s = STATUSES[status];
   if (!s) return null;
-  return (
-    <span style={{
+  return html`
+    <span style=${{
       display: "inline-flex", alignItems: "center", gap: 6,
       padding: "3px 9px", borderRadius: 99,
       background: s.tint, color: s.color,
       fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 500,
     }}>
-      <StatusDot status={status} size={6} />
-      {s.label}
-    </span>
-  );
+      <${StatusDot} status=${status} size=${6} />
+      ${s.label}
+    </span>`;
 }
 
 // ---- Meta chip (neutral, for ticket meta) ----
-function MetaChip({ icon, children, mono = false }) {
-  return (
-    <span style={{
+export function MetaChip({ icon, children, mono = false }) {
+  return html`
+    <span style=${{
       display: "inline-flex", alignItems: "center", gap: 5,
       padding: "2px 7px", borderRadius: "var(--radius-sm)",
       background: "var(--surface-1)", border: "1px solid var(--hairline)",
@@ -83,20 +80,18 @@ function MetaChip({ icon, children, mono = false }) {
       fontSize: 11, fontWeight: mono ? 400 : 500,
       fontFeatureSettings: mono ? '"tnum","zero"' : "normal",
     }}>
-      {icon && <Icon name={icon} size={12} color="var(--fg-3)" />}
-      {children}
-    </span>
-  );
+      ${icon && html`<${Icon} name=${icon} size=${12} color="var(--fg-3)" />`}
+      ${children}
+    </span>`;
 }
 
 // ---- Mono identifier (ticket id / ADR id) ----
-function MonoId({ children, color = "var(--fg-3)" }) {
-  return (
-    <span style={{
+export function MonoId({ children, color = "var(--fg-3)" }) {
+  return html`
+    <span style=${{
       fontFamily: "var(--font-mono)", fontSize: 11.5, fontWeight: 500,
       letterSpacing: "0.01em", color, fontFeatureSettings: '"tnum","zero"',
-    }}>{children}</span>
-  );
+    }}>${children}</span>`;
 }
 
 // ============================================================
@@ -131,11 +126,11 @@ function highlightCode(text) {
   return out;
 }
 
-function Markdown({ source }) {
+export function Markdown({ source }) {
   const ref = useRef(null);
-  const html = useMemo(() => {
-    if (!window.marked) return escapeHtml(source);
-    return window.marked.parse(source, { gfm: true, breaks: false });
+  const htmlOut = useMemo(() => {
+    if (!marked) return escapeHtml(source);
+    return marked.parse(source, { gfm: true, breaks: false });
   }, [source]);
 
   useEffect(() => {
@@ -154,11 +149,7 @@ function Markdown({ source }) {
     el.querySelectorAll("pre code").forEach((code) => {
       code.innerHTML = highlightCode(code.textContent);
     });
-  }, [html]);
+  }, [htmlOut]);
 
-  return <div className="prose" ref={ref} dangerouslySetInnerHTML={{ __html: html }} />;
+  return html`<div className="prose" ref=${ref} dangerouslySetInnerHTML=${{ __html: htmlOut }} />`;
 }
-
-Object.assign(window, {
-  TypeBadge, TypePill, StatusDot, StatusChip, MetaChip, MonoId, Markdown,
-});
