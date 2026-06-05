@@ -127,13 +127,13 @@ If you create a context-map, also scaffold the `contexts/<name>/` directories wi
 
 ## Delegating heavy lifting
 
-If strategic context modeling becomes dense (many candidate contexts, unclear relationships), delegate to the **strategic-modeler** agent via the **orchestrator**. Give the orchestrator the vision-so-far and ask for a bounded context analysis. Don't try to do tactical modeling (aggregates, entities) in brainstorm — that's the job of `model` once tasks land in a specific BC.
+If strategic context modeling becomes dense (many candidate contexts, unclear relationships), delegate to the **strategic-modeler** agent via the **orchestrator**. Give the orchestrator the vision-so-far and ask for a bounded context analysis. Don't try to do tactical modeling (aggregates, entities) in brainstorm — that's the job of `modeling` once tasks land in a specific BC.
 
 If a specific question requires outside knowledge (e.g., "how do other people solve X?", "what's the state of the art for Y?"), delegate to the **research** skill. Brainstorming can pause while research runs and resume with the findings.
 
 ## Architecture foundation (final step)
 
-Once the vision (and context-map, if warranted) is locked, run an explicit architecture foundation pass before handing the project off to `model`. The point: stand up the infrastructure BC so cross-cutting tech concerns have a permanent home, surface the load-bearing tech decisions, get a walking-skeleton spec on the queue, and — if the project has any frontend — get a styleguide task scheduled before any BC builds its UI. Without this step, `model` and `work` end up making foundation calls under feature pressure, one task at a time, with no coherent first prototype.
+Once the vision (and context-map, if warranted) is locked, run an explicit architecture foundation pass before handing the project off to `modeling`. The point: stand up the infrastructure BC so cross-cutting tech concerns have a permanent home, surface the load-bearing tech decisions, get a walking-skeleton spec on the queue, and — if the project has any frontend — get a styleguide task scheduled before any BC builds its UI. Without this step, `modeling` and `work` end up making foundation calls under feature pressure, one task at a time, with no coherent first prototype.
 
 Skip only if the user explicitly says no (e.g., adding agentheim to a mature project that already has its foundations, or a single-file script with no integration questions). In the mature-project case, offer to backfill ADRs documenting the existing architecture instead.
 
@@ -189,7 +189,7 @@ If the vision implies any UI — even a single admin dashboard — create a `typ
 
 (The design system is structurally analogous to the infrastructure BC — it's frontend infrastructure with a distinct UX vocabulary — but kept separate because its actors and review process differ. Don't fold it into `infrastructure/`.)
 
-**Critical rule for downstream `model`:** every frontend task in any BC must `depends_on` this styleguide task. Note this in each frontend-bearing BC's README so future captures pick it up automatically. The styleguide is the gate; no BC implements its UI before the gate is open.
+**Critical rule for downstream `modeling`:** every frontend task in any BC must `depends_on` this styleguide task. Note this in each frontend-bearing BC's README so future captures pick it up automatically. The styleguide is the gate; no BC implements its UI before the gate is open.
 
 ### When to skip parts of this
 

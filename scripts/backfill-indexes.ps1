@@ -92,7 +92,7 @@ function Build-TopLevelIndex {
 Top-level catalog of this project's bounded contexts, global decisions, and research.
 For BC-scoped artifacts, see each BC's ``INDEX.md``.
 
-> Updated by: ``model`` (BC creation), ``work`` (global ADRs), ``research`` (reports tagged global / cross-BC), backfill script.
+> Updated by: ``modeling`` (BC creation), ``work`` (global ADRs), ``research`` (reports tagged global / cross-BC), backfill script.
 > Hand-edits are fine but the skills will append at the section markers below.
 
 ---
@@ -168,7 +168,7 @@ function Build-BCIndex {
 Catalog of everything in this bounded context: tasks by status, ADRs scoped to this BC,
 research touching this BC, and concept synthesis pages.
 
-> Updated by: ``model`` (tasks), ``work`` (BC-scoped ADRs, concept page links), ``research`` (BC-scoped reports).
+> Updated by: ``modeling`` (tasks), ``work`` (BC-scoped ADRs, concept page links), ``research`` (BC-scoped reports).
 
 ---
 

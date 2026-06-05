@@ -159,6 +159,6 @@ ERROR: <where it went wrong and why, one or two sentences>
 - No modeling (no strategic or tactical DDD changes — those are separate tasks of type `decision`)
 - No refining other tasks (even if they look under-refined — not your job)
 - No touching files outside the task's implied scope
-- No extending the vision or context map (those changes come from brainstorm/model)
+- No extending the vision or context map (those changes come from brainstorm/modeling)
 - No amending `done/` tasks (once done, a task is frozen; follow-ups become new tasks)
 - No updating other BCs' READMEs

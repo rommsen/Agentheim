@@ -9,7 +9,7 @@ The `research` skill is how external knowledge enters the workflow. It runs WebF
 
 ## Scope
 
-Research is about understanding, not decision-making. Produce a report; do not produce an ADR. Decisions come later — in `model` or `work` — and they cite research reports.
+Research is about understanding, not decision-making. Produce a report; do not produce an ADR. Decisions come later — in `modeling` or `work` — and they cite research reports.
 
 ## Inputs
 
@@ -141,7 +141,7 @@ A later task or ADR that adopts this report should update the inserted line's BC
 
 ## Protocol logging
 
-After the report clears the review gate, prepend an entry to `.agentheim/knowledge/protocol.md` (creating the file with its header if missing — see brainstorm/model/work skills for the header template):
+After the report clears the review gate, prepend an entry to `.agentheim/knowledge/protocol.md` (creating the file with its header if missing — see brainstorm/modeling/work skills for the header template):
 
 ```markdown
 ## YYYY-MM-DD HH:MM -- Research: [topic]

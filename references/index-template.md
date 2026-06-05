@@ -12,7 +12,7 @@ State-of-the-world entry point. Skills read this for orientation before any deep
 Top-level catalog of this project's bounded contexts, global decisions, and research.
 For BC-scoped artifacts, see each BC's `INDEX.md`.
 
-> Updated by: `model` (BC creation), `work` (global ADRs), `research` (reports tagged global / cross-BC), backfill script.
+> Updated by: `modeling` (BC creation), `work` (global ADRs), `research` (reports tagged global / cross-BC), backfill script.
 > Hand-edits are fine but the skills will append at the section markers below.
 
 ---
@@ -59,7 +59,7 @@ BC-local catalog. Workers read this before designing; model reads it to find pri
 Catalog of everything in this bounded context: tasks by status, ADRs scoped to this BC,
 research touching this BC, and concept synthesis pages.
 
-> Updated by: `model` (tasks), `work` (BC-scoped ADRs, concept page links), `research` (BC-scoped reports).
+> Updated by: `modeling` (tasks), `work` (BC-scoped ADRs, concept page links), `research` (BC-scoped reports).
 
 ---
 
@@ -121,7 +121,7 @@ When a skill creates an artifact, it inserts a new line **immediately after** th
 
 Examples:
 
-- `model` writes `contexts/auth/backlog/auth-003-password-reset.md` → inserts under `<!-- backlog-list:start -->` in `contexts/auth/INDEX.md`. Also increments the Backlog count under `<!-- task-counts:start -->`.
+- `modeling` writes `contexts/auth/backlog/auth-003-password-reset.md` → inserts under `<!-- backlog-list:start -->` in `contexts/auth/INDEX.md`. Also increments the Backlog count under `<!-- task-counts:start -->`.
 - `work` writes `knowledge/decisions/0014-postgres-billing.md` with `scope: billing` → inserts under `<!-- adr-local:start -->` in `contexts/billing/INDEX.md`. If `scope: global`, inserts under `<!-- adr-global:start -->` in `knowledge/index.md` instead.
 - `research` writes `knowledge/research/auth-tokens-2026-05-13.md` with `related_tasks: [auth-007]` → inserts under `<!-- research-local:start -->` in `contexts/auth/INDEX.md`. If the report's `related_tasks` spans multiple BCs (or none yet), inserts under `<!-- research-global:start -->` in `knowledge/index.md`.
 

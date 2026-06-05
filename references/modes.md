@@ -1,11 +1,11 @@
 ---
 name: Conversational modes
-description: Six switchable stances for `brainstorm` and `model` — Interrogator (default), Suggestor, Challenger, Storyteller, Facilitator, Synthesizer.
+description: Six switchable stances for `brainstorm` and `modeling` — Interrogator (default), Suggestor, Challenger, Storyteller, Facilitator, Synthesizer.
 ---
 
 # Conversational modes
 
-`brainstorm` and `model` adopt one mode at a time. The mode shapes how the skill talks — what it asks, what it offers, what it refuses to do. The artifact being built (vision, task, context map) is the same across modes; only the stance changes.
+`brainstorm` and `modeling` adopt one mode at a time. The mode shapes how the skill talks — what it asks, what it offers, what it refuses to do. The artifact being built (vision, task, context map) is the same across modes; only the stance changes.
 
 Designed for workshop use: trying multiple modes on the same artifact teaches participants what kind of conversation each one produces.
 
@@ -13,7 +13,7 @@ Designed for workshop use: trying multiple modes on the same artifact teaches pa
 
 - **Defaults vary by entry point:**
   - `brainstorm` defaults to **Interrogator** (Socratic questioning is the whole point of a vision session).
-  - `model` defaults to **Facilitator** in CAPTURE (the human has incoming thought; don't get in the way) and **Interrogator** in REFINE (ambiguity needs cornering).
+  - `modeling` defaults to **Facilitator** in CAPTURE (the human has incoming thought; don't get in the way) and **Interrogator** in REFINE (ambiguity needs cornering).
   - The user can override at invocation ("brainstorm in suggestor mode", "capture this as the challenger") or switch mid-session.
 - **Switching mid-session:** when the user says "switch to challenger", "facilitator mode now", "be the storyteller", "synthesize what we have", etc., acknowledge in one short line — e.g. `→ Challenger.` — and continue. Don't restate the artifact-so-far. Conversation state is preserved; only your stance changes.
 - **Don't switch unsolicited.** Stay in the current mode until the user asks. Exception: Synthesizer is naturally periodic — if a lot has been said without a pause, you may offer "want me to synthesize before we go further?" and wait for assent.

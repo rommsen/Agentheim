@@ -1,11 +1,11 @@
 ---
-name: model
-description: Use whenever the user wants to capture an idea, bug, feature request, refinement, or change to an existing bounded context — anything from "the button should be green" to "we need a whole new subscription subsystem". Also use when the user wants to refine existing backlog items or promote refined items to ready-to-work. Triggers on phrases like "I have an idea", "let's model this", "capture this", "add this to the backlog", "refine the auth backlog", "promote X to todo", "we should also", "what if we added", "there's a bug", "change the color of", "the domain needs to handle". Creates task markdown files in the appropriate bounded context with the right status, and can spawn deeper modeling sessions via the orchestrator. Supports six switchable conversational modes (Interrogator [default], Suggestor, Challenger, Storyteller, Facilitator, Synthesizer) during CAPTURE and REFINE — see references/modes.md.
+name: modeling
+description: Use whenever the user wants to capture an idea, bug, feature request, refinement, or change to an existing bounded context — anything from "the button should be green" to "we need a whole new subscription subsystem". Also use when the user wants to refine existing backlog items or promote refined items to ready-to-work. Triggers on phrases like "I have an idea", "let's model this", "let's do some modeling", "capture this", "add this to the backlog", "refine the auth backlog", "promote X to todo", "we should also", "what if we added", "there's a bug", "change the color of", "the domain needs to handle". Creates task markdown files in the appropriate bounded context with the right status, and can spawn deeper modeling sessions via the orchestrator. Supports six switchable conversational modes (Interrogator [default], Suggestor, Challenger, Storyteller, Facilitator, Synthesizer) during CAPTURE and REFINE — see references/modes.md.
 ---
 
-# Model — Capture, Refine, Promote
+# Modeling — Capture, Refine, Promote
 
-The `model` skill is the main entry point for the user's stream of ideas. Every thought — from a one-line bug to a cross-context architectural shift — enters the system here and ends up as a task file in a bounded context.
+The `modeling` skill is the main entry point for the user's stream of ideas. Every thought — from a one-line bug to a cross-context architectural shift — enters the system here and ends up as a task file in a bounded context.
 
 ## The three actions
 
@@ -19,10 +19,40 @@ Decide which action applies based on what the user said and the current state of
 
 ### Disambiguating intent
 
-- If the user gives a concrete idea ("add dark mode") → CAPTURE
-- If the user says "let's model" / "what's in the backlog?" with nothing new → offer REFINE or CAPTURE-something-new
+- If the user gives a concrete idea ("add dark mode") → CAPTURE directly. Don't make them wade through the backlog first when they already know what they want to add.
+- If the user invoked `modeling` with **no concrete new idea** ("let's model", "let's do some modeling", "what's in the backlog?", or a bare invocation) → run the **Opening flow** below: show the backlog, offer to refine, fall through to capture.
 - If the user says "promote X" / "X is ready" → PROMOTE
 - If ambiguous, ask once. Don't guess wrong and then have to undo.
+
+### Opening flow (bare invocation)
+
+This runs only when the user opened `modeling` without handing you a concrete new idea — they want to work the backlog, or they haven't decided yet. The point is to surface what's already pending before inviting new thought, so existing ideas get refined instead of quietly accumulating.
+
+1. **Gather the backlog.** After the "Before acting" reads, collect every task in `contexts/*/backlog/` across all BCs. Prefer the per-BC `INDEX.md` backlog lists (already loaded) over re-scanning directories.
+
+2. **If the backlog is empty**, say so in one line and go straight to inviting a new idea (CAPTURE). Don't show an empty table.
+
+3. **If the backlog has tasks, present them as a table** and ask whether the user wants to refine any before capturing something new. Use this shape:
+
+   ```
+   You have N items in the backlog:
+
+   | ID        | Title                      | BC      | Type    | Age   |
+   |-----------|----------------------------|---------|---------|-------|
+   | auth-003  | Password reset flow        | auth    | feature | 12d   |
+   | books-007 | Reading-session timeout    | books   | bug     | 3d    |
+
+   Want to refine any of these before we capture something new? (give me an ID, or say "new" / "no" to capture instead)
+   ```
+
+   - Sort oldest-first (stalest items are the ones most worth surfacing), unless a task carries a priority flag.
+   - "Age" is days since the `created` date relative to today; keep it compact ("3d", "2w"). Omit the column if `created` dates aren't available rather than guessing.
+   - Keep it scannable. If the backlog is large (say >15), show the oldest 15 and note how many more exist ("…and 8 more — ask to see them or name one").
+
+4. **Branch on the answer:**
+   - User names a task (by id, number, or keyword) → **REFINE** that task (see REFINE flow; resolve the reference per "Identifying which task the user means").
+   - User says "no" / "new" / "capture" / starts describing something fresh → **CAPTURE** (see CAPTURE flow).
+   - User is vague → ask once which they meant; don't assume.
 
 ### Identifying which task the user means (REFINE / PROMOTE)
 
@@ -186,7 +216,7 @@ Never promote a frontend task to `todo/` ahead of the styleguide. The styleguide
 
 ## Delegating to the orchestrator
 
-The `model` skill itself does not do deep modeling — it routes. For anything non-trivial, hand off to the `orchestrator` agent with:
+The `modeling` skill itself does not do deep modeling — it routes. For anything non-trivial, hand off to the `orchestrator` agent with:
 - The idea or task being refined
 - The target BC's README (ubiquitous language)
 - The vision.md
@@ -284,18 +314,18 @@ Newest entries on top.
 Then prepend the appropriate entry right after the `---` on line 4:
 
 ```markdown
-## YYYY-MM-DD HH:MM -- Model / Captured: <task-id> - [title]
+## YYYY-MM-DD HH:MM -- Modeling / Captured: <task-id> - [title]
 
-**Type:** Model / Capture
+**Type:** Modeling / Capture
 **BC:** <bc-name>
 **Filed to:** backlog | todo
 **Summary:** [1-2 sentences on what the idea is]
 
 ---
 
-## YYYY-MM-DD HH:MM -- Model / Refined: <task-id> - [title]
+## YYYY-MM-DD HH:MM -- Modeling / Refined: <task-id> - [title]
 
-**Type:** Model / Refine
+**Type:** Modeling / Refine
 **BC:** <bc-name>
 **Status after:** backlog | todo
 **Summary:** [what was clarified, added, or split]
@@ -304,9 +334,9 @@ Then prepend the appropriate entry right after the `---` on line 4:
 
 ---
 
-## YYYY-MM-DD HH:MM -- Model / Promoted: <task-id> - [title]
+## YYYY-MM-DD HH:MM -- Modeling / Promoted: <task-id> - [title]
 
-**Type:** Model / Promote
+**Type:** Modeling / Promote
 **BC:** <bc-name>
 **From → To:** backlog → todo
 

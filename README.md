@@ -44,13 +44,13 @@ Skills auto-trigger from natural-language phrases — no slash commands to memor
 | Skill | Triggered by | Produces |
 |---|---|---|
 | **brainstorm** | "let's brainstorm", "start a new project", "create a vision", "model this from scratch" | `.agentheim/vision.md` (+ `context-map.md` when warranted). Closes with an architecture foundation pass that emits `type: decision` tasks, a walking-skeleton spike, and (when frontend exists) a styleguide task. No code yet — those land in `todo/` for `work` to execute. |
-| **model** | "I have an idea", "capture this", "refine the auth backlog", "promote X to todo", "there's a bug" | Task markdown files in `contexts/<bc>/backlog\|todo/` with status, dependencies, acceptance criteria. |
+| **modeling** | "I have an idea", "capture this", "refine the auth backlog", "promote X to todo", "there's a bug" | Task markdown files in `contexts/<bc>/backlog\|todo/` with status, dependencies, acceptance criteria. A bare invocation first shows the backlog and offers to refine before capturing. |
 | **work** | "start working", "execute the todo", "let's go", "pick up where you left off" | Code, commits, ADRs. Parallel workers respect the dependency DAG. Each worker runs TDD (red-green-refactor) by default, and every `SUCCESS` passes through a fresh-context **verifier** agent before the commit. |
 | **research** | "research X", "state of the art for", "compare options for" | A markdown report in `.agentheim/knowledge/research/`. Every report passes through a fresh-context **research-reviewer** agent that re-verifies its checkable claims (versions, prices, package names, API surface) against primary sources before the report is citable. Cited by tasks and ADRs. |
 
 ## How the workflow works
 
-The full workflow — how brainstorm, model, research, and work hand off to each other, the architecture-foundation pass, the orchestration layer, the task lifecycle, and the knowledge layer — is laid out in a visual guide:
+The full workflow — how brainstorm, modeling, research, and work hand off to each other, the architecture-foundation pass, the orchestration layer, the task lifecycle, and the knowledge layer — is laid out in a visual guide:
 
 - **[agentheim-workflow.pdf](agentheim-workflow.pdf)** — renders inline on GitHub, one topic per page.
 - **[agentheim-workflow.html](agentheim-workflow.html)** — the same guide as an interactive page; clone the repo and open it in a browser.
@@ -81,7 +81,7 @@ All state for a project lives in `.agentheim/` inside that project — never in 
 
 Tasks are plain markdown with frontmatter (`id`, `status`, `depends_on`, `type`). One task = one commit, made by the work skill after the worker reports `SUCCESS` *and* the verifier returns `PASS`. Workers return a strict `RESULT/TASK_ID/SUMMARY/FILES_CHANGED/...` format to keep the orchestrator context lean across long batches.
 
-The `INDEX.md` per BC and the top-level `knowledge/index.md` are the **memory layer**: skills consult them for prior-art lookup before capture, for dependency hints, and for surfacing concept candidates. They're maintained incrementally by `model`/`work`/`research`; `scripts/backfill-indexes.ps1` rebuilds them for pre-existing state.
+The `INDEX.md` per BC and the top-level `knowledge/index.md` are the **memory layer**: skills consult them for prior-art lookup before capture, for dependency hints, and for surfacing concept candidates. They're maintained incrementally by `modeling`/`work`/`research`; `scripts/backfill-indexes.ps1` rebuilds them for pre-existing state.
 
 Scaffolding is English; your own domain language can be in any language.
 
@@ -94,7 +94,7 @@ Want Claude Code to speak its end-of-turn summaries and attention prompts aloud?
 ```
 .claude-plugin/plugin.json         # plugin manifest
 agents/                            # orchestrator + specialists (incl. verifier, research-reviewer)
-skills/                            # brainstorm, model, research, work, test-driven-development, verification-before-completion, research-review
+skills/                            # brainstorm, modeling, research, work, test-driven-development, verification-before-completion, research-review
 scripts/backfill-indexes.ps1       # one-shot rebuild of .agentheim/ indexes for projects predating 0.6.0
 evals/                             # benchmarks against other harnesses
 references/                        # design notes and source material

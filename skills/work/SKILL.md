@@ -53,7 +53,7 @@ For each dispatch wave:
    - For `RESULT: FAILED`: log "Task failed" to protocol.md with the error. Leave the task in `doing/` so it doesn't silently retry. Tell the user at the end.
    - One failure does not block the batch — the other subagents continue and are processed normally.
 
-5. **After the batch completes**, return to Phase 2 — re-scan. New tasks may have been promoted to todo (via parallel `model` invocations) or new dependencies may have unblocked.
+5. **After the batch completes**, return to Phase 2 — re-scan. New tasks may have been promoted to todo (via parallel `modeling` invocations) or new dependencies may have unblocked.
 
 ## Verification gate (post-SUCCESS, pre-commit)
 
@@ -105,7 +105,7 @@ For each SUCCESS that requires verification, in parallel where the workers ran i
 1. Do not commit. Do not re-dispatch.
 2. Leave the task in `doing/` with all accumulated verifier notes — the user will see them.
 3. Log "Verification failed — escalating to user" to protocol.md.
-4. Surface at end-of-batch (see End-of-run reporting): summarize the task, the iteration history, and the latest verifier's SUGGESTED_FIX. The user decides whether to refine the task (re-route via `model` REFINE) or abandon.
+4. Surface at end-of-batch (see End-of-run reporting): summarize the task, the iteration history, and the latest verifier's SUGGESTED_FIX. The user decides whether to refine the task (re-route via `modeling` REFINE) or abandon.
 
 ### Verifier Prompt Template
 
@@ -355,7 +355,7 @@ ERROR: <where and why it went wrong, one or two sentences>
 When `todo/` is empty and all `doing/` is resolved (or the user interrupts):
 
 1. Summarize in plain prose: tasks completed (with verification stats — how many passed first try vs. needed re-dispatch), tasks bounced (and why), tasks failed (and why), tasks escalated after 3 verification failures (these need user attention), ADRs written, new backlog items created, total commits made.
-2. For each task escalated to the user: name it, summarize the iteration history, and show the latest verifier's SUGGESTED_FIX. The user decides whether to REFINE via `model` or abandon.
+2. For each task escalated to the user: name it, summarize the iteration history, and show the latest verifier's SUGGESTED_FIX. The user decides whether to REFINE via `modeling` or abandon.
 3. **Concept candidates.** Aggregate every non-"none" `CONCEPT_CANDIDATE` from worker SUCCESS blocks across the run. If any concept name shows up in 2+ workers' returns, escalate the convergence signal more loudly. For each unique candidate: print the concept name, the BC, and the converging artifact ids. The user decides whether to create the page (per `references/concept-template.md`); never auto-create.
 4. Surface anything that surprised you mid-run: cycles detected, dependency gaps, recovered sessions, repeated verification failures pointing at a common cause.
 4. Prepend a final protocol entry:
@@ -374,4 +374,4 @@ When `todo/` is empty and all `doing/` is resolved (or the user interrupts):
 
 ## Do not model in work
 
-If a worker realizes mid-task that the scope is actually under-refined, it bounces to backlog — it does not try to refine the task itself. Refinement is the `model` skill's job, with the user in the loop. Workers executing under-specified tasks produce plausible-looking but wrong output — that's the worst possible outcome.
+If a worker realizes mid-task that the scope is actually under-refined, it bounces to backlog — it does not try to refine the task itself. Refinement is the `modeling` skill's job, with the user in the loop. Workers executing under-specified tasks produce plausible-looking but wrong output — that's the worst possible outcome.

@@ -108,5 +108,5 @@ CONCEPT_CANDIDATE: <name> — converging on <N> artifacts (<id list>)
 ```
 
 The orchestrator surfaces this at end-of-batch. The user decides whether to
-create the page (via a manual write or a future `model` extension for concept
+create the page (via a manual write or a future `modeling` extension for concept
 creation). Never auto-create.
