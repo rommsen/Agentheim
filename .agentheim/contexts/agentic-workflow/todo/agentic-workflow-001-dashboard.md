@@ -56,7 +56,8 @@ are `done` and the end-to-end flow works: launch → board → slide-over → li
 - [ ] Invoking `dashboard` launches the server, opens the board, and a builder can: browse every
       BC artifact, open any as rendered markdown in the slide-over, see the board live-update when
       a skill moves a file on disk, and drag `backlog→todo` to Promote.
-- [ ] The end-to-end flow works on the builder's Windows box and at least one POSIX OS.
+- [ ] The end-to-end flow works on the builder's Windows box. (v1 bar is Windows-only; the
+      POSIX leg is carved out to agentic-workflow-010 — see Notes.)
 - [ ] `dashboard` is documented as a Key command of this BC.
 
 ## Notes
@@ -80,3 +81,9 @@ are `done` and the end-to-end flow works: launch → board → slide-over → li
 - **Depends on:** its six children (aw-004…009). The children carry the leaf deps —
   infrastructure-001/002/003, agentic-workflow-002/003, design-system-001/002. This epic is
   promotable only once all children are done.
+- **POSIX cross-OS verification deferred (2026-06-06, builder decision).** The v1 acceptance
+  bar was narrowed to the builder's Windows box because the integration pass runs from a
+  Windows-only environment. The original "and at least one POSIX OS" criterion is carved out
+  into the follow-up task **agentic-workflow-010** (Dashboard cross-OS verification — POSIX
+  leg), which `depends_on: [agentic-workflow-001]`. v1 closes on the Windows leg; POSIX
+  parity is tracked separately.

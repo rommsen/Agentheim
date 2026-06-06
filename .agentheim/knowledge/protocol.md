@@ -5,6 +5,21 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Modeling / Refined: agentic-workflow-001 - Dashboard (integration epic)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Narrowed the epic's v1 acceptance bar to the builder's Windows box (settled builder
+decision) because the integration pass runs from a Windows-only environment. The "and at least
+one POSIX OS" cross-OS criterion was carved out into a new follow-up task; aw-001 stays in todo,
+ready for `work`.
+**Split into:** agentic-workflow-010 (Dashboard cross-OS verification — POSIX leg; backlog,
+`depends_on: [agentic-workflow-001]`)
+**ADRs written:** none
+
+---
+
 ## 2026-06-06 -- Modeling / Promoted: agentic-workflow-001 - Dashboard (integration epic)
 
 **Type:** Modeling / Promote

@@ -10,7 +10,7 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
+- **Backlog:** 1
 - **Todo:** 1
 - **Doing:** 0
 - **Done:** 8
@@ -39,6 +39,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **agentic-workflow-010** — Dashboard cross-OS verification: POSIX leg (spike) — `backlog/agentic-workflow-010-dashboard-posix-cross-os-verification.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
