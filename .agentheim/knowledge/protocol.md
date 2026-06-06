@@ -5,6 +5,39 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Task verified and completed: agentic-workflow-001 - Dashboard (integration epic)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-001 - Dashboard — local web UI over the project's .agentheim folder
+**Summary:** Closed the dashboard integration epic on the Windows leg — all six children
+(aw-004…009) confirmed done; verified end-to-end on Windows by running both suites green
+(lib 13/13, dashboard 100/100) and live-launching the detached server against a throwaway temp
+`.agentheim/` fixture, exercising `/api/tree` (200), `/api/doc` (200 + 403 traversal guard),
+`/api/events` (200 SSE hello), `POST /api/task/move` backlog→todo (200, file moved) and an
+illegal todo→done refused (422), then stopping cleanly. `dashboard` documented as a Key command.
+**Verification:** PASS (iteration 1) — verifier independently re-ran both suites green, confirmed
+the six children in done/, the README Key-command doc, and scope (README + task move only).
+**Commit:** <sha-recorded-separately>
+**Files changed:** 1 (BC README — Dashboard Key command)
+**Tests added:** 0 (integration/verification epic; no runtime code changed)
+**ADRs written:** none
+**Note:** v1 bar was Windows-only by builder decision; the POSIX cross-OS leg is tracked in
+agentic-workflow-010 (backlog, depends_on aw-001). No integration defect found.
+
+---
+
+## 2026-06-06 -- Batch started: [agentic-workflow-001]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-001 - Dashboard (local web UI over .agentheim — integration epic / gate)
+**Parallel:** no (1 worker)
+**Note:** Epic-closing integration pass. All six children (aw-004…009) are done; v1 bar was
+narrowed to Windows-only this session (POSIX carved to aw-010). The worker runs the end-to-end
+flow on Windows (launch → board → slide-over → live-update → Promote), documents `dashboard` as
+a Key command of the BC, and closes the epic. Cross-OS/POSIX is explicitly out of scope here.
+
+---
+
 ## 2026-06-06 -- Modeling / Refined: agentic-workflow-001 - Dashboard (integration epic)
 
 **Type:** Modeling / Refine

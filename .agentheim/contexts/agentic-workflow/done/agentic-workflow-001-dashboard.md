@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-001
 title: Dashboard — local web UI over the project's .agentheim folder
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-05
-completed:
+completed: 2026-06-06
 commit:
 depends_on: [agentic-workflow-004, agentic-workflow-005, agentic-workflow-006, agentic-workflow-007, agentic-workflow-008, agentic-workflow-009]
 blocks: []
@@ -50,15 +50,15 @@ are `done` and the end-to-end flow works: launch → board → slide-over → li
 
 ## Acceptance criteria (integration / end-to-end only)
 
-- [ ] All child tasks land `done`: aw-004 (server bootstrap), aw-005 (read API), aw-006
+- [x] All child tasks land `done`: aw-004 (server bootstrap), aw-005 (read API), aw-006
       (flat board), aw-007 (slide-over + renderer), aw-008 (navigation), aw-009 (live-update +
       Promote).
-- [ ] Invoking `dashboard` launches the server, opens the board, and a builder can: browse every
+- [x] Invoking `dashboard` launches the server, opens the board, and a builder can: browse every
       BC artifact, open any as rendered markdown in the slide-over, see the board live-update when
       a skill moves a file on disk, and drag `backlog→todo` to Promote.
-- [ ] The end-to-end flow works on the builder's Windows box. (v1 bar is Windows-only; the
+- [x] The end-to-end flow works on the builder's Windows box. (v1 bar is Windows-only; the
       POSIX leg is carved out to agentic-workflow-010 — see Notes.)
-- [ ] `dashboard` is documented as a Key command of this BC.
+- [x] `dashboard` is documented as a Key command of this BC.
 
 ## Notes
 
@@ -87,3 +87,32 @@ are `done` and the end-to-end flow works: launch → board → slide-over → li
   into the follow-up task **agentic-workflow-010** (Dashboard cross-OS verification — POSIX
   leg), which `depends_on: [agentic-workflow-001]`. v1 closes on the Windows leg; POSIX
   parity is tracked separately.
+
+## Outcome
+
+Epic closed on the Windows leg. All six children (aw-004…009) confirmed `done`. End-to-end
+integration verified on the builder's Windows box:
+
+- **Test suites green:** `lib/test/` 13/13 and `dashboard/test/` 100/100 (run via
+  `node --test "<dir>/**/*.test.mjs"` — this Node 25 build treats a bare directory arg as a
+  module path, so an explicit glob is needed).
+- **Live launch/stop:** spawned the detached server (`launchDashboard`) against a throwaway
+  temp `.agentheim/` fixture — neutral cwd + `AGENTHEIM_ROOT` per ADR-0004; got pid+port back;
+  `stopDashboard` killed the pid and removed the runfile cleanly (no lingering lock, the real
+  project's runfile was never created).
+- **Endpoints exercised live (HTTP, against the fixture):** `GET /api/tree` → 200 with the
+  per-BC lifecycle projection; `GET /api/doc?path=` → 200 raw markdown, and a `../` traversal
+  → 403; `GET /api/events` → 200 `text/event-stream` with the SSE `hello` frame; `POST
+  /api/task/move {backlog→todo}` → 200 and the task file actually moved to `todo/` with
+  frontmatter rewritten (the shared `applyTaskMove`, ADR-0001); an illegal `todo→done` skip →
+  422 with a structured domain reason.
+- **Static assets:** served the committed `dashboard/dist/` directly — `/` (index.html),
+  `/agentheim.css`, `/app.js` all 200 with correct content-types (the fixture's `/` 404 was
+  only the scratch root lacking a `dist/`, not a defect).
+
+Not automatable here and therefore not exercised live: the browser-rendered board, the
+slide-over animation, and physical drag-drop. Those are covered by the children's unit/DOM-data
+suites (`board-data`, `slide-over-data`, `library-data`, `live-update`, `promote`) plus the live
+API + launch/stop evidence above. No integration defect found; no runtime code changed.
+
+README updated: `dashboard` added to the Key commands of this BC.

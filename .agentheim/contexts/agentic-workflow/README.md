@@ -158,7 +158,13 @@ Decision recorded (ADR) · Research published · Research reviewed.
 
 ## Key commands
 
-Intents entering the context. Brainstorm · Capture · Refine · Promote · Work · Research.
+Intents entering the context. Brainstorm · Capture · Refine · Promote · Work · Research ·
+Dashboard.
+
+**Dashboard** launches the local web UI over the project's `.agentheim/` folder — a flat Kanban
+board of every BC's tasks, a universal slide-over that renders any artifact (tasks, BC READMEs,
+the vision, the context map, ADRs, research) as markdown, live-updating as skills move files on
+disk, with one write-back intent: drag `backlog→todo` to Promote.
 
 ## Relationships with other contexts
 
