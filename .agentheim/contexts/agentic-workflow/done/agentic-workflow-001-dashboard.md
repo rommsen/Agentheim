@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-05
 completed: 2026-06-06
-commit:
+commit: 8af5748
 depends_on: [agentic-workflow-004, agentic-workflow-005, agentic-workflow-006, agentic-workflow-007, agentic-workflow-008, agentic-workflow-009]
 blocks: []
 tags: [dashboard, ui, frontend, web, kanban, epic]

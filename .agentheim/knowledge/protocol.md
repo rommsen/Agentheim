@@ -17,7 +17,7 @@ Newest entries on top.
 illegal todo→done refused (422), then stopping cleanly. `dashboard` documented as a Key command.
 **Verification:** PASS (iteration 1) — verifier independently re-ran both suites green, confirmed
 the six children in done/, the README Key-command doc, and scope (README + task move only).
-**Commit:** <sha-recorded-separately>
+**Commit:** 8af5748
 **Files changed:** 1 (BC README — Dashboard Key command)
 **Tests added:** 0 (integration/verification epic; no runtime code changed)
 **ADRs written:** none
