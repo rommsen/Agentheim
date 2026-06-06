@@ -48,6 +48,18 @@ separate BC, but today the whole tool lives in this one.
 - **Protocol** — the chronological project diary, newest on top; every action appends.
 - **Index** — a flat catalog (`knowledge/index.md` + per-BC `INDEX.md`) that *points*,
   never duplicates. The memory layer for prior-art and dependency lookup.
+- **Tree projection** — the single read model the dashboard's views (board, slide-over,
+  navigation) and the SSE consumer all rebuild from. `GET /api/tree` (built in
+  agentic-workflow-005 as `dashboard/tree.mjs`) walks the discovered `.agentheim/` and returns,
+  per BC, its four lifecycle folders and each task's frontmatter projection
+  (`id, title, status, type, context, path`) plus the *locations* of vision / context-map / BC
+  READMEs+INDEXes+concepts / ADRs / research — pointers and metadata only, never document
+  bodies. A task whose `status`/`context` frontmatter is missing falls back to its folder / BC
+  name (disk is the source of truth), and malformed frontmatter degrades gracefully — the card
+  is still listed, the walk never aborts. Document bodies are carried separately by
+  `GET /api/doc?path=<in-root path>`, a validated raw-markdown carrier (rendering is
+  client-side). Both endpoints are pure reads and reuse the root-resolution `startsWith(root)`
+  guard; neither writes nor interprets a lifecycle move. See ADR-0002.
 - **Card move** — a UI drag of a task card between lifecycle columns; semantically a Task
   transition command (v1: Promote / `backlog→todo` only), never a raw file operation. Every
   other transition is a non-drop target, rejected with a domain reason. See ADR-0001.

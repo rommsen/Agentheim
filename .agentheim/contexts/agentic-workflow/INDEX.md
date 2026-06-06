@@ -10,14 +10,18 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 6
-- **Todo:** 0
+- **Backlog:** 1
+- **Todo:** 4
 - **Doing:** 0
-- **Done:** 3
+- **Done:** 4
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-006** — Dashboard board view: flat Kanban (lifecycle columns, BC on the card) (feature) — `todo/agentic-workflow-006-dashboard-board-view.md`
+- **agentic-workflow-007** — Dashboard slide-over: universal detail panel + client-side markdown renderer (feature) — `todo/agentic-workflow-007-dashboard-slide-over-renderer.md`
+- **agentic-workflow-008** — Dashboard navigation: discover and browse all .agentheim artifacts (feature) — `todo/agentic-workflow-008-dashboard-navigation.md`
+- **agentic-workflow-009** — Dashboard interactivity: SSE live-update consumer + Promote → applyTaskMove (feature) — `todo/agentic-workflow-009-dashboard-live-update-and-promote.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -26,6 +30,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-005** — Dashboard read API: /api/tree projection + /api/doc carrier (feature) — `done/agentic-workflow-005-dashboard-read-api.md`
 - **agentic-workflow-003** — Extract applyTaskMove: one shared Task-lifecycle mover for skills and the dashboard (refactor) — `done/agentic-workflow-003-extract-apply-task-move.md`
 - **agentic-workflow-004** — Dashboard server bootstrap: stdlib HTTP, detached launch/stop, project discovery (feature) — `done/agentic-workflow-004-dashboard-server-bootstrap.md`
 - **agentic-workflow-002** — Decide dashboard write-semantics: legal Task moves, shared mover, concurrency (decision) — `done/agentic-workflow-002-dashboard-write-semantics.md`
@@ -34,11 +39,6 @@ research touching this BC, and concept synthesis pages.
 ### Backlog
 <!-- backlog-list:start -->
 - **agentic-workflow-001** — Dashboard — local web UI over the project's .agentheim folder (epic / integration gate) — `backlog/agentic-workflow-001-dashboard.md`
-- **agentic-workflow-005** — Dashboard read API: /api/tree projection + /api/doc carrier (feature) — `backlog/agentic-workflow-005-dashboard-read-api.md`
-- **agentic-workflow-006** — Dashboard board view: flat Kanban (lifecycle columns, BC on the card) (feature) — `backlog/agentic-workflow-006-dashboard-board-view.md`
-- **agentic-workflow-007** — Dashboard slide-over: universal detail panel + client-side markdown renderer (feature) — `backlog/agentic-workflow-007-dashboard-slide-over-renderer.md`
-- **agentic-workflow-008** — Dashboard navigation: discover and browse all .agentheim artifacts (feature) — `backlog/agentic-workflow-008-dashboard-navigation.md`
-- **agentic-workflow-009** — Dashboard interactivity: SSE live-update consumer + Promote → applyTaskMove (feature) — `backlog/agentic-workflow-009-dashboard-live-update-and-promote.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

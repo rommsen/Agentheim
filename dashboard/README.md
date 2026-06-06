@@ -8,12 +8,34 @@ transport/launch/discovery decision this implements.
 
 ## Scope
 
-Server skeleton (agentic-workflow-004): static asset serving + a health check, plus the
-**live-update SSE stream** (infrastructure-003, ADR-0006). Deliberately *not* here:
+Server skeleton (agentic-workflow-004): static asset serving + a health check, the
+**live-update SSE stream** (infrastructure-003, ADR-0006), and the **read endpoints**
+`GET /api/tree` + `GET /api/doc` (agentic-workflow-005). Deliberately *not* here:
 
-- `GET /api/tree`, `GET /api/doc` — agentic-workflow-005
 - `POST /api/task/move` write path (delegates to `applyTaskMove`) — agentic-workflow-009
 - The pre-bundled `dist/` assets — infrastructure-002
+
+### Read endpoints: `GET /api/tree` + `GET /api/doc` — ADR-0002
+
+The single read model the board, slide-over, and navigation all rebuild from, and that the
+SSE consumer re-fetches on a `tree-changed` frame.
+
+- **`GET /api/tree`** → JSON. Walks the discovered `.agentheim/` and returns, per BC, its four
+  lifecycle folders and each task's frontmatter projection
+  (`id, title, status, type, context, path`), plus the *locations* of vision / context-map /
+  per-BC README+INDEX+concepts / ADRs / research. **Pointers and metadata only — no document
+  bodies.** A task with missing `status`/`context` falls back to its folder / BC name (disk is
+  the source of truth); malformed frontmatter degrades gracefully — the card is still listed,
+  the walk never aborts. The projection logic lives in `tree.mjs` (stdlib-only frontmatter
+  parser, no YAML dependency).
+- **`GET /api/doc?path=<in-root path>`** → raw `text/markdown`. A validated file carrier for
+  one artifact's body (rendering is client-side). `path` is project-root-relative
+  (e.g. `.agentheim/vision.md`); it is resolved against the root and an escaping path is
+  rejected **403** touching no file. Missing `path` → **400**; a non-existent or non-file
+  in-root path → **404**.
+
+Both endpoints are pure reads, reuse the `discovery.mjs` `startsWith(root)` guard, and never
+write or interpret a lifecycle move.
 
 ### Live-update: `GET /api/events` (SSE) — ADR-0006
 
@@ -67,8 +89,12 @@ taskkill /PID <pid> /F /T
   every served path (`path.resolve` + separator-safe `startsWith`).
 - `static.mjs` — content-type map + static handler (traversal → 403, missing/absent
   dist → 404, otherwise stream).
-- `server.mjs` — `node:http` server: `/healthz` + `GET /api/events` (SSE) + static. No
-  `/api/tree`/`/api/doc`/write routes yet.
+- `server.mjs` — `node:http` server: `/healthz` + `GET /api/events` (SSE) +
+  `GET /api/tree` + `GET /api/doc` + static. No write route yet (aw-009).
+- `tree.mjs` — the `/api/tree` read projection: BC × lifecycle × task frontmatter +
+  artifact locations, plus a stdlib-only frontmatter parser. Pointers, never bodies.
+- `read-api.mjs` — the `/api/tree` and `/api/doc` request handlers (JSON projection +
+  validated raw-markdown carrier).
 - `events.mjs` — the SSE handler: stream headers, hello + heartbeat frames, pushes
   `tree-changed` events from the watcher, cleans up on client close (ADR-0006).
 - `watcher.mjs` — `.agentheim/` file-watcher: recursive `fs.watch` + debounced poll
@@ -85,9 +111,13 @@ node --test "dashboard/test/*.test.mjs"
 
 Covers discovery + traversal rejection, content-type mapping, runfile
 reuse-or-replace, the HTTP server (health check, static streaming, traversal 4xx,
-graceful absent-dist 404), a real detached launch → health check → stop cycle, the SSE
-stream (`text/event-stream` + no-cache headers, hello/heartbeat frame, a real
-`.agentheim/` mutation pushing a `tree-changed` frame, reconnect), and the watcher
+graceful absent-dist 404), a real detached launch → health check → stop cycle, the read
+endpoints (`/api/tree` projection shape + no-body guarantee, `/api/doc` valid markdown,
+traversal-403, missing-path-400, missing-file-404, directory-refusal) and the `tree.mjs`
+projection (lifecycle folders, frontmatter fields, BC+status on every card, artifact
+locations, malformed-frontmatter degradation), the SSE stream (`text/event-stream` +
+no-cache headers, hello/heartbeat frame, a real `.agentheim/` mutation pushing a
+`tree-changed` frame, reconnect), and the watcher
 (tree-changed pointer on change/move, in-root path guarantee, burst debounce, clean
 close). The watcher's recursive-vs-poll fallback selection is platform-dependent and
 documented rather than fully unit-tested; the debounce + emit-shape are covered.

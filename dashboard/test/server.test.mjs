@@ -96,12 +96,14 @@ test('GET / returns a graceful 404 when dist/ is absent (assets not built)', asy
   }
 });
 
-test('the server exposes no /api/tree route in this task scope (404)', async () => {
+// /api/tree is now wired in by agentic-workflow-005 (its behaviour is covered by
+// read-api.test.mjs). The remaining unbuilt route is the write path (aw-009).
+test('the server exposes no write route in this task scope (404)', async () => {
   const { base, dist } = makeProjectWithDist();
   const server = createDashboardServer({ root: base, assetRoot: dist });
   try {
     const { port } = await start(server);
-    const res = await fetch(`http://127.0.0.1:${port}/api/tree`);
+    const res = await fetch(`http://127.0.0.1:${port}/api/task/move`);
     assert.equal(res.status, 404);
   } finally {
     server.close();
