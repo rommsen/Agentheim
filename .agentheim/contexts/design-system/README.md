@@ -53,6 +53,13 @@ URLs; opening the file needs no toolchain. Tokens (`styles/*.css`) are unchanged
 > confirmed visual parity. The gate now stands open against the **migrated ESM source**, not
 > just the original in-browser-Babel artifact.
 
+> **Gate re-confirmed after the offline-webfonts change (`design-system-003`): OPEN —
+> re-approved by the builder 2026-06-06.** Vendoring the webfonts locally edited the gated
+> token CSS (`styles/colors_and_type.css`), lightly reopening the gate; the visual delta was
+> nil (same Inter Tight / JetBrains Mono families and weights, now served from `styles/fonts/`
+> instead of the Google Fonts CDN), and the builder re-confirmed. The gate stands open against
+> the now-fully-offline styleguide.
+
 > **Approved by the builder 2026-06-05** — the styleguide gate is open. Frontend tasks in
 > any BC may now be promoted (each still subject to its own other dependencies). See
 > `design-system-001` (done).

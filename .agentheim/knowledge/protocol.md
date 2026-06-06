@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Styleguide gate re-confirmed (design-system-003)
+
+**Type:** Gate / Builder approval
+**BC:** design-system
+**Summary:** The builder re-confirmed the styleguide gate after `design-system-003` vendored the
+webfonts offline — the only gated change was the token CSS `@import` → local `@font-face`, a
+nil-visual-delta delivery swap. The gate stands **OPEN** against the now-fully-offline styleguide.
+Recorded in the design-system README gate-status block and the ds-003 done file.
+
+---
+
 ## 2026-06-06 -- Work session ended
 
 **Type:** Work / Session end

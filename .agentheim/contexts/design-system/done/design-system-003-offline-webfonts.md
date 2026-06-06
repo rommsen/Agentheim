@@ -126,4 +126,5 @@ ADR-0008 (`.agentheim/knowledge/decisions/0008-vendored-webfonts-latin-subset.md
 
 **Gate:** this edits the gated `colors_and_type.css`, reopening the styleguide gate (as
 `design-system-002` did). Visual delta is nil — same families/weights, local delivery — so
-expect a lightweight builder re-confirm.
+expect a lightweight builder re-confirm. **Re-confirmed by the builder 2026-06-06** — the gate
+stands open against the now-fully-offline styleguide.
