@@ -15,7 +15,7 @@
 // the dashboard.
 
 import { build } from 'esbuild';
-import { mkdir, rm, writeFile, copyFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile, copyFile, cp } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,6 +29,7 @@ const STYLEGUIDE = path.join(
 );
 const ENTRY = path.join(STYLEGUIDE, 'app', 'app.js');
 const STYLES_DIR = path.join(STYLEGUIDE, 'styles');
+const FONTS_DIR = path.join(STYLES_DIR, 'fonts');
 const DIST = path.join(__dirname, 'dist');
 
 const CSS_FILES = ['colors_and_type.css', 'agentheim.css'];
@@ -103,10 +104,18 @@ async function main() {
     await copyFile(path.join(STYLES_DIR, css), path.join(DIST, css));
   }
 
+  // Copy the vendored webfonts (design-system-003). The token CSS @font-face
+  // rules reference url('fonts/<file>.woff2') relative to the CSS. The CSS is
+  // copied to dist root (flat), so the fonts must sit at dist/fonts/ for that
+  // relative path to resolve when served from dashboard/dist/. Mirrors the CSS
+  // copy above — the woff2 (+ OFL licenses) remain owned by design-system; this
+  // pipeline only relocates them into the derived dist artifact.
+  await cp(FONTS_DIR, path.join(DIST, 'fonts'), { recursive: true });
+
   // Emit the HTML shell.
   await writeFile(path.join(DIST, 'index.html'), indexHtml(), 'utf8');
 
-  process.stdout.write(`Built dashboard/dist/ (${BUNDLE_NAME} + ${CSS_FILES.join(', ')} + index.html)\n`);
+  process.stdout.write(`Built dashboard/dist/ (${BUNDLE_NAME} + ${CSS_FILES.join(', ')} + fonts/ + index.html)\n`);
 }
 
 main().catch((err) => {

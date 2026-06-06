@@ -57,6 +57,24 @@ URLs; opening the file needs no toolchain. Tokens (`styles/*.css`) are unchanged
 > any BC may now be promoted (each still subject to its own other dependencies). See
 > `design-system-001` (done).
 
+### Webfonts — vendored locally (offline, ADR-0008)
+
+As of `design-system-003` the type families are **committed locally**, not pulled from a
+CDN. The token CSS no longer `@import`s Google Fonts; instead `styles/colors_and_type.css`
+declares `@font-face` rules pointing at `styles/fonts/`:
+
+- `InterTight-latin.woff2` — Inter Tight, variable weight axis (covers 400/500/600).
+- `JetBrainsMono-latin.woff2` — JetBrains Mono, variable weight axis (covers 400/500).
+
+These are the Google Fonts **latin-subset** woff2 (variable fonts), so one file per family
+covers every weight the tokens use; only the latin subset is vendored (the styleguide is
+latin-only content). OFL 1.1 licenses sit beside the fonts (`*-OFL.txt`). The `url()` is
+`fonts/<file>.woff2`, **relative to the CSS**, so it resolves both in the source canvas
+(`styleguide/styles/fonts/`) and in the dashboard dist (`infrastructure`'s `build.mjs`
+copies `styles/fonts/` → `dist/fonts/`). Result: the canvas and the bundled dashboard
+render the correct type with **no network at view time**. Adding non-latin glyphs later
+requires vendoring the matching subset. See ADR-0008.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.

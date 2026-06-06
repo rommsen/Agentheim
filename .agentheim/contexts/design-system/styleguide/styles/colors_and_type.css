@@ -3,7 +3,31 @@
    Single source of truth for visual tokens.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+/* ------------------------------------------------------------
+   Webfonts — vendored locally (design-system-003).
+   No runtime CDN: the styleguide canvas and the bundled dashboard
+   render the correct type with NO network access at view time.
+   Both faces are the Google Fonts `latin` subset woff2 (variable
+   along the weight axis), so one file per family covers every
+   weight the token CSS uses (Inter Tight 400/500/600, JetBrains
+   Mono 400/500). Files + OFL licenses live in ./fonts/, relative
+   to this CSS — infrastructure's build copies them into dist/fonts/
+   so the path resolves identically when served from dashboard/dist/.
+   ------------------------------------------------------------ */
+@font-face {
+  font-family: 'Inter Tight';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/InterTight-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('fonts/JetBrainsMono-latin.woff2') format('woff2');
+}
 
 :root {
   /* ---------- Color: surfaces ---------- */

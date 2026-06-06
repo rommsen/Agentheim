@@ -1,16 +1,16 @@
 ---
 id: design-system-003
 title: Vendor the dashboard's webfonts offline (local @font-face, drop the Google Fonts CDN @import)
-status: todo
+status: done
 type: chore
 context: design-system
 created: 2026-06-06
-completed:
+completed: 2026-06-06
 commit:
 depends_on: []
 blocks: []
 tags: [styleguide, design-system, fonts, offline, css, frontend]
-related_adrs: [ADR-0003]
+related_adrs: [ADR-0003, ADR-0008]
 related_research: []
 prior_art: [design-system-001, design-system-002]
 ---
@@ -86,3 +86,44 @@ correct type **with no network access at view time**.
   (so glyph coverage/hinting matches), or the upstream releases (rsms/inter, JetBrains/JetBrainsMono).
 - **Why backlog, not todo:** captured as a tracked residual, not yet queued for work (builder's
   call). Concrete enough to promote when wanted.
+
+## Outcome
+
+The styleguide's webfonts are now vendored locally — the last view-time network dependency
+is closed. Both the buildless canvas and the bundled dashboard render the correct type fully
+offline.
+
+**What was done:**
+
+- Dropped the `fonts.googleapis.com` `@import` from `styleguide/styles/colors_and_type.css`
+  and replaced it with two local `@font-face` rules.
+- Vendored the **Google Fonts `latin`-subset woff2** for each family under
+  `styleguide/styles/fonts/`:
+  - `InterTight-latin.woff2` (44 KB) — Inter Tight, variable font; `@font-face` declares
+    `font-weight: 100 900`, covering the tokens' 400/500/600.
+  - `JetBrainsMono-latin.woff2` (31 KB) — JetBrains Mono, variable font; `@font-face`
+    declares `font-weight: 100 800`, covering the tokens' 400/500.
+  - One file per family because the Google woff2 are variable along the weight axis; only
+    the latin subset is shipped (styleguide content is latin-only). Both validated as real
+    woff2 (`wOF2` signature, internal length == file length).
+- Committed the **OFL 1.1 licenses** beside the fonts: `InterTight-OFL.txt`,
+  `JetBrainsMono-OFL.txt`.
+- **Path resolution / dist-copy (the ADR-0003 seam):** the `@font-face` `url()` is
+  `fonts/<file>.woff2`, relative to the CSS, so it resolves identically in both consumers —
+  `styleguide/styles/fonts/` for the source canvas, and `dashboard/dist/fonts/` for the
+  bundle. infrastructure's `dashboard/build.mjs` copies the token CSS to the dist **root**
+  (flat), so I added a one-line `cp(styles/fonts → dist/fonts)` step mirroring the existing
+  CSS copy (trivial, certain path-copy on the consuming side). Rebuilt and re-committed
+  `dashboard/dist/` (`node build.mjs`); verified `dist/fonts/` holds the woff2 + licenses
+  and the dist CSS references `fonts/…woff2` resolving from the dist root.
+- Confirmed **no** `fonts.googleapis.com` / `fonts.gstatic.com` / `@import` remains in
+  `styleguide/styles/*.css`.
+
+**Key files:** `styleguide/styles/colors_and_type.css`,
+`styleguide/styles/fonts/{InterTight,JetBrainsMono}-latin.woff2` + `*-OFL.txt`,
+`dashboard/build.mjs`, `dashboard/dist/` (rebuilt). Decision recorded in
+ADR-0008 (`.agentheim/knowledge/decisions/0008-vendored-webfonts-latin-subset.md`).
+
+**Gate:** this edits the gated `colors_and_type.css`, reopening the styleguide gate (as
+`design-system-002` did). Visual delta is nil — same families/weights, local delivery — so
+expect a lightweight builder re-confirm.
