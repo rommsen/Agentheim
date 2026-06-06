@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agentheim — Dashboard</title>
+  <link rel="stylesheet" href="./colors_and_type.css" />
+  <link rel="stylesheet" href="./agentheim.css" />
+  <style>
+    html, body { margin: 0; padding: 0; min-height: 100%; }
+    body { background: var(--surface-0); color: var(--fg-1); }
+    *, *::before, *::after { box-sizing: border-box; }
+    button { font-family: inherit; }
+    ::selection { background: var(--accent-ochre-soft); color: var(--fg-1); }
+  </style>
+
+  <!--
+    Pre-bundled dashboard assets (infrastructure-002 + agentic-workflow-006,
+    ADR-0003 / ADR-0002 / ADR-0009). The dashboard frontend app
+    (dashboard/app/*.js), which consumes the styleguide ES-module source
+    (.agentheim/contexts/design-system/styleguide/app/*.js), is bundled by
+    esbuild into ./app.js with React (production) / ReactDOM / marked /
+    htm bundled IN. No import map and no remote framework script: the UI loads
+    offline from this committed dist/.
+    Regenerate with:  cd dashboard && npm install && npm run build
+  -->
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

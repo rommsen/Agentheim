@@ -12,6 +12,8 @@ For BC-scoped artifacts, see each BC's `INDEX.md`.
 
 <!-- bc-list:start -->
 - **agentic-workflow** — running a domain-driven, human-in-the-loop agentic workflow on Claude Code; the single core context — `contexts/agentic-workflow/INDEX.md`
+- **design-system** — frontend infrastructure: the styleguide and component patterns any UI-bearing feature must conform to (supporting) — `contexts/design-system/INDEX.md`
+- **infrastructure** — globally-true tech/runtime concerns; currently scoped tightly to the dashboard web-server runtime & transport (supporting) — `contexts/infrastructure/INDEX.md`
 <!-- bc-list:end -->
 
 ## Global ADRs (scope: global)

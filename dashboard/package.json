@@ -1,0 +1,18 @@
+{
+  "name": "agentheim-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build tooling for the Agentheim dashboard UI. esbuild bundles the design-system styleguide ES-module source into a committed dist/ (ADR-0003). BUILD-TIME ONLY — nothing here is installed or invoked to RUN the dashboard (ADR-0002).",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "htm": "3.1.1",
+    "marked": "12.0.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

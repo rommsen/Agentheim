@@ -10,3 +10,12 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### Agentheim dashboard runtime
+# Sole runtime state on disk (pid/port runfile); never committed. See ADR-0002.
+.agentheim/.dashboard/
+
+### Agentheim dashboard build tooling
+# esbuild + framework deps are BUILD-TIME only (ADR-0003); never committed.
+# The committed artifacts are dashboard/dist/, build.mjs, package.json (+ lock).
+dashboard/node_modules/

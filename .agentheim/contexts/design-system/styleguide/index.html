@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agentheim — Design System</title>
+  <link rel="stylesheet" href="styles/colors_and_type.css" />
+  <link rel="stylesheet" href="styles/agentheim.css" />
+  <style>
+    html, body { margin: 0; padding: 0; min-height: 100%; }
+    body { background: var(--surface-0); color: var(--fg-1); }
+    *, *::before, *::after { box-sizing: border-box; }
+    button { font-family: inherit; }
+    ::selection { background: var(--accent-ochre-soft); color: var(--fg-1); }
+  </style>
+
+  <!--
+    Buildless canvas (ADR-0003 / ADR-0005): the styleguide source under app/*.js
+    is loaded directly as native ES modules. No @babel/standalone, no toolchain to
+    open this file. The import map below resolves the bare specifiers the source
+    imports (react, react-dom/client, marked, htm) to pinned ESM URLs. The same
+    app/*.js source is what infrastructure-002's esbuild bundle consumes — one
+    source of truth, two consumers. JSX is never shipped: components author views
+    with htm tagged templates (app/html.js), parsed at runtime, no compile step.
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+      "marked": "https://esm.sh/marked@12.0.2",
+      "htm": "https://esm.sh/htm@3.1.1"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module" src="app/app.js"></script>
+</body>
+</html>
