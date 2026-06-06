@@ -96,15 +96,19 @@ test('GET / returns a graceful 404 when dist/ is absent (assets not built)', asy
   }
 });
 
-// /api/tree is now wired in by agentic-workflow-005 (its behaviour is covered by
-// read-api.test.mjs). The remaining unbuilt route is the write path (aw-009).
-test('the server exposes no write route in this task scope (404)', async () => {
+// /api/tree is wired in by agentic-workflow-005 (covered by read-api.test.mjs).
+// The write path POST /api/task/move is wired in by agentic-workflow-009 (its
+// behaviour is covered by move-api.test.mjs). Here we only assert the route now
+// EXISTS as a POST-only endpoint — a GET is rejected 405, not 404, proving the
+// route is mounted (and not silently swallowed as a static 404).
+test('the write route POST /api/task/move is mounted (GET → 405, not 404)', async () => {
   const { base, dist } = makeProjectWithDist();
   const server = createDashboardServer({ root: base, assetRoot: dist });
   try {
     const { port } = await start(server);
     const res = await fetch(`http://127.0.0.1:${port}/api/task/move`);
-    assert.equal(res.status, 404);
+    assert.equal(res.status, 405);
+    assert.equal(res.headers.get('allow'), 'POST');
   } finally {
     server.close();
     rmSync(base, { recursive: true, force: true });

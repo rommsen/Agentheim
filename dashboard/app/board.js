@@ -12,16 +12,30 @@
    Clicking a card emits an "open this task" intent (onOpen(ticket))
    the slide-over (aw-007) consumes. The shell below (DashboardApp)
    also mounts the library/navigation surface (aw-008) and the
-   board↔library toggle. This is the read-only board; the
-   drag-to-Promote write path is aw-009.
+   board↔library toggle.
+
+   aw-009 adds the two interactivity concerns, both bound by the rule
+   "disk is the source of truth, the board is a projection rebuilt
+   from it" (ADR-0001):
+   - LIVE-UPDATE: the board subscribes to the SSE stream (GET
+     /api/events) via createLiveUpdate; every tree-changed frame
+     (or reconnect) just RE-FETCHES /api/tree and re-projects — the
+     raw event is never interpreted as a transition.
+   - PROMOTE: dragging a card backlog→todo POSTs to /api/task/move,
+     which delegates to the shared mover (applyTaskMove). Every other
+     column is a non-drop target (isLegalDrop); a rejected/stale move
+     surfaces the domain reason and re-fetches. There is NO UI-only
+     writer of lifecycle state — the server's applyTaskMove is the
+     sole writer.
    ============================================================ */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 // Styleguide single source (ADR-0003): import the approved Kanban components
 // across the BC boundary. They are CONSUMED, never copied — the design-system
 // styleguide remains the one source of UI truth, the dashboard is a consumer.
 import { html } from "../../.agentheim/contexts/design-system/styleguide/app/html.js";
-import { Column } from "../../.agentheim/contexts/design-system/styleguide/app/kanban.js";
+import { ColumnHeader, TicketCard } from "../../.agentheim/contexts/design-system/styleguide/app/kanban.js";
+import { EmptyColumn } from "../../.agentheim/contexts/design-system/styleguide/app/empty.js";
 import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/icons.js";
 import { Glyph, ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
 import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
@@ -29,6 +43,24 @@ import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { SlideOver } from "./slide-over.js";
 import { DashboardLibrary } from "./library.js";
+import { createLiveUpdate } from "./live-update.js";
+import { isLegalDrop, postMove } from "./promote.js";
+
+/**
+ * React hook: subscribe to the SSE live-update stream and call `onResync` on
+ * connect and every tree-changed frame. The board passes a /api/tree re-fetch;
+ * the consumer never interprets the raw event (ADR-0001). `onResync` is held in a
+ * ref so the subscription is established ONCE, not re-built on every render.
+ */
+function useLiveTree(onResync) {
+  const cb = useRef(onResync);
+  cb.current = onResync;
+  useEffect(() => {
+    if (typeof EventSource === "undefined") return undefined;
+    const live = createLiveUpdate({ onResync: (evt) => cb.current && cb.current(evt) });
+    return () => live.close();
+  }, []);
+}
 
 const EMPTY_COLUMNS = (() => {
   const c = {};
@@ -63,11 +95,60 @@ function LoadState({ children }) {
     }}>${children}</div>`;
 }
 
+// A drop-target lifecycle column that COMPOSES the approved styleguide
+// sub-components (ColumnHeader, TicketCard, EmptyColumn) exactly as the styleguide
+// `Column` does — same pattern, no fork — and adds the HTML5 drag affordances the
+// styleguide does not carry: each card is a drag SOURCE, and a column whose drop
+// is legal (isLegalDrop, ADR-0001) is a drop TARGET. Non-legal columns set no
+// drop handlers, so they are inert non-drop targets.
+function DragColumn({ status, tickets, selectedId, onOpen, draggingFrom, onDragStart, onDragEnd, onDrop }) {
+  const isTarget = draggingFrom != null && isLegalDrop(draggingFrom, status);
+  const [over, setOver] = useState(false);
+
+  // Only a legal target wires drop handlers; every other column stays inert.
+  const dropProps = isTarget
+    ? {
+        onDragOver: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (!over) setOver(true); },
+        onDragLeave: () => setOver(false),
+        onDrop: (e) => { e.preventDefault(); setOver(false); onDrop(status); },
+      }
+    : {};
+
+  return html`
+    <div ...${dropProps} style=${{
+      flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column",
+      borderRadius: "var(--radius-md)",
+      outline: isTarget && over ? "1px dashed var(--accent-ochre)" : "1px dashed transparent",
+      outlineOffset: 4,
+      background: isTarget && over ? "var(--accent-ochre-soft)" : "transparent",
+      transition: "background var(--duration-fast) var(--ease-base)",
+    }}>
+      <${ColumnHeader} status=${status} count=${tickets.length} onAdd=${() => {}} />
+      <div style=${{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 8 }}>
+        ${tickets.length === 0
+          ? html`<${EmptyColumn} status=${status} />`
+          : tickets.map((t) => html`
+              <div key=${t.id} draggable=${true}
+                onDragStart=${(e) => { e.dataTransfer.effectAllowed = "move"; onDragStart(t, status); }}
+                onDragEnd=${onDragEnd}
+                style=${{ cursor: "grab" }}>
+                <${TicketCard} ticket=${t} variant="rail"
+                  selected=${selectedId === t.id} onClick=${() => onOpen(t)} />
+              </div>`)}
+      </div>
+    </div>`;
+}
+
 /**
  * The dashboard board. Self-contained: fetches /api/tree, transforms it into the
- * four flat columns, and renders the styleguide Column per lifecycle. Selection
- * + open-intent are lifted here so aw-007's slide-over can later read `selectedId`
- * and consume the emitted ticket.
+ * four flat columns, renders a drop-target column per lifecycle, and (aw-009)
+ * stays live via the SSE stream + drives the one UI write (Promote).
+ *
+ * Live-update: subscribes to GET /api/events; every tree-changed frame (or
+ * reconnect) re-fetches /api/tree and re-projects — the raw event is never
+ * interpreted as a transition (ADR-0001). Promote: dragging backlog→todo POSTs to
+ * /api/task/move (→ applyTaskMove); a rejected/stale move surfaces the domain
+ * reason and re-fetches. No UI-only writer of lifecycle state exists.
  *
  * @param {(ticket: object) => void} [onOpen] — open-intent sink (aw-007 wires it).
  * @param {string} [treeUrl] — overridable for tests / alternate mounts.
@@ -76,10 +157,14 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
   const [columns, setColumns] = useState(EMPTY_COLUMNS);
   const [phase, setPhase] = useState("loading"); // loading | ready | error
   const [selectedId, setSelectedId] = useState(null);
+  const [notice, setNotice] = useState(null); // a refused-move domain reason
+  const [dragging, setDragging] = useState(null); // { id, from } | null
 
-  useEffect(() => {
+  // The single board re-projection: re-fetch /api/tree and rebuild the columns.
+  // Called on mount, on every SSE tree-changed frame / reconnect, and after a
+  // Promote (success OR rejection) — the board is always rebuilt from disk.
+  const loadTree = useCallback(() => {
     let alive = true;
-    setPhase("loading");
     fetch(treeUrl)
       .then((r) => {
         if (!r.ok) throw new Error(`/api/tree ${r.status}`);
@@ -98,12 +183,43 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
     return () => { alive = false; };
   }, [treeUrl]);
 
+  // Initial load.
+  useEffect(() => { setPhase("loading"); return loadTree(); }, [loadTree]);
+
+  // Live-update: re-sync the board on connect and every tree-changed frame. The
+  // move's own SSE echo is just another tree-changed frame → one more re-fetch,
+  // idempotent, no double-apply (ADR-0001).
+  useLiveTree(loadTree);
+
   // Card click → emit the open intent (aw-007 consumes it). Selection state is
   // tracked here so the clicked card shows the styleguide selected ring.
   const handleOpen = useCallback((ticket) => {
     setSelectedId(ticket.id);
     if (typeof onOpen === "function") onOpen(ticket);
   }, [onOpen]);
+
+  const handleDragStart = useCallback((ticket, from) => {
+    setNotice(null);
+    setDragging({ id: ticket.id, from });
+  }, []);
+  const handleDragEnd = useCallback(() => setDragging(null), []);
+
+  // The one UI write: a legal Promote drop. Delegates to the server's
+  // applyTaskMove via postMove; on rejection surfaces the domain reason. EITHER
+  // way the board re-fetches (the projection is rebuilt from disk).
+  const handleDrop = useCallback(async (to) => {
+    const move = dragging;
+    setDragging(null);
+    if (!move) return;
+    const res = await postMove({ id: move.id, from: move.from, to });
+    if (!res.ok) {
+      setNotice(res.reason || `Move refused (${res.code || res.status}).`);
+    } else {
+      setNotice(null);
+    }
+    // Rebuild from disk regardless — disk is the source of truth (ADR-0001).
+    loadTree();
+  }, [dragging, loadTree]);
 
   const total = COLUMN_ORDER.reduce((n, c) => n + columns[c].length, 0);
 
@@ -117,13 +233,27 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
   return html`
     <div>
       <${BoardHeader} count=${total} />
+      ${notice && html`
+        <div role="alert" style=${{
+          display: "flex", alignItems: "center", gap: 8,
+          margin: "0 4px 14px", padding: "9px 12px",
+          borderRadius: "var(--radius-md)", border: "1px solid var(--hairline-strong)",
+          background: "var(--surface-1)", fontFamily: "var(--font-ui)", fontSize: 12.5,
+          color: "var(--fg-2)",
+        }}>
+          <${Icon} name="triangle-alert" size=${14} color="var(--st-doing)" />
+          <span>${notice}</span>
+        </div>`}
       <div className="scroll-quiet" style=${{ overflowX: "auto", paddingBottom: 8 }}>
         <div style=${{ minWidth: 880 }}>
           <div style=${{ display: "flex", gap: 20, alignItems: "flex-start" }}>
             ${COLUMN_ORDER.map((status) => html`
-              <${Column} key=${status} status=${status} variant="rail"
+              <${DragColumn} key=${status} status=${status}
                 tickets=${columns[status]}
-                selectedId=${selectedId} onOpen=${handleOpen} />`)}
+                selectedId=${selectedId} onOpen=${handleOpen}
+                draggingFrom=${dragging ? dragging.from : null}
+                onDragStart=${handleDragStart} onDragEnd=${handleDragEnd}
+                onDrop=${handleDrop} />`)}
           </div>
         </div>
       </div>

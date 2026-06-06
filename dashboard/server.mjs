@@ -1,14 +1,16 @@
 // Dashboard HTTP server (ADR-0002 + ADR-0006): node:http, stdlib-only, no deps.
 // Routes now live here: static assets + health check (agentic-workflow-004), the
 // SSE live-update channel GET /api/events (infrastructure-003, ADR-0006), and the
-// read endpoints GET /api/tree + GET /api/doc (agentic-workflow-005, ADR-0002).
-// NO write path (aw-009) — that is intentionally absent and falls through to 404.
+// read endpoints GET /api/tree + GET /api/doc (agentic-workflow-005, ADR-0002),
+// and the ONE write path POST /api/task/move (agentic-workflow-009, ADR-0001),
+// which delegates to the shared lifecycle mover — never moving a file itself.
 
 import http from 'node:http';
 import path from 'node:path';
 import { serveStatic } from './static.mjs';
 import { handleEvents } from './events.mjs';
 import { handleTree, handleDoc } from './read-api.mjs';
+import { handleMove } from './move-api.mjs';
 
 /** Default asset root: the committed dashboard build output. */
 export function defaultAssetRoot(root) {
@@ -37,6 +39,22 @@ export function createDashboardServer({ root, assetRoot = defaultAssetRoot(root)
     // discovered project; emits tree-changed pointers + heartbeats.
     if (pathname === '/api/events' && req.method === 'GET') {
       handleEvents(req, res, root, sse);
+      return;
+    }
+
+    // The ONLY write path (aw-009, ADR-0001): Promote a task backlog→todo via the
+    // shared lifecycle mover. Transport-only — it delegates to applyTaskMove and
+    // translates the structured result to HTTP; it never moves a file itself.
+    if (pathname === '/api/task/move') {
+      if (req.method !== 'POST') {
+        res.writeHead(405, {
+          'content-type': 'text/plain; charset=utf-8',
+          allow: 'POST',
+        });
+        res.end('Method Not Allowed');
+        return;
+      }
+      handleMove(req, res, root);
       return;
     }
 

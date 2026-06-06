@@ -75,8 +75,29 @@ separate BC, but today the whole tool lives in this one.
   `context` chip. Rendered over the live tree projection (`GET /api/tree`); a status-driven,
   loss-tolerant transform (`dashboard/app/board-data.js`) buckets each task by status (unknown
   status → backlog) and shapes it for the styleguide card. Read-only here — clicking a card emits
-  an *open-this-task* intent the slide-over (aw-007) consumes; the drag-to-Promote write path is
-  aw-009. See ADR-0009.
+  an *open-this-task* intent the slide-over (aw-007) consumes. Dragging a card **`backlog→todo`**
+  performs a **Promote** through the shared `applyTaskMove` write path (aw-009); every other
+  column is a non-drop target. The board also stays **live** — it subscribes to the SSE stream and
+  re-fetches `/api/tree` on any change (see *Live-update* and *Promote write path* below). See
+  ADR-0009, ADR-0001.
+- **Live-update (SSE consumer)** — the board keeps itself current (agentic-workflow-009) by
+  subscribing to `GET /api/events` (the SSE transport, infrastructure-003 / ADR-0006) via the
+  framework-free `dashboard/app/live-update.js` (`createLiveUpdate`). On every `tree-changed`
+  frame — and on every (re)connect — it does **one** thing: re-fetch `/api/tree` and re-project
+  the whole board. It **never** interprets the raw pointer as a transition (the watcher stays
+  transport-only); re-fetching is idempotent, so a burst of changes, or the echo of the board's
+  own Promote, collapses into re-fetches with no double-apply. EventSource auto-reconnects and the
+  board re-syncs on reconnect — no missed-event bookkeeping. Disk is the source of truth; the board
+  is a projection rebuilt from it. See ADR-0012, ADR-0006, ADR-0001.
+- **Promote write path** — the dashboard's **only** write (agentic-workflow-009): `POST
+  /api/task/move` (`dashboard/move-api.mjs`, wired in `dashboard/server.mjs`). It is
+  **transport-only** — it parses `{ id, from, to, expectedMtimeMs? }`, delegates to `applyTaskMove`
+  with `policy: 'ui'` (Promote-only), and translates the structured result to HTTP (200 success;
+  409 stale-precondition / blocked-dependency; 404 not-found; 422 illegal-move; 400 bad body). It
+  never moves a file itself. The frontend core (`dashboard/app/promote.js`) decides which drop is
+  legal (`isLegalDrop` = `backlog→todo` only) and posts the optimistic precondition; a rejected
+  move surfaces the domain `reason` and the board re-fetches. There is **no UI-only writer** of
+  lifecycle state — `applyTaskMove` is the sole writer. See ADR-0001, ADR-0012.
 - **Slide-over** — the dashboard's universal right-hand detail panel (agentic-workflow-007):
   one Notion-style drawer that opens for *any* artifact — a board task or a non-task artifact
   (BC README, vision, context-map, research, ADR). It consumes the board's *open-this-task*
@@ -114,8 +135,10 @@ separate BC, but today the whole tool lives in this one.
   precondition. Returns `{ ok: true, state }` or a structured rejection
   `{ ok: false, code, reason }` (`code` ∈ illegal-move | blocked-dependency |
   stale-precondition | not-found). It owns ONLY the move + status rewrite + precondition;
-  INDEX/protocol side-effects stay with the skills/orchestrator (ADR-0007). See ADR-0001,
-  ADR-0007.
+  INDEX/protocol side-effects stay with the skills/orchestrator (ADR-0007). It is addressed by
+  the **bare id** but resolves the real on-disk file `<id>-<slug>.md` (anchored so `alpha-001`
+  never collides with `alpha-0010`) and preserves that filename across the move — only the folder
+  changes, the id is stable (ADR-0012). See ADR-0001, ADR-0007, ADR-0012.
 
 ## Aggregates
 
