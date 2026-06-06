@@ -8,7 +8,7 @@ created: 2026-06-05
 completed: 2026-06-05
 commit: fd486c7
 depends_on: []
-blocks: [agentic-workflow-001]
+blocks: [agentic-workflow-004, infrastructure-003]
 tags: [dashboard, runtime, web-server, transport, launch, cross-platform]
 related_adrs: [ADR-0002]
 related_research: []
