@@ -60,6 +60,22 @@ separate BC, but today the whole tool lives in this one.
   `GET /api/doc?path=<in-root path>`, a validated raw-markdown carrier (rendering is
   client-side). Both endpoints are pure reads and reuse the root-resolution `startsWith(root)`
   guard; neither writes nor interprets a lifecycle move. See ADR-0002.
+- **Dashboard frontend app** — the live dashboard UI, owned by this BC, living in
+  `dashboard/app/` (entry `dashboard/app/app.js`). It *consumes* the design-system styleguide
+  source across the BC boundary (imports `Column`/`TicketCard`/`ColumnHeader`/`EmptyColumn`/
+  `html` as-is — never forks them), so the styleguide stays the single source of UI truth
+  (ADR-0003). esbuild bundles this app (not the styleguide canvas) into the committed
+  `dashboard/dist/` the static handler serves; the canvas remains the separate buildless
+  review surface. The three view tasks — **board** (agentic-workflow-006), slide-over (aw-007),
+  navigation (aw-008) — compose into this one app shell. See ADR-0009.
+- **Board view** — the dashboard's home view (agentic-workflow-006): a **flat** Kanban of the
+  four lifecycle columns (`backlog`/`todo`/`doing`/`done`) with tasks from **all** bounded
+  contexts pooled into those columns — no swimlanes; each card carries its BC via the styleguide
+  `context` chip. Rendered over the live tree projection (`GET /api/tree`); a status-driven,
+  loss-tolerant transform (`dashboard/app/board-data.js`) buckets each task by status (unknown
+  status → backlog) and shapes it for the styleguide card. Read-only here — clicking a card emits
+  an *open-this-task* intent the slide-over (aw-007) consumes; the drag-to-Promote write path is
+  aw-009. See ADR-0009.
 - **Card move** — a UI drag of a task card between lifecycle columns; semantically a Task
   transition command (v1: Promote / `backlog→todo` only), never a raw file operation. Every
   other transition is a non-drop target, rejected with a domain reason. See ADR-0001.

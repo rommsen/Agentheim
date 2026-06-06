@@ -1,9 +1,18 @@
 #!/usr/bin/env node
-// Dashboard asset build (infrastructure-002, ADR-0003 / ADR-0002).
+// Dashboard asset build (infrastructure-002 + agentic-workflow-006,
+// ADR-0003 / ADR-0002 / ADR-0009).
 //
-// Consumes the design-system styleguide ES-module source (the SINGLE source of
-// truth — read-only here, never copied or forked) and emits a COMMITTED
-// dashboard/dist/ that ADR-0002's static handler serves directly.
+// Bundles the LIVE dashboard frontend app (dashboard/app/app.js, owned by
+// agentic-workflow) — which CONSUMES the design-system styleguide ES-module
+// source across the BC boundary (the SINGLE source of UI truth, ADR-0003;
+// read-only here, never copied or forked) — and emits a COMMITTED
+// dashboard/dist/ that ADR-0002's static handler serves directly. The token CSS
+// + vendored webfonts are still copied verbatim from the styleguide source.
+//
+// (Before aw-006 the ENTRY was the styleguide CANVAS — the demo page with sample
+// data. aw-006 retargets it at the dashboard app so dist/ serves the real board
+// over /api/tree. Per ADR-0009, build.mjs stays infrastructure's pipeline file;
+// only its ENTRY moved.)
 //
 //   esbuild bundles React (production) / ReactDOM / marked / htm IN, transforms
 //   at build time, minifies. No runtime CDN for the framework, no in-browser
@@ -27,7 +36,11 @@ const STYLEGUIDE = path.join(
   REPO_ROOT,
   '.agentheim', 'contexts', 'design-system', 'styleguide',
 );
-const ENTRY = path.join(STYLEGUIDE, 'app', 'app.js');
+// ENTRY is the LIVE dashboard frontend app (agentic-workflow-006, ADR-0009),
+// which imports the styleguide components from STYLEGUIDE across the BC boundary.
+// esbuild follows those relative imports and bundles the styleguide source in;
+// the styleguide stays the single source — it is consumed, not forked.
+const ENTRY = path.join(__dirname, 'app', 'app.js');
 const STYLES_DIR = path.join(STYLEGUIDE, 'styles');
 const FONTS_DIR = path.join(STYLES_DIR, 'fonts');
 const DIST = path.join(__dirname, 'dist');
@@ -56,11 +69,13 @@ function indexHtml() {
   </style>
 
   <!--
-    Pre-bundled dashboard assets (infrastructure-002, ADR-0003 / ADR-0002).
-    The styleguide ES-module source (.agentheim/contexts/design-system/
-    styleguide/app/*.js) is bundled by esbuild into ./${BUNDLE_NAME} with
-    React (production) / ReactDOM / marked / htm bundled IN. No import map and
-    no remote framework script: the UI loads offline from this committed dist/.
+    Pre-bundled dashboard assets (infrastructure-002 + agentic-workflow-006,
+    ADR-0003 / ADR-0002 / ADR-0009). The dashboard frontend app
+    (dashboard/app/*.js), which consumes the styleguide ES-module source
+    (.agentheim/contexts/design-system/styleguide/app/*.js), is bundled by
+    esbuild into ./${BUNDLE_NAME} with React (production) / ReactDOM / marked /
+    htm bundled IN. No import map and no remote framework script: the UI loads
+    offline from this committed dist/.
     Regenerate with:  cd dashboard && npm install && npm run build
   -->
 </head>

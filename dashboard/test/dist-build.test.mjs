@@ -78,6 +78,19 @@ test('index.html loads the local bundle + local token CSS, no remote framework',
   assert.equal(/<script[^>]+src=["']https?:/.test(html), false, 'no remote <script src>');
 });
 
+test('dist bundles the LIVE dashboard board, not the styleguide canvas (aw-006)', () => {
+  const js = readFileSync(BUNDLE, 'utf8');
+  // The live board fetches the read projection. The canvas never did.
+  assert.ok(js.includes('/api/tree'), 'bundle must fetch /api/tree (the live board)');
+  // The styleguide canvas hero copy must NOT be shipped to the dashboard — that
+  // would mean the canvas entry, not the board, got bundled.
+  assert.equal(
+    js.includes('A calm, content-first control panel'),
+    false,
+    'styleguide canvas hero must not be in the dashboard bundle',
+  );
+});
+
 test('token CSS in dist matches the styleguide source (single source of truth)', () => {
   const src = path.resolve(
     DASHBOARD, '..', '.agentheim', 'contexts', 'design-system', 'styleguide', 'styles',
