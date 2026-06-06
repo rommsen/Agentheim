@@ -5,6 +5,28 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3 (b1cf113 model: narrow aw-001 to Windows + carve aw-010; 8af5748 feature: close aw-001 epic; + SHA-backfill chore)
+**Notes:**
+- **aw-001 (the dashboard integration epic) is now done** — the dashboard cluster is fully
+  closed. todo/ and doing/ are empty across all BCs.
+- One mid-run modeling refinement: the epic's v1 acceptance bar was narrowed to Windows-only at
+  the builder's decision (the integration pass ran from a Windows-only box); the POSIX cross-OS
+  leg was carved into **agentic-workflow-010** (backlog, depends_on aw-001). Routed through a
+  `model(...)` commit before dispatching the worker — `work` does not relax AC silently.
+- **Pre-existing uncommitted changes left untouched** (predate this session, not mine): deleted
+  backlog files aw-003 + infrastructure-002, modified infrastructure-001 (done), and untracked
+  ADR-0003 (`0003-styleguide-esm-single-source.md`). Surfaced to the builder — they look like an
+  earlier session's incomplete commit and need a human decision.
+
+---
+
 ## 2026-06-06 -- Task verified and completed: agentic-workflow-001 - Dashboard (integration epic)
 
 **Type:** Work / Task completion
