@@ -66,8 +66,8 @@ separate BC, but today the whole tool lives in this one.
   `html` as-is — never forks them), so the styleguide stays the single source of UI truth
   (ADR-0003). esbuild bundles this app (not the styleguide canvas) into the committed
   `dashboard/dist/` the static handler serves; the canvas remains the separate buildless
-  review surface. The three view tasks — **board** (agentic-workflow-006), slide-over (aw-007),
-  navigation (aw-008) — compose into this one app shell. See ADR-0009.
+  review surface. The three view tasks — **board** (agentic-workflow-006), **slide-over** (aw-007,
+  built), navigation (aw-008) — compose into this one app shell. See ADR-0009.
 - **Board view** — the dashboard's home view (agentic-workflow-006): a **flat** Kanban of the
   four lifecycle columns (`backlog`/`todo`/`doing`/`done`) with tasks from **all** bounded
   contexts pooled into those columns — no swimlanes; each card carries its BC via the styleguide
@@ -76,6 +76,18 @@ separate BC, but today the whole tool lives in this one.
   status → backlog) and shapes it for the styleguide card. Read-only here — clicking a card emits
   an *open-this-task* intent the slide-over (aw-007) consumes; the drag-to-Promote write path is
   aw-009. See ADR-0009.
+- **Slide-over** — the dashboard's universal right-hand detail panel (agentic-workflow-007):
+  one Notion-style drawer that opens for *any* artifact — a board task or a non-task artifact
+  (BC README, vision, context-map, research, ADR). It consumes the board's *open-this-task*
+  intent (and, later, aw-008 navigation's), fetches the body via `GET /api/doc?path=`, and
+  renders the markdown **client-side** (no server-side rendering) through the approved
+  styleguide `Drawer` + `Markdown` — imported as-is from the committed dist, never forked
+  (ADR-0003). Tasks and non-task artifacts render through one identical path; the only
+  difference is which `path` is fetched. The slide-over hands the `Drawer` a *doc-shaped* item
+  (`{ type, meta: <real path>, body }`) so the real in-root path is shown and the fetched
+  markdown rendered uniformly (ADR-0010). Lives in `dashboard/app/slide-over.js` over the pure,
+  unit-tested `dashboard/app/slide-over-data.js`. Esc and scrim-click close it. See ADR-0010,
+  ADR-0009.
 - **Card move** — a UI drag of a task card between lifecycle columns; semantically a Task
   transition command (v1: Promote / `backlog→todo` only), never a raw file operation. Every
   other transition is a non-drop target, rejected with a domain reason. See ADR-0001.

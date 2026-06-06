@@ -25,6 +25,7 @@ import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/ico
 import { ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
+import { SlideOver } from "./slide-over.js";
 
 const EMPTY_COLUMNS = (() => {
   const c = {};
@@ -128,10 +129,10 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
 
 /**
  * The dashboard application shell. Minimal and composable: it owns the theme,
- * the page chrome, and mounts the board. aw-007 (slide-over) and aw-008
- * (navigation) slot into THIS shell later; this task lays only the board + the
- * open-intent hook. The open-intent currently no-ops the panel (logs intent) —
- * aw-007 replaces the handler with the real Drawer.
+ * the page chrome, and mounts the board. aw-007 (slide-over) is wired here over
+ * the board's open-intent seam; aw-008 (navigation) slots into THIS shell later.
+ * The open-intent now opens the universal detail slide-over (SlideOver), which
+ * fetches /api/doc and renders the artifact's markdown client-side.
  */
 export function DashboardApp() {
   const [theme] = useState("dark");
@@ -139,17 +140,21 @@ export function DashboardApp() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // Open-intent sink for v1: the slide-over (aw-007) is not built yet, so the
-  // intent is recorded but not yet rendered. Kept as a named seam, not a TODO.
+  // The clicked task/artifact, or null when the slide-over is closed. The board
+  // emits the open-intent on card click; the slide-over consumes it, fetches the
+  // doc, and renders it. Esc / scrim close by clearing the intent.
+  const [openIntent, setOpenIntent] = useState(null);
   const onOpen = useCallback((ticket) => {
-    // aw-007 wires the slide-over here. Until then the intent is observable.
+    setOpenIntent(ticket);
     if (typeof window !== "undefined") window.__agentheimLastOpen = ticket;
   }, []);
+  const onClose = useCallback(() => setOpenIntent(null), []);
 
   return html`
     <${ThemeCtx.Provider} value=${theme}>
       <main style=${{ maxWidth: 1160, margin: "0 auto", padding: "28px 28px 56px" }}>
         <${DashboardBoard} onOpen=${onOpen} />
       </main>
+      <${SlideOver} intent=${openIntent} onClose=${onClose} />
     </${ThemeCtx.Provider}>`;
 }
