@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 2
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 6
+- **Done:** 7
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-008** — Dashboard navigation: discover and browse all .agentheim artifacts (feature) — `todo/agentic-workflow-008-dashboard-navigation.md`
 - **agentic-workflow-009** — Dashboard interactivity: SSE live-update consumer + Promote → applyTaskMove (feature) — `todo/agentic-workflow-009-dashboard-live-update-and-promote.md`
 <!-- todo-list:end -->
 
@@ -28,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-008** — Dashboard navigation: discover and browse all .agentheim artifacts (feature) — `done/agentic-workflow-008-dashboard-navigation.md`
 - **agentic-workflow-007** — Dashboard slide-over: universal detail panel + client-side markdown renderer (feature) — `done/agentic-workflow-007-dashboard-slide-over-renderer.md`
 - **agentic-workflow-006** — Dashboard board view: flat Kanban (lifecycle columns, BC on the card) (feature) — `done/agentic-workflow-006-dashboard-board-view.md`
 - **agentic-workflow-005** — Dashboard read API: /api/tree projection + /api/doc carrier (feature) — `done/agentic-workflow-005-dashboard-read-api.md`
@@ -49,6 +49,7 @@ research touching this BC, and concept synthesis pages.
 - **ADR-0007** — applyTaskMove owns only the move; INDEX/protocol side-effects stay with skills (proposed) — `../../knowledge/decisions/0007-task-move-side-effect-boundary.md`
 - **ADR-0009** — Dashboard frontend app lives in `dashboard/app/`, consumes the styleguide; build retargets to it (proposed) — `../../knowledge/decisions/0009-dashboard-frontend-app-shell.md`
 - **ADR-0010** — The dashboard slide-over feeds the styleguide Drawer a doc-shaped item (accepted) — `../../knowledge/decisions/0010-slide-over-doc-shaped-item.md`
+- **ADR-0011** — The dashboard library/navigation surface is the non-task half of the tree projection, grouped client-side (accepted) — `../../knowledge/decisions/0011-dashboard-library-groups-from-tree-locations.md`
 <!-- adr-local:end -->
 
 ## Research touching this BC

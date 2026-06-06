@@ -66,8 +66,9 @@ separate BC, but today the whole tool lives in this one.
   `html` as-is — never forks them), so the styleguide stays the single source of UI truth
   (ADR-0003). esbuild bundles this app (not the styleguide canvas) into the committed
   `dashboard/dist/` the static handler serves; the canvas remains the separate buildless
-  review surface. The three view tasks — **board** (agentic-workflow-006), **slide-over** (aw-007,
-  built), navigation (aw-008) — compose into this one app shell. See ADR-0009.
+  review surface. The three view tasks — **board** (agentic-workflow-006), **slide-over** (aw-007),
+  and **library/navigation** (aw-008) — all built, compose into this one app shell, with a
+  board↔library toggle in the shell built from the styleguide `RailItem`. See ADR-0009.
 - **Board view** — the dashboard's home view (agentic-workflow-006): a **flat** Kanban of the
   four lifecycle columns (`backlog`/`todo`/`doing`/`done`) with tasks from **all** bounded
   contexts pooled into those columns — no swimlanes; each card carries its BC via the styleguide
@@ -88,6 +89,17 @@ separate BC, but today the whole tool lives in this one.
   markdown rendered uniformly (ADR-0010). Lives in `dashboard/app/slide-over.js` over the pure,
   unit-tested `dashboard/app/slide-over-data.js`. Esc and scrim-click close it. See ADR-0010,
   ADR-0009.
+- **Library / navigation** — the dashboard's discovery surface (agentic-workflow-008): makes the
+  *non-task* knowledge base browsable — vision, context map, every BC README, ADRs, research —
+  drawn from the **artifact-location half** of the same tree projection the board uses (`tree.locations`
+  + per-BC `readme`). Tasks are deliberately excluded (the board owns them), so each artifact has
+  exactly one home. A pure, unit-tested transform (`dashboard/app/library-data.js` → `treeToLibrary`)
+  pools the locations into fixed, legible groups — Product / Bounded contexts / Decisions / Research —
+  rendered through the approved styleguide `TreeGroup`/`TreeItem` (imported as-is, never forked —
+  ADR-0003) in `dashboard/app/library.js`. Selecting any row emits the *same* open-intent shape the
+  board emits (`{ type, title, path }`), routed into the one universal slide-over (aw-007). A
+  board↔library toggle in the shell (built from the styleguide `RailItem`) switches surfaces. See
+  ADR-0011, ADR-0009.
 - **Card move** — a UI drag of a task card between lifecycle columns; semantically a Task
   transition command (v1: Promote / `backlog→todo` only), never a raw file operation. Every
   other transition is a non-drop target, rejected with a domain reason. See ADR-0001.

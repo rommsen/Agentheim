@@ -10,9 +10,10 @@
    ColumnHeader / EmptyColumn — AS-IS, no fork, no new pattern.
 
    Clicking a card emits an "open this task" intent (onOpen(ticket))
-   the slide-over (aw-007) will consume; the slide-over and the
-   left-rail navigation (aw-008) are out of scope here. This is the
-   read-only board; the drag-to-Promote write path is aw-009.
+   the slide-over (aw-007) consumes. The shell below (DashboardApp)
+   also mounts the library/navigation surface (aw-008) and the
+   board↔library toggle. This is the read-only board; the
+   drag-to-Promote write path is aw-009.
    ============================================================ */
 import { useState, useEffect, useCallback } from "react";
 
@@ -22,10 +23,12 @@ import { useState, useEffect, useCallback } from "react";
 import { html } from "../../.agentheim/contexts/design-system/styleguide/app/html.js";
 import { Column } from "../../.agentheim/contexts/design-system/styleguide/app/kanban.js";
 import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/icons.js";
-import { ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
+import { Glyph, ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
+import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { SlideOver } from "./slide-over.js";
+import { DashboardLibrary } from "./library.js";
 
 const EMPTY_COLUMNS = (() => {
   const c = {};
@@ -127,12 +130,43 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
     </div>`;
 }
 
+// The shell's surface switch — Board (aw-006) vs Library (aw-008). Built from the
+// approved styleguide RailItem (ADR-0003), the same primary-nav pattern the
+// styleguide demo uses for exactly this toggle. No new pattern.
+function ShellRail({ view, onView }) {
+  return html`
+    <header style=${{
+      display: "flex", alignItems: "center", gap: 14,
+      padding: "0 4px 22px",
+    }}>
+      <div style=${{ display: "flex", alignItems: "center", gap: 9 }}>
+        <${Glyph} size=${22} />
+        <span style=${{
+          fontFamily: "var(--font-ui)", fontSize: 15, fontWeight: 600,
+          letterSpacing: "-0.01em", color: "var(--fg-1)",
+        }}>Agentheim</span>
+      </div>
+      <span style=${{ width: 1, height: 18, background: "var(--hairline-strong)" }} />
+      <div style=${{ display: "flex", alignItems: "center", gap: 4 }}>
+        <div style=${{ width: 116 }}>
+          <${RailItem} icon="square-kanban" label="Board"
+            active=${view === "board"} onClick=${() => onView("board")} />
+        </div>
+        <div style=${{ width: 116 }}>
+          <${RailItem} icon="library" label="Library"
+            active=${view === "library"} onClick=${() => onView("library")} />
+        </div>
+      </div>
+    </header>`;
+}
+
 /**
  * The dashboard application shell. Minimal and composable: it owns the theme,
- * the page chrome, and mounts the board. aw-007 (slide-over) is wired here over
- * the board's open-intent seam; aw-008 (navigation) slots into THIS shell later.
- * The open-intent now opens the universal detail slide-over (SlideOver), which
- * fetches /api/doc and renders the artifact's markdown client-side.
+ * the page chrome, the board↔library surface toggle, and mounts whichever
+ * surface is active. Both surfaces (board aw-006, library aw-008) emit the SAME
+ * open-intent shape; the shell routes it into ONE universal slide-over
+ * (SlideOver, aw-007), which fetches /api/doc and renders the markdown
+ * client-side. Esc / scrim close by clearing the intent.
  */
 export function DashboardApp() {
   const [theme] = useState("dark");
@@ -140,20 +174,26 @@ export function DashboardApp() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // The clicked task/artifact, or null when the slide-over is closed. The board
-  // emits the open-intent on card click; the slide-over consumes it, fetches the
-  // doc, and renders it. Esc / scrim close by clearing the intent.
+  // Which surface is shown — the task board or the non-task library/discovery.
+  const [view, setView] = useState("board"); // board | library
+
+  // The clicked task/artifact, or null when the slide-over is closed. Either
+  // surface emits the open-intent on click; the slide-over consumes it, fetches
+  // the doc, and renders it.
   const [openIntent, setOpenIntent] = useState(null);
-  const onOpen = useCallback((ticket) => {
-    setOpenIntent(ticket);
-    if (typeof window !== "undefined") window.__agentheimLastOpen = ticket;
+  const onOpen = useCallback((item) => {
+    setOpenIntent(item);
+    if (typeof window !== "undefined") window.__agentheimLastOpen = item;
   }, []);
   const onClose = useCallback(() => setOpenIntent(null), []);
 
   return html`
     <${ThemeCtx.Provider} value=${theme}>
       <main style=${{ maxWidth: 1160, margin: "0 auto", padding: "28px 28px 56px" }}>
-        <${DashboardBoard} onOpen=${onOpen} />
+        <${ShellRail} view=${view} onView=${setView} />
+        ${view === "library"
+          ? html`<${DashboardLibrary} onOpen=${onOpen} />`
+          : html`<${DashboardBoard} onOpen=${onOpen} />`}
       </main>
       <${SlideOver} intent=${openIntent} onClose=${onClose} />
     </${ThemeCtx.Provider}>`;
