@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 8
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-001** — Dashboard — local web UI over the project's .agentheim folder (epic / integration gate) — `todo/agentic-workflow-001-dashboard.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -38,7 +39,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-001** — Dashboard — local web UI over the project's .agentheim folder (epic / integration gate) — `backlog/agentic-workflow-001-dashboard.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

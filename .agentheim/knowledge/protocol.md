@@ -5,6 +5,22 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Modeling / Promoted: agentic-workflow-001 - Dashboard (integration epic)
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+**Summary:** Promoted on builder request — the last remaining backlog ticket. Readiness confirmed:
+its sole precondition ("all six children done": aw-004 server, aw-005 reads, aw-006 board,
+aw-007 slide-over, aw-008 navigation, aw-009 live-update + Promote) is now met, and it carries
+concrete integration/end-to-end acceptance criteria (launch → board → slide-over → live-update →
+Promote, on Windows + one POSIX, `dashboard` documented as a Key command). Now ready for `work`
+to run the end-to-end integration pass. **Note for the worker:** the POSIX leg of the end-to-end
+flow (and aw-004's launch/stop) is so far verified on Windows only — the cross-OS criterion is
+the substantive remaining work; may need the builder's hand on a POSIX box.
+
+---
+
 ## 2026-06-06 -- Styleguide gate re-confirmed (design-system-003)
 
 **Type:** Gate / Builder approval
