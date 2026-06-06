@@ -6,7 +6,7 @@ type: chore
 context: design-system
 created: 2026-06-06
 completed: 2026-06-06
-commit:
+commit: e9a41cc
 depends_on: []
 blocks: []
 tags: [styleguide, design-system, fonts, offline, css, frontend]

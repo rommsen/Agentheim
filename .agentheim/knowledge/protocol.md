@@ -5,6 +5,155 @@ Newest entries on top.
 
 ---
 
+## 2026-06-06 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 6 (first-try PASS: 6, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 6 (e9a41cc ds-003, 21f0fe7 aw-005, 03e0b37 aw-006, ffda30f aw-007, 78c25e6 aw-008, 5cc5aac aw-009) + 1 SHA-backfill chore
+**ADRs written:** ADR-0008 (vendored webfonts, design-system) · ADR-0009 (dashboard frontend app shell + build retarget) · ADR-0010 (slide-over doc-shaped item) · ADR-0011 (library = non-task half of the tree) · ADR-0012 (applyTaskMove slug-resolution + SSE re-fetch) — all BC-scoped, none global.
+**Notes:**
+- The **entire dashboard cluster (aw-005…009) is now done** + design-system-003. todo/ and doing/ are empty across all BCs. The dashboard renders the live board, the universal slide-over, the library/navigation, and is live-updating + Promote-writable — fully offline.
+- ADR numbering: the ds-003 worker emitted its ADR as "0004" (collided with the existing cwd ADR); the orchestrator **renumbered it to ADR-0008** and fixed the refs before commit. No other collisions (0009–0012 all clean).
+- **Latent bug fixed**: aw-009 found `applyTaskMove` (aw-003) assumed a bare `<id>.md` filename but real task files are `<id>-<slug>.md` — it would never have resolved a real task. Fixed + ADR-0012; lib + dashboard suites green (13 + 100).
+- **Concept candidate** (escalated to builder): `dashboard-frontend-app` / `dashboard read-projection surfaces` — flagged by 2 workers (aw-007, aw-008), converging across ADR-0009/0010/0011 + aw-005/006/007/008. A synthesis page may be worth creating.
+- **aw-001 (the dashboard integration epic) is now ripe to close** — all its children (aw-005…009) are done. It stays in backlog (its AC is "all children done + end-to-end flow works"); promoting/closing it is a modeling/builder call, not work.
+- **Open for the builder:** the design-system styleguide gate re-opened lightly by ds-003 (token CSS edited — visual delta nil, fonts now local) wants a quick re-confirm.
+
+---
+
+## 2026-06-06 -- Batch started: [agentic-workflow-009]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-009 - Dashboard interactivity (SSE live-update consumer + Promote drag → applyTaskMove write path)
+**Parallel:** no (1 worker)
+**Note:** Final wave of the dashboard cluster. All deps satisfied (aw-003 applyTaskMove ✓, aw-005 reads ✓, aw-006 board ✓, infra-003 SSE transport ✓). Builds the SSE consumer (re-fetch /api/tree on change), the server's POST /api/task/move write endpoint delegating to applyTaskMove, and the backlog→todo Promote drag with optimistic concurrency / 409 handling (ADR-0001). Completing this lets aw-001 (the integration epic) close.
+
+---
+
+## 2026-06-06 -- Task verified and completed: agentic-workflow-008 - Dashboard navigation
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-008 - Dashboard navigation (discover/browse all .agentheim artifacts)
+**Summary:** Built the dashboard's discovery/library surface — `dashboard/app/library.js` over the pure `library-data.js` (`treeToLibrary`) — listing the non-task half of `/api/tree` (vision, context-map, every BC README, ADRs, research) in fixed legible groups (Product / Bounded contexts / Decisions / Research), tasks deliberately excluded so each artifact has one home. Selecting a row emits the *same* open-intent the board emits, routed into the one universal slide-over (aw-007). Added a board↔library toggle in the shell built from the styleguide `RailItem`.
+**Verification:** PASS (iteration 1) — full dashboard suite 82/82 green incl. new library-data tests (every artifact type grouped, no task ever in the library, intent-shape carried); toggle switches the mounted surface; styleguide patterns (TreeGroup/TreeItem/RailItem) imported not forked, source byte-unchanged; scope clean (no SSE/Promote).
+**Commit:** 78c25e6
+**Files changed:** 9 (library.js, library-data.js, board.js shell toggle, library-data test, dist/app.js rebuilt, BC README, ADR-0011)
+**Tests added:** ~7 (library grouping + intent shape)
+**ADRs written:** ADR-0011 (library = non-task half of the tree projection, grouped client-side; scope: agentic-workflow) — number free, no collision.
+**Concept signal:** worker flagged `dashboard read-projection surfaces` converging on ADR-0009/0010/0011 + aw-005 — aggregating for end-of-run (related to aw-007's `dashboard-frontend-app` signal).
+
+---
+
+## 2026-06-06 -- Batch started: [agentic-workflow-008]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-008 - Dashboard navigation (discover/browse all .agentheim artifacts; board↔library toggle)
+**Parallel:** no (1 worker)
+**Note:** Fourth wave. Slots into the app shell (ADR-0009), reuses the styleguide library/doc-row + app-rail patterns, drives off `/api/tree`'s artifact-location half (aw-005), routes selections into the slide-over (aw-007). aw-009 (interactivity) remains.
+
+---
+
+## 2026-06-06 -- Task verified and completed: agentic-workflow-007 - Dashboard slide-over
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-007 - Dashboard slide-over (universal detail panel + client-side markdown renderer)
+**Summary:** Built the dashboard's universal right-hand slide-over (`dashboard/app/slide-over.js` over the pure, unit-tested `slide-over-data.js`) and wired it to the board's open-intent seam. Clicking any artifact opens the approved styleguide `Drawer`, which fetches `GET /api/doc?path=` and renders the markdown client-side via the styleguide `Markdown`. Tasks and every non-task artifact (BC README, vision, context-map, research, ADR) render through one identical path — a *doc-shaped* item the Drawer consumes (ADR-0010); only the fetched path differs. Esc + scrim close.
+**Verification:** PASS (iteration 1) — full dashboard suite 72/72 green incl. 7 new slide-over-data tests; uniform task/non-task path verified; Drawer Esc/scrim/slide-in inherited from the approved styleguide (not reimplemented); single-source intact (Drawer/Markdown imported, styleguide source byte-unchanged); scope clean (no nav, no SSE/Promote).
+**Commit:** ffda30f
+**Files changed:** 9 (slide-over.js, slide-over-data.js, board.js wiring, slide-over-data test, dist/app.js rebuilt, BC README, ADR-0010)
+**Tests added:** 7 (slide-over-data path resolution + doc-shaped item)
+**ADRs written:** ADR-0010 (slide-over feeds the Drawer a doc-shaped item; scope: agentic-workflow) — number free, no collision.
+**Concept signal:** worker flagged `dashboard-frontend-app` converging on 4 artifacts (ADR-0009, aw-006, aw-007, ADR-0010) — aggregating for end-of-run.
+
+---
+
+## 2026-06-06 -- Batch started: [agentic-workflow-007]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-007 - Dashboard slide-over (universal detail panel + client-side markdown renderer over /api/doc)
+**Parallel:** no (1 worker)
+**Note:** Third wave. Slots into the app shell ADR-0009 established — reuses the styleguide Drawer + Markdown patterns, fetches `/api/doc` (aw-005), consumes the board's open-intent seam (board.js onOpen). aw-008 (nav) + aw-009 (interactivity) remain, one-per-batch.
+
+---
+
+## 2026-06-06 -- Task verified and completed: agentic-workflow-006 - Dashboard board view
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-006 - Dashboard board view (flat Kanban over /api/tree)
+**Summary:** Stood up the dashboard frontend app in `dashboard/app/` (the project's first real UI) — imports the approved styleguide Kanban components across the BC boundary (single-source rule intact, ADR-0003), renders the flat four-column lifecycle board over live `/api/tree` with per-card BC chips, graceful unknown-status bucketing, empty-column state, and a click-emits-open-intent seam for the slide-over (aw-007). Retargeted infrastructure's esbuild ENTRY from the styleguide canvas to the live app and re-committed `dist/`.
+**Verification:** PASS (iteration 1) — full dashboard suite 65/65 green incl. new board-data tests + a dist-build assertion that the committed bundle is the live board (fetches /api/tree, no canvas hero); single-source rule verified (styleguide imported not forked, source byte-unchanged); scope clean (no slide-over/nav built).
+**Commit:** 03e0b37
+**Files changed:** 11 (app/{app,board,board-data}.js, build.mjs retarget, 2 tests, dist/{app.js,index.html} rebuilt, BC README, ADR-0009)
+**Tests added:** ~10 (board-data bucketing + dist-build live-board assertion)
+**ADRs written:** ADR-0009 (dashboard frontend app shell + build retarget; scope: agentic-workflow) — number free, no collision. Governs aw-007/aw-008 too.
+
+---
+
+## 2026-06-06 -- Batch started: [agentic-workflow-006]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-006 - Dashboard board view (flat Kanban over /api/tree)
+**Parallel:** no (1 worker)
+**Note:** Second wave. aw-005 done unblocked aw-006/007/008; aw-009 still blocked on aw-006. The three UI tasks share the dashboard app shell + the agentic-workflow README, so they run one-per-batch (Phase 3), lowest-id first. Worker briefed on the cross-BC seam: no dashboard frontend app exists yet (build.mjs bundles the styleguide *canvas*), so aw-006 must stand up the app shell and retarget the esbuild entry — architect consult + ADR, or a clean bounce if under-specified.
+
+---
+
+## 2026-06-06 -- Task verified and completed: design-system-003 - Vendor webfonts offline
+
+**Type:** Work / Task completion
+**Task:** design-system-003 - Vendor the dashboard's webfonts offline
+**Summary:** Dropped the Google Fonts CDN `@import` from the token CSS and vendored Inter Tight + JetBrains Mono as latin-subset variable woff2 (one file per family, 44KB/31KB + OFL licenses) under `styleguide/styles/fonts/`, referenced by local `@font-face` rules. `dashboard/build.mjs` now copies `styles/fonts/` → `dist/fonts/` so the relative `url()` resolves identically in the canvas and the served dist — closing the last view-time network dependency; the dashboard renders correct type fully offline.
+**Verification:** PASS (iteration 1) — by inspection (no test suite for CSS/fonts): no CDN ref remains, @font-face family names match the `--font-*` tokens, real woff2 (not placeholders), dist CSS byte-identical to source + dist/fonts present.
+**Commit:** e9a41cc
+**Files changed:** 13 (token CSS, 2 woff2 + 2 OFL ×{source,dist}, build.mjs, dist CSS, BC README, ADR-0008)
+**Tests added:** 0 (CSS/font delivery change)
+**ADRs written:** ADR-0008 (vendored-webfonts-latin-subset; scope: design-system) — **renumbered from the worker's 0004 by the orchestrator (0004 already taken by the cwd ADR)**; refs in the BC README + task file updated to match.
+**Gate note:** edits the gated `colors_and_type.css` — reopens the styleguide gate for a lightweight builder re-confirm (visual delta nil: same families/weights, local delivery).
+
+---
+
+## 2026-06-06 -- Task verified and completed: agentic-workflow-005 - Dashboard read API
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-005 - Dashboard read API (/api/tree projection + /api/doc carrier)
+**Summary:** Added the two read endpoints to the aw-004 server — `GET /api/tree` projects every BC × lifecycle folder × task frontmatter (id/title/status/type/context/path) plus artifact locations (pointers, never bodies); `GET /api/doc?path=` is a validated raw-markdown carrier. Both reuse `discovery.mjs`'s `startsWith(root)` guard; pure reads, no writes. New `tree.mjs` (stdlib frontmatter parser, graceful degradation) + `read-api.mjs` handlers.
+**Verification:** PASS (iteration 1) — full dashboard suite 55/55 green; all 4 acceptance criteria evidenced (no-body projection, traversal-403 touches no file, malformed-frontmatter degradation exercised, BC+status on every card).
+**Commit:** 21f0fe7
+**Files changed:** 8 (tree.mjs, read-api.mjs, server.mjs, 3 tests, dashboard README, BC README)
+**Tests added:** ~12 (tree projection + read-api endpoints)
+**ADRs written:** none (ADR-0002 already covers the read transport)
+
+---
+
+## 2026-06-06 -- Batch started: [design-system-003, agentic-workflow-005]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-003 - Vendor the dashboard's webfonts offline; agentic-workflow-005 - Dashboard read API (/api/tree projection + /api/doc carrier)
+**Parallel:** yes (2 workers)
+**Note:** First wave of the dashboard-cluster work run. Both ready (ds-003 deps none; aw-005 deps aw-004 ✓). Non-conflicting — ds-003 in styleguide CSS/fonts (design-system BC), aw-005 adds read endpoints to the aw-004 server (agentic-workflow BC). aw-006/007/008/009 stay blocked on the aw-005 chain.
+
+---
+
+## 2026-06-06 -- Modeling / Promoted: aw-005..009 - Dashboard UI cluster (5 tasks)
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo (×5)
+**Summary:** Builder asked to promote the whole dashboard backlog. Promoted the 5 buildable
+children — aw-005 (read API), aw-006 (board view), aw-007 (slide-over + renderer),
+aw-008 (navigation), aw-009 (SSE live-update + Promote). All leaf deps are done
+(aw-004, aw-003, infra-001/002/003, ds-001/002) and the styleguide gate is OPEN, so the
+frontend gate is clear for aw-006/007/008/009. Intra-cluster deps (aw-006/007/008 → aw-005,
+aw-009 → aw-005/006) are now todo→todo and the `work` DAG sequences them at claim time.
+**Held back:** aw-001 — the integration epic. Not promotable until its children land done
+(its own AC is "all children done + end-to-end flow works"); promoting it would queue an
+empty gate. Stays in backlog and closes when aw-005..009 complete.
+
+---
+
 ## 2026-06-06 -- Modeling / Promoted: design-system-003 - Vendor the dashboard's webfonts offline
 
 **Type:** Modeling / Promote

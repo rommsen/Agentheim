@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-06
 completed: 2026-06-06
-commit:
+commit: 5cc5aac
 depends_on: [agentic-workflow-003, agentic-workflow-005, agentic-workflow-006, infrastructure-003]
 blocks: [agentic-workflow-001]
 tags: [dashboard, ui, frontend, sse, live-update, write, promote, applyTaskMove]

@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-06
 completed: 2026-06-06
-commit:
+commit: 21f0fe7
 depends_on: [agentic-workflow-004]
 blocks: [agentic-workflow-001]
 tags: [dashboard, api, read, projection]

@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-06
 completed: 2026-06-06
-commit:
+commit: ffda30f
 depends_on: [agentic-workflow-005, design-system-002, infrastructure-002]
 blocks: [agentic-workflow-001]
 tags: [dashboard, ui, frontend, drawer, slide-over, markdown]
