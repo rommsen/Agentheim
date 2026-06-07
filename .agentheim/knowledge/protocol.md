@@ -5,6 +5,28 @@ Newest entries on top.
 
 ---
 
+## 2026-06-07 -- Batch started: [agentic-workflow-011]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-011 - /dashboard command — launch, stop, status, auto-open
+**Parallel:** no (1 worker)
+
+---
+
+## 2026-06-07 -- Modeling / Captured: agentic-workflow-011 - /dashboard command
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Captured a `/dashboard` command that drives the existing `dashboard/launch.mjs`
+launcher (aw-004): launch (+ auto-open browser), stop, and a new status verb. Today the launcher
+only runs via `node dashboard/launch.mjs`; this supplies the missing trigger. Filed straight to
+todo (decisions settled, no UI authored → no styleguide gate). One ubiquitous-language change
+required: document `/dashboard` as a deliberate slash-command exception to the "phrasing, not
+slash commands" principle (builder decision 2026-06-07).
+
+---
+
 ## 2026-06-06 -- Work session ended
 
 **Type:** Work / Session end

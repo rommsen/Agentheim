@@ -3,11 +3,13 @@
 // differences are confined to the spawn options and the kill path below.
 //
 // Usage:
-//   node dashboard/launch.mjs           # or: launch
+//   node dashboard/launch.mjs           # or: launch (+ auto-open browser)
 //   node dashboard/launch.mjs stop      # stop the detached server
+//   node dashboard/launch.mjs status    # report running/not-running (read-only)
 //
 // `launch` spawns serve.mjs DETACHED so the terminal returns to a prompt; the
-// child binds 127.0.0.1 on an ephemeral port and writes the runfile itself.
+// child binds 127.0.0.1 on an ephemeral port and writes the runfile itself,
+// then the default browser is auto-opened at the served URL.
 
 import { spawn, execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -101,6 +103,51 @@ export async function stopDashboard(root) {
   return { action: 'stopped', pid: rf.pid };
 }
 
+/**
+ * Report whether a dashboard is running for `root` WITHOUT launching or stopping.
+ * Pure read over the runfile via inspectExisting (which reaps a stale file).
+ * Returns { state: 'running', port, pid } or { state: 'none' }.
+ */
+export function statusDashboard(root) {
+  const existing = inspectExisting(root); // reaps a stale runfile as a side effect
+  if (existing.state === 'live') {
+    return { state: 'running', port: existing.runfile.port, pid: existing.runfile.pid };
+  }
+  return { state: 'none' };
+}
+
+/**
+ * Pick the OS-native browser opener for `url`. This is the one new OS-divergent
+ * path (joining spawn/kill); it stays here so launch.mjs remains the single home
+ * for cross-OS differences (ADR-0002).
+ *   Windows: cmd /c start "" <url>   (the empty "" is start's title arg)
+ *   macOS:   open <url>
+ *   Linux:   xdg-open <url>
+ */
+export function browserCommand(platform, url) {
+  if (platform === 'win32') return { command: 'cmd', args: ['/c', 'start', '', url] };
+  if (platform === 'darwin') return { command: 'open', args: [url] };
+  return { command: 'xdg-open', args: [url] };
+}
+
+/**
+ * Best-effort auto-open of the default browser at `url`. Detached + unref so it
+ * never holds the terminal, and any failure (no display, missing opener) is
+ * swallowed — a failed browser-open must not fail the launch.
+ * `opts.spawnFn` / `opts.platform` are injectable for tests.
+ */
+export function openBrowser(url, opts = {}) {
+  const spawnFn = opts.spawnFn || spawn;
+  const platform = opts.platform || process.platform;
+  const { command, args } = browserCommand(platform, url);
+  try {
+    const child = spawnFn(command, args, { detached: true, stdio: 'ignore', windowsHide: true });
+    if (child && typeof child.unref === 'function') child.unref();
+  } catch {
+    /* best effort — a failed browser-open never fails the launch */
+  }
+}
+
 // ---- CLI ----
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (isMain) {
@@ -110,10 +157,17 @@ if (isMain) {
     const r = await stopDashboard(root);
     if (r.action === 'stopped') console.log(`Dashboard stopped (pid ${r.pid}); runfile removed.`);
     else console.log('No dashboard running (no runfile).');
+  } else if (cmd === 'status') {
+    const r = statusDashboard(root);
+    if (r.state === 'running') console.log(`Dashboard running at http://127.0.0.1:${r.port}/ (pid ${r.pid}).`);
+    else console.log('No dashboard running.');
   } else {
     const r = await launchDashboard(root);
+    const url = `http://127.0.0.1:${r.port}/`;
     const verb = r.action === 'reused' ? 'already running' : 'launched';
-    console.log(`Dashboard ${verb} at http://127.0.0.1:${r.port}/ (pid ${r.pid}).`);
+    console.log(`Dashboard ${verb} at ${url} (pid ${r.pid}).`);
+    openBrowser(url);
+    console.log('Opening it in your default browser…');
     console.log('Stop it with: node dashboard/launch.mjs stop');
   }
 }
