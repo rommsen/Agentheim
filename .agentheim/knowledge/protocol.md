@@ -5,6 +5,45 @@ Newest entries on top.
 
 ---
 
+## 2026-06-07 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (ca3a150 — aw-011 /dashboard slash command)
+**Notes:**
+- Single ready task (aw-011) → one worker, verified PASS on the first iteration. todo/ and
+  doing/ are now empty across all BCs; backlog holds only aw-010 (POSIX cross-OS leg,
+  `depends_on: [agentic-workflow-001]`).
+- **Pre-existing uncommitted changes left untouched** (predate this session): `.agentheim/vision.md`
+  and `references/modes.md` (the "stale framing" resolution from a prior session). Not part of
+  aw-011 — deliberately not staged. Surfaced to the builder for a separate commit decision.
+- **EOL-only noise:** `dashboard/dist/app.js` + `dashboard/dist/index.html` show as modified but
+  the diff is LF→CRLF only (no content change); not attributed to aw-011, not committed.
+
+---
+
+## 2026-06-07 -- Task verified and completed: agentic-workflow-011 - /dashboard command
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-011 - /dashboard command — launch, stop, status, auto-open
+**Summary:** Added the `/dashboard` slash command — the single documented exception to the
+"phrasing, not slash commands" principle — as a thin `commands/dashboard.md` trigger over the
+existing launcher (aw-004), extending `dashboard/launch.mjs` with a read-only `status` verb and
+a cross-OS browser auto-open step (`start`/`open`/`xdg-open`), both confined to the launcher per
+ADR-0002.
+**Verification:** PASS (iteration 1) — verifier ran both suites green (dashboard 106/106 incl. 6
+new tests, lib 13/13) and confirmed all six acceptance criteria, scope, and the BC-README
+slash-command-exception documentation.
+**Commit:** ca3a150
+**Files changed:** 5 (launch.mjs, commands/dashboard.md, status-open.test.mjs, dashboard/README.md, BC README)
+**Tests added:** 6
+**ADRs written:** none
+
+---
+
 ## 2026-06-07 -- Batch started: [agentic-workflow-011]
 
 **Type:** Work / Batch start

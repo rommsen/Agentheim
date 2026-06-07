@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-07
 completed: 2026-06-07
-commit:
+commit: ca3a150
 depends_on: []
 blocks: []
 tags: [dashboard, command, launcher, cli, slash-command]
