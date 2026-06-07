@@ -59,11 +59,22 @@ returns a graceful 404 ("assets not built yet"). The server itself runs fine.
 ## Usage
 
 ```sh
-node dashboard/launch.mjs        # launch (detached); prints the http://127.0.0.1:<port>/ URL
-node dashboard/launch.mjs stop   # stop: kill by pid, remove the runfile
+node dashboard/launch.mjs          # launch (detached) + auto-open browser; prints the URL
+node dashboard/launch.mjs stop     # stop: kill by pid, remove the runfile
+node dashboard/launch.mjs status   # report running/not-running + port (read-only, never launches)
 ```
 
-`launch` spawns the server **detached** so the terminal returns to a prompt. The
+The builder-facing surface is the **`/dashboard`** slash command (agentic-workflow-011,
+`commands/dashboard.md`) — a thin trigger that passes the verb straight through to this
+launcher. `/dashboard`, `/dashboard stop`, `/dashboard status`. It is the single, documented
+exception to Agentheim's "phrasing, not slash commands" rule (a process-launcher, not a
+dialogue).
+
+`launch` spawns the server **detached** so the terminal returns to a prompt, then **auto-opens**
+the default browser at the served URL — `cmd /c start "" <url>` (Windows), `open <url>` (macOS),
+`xdg-open <url>` (Linux). Browser-open is best-effort: a failure (no display, missing opener)
+never fails the launch. The auto-open path is the one new OS-divergent step and is confined to
+`launch.mjs` (`openBrowser` / `browserCommand`) per ADR-0002. The
 server binds `127.0.0.1` **only** on an **ephemeral** port, reads the OS-assigned
 port back, and writes the sole runtime artifact:
 
@@ -101,7 +112,9 @@ taskkill /PID <pid> /F /T
   fallback, emits path-validated `{type:"tree-changed", path}` pointers (ADR-0006).
 - `runfile.mjs` — runfile read/write/delete, pid-liveness probe, reuse-or-replace.
 - `serve.mjs` — the long-running entry spawned detached; binds, writes the runfile.
-- `launch.mjs` — the single cross-platform launcher (`launch` / `stop` CLI).
+- `launch.mjs` — the single cross-platform launcher (`launch` / `stop` / `status` CLI),
+  including `statusDashboard` (pure runfile read) and the OS-divergent `openBrowser` /
+  `browserCommand` auto-open helpers. Driven by the `commands/dashboard.md` slash command.
 
 ## Tests
 

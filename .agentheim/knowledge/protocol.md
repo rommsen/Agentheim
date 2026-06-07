@@ -5,6 +5,100 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 -- Modeling / Captured: infrastructure-006 - Plugin release discipline
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** Spun out infrastructure-005's open process question into a `decision` task:
+decide and ADR-record how plugin version bumps are governed (bump-on-feature policy /
+release checklist / CI guard / combination) so the manifest stops drifting behind `main`.
+Backlog — needs a refine pass (possibly `architect` on the CI-guard option) before todo.
+
+---
+
+## 2026-06-08 -- Modeling / Captured: infrastructure-004 + infrastructure-005 (from macOS POSIX-verification feedback)
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo (both)
+**Summary:** A macOS contributor verifying agentic-workflow-010 (POSIX cross-OS leg)
+reported two issues outside that spike's scope, captured here:
+- **infrastructure-004** (bug) — `defaultAssetRoot` resolves `dist/` against the discovered
+  project root, so the installed plugin can't find its built assets against a foreign
+  project (404 "dist absent"). Fix: resolve module-relative (`import.meta.url`), like the
+  sibling `launch.mjs`/`build.mjs`. Routed to infrastructure as a runtime/transport concern
+  (sibling to infra-001/002, governed by ADR-0004), not agentic-workflow.
+- **infrastructure-005** (chore) — `.claude-plugin/plugin.json` still on 0.7.0 while `main`
+  is ~30 commits ahead; `/plugin` reports "already at latest" and marketplace users can't
+  pull updates. Bump to 0.8.0. Left an open process question (release discipline) for a
+  possible follow-up.
+The same feedback confirms agentic-workflow-010's POSIX leg ran clean (detached launch,
+runfile, SSE, /api/tree) — pending PR merge before that task is moved to done.
+
+---
+
+## 2026-06-07 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (ca3a150 — aw-011 /dashboard slash command)
+**Notes:**
+- Single ready task (aw-011) → one worker, verified PASS on the first iteration. todo/ and
+  doing/ are now empty across all BCs; backlog holds only aw-010 (POSIX cross-OS leg,
+  `depends_on: [agentic-workflow-001]`).
+- **Pre-existing uncommitted changes left untouched** (predate this session): `.agentheim/vision.md`
+  and `references/modes.md` (the "stale framing" resolution from a prior session). Not part of
+  aw-011 — deliberately not staged. Surfaced to the builder for a separate commit decision.
+- **EOL-only noise:** `dashboard/dist/app.js` + `dashboard/dist/index.html` show as modified but
+  the diff is LF→CRLF only (no content change); not attributed to aw-011, not committed.
+
+---
+
+## 2026-06-07 -- Task verified and completed: agentic-workflow-011 - /dashboard command
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-011 - /dashboard command — launch, stop, status, auto-open
+**Summary:** Added the `/dashboard` slash command — the single documented exception to the
+"phrasing, not slash commands" principle — as a thin `commands/dashboard.md` trigger over the
+existing launcher (aw-004), extending `dashboard/launch.mjs` with a read-only `status` verb and
+a cross-OS browser auto-open step (`start`/`open`/`xdg-open`), both confined to the launcher per
+ADR-0002.
+**Verification:** PASS (iteration 1) — verifier ran both suites green (dashboard 106/106 incl. 6
+new tests, lib 13/13) and confirmed all six acceptance criteria, scope, and the BC-README
+slash-command-exception documentation.
+**Commit:** ca3a150
+**Files changed:** 5 (launch.mjs, commands/dashboard.md, status-open.test.mjs, dashboard/README.md, BC README)
+**Tests added:** 6
+**ADRs written:** none
+
+---
+
+## 2026-06-07 -- Batch started: [agentic-workflow-011]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-011 - /dashboard command — launch, stop, status, auto-open
+**Parallel:** no (1 worker)
+
+---
+
+## 2026-06-07 -- Modeling / Captured: agentic-workflow-011 - /dashboard command
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Captured a `/dashboard` command that drives the existing `dashboard/launch.mjs`
+launcher (aw-004): launch (+ auto-open browser), stop, and a new status verb. Today the launcher
+only runs via `node dashboard/launch.mjs`; this supplies the missing trigger. Filed straight to
+todo (decisions settled, no UI authored → no styleguide gate). One ubiquitous-language change
+required: document `/dashboard` as a deliberate slash-command exception to the "phrasing, not
+slash commands" principle (builder decision 2026-06-07).
+
+---
+
 ## 2026-06-06 -- Work session ended
 
 **Type:** Work / Session end

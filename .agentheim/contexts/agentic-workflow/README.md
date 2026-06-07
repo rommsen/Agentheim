@@ -28,6 +28,14 @@ separate BC, but today the whole tool lives in this one.
 - **Skill** — a natural-language-triggered capability: `brainstorm`, `modeling`,
   `research`, `work` (plus doctrine docs: TDD, verification-before-completion,
   research-review). Triggered by phrasing, not slash commands.
+- **Slash-command exception (`/dashboard`)** — the **single, deliberate** departure from the
+  "phrasing, not slash commands" rule above (decided agentic-workflow-011). The dashboard is a
+  process-launcher, not a Socratic dialogue, so a literal slash command (`/dashboard`,
+  `/dashboard stop`, `/dashboard status`) is the right surface. Documenting the exception here
+  keeps the principle intact: skills stay phrase-triggered; `/dashboard` is the named carve-out,
+  not an erosion. The command file (`commands/dashboard.md`) is a thin trigger that passes the verb
+  straight through to the one cross-platform launcher `dashboard/launch.mjs` — all OS-divergent
+  spawn/kill/open logic stays there (ADR-0002). See *Dashboard* under Key commands.
 - **Mode** — one of six conversational stances (Interrogator, Suggestor, Challenger,
   Storyteller, Facilitator, Synthesizer) for `brainstorm` and `modeling`. Serves model
   quality; switchable mid-session.
@@ -164,7 +172,13 @@ Dashboard.
 **Dashboard** launches the local web UI over the project's `.agentheim/` folder — a flat Kanban
 board of every BC's tasks, a universal slide-over that renders any artifact (tasks, BC READMEs,
 the vision, the context map, ADRs, research) as markdown, live-updating as skills move files on
-disk, with one write-back intent: drag `backlog→todo` to Promote.
+disk, with one write-back intent: drag `backlog→todo` to Promote. Invoked via the `/dashboard`
+slash command (agentic-workflow-011 — the documented slash-command exception above), with three
+verbs: bare `/dashboard` launches-or-reuses the detached server and **auto-opens** the default
+browser at `http://127.0.0.1:<port>/`; `/dashboard stop` terminates it and removes the runfile;
+`/dashboard status` reports running/not-running + port from the runfile only (never launches or
+stops). The command is a thin trigger over `dashboard/launch.mjs`; auto-open is the one new
+OS-divergent path (`cmd /c start` / `open` / `xdg-open`), confined to the launcher per ADR-0002.
 
 ## Relationships with other contexts
 

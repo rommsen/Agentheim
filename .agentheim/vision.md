@@ -100,11 +100,12 @@ against exactly that.
   vision and domain from the code, present that, and *then* continue the Socratic
   dialogue as usual. Likely needs multiple collaborating agents to analyze an existing
   system; to be built later via the skill-creator. Not present today.
-- **Branch/registry merge gap.** The `research-reviewer` agent and `research-review`
-  doctrine doc exist on disk, but `skills/research/SKILL.md` is still the older copy that
-  never wires in the gate. The flow that *calls* the reviewer needs reconciling on merge.
-- **Stale modes framing.** `references/modes.md` still says the modes are "designed for
-  workshop use." With teaching dropped, that framing should be rephrased toward model
-  quality.
+- ~~**Branch/registry merge gap.**~~ *Resolved 2026-06-07.* `skills/research/SKILL.md`
+  now wires in the review gate end-to-end (post-write, pre-cite), spawning the
+  `research-reviewer` with fresh context and looping to a 3-iteration cap.
+- ~~**Stale modes framing.**~~ *Resolved 2026-06-07.* `references/modes.md` no longer
+  frames the modes as a workshop/teaching device; they are described as instruments for
+  model quality, and the group/room/participants language was reconciled to the single
+  builder.
 </content>
 </invoke>

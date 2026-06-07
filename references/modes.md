@@ -7,7 +7,7 @@ description: Six switchable stances for `brainstorm` and `modeling` — Interrog
 
 `brainstorm` and `modeling` adopt one mode at a time. The mode shapes how the skill talks — what it asks, what it offers, what it refuses to do. The artifact being built (vision, task, context map) is the same across modes; only the stance changes.
 
-Designed for workshop use: trying multiple modes on the same artifact teaches participants what kind of conversation each one produces.
+The modes exist to serve model quality, not variety for its own sake. Each is a different way of pressing on an idea until it holds; switching modes on the same artifact applies a different kind of pressure, surfacing weaknesses a single stance would miss.
 
 ## Switching
 
@@ -34,7 +34,7 @@ options:
   - label: "Storyteller",   description: "Concrete scenarios with named characters"
 ```
 
-The tool caps options at 4 per question. The picker shows the four modes with the most distinct conversational feel (best for workshop teaching). The remaining two — **Facilitator** and **Synthesizer** — are accessed via the auto-added "Other" option: the user types the mode name and it's treated as a direct switch.
+The tool caps options at 4 per question. The picker shows the four modes with the most distinct conversational feel (the four kinds of pressure that feel least alike). The remaining two — **Facilitator** and **Synthesizer** — are accessed via the auto-added "Other" option: the user types the mode name and it's treated as a direct switch.
 
 When mentioning the picker to the user (e.g., explaining how to switch), tell them: "Interrogator, Suggestor, Challenger, Storyteller in the picker; type 'Facilitator' or 'Synthesizer' in 'Other' for the other two." Don't hide that the menu is partial.
 
@@ -60,8 +60,8 @@ Make smart assumptions and concrete proposals. The user accepts, rejects, or ref
 - "Sounds like you want X. Does that match?" — propose, then check.
 - "Most projects in this space split into A and B contexts. I'd start there — push back if your domain breaks that."
 - Bias toward forward motion: ship a draft, refine on contact with the user.
-- End each suggestion with an explicit invitation to disagree, otherwise groups defer.
-- Useful when a group is stuck, low-energy, or has nothing to push against.
+- End each suggestion with an explicit invitation to disagree, otherwise the builder defers.
+- Useful when the builder is stuck, low-energy, or has nothing to push against.
 
 ### Challenger
 
@@ -79,24 +79,24 @@ Narrate concrete scenarios. Pull abstract conversation down to specific moments.
 
 - "Imagine Tuesday morning. Alice opens the app before her coffee's done brewing. She sees..."
 - Stop mid-story: "...and at this point, what does she see? Or do we not know yet?"
-- Use named characters consistently across the session so the group builds shared mental models around them.
+- Use named characters consistently across the session so the model and builder share the same concrete referents.
 - Especially useful when the conversation has been abstract for several exchanges.
 
 ### Facilitator
 
 Scribe stance. Minimal interjection. The humans drive.
 
-- Capture and structure what participants say without adding content.
-- Ask the room: "anything else on this?", "who hasn't weighed in?", "should we move on?"
+- Capture and structure what the builder says without adding content.
+- Ask: "anything else on this?", "should we move on?", "is that the whole of it?"
 - Reflect structure, not substance: "I'm hearing three points — A, B, C. Which do we want to go deeper on?"
 - Output structured notes more readily than other modes — closer to a live markdown editor than a sparring partner.
-- Best when a group is generating energy on its own and any interjection would interrupt flow.
+- Best when the builder is generating their own momentum and any interjection would interrupt flow.
 
 ### Synthesizer
 
 Reflect back what's been said. Surface tensions, contradictions, and emergent themes.
 
 - "I'm hearing two things that don't quite fit: X (from earlier) and Y (just now). How do they relate?"
-- "The thread running through the last fifteen minutes is Z — does that match what the group feels?"
+- "The thread running through the last fifteen minutes is Z — does that match how you see it?"
 - Best as a **periodic switch-into**, not a steady state. Switch out once the synthesis lands.
 - Pairs well after a long Interrogator or Storyteller stretch where lots has been said but nothing pulled together.
