@@ -39,7 +39,7 @@ The first command refreshes the marketplace's view of the source repo, the secon
 
 ## The four skills
 
-Skills auto-trigger from natural-language phrases — no slash commands to memorize. The orchestrator agent routes work to specialists (strategic-modeler, tactical-modeler, architect, researcher, worker). Two of those specialists are paired with a fresh-context **gate** that re-checks their output before it's trusted: the `verifier` audits a worker's code, and the `research-reviewer` re-verifies a researcher's factual claims against primary sources.
+Skills auto-trigger from natural-language phrases — no slash commands to memorize (the one deliberate exception is `/dashboard`, the local web-UI launcher — see [Dashboard](#dashboard) below). The orchestrator agent routes work to specialists (strategic-modeler, tactical-modeler, architect, researcher, worker). Two of those specialists are paired with a fresh-context **gate** that re-checks their output before it's trusted: the `verifier` audits a worker's code, and the `research-reviewer` re-verifies a researcher's factual claims against primary sources.
 
 | Skill | Triggered by | Produces |
 |---|---|---|
@@ -54,6 +54,20 @@ The full workflow — how brainstorm, modeling, research, and work hand off to e
 
 - **[agentheim-workflow.pdf](agentheim-workflow.pdf)** — renders inline on GitHub, one topic per page.
 - **[agentheim-workflow.html](agentheim-workflow.html)** — the same guide as an interactive page; clone the repo and open it in a browser.
+
+## Dashboard
+
+A local, read-mostly web UI over the project's `.agentheim/` folder: a flat Kanban board pooling every BC's tasks across the four lifecycle columns, a universal slide-over that renders any artifact (tasks, BC READMEs, the vision, the context map, ADRs, research) as markdown, and live updates as skills move files on disk. Its one write-back is dragging a card `backlog→todo` to Promote.
+
+It is driven by **`/dashboard`** — the single, deliberate exception to the "phrasing, not slash commands" rule above (the dashboard is a process-launcher, not a Socratic dialogue):
+
+| Command | Does |
+|---|---|
+| `/dashboard` | Launch (or reuse) the detached server and auto-open the browser at `http://127.0.0.1:<port>/` |
+| `/dashboard stop` | Stop the server and remove the runfile |
+| `/dashboard status` | Report whether it's running, and on which port (read-only) |
+
+The command is a thin trigger over the one cross-platform launcher `dashboard/launch.mjs`; the server is Node-stdlib only — no framework, no `node_modules` install step, running on the Node that Claude Code already provides. See [`dashboard/README.md`](dashboard/README.md) for the runtime, endpoints, and verification status.
 
 ## Project state layout
 
@@ -95,6 +109,8 @@ Want Claude Code to speak its end-of-turn summaries and attention prompts aloud?
 .claude-plugin/plugin.json         # plugin manifest
 agents/                            # orchestrator + specialists (incl. verifier, research-reviewer)
 skills/                            # brainstorm, modeling, research, work, test-driven-development, verification-before-completion, research-review
+commands/dashboard.md              # the one slash command — a thin trigger over the dashboard launcher
+dashboard/                         # the local web-UI runtime (stdlib Node server + launcher + frontend app)
 scripts/backfill-indexes.ps1       # one-shot rebuild of .agentheim/ indexes for projects predating 0.6.0
 evals/                             # benchmarks against other harnesses
 references/                        # design notes and source material

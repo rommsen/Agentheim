@@ -195,6 +195,8 @@
   .b-research .kicker, .b-research h3 { color: var(--research); }
   .b-work .side { background: var(--work-bg); }
   .b-work .kicker, .b-work h3 { color: var(--work); }
+  .b-dash .side { background: var(--orch-bg); }
+  .b-dash .kicker, .b-dash h3 { color: var(--orch); }
 
   .step-list { display: flex; flex-direction: column; gap: 2px; }
   .step {
@@ -213,6 +215,7 @@
   .n-model { background: var(--model); }
   .n-research { background: var(--research); }
   .n-work { background: var(--work); }
+  .n-dash { background: var(--orch); }
 
   /* three-action split (model) */
   .actions3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
@@ -420,6 +423,7 @@
   .callout.c-model { border-color: var(--model); background: var(--model-bg); }
   .callout.c-work { border-color: var(--work); background: var(--work-bg); }
   .callout.c-research { border-color: var(--research); background: var(--research-bg); }
+  .callout.c-dash { border-color: var(--orch); background: var(--orch-bg); }
 
   /* responsive */
   @media (max-width: 940px) {
@@ -477,6 +481,7 @@
     #lifecycle > .wrap     { zoom: 0.88; }
     #example > .wrap       { zoom: 0.54; }
     #knowledge > .wrap     { zoom: 0.88; }
+    #dashboard > .wrap     { zoom: 0.66; }
     footer > .wrap         { zoom: 0.88; }
 
     .pipeline, .card, .stage, .mode, .caller-box, .spec-box,
@@ -509,6 +514,7 @@
     <a href="#orchestration">Orchestration</a>
     <a href="#lifecycle">Task life</a>
     <a href="#example">Example</a>
+    <a href="#dashboard">Dashboard</a>
   </div>
 </nav>
 
@@ -1130,6 +1136,61 @@
       <div class="kfile">
         <div class="kpath">contexts/&lt;bc&gt;/concepts/</div>
         <p>Opt-in synthesis pages — created only when work spots several artifacts converging on one concept.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<section id="dashboard">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-num">11 / THE DASHBOARD</div>
+      <h2>A window onto the knowledge layer</h2>
+      <p>Everything above is reviewable markdown on disk. The <b>dashboard</b> is an optional local web UI
+        over that same <code>.agentheim/</code> tree — read-mostly, live, and never a second source of truth.
+        It is driven by <code>/dashboard</code>: the <em>single, deliberate</em> exception to the
+        "phrasing, not slash commands" rule, because launching a server is a process action, not a Socratic dialogue.</p>
+    </div>
+
+    <div class="card skill-block b-dash">
+      <div class="side">
+        <div class="kicker">/dashboard</div>
+        <h3>Launch · Stop · Status</h3>
+        <div class="summary">A thin slash-command trigger over one cross-platform launcher
+          (<code>dashboard/launch.mjs</code>). The server is Node-stdlib only — no framework, no install step.</div>
+        <div class="meta">
+          <b>Surface:</b> the one slash command<br />(not a skill, not phrase-triggered)<br /><br />
+          <b>Writes:</b> one — drag <code>backlog→todo</code><br />to Promote, via the shared mover
+        </div>
+      </div>
+      <div class="body">
+        <div class="step-list">
+          <div class="step"><div class="n n-dash">→</div><div class="txt"><strong><code>/dashboard</code></strong><span>Launches (or reuses) the detached server and auto-opens the browser at <code>http://127.0.0.1:&lt;port&gt;/</code>. Relaunch is idempotent — a live runfile is reused, a stale one reaped.</span></div></div>
+          <div class="step"><div class="n n-dash">→</div><div class="txt"><strong><code>/dashboard stop</code></strong><span>Stops the detached server and removes the runfile.</span></div></div>
+          <div class="step"><div class="n n-dash">→</div><div class="txt"><strong><code>/dashboard status</code></strong><span>Reports whether it's running, and on which port — read-only, never launching or stopping.</span></div></div>
+        </div>
+        <div class="actions3">
+          <div class="action">
+            <h4>BOARD</h4>
+            <p>A flat Kanban pooling every BC's tasks across the four lifecycle columns; each card carries its context.</p>
+            <div class="out">backlog · todo · doing · done</div>
+          </div>
+          <div class="action">
+            <h4>SLIDE-OVER</h4>
+            <p>One universal drawer renders any artifact — task, BC README, vision, context map, ADR, research — as markdown.</p>
+            <div class="out">→ /api/doc, client-rendered</div>
+          </div>
+          <div class="action">
+            <h4>LIVE</h4>
+            <p>An SSE stream re-fetches the tree whenever a skill moves a file on disk, so the board stays current.</p>
+            <div class="out">→ /api/events (push)</div>
+          </div>
+        </div>
+        <div class="callout c-dash">
+          <b>Disk stays the source of truth.</b> The board is a projection rebuilt from <code>/api/tree</code>;
+          its one write — Promote — goes through the same <code>applyTaskMove</code> the skills use, never a UI-only path.
+        </div>
       </div>
     </div>
   </div>
