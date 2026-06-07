@@ -5,6 +5,39 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 -- Modeling / Captured: infrastructure-006 - Plugin release discipline
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** Spun out infrastructure-005's open process question into a `decision` task:
+decide and ADR-record how plugin version bumps are governed (bump-on-feature policy /
+release checklist / CI guard / combination) so the manifest stops drifting behind `main`.
+Backlog — needs a refine pass (possibly `architect` on the CI-guard option) before todo.
+
+---
+
+## 2026-06-08 -- Modeling / Captured: infrastructure-004 + infrastructure-005 (from macOS POSIX-verification feedback)
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo (both)
+**Summary:** A macOS contributor verifying agentic-workflow-010 (POSIX cross-OS leg)
+reported two issues outside that spike's scope, captured here:
+- **infrastructure-004** (bug) — `defaultAssetRoot` resolves `dist/` against the discovered
+  project root, so the installed plugin can't find its built assets against a foreign
+  project (404 "dist absent"). Fix: resolve module-relative (`import.meta.url`), like the
+  sibling `launch.mjs`/`build.mjs`. Routed to infrastructure as a runtime/transport concern
+  (sibling to infra-001/002, governed by ADR-0004), not agentic-workflow.
+- **infrastructure-005** (chore) — `.claude-plugin/plugin.json` still on 0.7.0 while `main`
+  is ~30 commits ahead; `/plugin` reports "already at latest" and marketplace users can't
+  pull updates. Bump to 0.8.0. Left an open process question (release discipline) for a
+  possible follow-up.
+The same feedback confirms agentic-workflow-010's POSIX leg ran clean (detached launch,
+runfile, SSE, /api/tree) — pending PR merge before that task is moved to done.
+
+---
+
 ## 2026-06-07 -- Work session ended
 
 **Type:** Work / Session end

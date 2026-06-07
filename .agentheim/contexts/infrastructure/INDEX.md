@@ -10,14 +10,16 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
-- **Todo:** 0
+- **Backlog:** 1
+- **Todo:** 2
 - **Doing:** 0
 - **Done:** 3
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **infrastructure-004** — Resolve dashboard assetRoot relative to the module, not the project root (bug) — `todo/infrastructure-004-dashboard-assetroot-module-relative.md`
+- **infrastructure-005** — Bump plugin version to 0.8.0 to unblock marketplace updates (chore) — `todo/infrastructure-005-bump-plugin-version-0-8-0.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -33,6 +35,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **infrastructure-006** — Plugin release discipline — stop the manifest version from silently drifting (decision) — `backlog/infrastructure-006-plugin-release-version-discipline.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
