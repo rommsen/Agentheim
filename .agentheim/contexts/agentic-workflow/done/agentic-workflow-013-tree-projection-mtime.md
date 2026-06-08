@@ -6,7 +6,7 @@ type: refactor
 context: agentic-workflow
 created: 2026-06-08
 completed: 2026-06-08
-commit:
+commit: 9a0db2d
 depends_on: [agentic-workflow-005]
 blocks: [agentic-workflow-012]
 tags: [dashboard, tree, read-model]

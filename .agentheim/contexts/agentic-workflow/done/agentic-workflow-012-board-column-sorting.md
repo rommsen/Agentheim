@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-08
 completed: 2026-06-08
-commit:
+commit: 19e5870
 depends_on: [agentic-workflow-013, design-system-001-styleguide]
 blocks: []
 tags: [dashboard, board, frontend, ui]

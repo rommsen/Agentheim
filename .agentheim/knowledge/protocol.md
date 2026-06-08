@@ -8,6 +8,101 @@ Newest entries on top.
 ## 2026-06-08 -- Work session ended
 
 **Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0) — agentic-workflow-013 then agentic-workflow-012
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (9a0db2d aw-013, 19e5870 aw-012) on `main`
+**Notes:**
+- Ran the DAG in two sequential waves: aw-013 (read-model mtime) had to land before aw-012 (board sort), which depended on it. Both verified PASS first try.
+- A parallel `modeling`/`capture` session created **infrastructure-007** (bump plugin version 0.8.2 + cut v0.8.2 tag) mid-run; it prepended its own protocol/INDEX changes. Left untouched by this work run and **surfaced to the builder** — it is a release task whose tag-cut + push to `main` is a builder git act (per its own notes), not auto-dispatched.
+- Uncommitted at session end (intentionally not swept into the task commits): `infrastructure/INDEX.md` + `infrastructure/todo/infrastructure-007-*.md` (the parallel modeling session's, awaiting the builder's release decision).
+
+---
+
+## 2026-06-08 -- Modeling / Captured: infrastructure-007 - Bump plugin version to 0.8.2 + cut v0.8.2 tag
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo
+**Summary:** Tester reported `/plugin` stuck on *"already at latest"*. Verified: tag `v0.8.1` (main HEAD `6252320`) ships the `capture` skill + POSIX dashboard fixes, but `.claude-plugin/plugin.json` at that tag and on `main` still reads `0.8.0` — the manifest bump was skipped when v0.8.1 was tagged, so the marketplace never offers the update. Second occurrence of the drift `infrastructure-005` fixed, on the first release after ADR-0013 codified the discipline. Captured the immediate unblock only (builder-chosen shape: bump manifest `0.8.0 → 0.8.2` + cut a fresh `v0.8.2` tag, leaving the published `v0.8.1` untouched; mechanics per ADR-0013 / RELEASE.md). The reopen-the-checklist-vs-CI-guard decision was deliberately *not* captured. Tester's literal claim (main at 0.7.0, v0.8.1 not on main) was stale — corrected to 0.8.0 / v0.8.1-is-HEAD.
+
+---
+
+## 2026-06-08 -- Task verified and completed: agentic-workflow-012 - Add sorting options to Kanban board columns
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-012 - Add sorting options to Kanban board columns
+**Summary:** Each board column gained an independent sort control (Name asc/desc, Modification-date desc/asc; default mod-date descending) rendered board-side as a sibling of the styleguide `ColumnHeader` (DragColumn precedent, no fork). Reordering is a pure, DOM-free `board-sort.js` comparator run after `treeToColumns`, derived at render so every live re-projection re-applies the choice; in-session view-state only (no localStorage); null `mtimeMs` sorts as oldest, ties break by id.
+**Verification:** PASS (iteration 1) — all eight acceptance criteria mapped to tests/structural code; full dashboard suite 124 pass / 0 fail; styleguide `kanban.js` confirmed unforked.
+**Commit:** 19e5870
+**Files changed:** 7 (`board-sort.js` + test, `board.js`, `board-data.js` + test, `dist/app.js` rebuilt, BC README)
+**Tests added:** 14 (12 comparator + 2 mtime pass-through)
+**ADRs written:** none (mtime within ADR-0002; board-side affordance within ADR-0003/0009)
+
+---
+
+## 2026-06-08 -- Batch started: [agentic-workflow-012]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-012 - Add sorting options to Kanban board columns
+**Parallel:** no (1 worker — sole ready task; unblocked now that aw-013 + design-system-001-styleguide are both done)
+
+---
+
+## 2026-06-08 -- Task verified and completed: agentic-workflow-013 - Carry task file modification time (mtimeMs) in the /api/tree projection
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-013 - Carry task file modification time (mtimeMs) in the /api/tree projection
+**Summary:** `/api/tree` projection (`projectTask` in `dashboard/tree.mjs`) now carries each task file's `mtimeMs` as additive per-task metadata; a stat failure degrades to `mtimeMs: null` without aborting the walk — unblocking aw-012's mod-date-descending board sort.
+**Verification:** PASS (iteration 1) — all five acceptance criteria covered; full dashboard suite 110 pass / 0 fail.
+**Commit:** 9a0db2d
+**Files changed:** 2 (`dashboard/tree.mjs`, `dashboard/test/tree.test.mjs`)
+**Tests added:** 2 (numeric mtimeMs present; unstattable file → mtimeMs null)
+**ADRs written:** none (mtime is metadata within ADR-0002's pointers+metadata contract)
+
+---
+
+## 2026-06-08 -- Batch started: [agentic-workflow-013]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-013 - Carry task file modification time (mtimeMs) in the /api/tree projection
+**Parallel:** no (1 worker — sole ready task; aw-012 blocked on aw-013)
+
+---
+
+## 2026-06-08 -- Modeling / Promoted: agentic-workflow-013 + agentic-workflow-012
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo (both)
+**Note:** aw-013 (tree-projection mtime) is unblocked — its only dep, aw-005, is done. aw-012 (board column sorting) is ready but blocked by aw-013; `work` resolves the DAG, so aw-012 won't be claimed until aw-013 lands.
+
+---
+
+## 2026-06-08 -- Modeling / Refined: agentic-workflow-012 - Add sorting options to Kanban board columns
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog (both tasks; ready to promote)
+**Summary:** Interrogated the raw capture. Builder's answers: Why = surface recently-touched work (validates the mod-date-desc default); Scope = per-column independent sort; Persistence = reset to default each load, no localStorage. Two scouted findings drove the shape — (A) the `/api/tree` projection carries no file mtime, so the default sort is impossible from the current read model; (B) the styleguide `ColumnHeader` has no sort slot and ADR-0003 forbids forking it. Orchestrator (tactical-modeler + architect) resolved: split the mtime read-model change into its own task (shared contract, own commit), and render the sort control board-side as a sibling of `ColumnHeader` (the `DragColumn` precedent — no fork, no design-system task). Rewrote aw-012 with concrete acceptance criteria (per-column independent, reset-to-default, live-update re-apply, deterministic tie-breaks, pure comparator module) as a frontend-only task depending on aw-013 + design-system-001-styleguide.
+**Split into:** agentic-workflow-013 (Carry task file modification time (mtimeMs) in the /api/tree projection — type: refactor, depends_on aw-005, blocks aw-012)
+**ADRs written:** none (mtime is metadata within ADR-0002's pointers+metadata contract; board-side affordance governed by existing ADR-0003 — no new ADR warranted)
+
+---
+
+## 2026-06-08 -- Capture / Captured: agentic-workflow-012 - Add sorting options to Kanban board columns
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Board columns should be sortable by name (asc/desc) and last file modification date; default = modification date descending.
+
+---
+
+## 2026-06-08 -- Work session ended
+
+**Type:** Work / Session end
 **Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
 **Bounced:** 0
 **Failed:** 0
