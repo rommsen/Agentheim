@@ -2,14 +2,14 @@
 // ADR-0002). Walks the discovered root and projects, for the dashboard's read
 // views (board aw-006, slide-over aw-007, navigation aw-008, SSE consumer aw-009):
 //   - every BC, its four lifecycle folders, and each task's frontmatter
-//     (id, title, status, type, context, path) — POINTERS + METADATA only,
+//     (id, title, status, type, context, path, mtimeMs) — POINTERS + METADATA only,
 //   - the LOCATIONS of vision / context-map / BC READMEs+INDEXes+concepts /
 //     research reports / ADRs.
 // No document bodies cross this boundary — /api/doc carries those. "Disk is the
 // source of truth; the tree is a projection" — this module never writes and never
 // interprets a lifecycle move (aw-009 owns interpretation).
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const LIFECYCLE_FOLDERS = ['backlog', 'todo', 'doing', 'done'];
@@ -94,6 +94,16 @@ export function projectTask(root, absFile, folder, bcName) {
   const base = path.basename(absFile);
   // Filename convention is `<id>-<slug>.md`; derive a fallback id from it.
   const fallbackId = base.replace(/\.md$/i, '');
+  // mtimeMs is per-task METADATA within ADR-0002's pointers+metadata contract
+  // (not a document body), carried so the board can sort by modification date
+  // (aw-012). A stat failure degrades to null and never aborts the walk — same
+  // posture as frontmatter parsing above.
+  let mtimeMs = null;
+  try {
+    mtimeMs = statSync(absFile).mtimeMs;
+  } catch {
+    mtimeMs = null;
+  }
   const task = {
     id: typeof fm.id === 'string' && fm.id ? fm.id : fallbackId,
     title: typeof fm.title === 'string' ? fm.title : '',
@@ -102,6 +112,7 @@ export function projectTask(root, absFile, folder, bcName) {
     type: typeof fm.type === 'string' ? fm.type : '',
     context: typeof fm.context === 'string' && fm.context ? fm.context : bcName,
     path: relPointer(root, absFile),
+    mtimeMs,
   };
   return task;
 }

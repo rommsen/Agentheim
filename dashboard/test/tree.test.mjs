@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { buildTree } from '../tree.mjs';
+import { buildTree, projectTask } from '../tree.mjs';
 
 /**
  * Build a small but realistic .agentheim/ fixture:
@@ -145,6 +145,36 @@ test('absent vision/context-map/research degrade to null/empty, walk does not ab
     assert.equal(tree.contexts[0].name, 'beta');
   } finally {
     rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('each task carries a numeric mtimeMs (file modification time) for board sort (aw-013)', () => {
+  const { base } = makeProject();
+  try {
+    const tree = buildTree(base);
+    const all = tree.contexts.flatMap((c) => Object.values(c.lifecycle).flat());
+    assert.ok(all.length >= 2);
+    for (const t of all) {
+      assert.equal(typeof t.mtimeMs, 'number', 'task has numeric mtimeMs');
+      assert.ok(Number.isFinite(t.mtimeMs) && t.mtimeMs > 0, 'mtimeMs is a real epoch ms');
+    }
+  } finally {
+    rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('an unstattable task file projects mtimeMs: null without throwing (aw-013)', () => {
+  // projectTask must never throw; a path that cannot be stat'd (does not exist)
+  // exercises the same graceful-degradation branch as an unreadable file.
+  const root = mkdtempSync(path.join(tmpdir(), 'aw013-stat-'));
+  try {
+    const missing = path.join(root, '.agentheim', 'contexts', 'h', 'backlog', 'h-001-gone.md');
+    const t = projectTask(root, missing, 'backlog', 'h');
+    assert.equal(t.mtimeMs, null, 'unstattable file → mtimeMs null');
+    // id still derives from the filename — the projection stays usable.
+    assert.equal(t.id, 'h-001-gone');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
   }
 });
 
