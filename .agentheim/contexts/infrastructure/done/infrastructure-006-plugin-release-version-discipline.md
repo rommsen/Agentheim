@@ -6,7 +6,7 @@ type: decision
 context: infrastructure
 created: 2026-06-08
 completed: 2026-06-08
-commit:
+commit: e6ded37
 depends_on: []
 blocks: []
 tags: [plugin, packaging, distribution, release, version, semver]

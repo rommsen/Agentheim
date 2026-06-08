@@ -5,13 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (e6ded37 infrastructure-006) — on branch `POSIX-dashboard-fixes`
+**Notes:**
+- infrastructure-006 (plugin release discipline) landed: ADR-0013 + top-level `RELEASE.md` + infrastructure README pointer. Verified PASS iteration 1.
+- Orchestrator stripped stray tool-call markup (`</content>`/`</invoke>`) the worker accidentally wrote into the tail of both the ADR and `RELEASE.md` before commit — cosmetic, no criterion impact, flagged by the verifier.
+- **All todo/ and doing/ are now empty across every BC.** Nothing left ready.
+- Untouched pre-existing working-tree state (not part of this run): `skills/capture/` and `skills/capture-workspace/` (untracked) — surfaced to the builder for a separate decision.
+
+---
+
 ## 2026-06-08 -- Task verified and completed: infrastructure-006 - Plugin release discipline
 
 **Type:** Work / Task completion
 **Task:** infrastructure-006 - Plugin release discipline — stop the manifest version from silently drifting
 **Summary:** Recorded the release policy as ADR-0013 — a release is the deliberate act of cutting a `vX.Y.Z` git tag matching the sole version source (`plugin.json` `version`), enforced by a documented checklist (CI guard and commit-derived versioning weighed and rejected). Shipped the discoverable top-level `RELEASE.md` (bump → commit → push to `main` → tag, with push-to-`main` named as the step that actually moves marketplace users off "already at latest") and pointed the infrastructure BC README at it.
 **Verification:** PASS (iteration 1) — all six acceptance criteria covered; orchestrator stripped stray tool-markup the worker leaked into the tail of the ADR and RELEASE.md before commit.
-**Commit:** <sha>
+**Commit:** e6ded37
 **Files changed:** 3 (ADR-0013, RELEASE.md, infrastructure README)
 **Tests added:** 0 (doc-only decision task)
 **ADRs written:** 0013-plugin-release-discipline.md
