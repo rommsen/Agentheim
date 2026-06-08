@@ -5,6 +5,23 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 12:36 -- Batch started: [infrastructure-008]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-008 - Dashboard command must invoke the launcher by plugin path, not project-relative
+**Parallel:** no (1 worker — sole ready task)
+
+---
+
+## 2026-06-08 -- Modeling / Captured: infrastructure-008 - Dashboard command launcher path
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo
+**Summary:** Captured from a real foreign-project session: `/agentheim:dashboard` ran the command card's `node dashboard/launch.mjs` from the consumer project root and hit `Cannot find module '...\dorc\dashboard\launch.mjs'` — the launcher ships with the plugin, not the project, forcing manual plugin-cache spelunking and version-guessing. The command-invocation sibling of infrastructure-004 (which fixed the launcher's *internal* module-relative asset resolution): the project-root assumption survives one layer up at the slash-command → launcher seam. Fix direction: invoke the launcher by plugin path (likely `${CLAUDE_PLUGIN_ROOT}`), keeping cwd in the consumer project so `.agentheim/` discovery still works; worker to verify command-body interpolation. Prior art: infrastructure-004, infrastructure-001; governing ADR-0002.
+
+---
+
 ## 2026-06-08 -- Work session ended (resumed)
 
 **Type:** Work / Session end

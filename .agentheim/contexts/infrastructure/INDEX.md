@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
+- **Backlog:** 1
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 7
+- **Done:** 8
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-008** — Dashboard command must invoke the launcher by plugin path, not project-relative (bug) — `done/infrastructure-008-dashboard-command-plugin-root-launcher-path.md`
 - **infrastructure-007** — Bump plugin version to 0.8.2 + cut v0.8.2 tag to unblock marketplace updates (chore) — `done/infrastructure-007-bump-plugin-version-0-8-2.md`
 - **infrastructure-006** — Plugin release discipline — stop the manifest version from silently drifting (decision) — `done/infrastructure-006-plugin-release-version-discipline.md`
 - **infrastructure-005** — Bump plugin version to 0.8.0 to unblock marketplace updates (chore) — `done/infrastructure-005-bump-plugin-version-0-8-0.md`
@@ -37,6 +38,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **infrastructure-009** — Add a test seam for slash-command card invocation (catch project-relative launcher paths) (chore) — `backlog/infrastructure-009-command-card-invocation-test-infra.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

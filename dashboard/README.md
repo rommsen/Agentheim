@@ -82,6 +82,25 @@ launcher. `/dashboard`, `/dashboard stop`, `/dashboard status`. It is the single
 exception to Agentheim's "phrasing, not slash commands" rule (a process-launcher, not a
 dialogue).
 
+### Launcher location: invoked by plugin root, run from the project cwd — ADR-0002 (infrastructure-008)
+
+`launch.mjs` ships **inside the plugin's install dir**, not in the consumer project. When
+Agentheim runs as an installed plugin against a foreign codebase there is no `dashboard/`
+beside that project's `.agentheim/`, so a project-relative `node dashboard/launch.mjs` would
+fail with a module-not-found error. The `/dashboard` command therefore invokes the launcher by
+its plugin-rooted path — `node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs" [verb]` — where
+Claude Code exports `$CLAUDE_PLUGIN_ROOT` into the command's shell environment; the `:-.`
+fallback resolves to `.` when running from the Agentheim repo itself (where the launcher sits
+beside `.agentheim/`). This is the command-invocation sibling of the infrastructure-004
+module-relative asset fix: the project-root assumption survives one layer up at the
+slash-command → launcher seam.
+
+The split is load-bearing: the **script** path may live in the plugin cache while the **cwd**
+stays the consumer project. The launcher's CLI discovers the root via `discoverRoot(process.cwd())`
+(walk up from cwd for `.agentheim/`), so launch/stop/status all find the foreign project and
+write the runfile under it regardless of where the script lives. The command must not `cd` or
+pass a project path.
+
 `launch` spawns the server **detached** so the terminal returns to a prompt, then **auto-opens**
 the default browser at the served URL — `cmd /c start "" <url>` (Windows), `open <url>` (macOS),
 `xdg-open <url>` (Linux). Browser-open is best-effort: a failure (no display, missing opener)

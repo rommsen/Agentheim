@@ -44,7 +44,12 @@ for an infrastructure BC.
 - **Transport** — the mechanism that serves `.agentheim/` to the UI and carries writes
   back: static assets + a JSON API over localhost.
 - **Launch / Stop** — how the runtime is started from a terminal inside a Claude Code
-  plugin context, on a chosen host/port, and how it is torn down.
+  plugin context, on a chosen host/port, and how it is torn down. The launcher
+  (`launch.mjs`) **ships with the plugin, not the consumer project**, so the `/dashboard`
+  command invokes it by its **plugin-rooted path** (`node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs"`,
+  the `:-.` fallback covering a run from the Agentheim repo itself) while keeping the
+  consumer project as cwd so **project discovery** still resolves the foreign `.agentheim/`.
+  Script-in-cache + cwd-in-project is load-bearing. (infrastructure-008.)
 - **Project discovery** — how the running runtime locates and reads the current project's
   `.agentheim/` folder: **walk up from the invocation directory** until a `.agentheim/`
   folder is found (the way git finds `.git`), resolve an **absolute root once at startup**,

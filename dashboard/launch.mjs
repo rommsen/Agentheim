@@ -168,6 +168,6 @@ if (isMain) {
     console.log(`Dashboard ${verb} at ${url} (pid ${r.pid}).`);
     openBrowser(url);
     console.log('Opening it in your default browser…');
-    console.log('Stop it with: node dashboard/launch.mjs stop');
+    console.log('Stop it with: /dashboard stop');
   }
 }
