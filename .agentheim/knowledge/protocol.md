@@ -5,6 +5,101 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 13:30 -- Capture / Captured: agentic-workflow-015 - Show the project name next to "Agentheim" in the dashboard header
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Dashboard header should show the current project's name (from vision.md) next to the word "Agentheim".
+
+---
+
+## 2026-06-08 13:05 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (ac9ae4d infrastructure-009)
+**Note:** A parallel capture session ran concurrently — new backlog items agentic-workflow-014 and design-system-004 were filed mid-run (backlog only, not ready work).
+
+---
+
+## 2026-06-08 13:04 -- Task verified and completed: infrastructure-009 - Command-card invocation test seam
+
+**Type:** Work / Task completion
+**Task:** infrastructure-009 - Add a test seam for slash-command card invocation (catch project-relative launcher paths)
+**Summary:** Added a committed stdlib-only test seam guarding the /dashboard launcher invocation against the project-relative-path regression class — a static guard over commands/dashboard.md (three verbs plugin-rooted, no cd, no bare printed hint, with Red-proof meta-tests) plus a foreign-project integration test that runs the literal card command form launch→status→stop in a temp .agentheim/-only project, asserts the runfile lands under the consumer project, and tears down in finally. The infrastructure-008 hand-run simulation is now permanent.
+**Verification:** PASS (iteration 1)
+**Commit:** ac9ae4d
+**Files changed:** 4 (command-card.test.mjs, foreign-launch.test.mjs, test/helpers/card.mjs, infrastructure BC README)
+**Tests added:** new command-card + foreign-launch suites; full dashboard suite 132/132 green
+**ADRs written:** none (makes the existing ADR-0002 contract testable; no new decision)
+
+---
+
+## 2026-06-08 12:00 -- Capture / Captured: agentic-workflow-014 - Group Kanban board columns by bounded context (collapsible)
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Add a group-by/ungroup-by-bounded-context button next to the board's sort combo box; grouped sections are collapsible.
+
+---
+
+## 2026-06-08 13:00 -- Capture / Captured: design-system-004 - Animated "actively working" treatment for doing-column tickets
+
+**Type:** Capture
+**BC:** design-system
+**Filed to:** backlog
+**Summary:** Doing-column tickets should have an animated/glowing/rotating background so it's visually obvious work is actively happening; exact visual idea still open.
+
+---
+
+## 2026-06-08 13:00 -- Batch started: [infrastructure-009]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-009 - Add a test seam for slash-command card invocation (catch project-relative launcher paths)
+**Parallel:** no (1 worker — sole ready task)
+
+---
+
+## 2026-06-08 12:48 -- Modeling / Refined: infrastructure-009 - Command-card invocation test seam
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Refined the infrastructure-008 TDD-skip follow-up. Cornered the one open decision — the "and/or" test scope — and committed to **both** approaches: a stdlib-only static guard (parse `commands/dashboard.md`, assert plugin-rooted prefix on all three verbs + no `cd`) **and** a foreign-project integration test (temp project with only `.agentheim/`, run the real launch→status→stop via `${CLAUDE_PLUGIN_ROOT}`, assert the runfile lands under it, clean up in `finally`). Also extended the static guard to the launcher's printed hint strings (the `/dashboard stop` correction 008 made). Acceptance criteria split to 5 concrete bullets; teardown/cross-platform risk noted for the worker. Promoted backlog → todo — ready to work.
+**Split into:** none
+**ADRs written:** none (makes an existing ADR-0002 contract testable; no new decision)
+
+---
+
+## 2026-06-08 12:42 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (a702143 infrastructure-008)
+
+---
+
+## 2026-06-08 12:42 -- Task verified and completed: infrastructure-008 - Dashboard command launcher path
+
+**Type:** Work / Task completion
+**Task:** infrastructure-008 - Dashboard command must invoke the launcher by plugin path, not project-relative
+**Summary:** `/dashboard` now invokes the launcher by its plugin-rooted path (`node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs"`) for all three verbs while keeping the consumer project as cwd, so launch/stop/status work in a foreign project with no module-not-found error and no manual plugin-cache spelunking. The `:-.` fallback covers a run from the Agentheim repo itself.
+**Verification:** PASS (iteration 1)
+**Commit:** a702143
+**Files changed:** 4 (commands/dashboard.md, dashboard/launch.mjs, dashboard/README.md, infrastructure BC README) + new backlog item infrastructure-009
+**Tests added:** 0 (command-card change; no command-card test infra — backlog item infrastructure-009 filed to add it; behavior exercised via end-to-end simulation, existing dashboard suite 124/124 green)
+**ADRs written:** none (natural consequence of ADR-0002's walk-up-from-cwd discovery clause; documented in both READMEs, sibling to infrastructure-004)
+
+---
+
 ## 2026-06-08 12:36 -- Batch started: [infrastructure-008]
 
 **Type:** Work / Batch start

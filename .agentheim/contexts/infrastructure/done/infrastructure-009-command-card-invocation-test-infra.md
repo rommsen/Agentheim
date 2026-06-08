@@ -6,7 +6,7 @@ type: chore
 context: infrastructure
 created: 2026-06-08
 completed: 2026-06-08
-commit:
+commit: ac9ae4d
 depends_on: []
 blocks: []
 tags: [dashboard, command, launcher, testing, plugin]
