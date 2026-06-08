@@ -7,14 +7,26 @@
 
 import http from 'node:http';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { serveStatic } from './static.mjs';
 import { handleEvents } from './events.mjs';
 import { handleTree, handleDoc } from './read-api.mjs';
 import { handleMove } from './move-api.mjs';
 
-/** Default asset root: the committed dashboard build output. */
-export function defaultAssetRoot(root) {
-  return path.join(root, 'dashboard', 'dist');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Default asset root: the committed dashboard build output, resolved relative to
+ * THIS module (ADR-0002 "plugin-relative directory"). The built dist/ always
+ * lives beside server.mjs in dashboard/ (committed by infrastructure-002), so
+ * this is correct in both layouts — the Agentheim repo itself AND an installed
+ * plugin pointed at a foreign project. Resolving against the discovered project
+ * root was wrong: per ADR-0004 the dashboard module's location is deliberately
+ * decoupled from the project it inspects, so the foreign root holds no dist/.
+ * The `root` argument is accepted but ignored — kept for caller compatibility.
+ */
+export function defaultAssetRoot(_root) {
+  return path.join(__dirname, 'dist');
 }
 
 /**

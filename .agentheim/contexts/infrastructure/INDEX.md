@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 2
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 3
+- **Done:** 4
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **infrastructure-004** — Resolve dashboard assetRoot relative to the module, not the project root (bug) — `todo/infrastructure-004-dashboard-assetroot-module-relative.md`
 - **infrastructure-005** — Bump plugin version to 0.8.0 to unblock marketplace updates (chore) — `todo/infrastructure-005-bump-plugin-version-0-8-0.md`
 <!-- todo-list:end -->
 
@@ -28,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-004** — Resolve dashboard assetRoot relative to the module, not the project root (bug) — `done/infrastructure-004-dashboard-assetroot-module-relative.md`
 - **infrastructure-002** — Bundle the styleguide ESM source into the dashboard's committed static assets (esbuild → committed dist/) (chore) — `done/infrastructure-002-pre-bundle-dashboard-assets.md`
 - **infrastructure-003** — Dashboard live-update transport: SSE endpoint + .agentheim file-watcher (supersedes ADR-0002 req/resp-only) (decision) — `done/infrastructure-003-dashboard-live-update-sse.md`
 - **infrastructure-001** — Dashboard runtime: Node static+JSON transport, launch/stop, project discovery (decision) — `done/infrastructure-001-dashboard-runtime-transport.md`

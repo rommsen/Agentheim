@@ -1,11 +1,11 @@
 ---
 id: infrastructure-004
 title: Resolve dashboard assetRoot relative to the module, not the project root
-status: todo
+status: done
 type: bug
 context: infrastructure
 created: 2026-06-08
-completed:
+completed: 2026-06-08
 commit:
 depends_on: [agentic-workflow-001]
 blocks: []
@@ -84,3 +84,29 @@ passes it directly and it is the override seam.
   an ADR addendum and update `dashboard/README.md`.
 - Prior art: infrastructure-001 (runtime transport), infrastructure-002 (bundles the
   `dist/` this bug fails to locate), aw-004 (where `defaultAssetRoot` was first written).
+
+## Outcome
+
+`defaultAssetRoot()` (`dashboard/server.mjs`) now resolves `dist/` **module-relative**
+via `import.meta.url` (`path.join(__dirname, 'dist')`), independent of the discovered
+project root — mirroring `launch.mjs` / `build.mjs`. The `root` argument is accepted but
+ignored (kept for caller compatibility). The single production default-caller,
+`dashboard/serve.mjs`, now calls `defaultAssetRoot()` with no root and honours an optional
+`AGENTHEIM_DASHBOARD_DIST` dev override. The explicit `assetRoot` parameter on
+`createDashboardServer` is preserved as the test/override seam.
+
+This restores (does not change) the ADR-0002 "plugin-relative directory" contract, and is
+the asset-serving consequence of ADR-0004's cwd/root decoupling — so no ADR addendum was
+needed. The dashboard README gains a "Static assets: module-relative asset root" section.
+
+Regression test: `dashboard/test/asset-root.test.mjs` — (1) `defaultAssetRoot` returns the
+module-relative path whether given a foreign root or no argument; (2) plugin scenario:
+foreign project root with only `.agentheim/` (no local `dashboard/dist`), default server
+serves `index.html` 200 from the committed module-relative `dist/`. Both failed Red against
+the old project-root resolution (404 / wrong path), pass Green after the fix.
+
+Suites: dashboard 108/108, lib 13/13. The foreign-project-on-POSIX final re-check is
+environmental and belongs to agentic-workflow-010 (not tickable on this Windows run).
+
+Key files: `dashboard/server.mjs`, `dashboard/serve.mjs`,
+`dashboard/test/asset-root.test.mjs`, `dashboard/README.md`.

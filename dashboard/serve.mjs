@@ -12,7 +12,12 @@ const root = process.env.AGENTHEIM_ROOT
   ? process.env.AGENTHEIM_ROOT
   : discoverRoot(process.cwd());
 
-const server = createDashboardServer({ root, assetRoot: defaultAssetRoot(root) });
+// Asset root is module-relative by default (infrastructure-004): the committed
+// dist/ lives beside the dashboard module, NOT under the discovered project root
+// (ADR-0004 decouples the two). AGENTHEIM_DASHBOARD_DIST is a dev override seam.
+const assetRoot = process.env.AGENTHEIM_DASHBOARD_DIST || defaultAssetRoot();
+
+const server = createDashboardServer({ root, assetRoot });
 
 server.listen(0, '127.0.0.1', () => {
   const { port } = server.address();
