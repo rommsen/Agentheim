@@ -6,7 +6,7 @@ type: bug
 context: infrastructure
 created: 2026-06-08
 completed: 2026-06-08
-commit:
+commit: 716c7f0
 depends_on: [agentic-workflow-001]
 blocks: []
 tags: [dashboard, runtime, plugin, assets, static, cross-os]
