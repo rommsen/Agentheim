@@ -49,7 +49,11 @@ for an infrastructure BC.
   command invokes it by its **plugin-rooted path** (`node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs"`,
   the `:-.` fallback covering a run from the Agentheim repo itself) while keeping the
   consumer project as cwd so **project discovery** still resolves the foreign `.agentheim/`.
-  Script-in-cache + cwd-in-project is load-bearing. (infrastructure-008.)
+  Script-in-cache + cwd-in-project is load-bearing. (infrastructure-008.) This contract is
+  now guarded by a committed test seam — a static guard over `commands/dashboard.md` (all
+  three verbs plugin-rooted, no `cd`) plus a foreign-project integration test that runs the
+  literal card command form launch→status→stop and asserts the runfile lands under the
+  consumer project (infrastructure-009).
 - **Project discovery** — how the running runtime locates and reads the current project's
   `.agentheim/` folder: **walk up from the invocation directory** until a `.agentheim/`
   folder is found (the way git finds `.git`), resolve an **absolute root once at startup**,
