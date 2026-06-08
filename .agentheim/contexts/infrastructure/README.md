@@ -147,8 +147,21 @@ Apply write request.
   WebSocket (no upgrade handshake; one-directional push) and over client polling (laggy /
   wasteful). The board stays a projection rebuilt from disk (ADR-0001), now event-driven.
 
+- **ADR-0013 — Plugin release discipline (manifest bump bound to a `vX.Y.Z` tag, by
+  checklist).** The marketplace reads exactly one version source — `plugin.json` `version`
+  (`marketplace.json` has none) — and caches it, so a manifest that lags `main` leaves users
+  stuck on *"already at latest"*. A **release** is therefore one deliberate act: cutting a
+  `vX.Y.Z` git tag that matches the manifest. Enforced by a **documented checklist**, not CI
+  or git hooks (both weighed and rejected as first-CI cost / fresh-clone-unprotected); the
+  bump → commit → **push to `main`** → tag steps live in the discoverable top-level
+  **[`RELEASE.md`](../../../RELEASE.md)**. Semver is defined against the plugin *contract*
+  (patch = doc/copy fixes; minor = new skill/command/capability; major = a breaking change to
+  the skill or command surface). Accepted residual risk: a checklist run from memory is the
+  same failure class as the original drift, mitigated by binding the bump to the tag act; CI
+  is the documented escalation path if drift recurs.
+
 ## Open questions
 
-- **Future remit** — whether plugin packaging/distribution, the eval harness, or shared
-  runtime tooling eventually fold into this BC. Deliberately deferred; fold in only when
-  the concern actually appears.
+- **Future remit** — whether the eval harness or shared runtime tooling eventually fold into
+  this BC. Deliberately deferred; fold in only when the concern actually appears.
+  (Plugin packaging/distribution **has** now folded in — see ADR-0013 / `RELEASE.md` above.)

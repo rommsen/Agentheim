@@ -5,6 +5,45 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 -- Task verified and completed: infrastructure-006 - Plugin release discipline
+
+**Type:** Work / Task completion
+**Task:** infrastructure-006 - Plugin release discipline — stop the manifest version from silently drifting
+**Summary:** Recorded the release policy as ADR-0013 — a release is the deliberate act of cutting a `vX.Y.Z` git tag matching the sole version source (`plugin.json` `version`), enforced by a documented checklist (CI guard and commit-derived versioning weighed and rejected). Shipped the discoverable top-level `RELEASE.md` (bump → commit → push to `main` → tag, with push-to-`main` named as the step that actually moves marketplace users off "already at latest") and pointed the infrastructure BC README at it.
+**Verification:** PASS (iteration 1) — all six acceptance criteria covered; orchestrator stripped stray tool-markup the worker leaked into the tail of the ADR and RELEASE.md before commit.
+**Commit:** <sha>
+**Files changed:** 3 (ADR-0013, RELEASE.md, infrastructure README)
+**Tests added:** 0 (doc-only decision task)
+**ADRs written:** 0013-plugin-release-discipline.md
+
+---
+
+## 2026-06-08 -- Batch started: [infrastructure-006]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-006 - Plugin release discipline — stop the manifest version from silently drifting
+**Parallel:** no (1 worker — sole ready task)
+
+---
+
+## 2026-06-08 -- Modeling / Refined: infrastructure-006 - Plugin release discipline
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo (promoted backlog → todo)
+**Summary:** Cornered the decision direction with the builder. Chosen: a **documented
+release checklist** (CI guard and commit-derived versioning weighed and rejected), bump
+triggered at **deliberate releases** = cutting a `vX.Y.Z` git tag (manifest may lag `main`
+between releases), checklist bound to the tag act so the bump can't be skipped. Recon
+recorded: only `plugin.json` carries a version (`marketplace.json` has none); no CI/hooks
+today but a GitHub remote exists. Rewrote acceptance criteria — output is ADR + a
+discoverable `RELEASE.md` checklist + BC README pointer; no follow-up tooling task
+(enforcement is doc-only). Promoted to todo.
+**Split into:** none
+**ADRs written:** none (the ADR is this task's deliverable, written when worked)
+
+---
+
 ## 2026-06-08 -- Work session ended (resumed)
 
 **Type:** Work / Session end

@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 5
+- **Done:** 6
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-006** — Plugin release discipline — stop the manifest version from silently drifting (decision) — `done/infrastructure-006-plugin-release-version-discipline.md`
 - **infrastructure-005** — Bump plugin version to 0.8.0 to unblock marketplace updates (chore) — `done/infrastructure-005-bump-plugin-version-0-8-0.md`
 - **infrastructure-004** — Resolve dashboard assetRoot relative to the module, not the project root (bug) — `done/infrastructure-004-dashboard-assetroot-module-relative.md`
 - **infrastructure-002** — Bundle the styleguide ESM source into the dashboard's committed static assets (esbuild → committed dist/) (chore) — `done/infrastructure-002-pre-bundle-dashboard-assets.md`
@@ -35,12 +36,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **infrastructure-006** — Plugin release discipline — stop the manifest version from silently drifting (decision) — `backlog/infrastructure-006-plugin-release-version-discipline.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0013** — Plugin release discipline — manifest bump bound to a `vX.Y.Z` git tag, by checklist (accepted) — `../../knowledge/decisions/0013-plugin-release-discipline.md`
 - **ADR-0002** — Dashboard runtime — Node-stdlib localhost transport with detached launch (proposed; superseded-in-part by ADR-0006) — `../../knowledge/decisions/0002-dashboard-runtime-transport.md`
 - **ADR-0006** — Dashboard live-update — SSE push + .agentheim/ file-watcher (proposed; supersedes-in-part ADR-0002) — `../../knowledge/decisions/0006-dashboard-live-update-sse.md`
 <!-- adr-local:end -->
