@@ -5,6 +5,170 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (e6ded37 infrastructure-006) — on branch `POSIX-dashboard-fixes`
+**Notes:**
+- infrastructure-006 (plugin release discipline) landed: ADR-0013 + top-level `RELEASE.md` + infrastructure README pointer. Verified PASS iteration 1.
+- Orchestrator stripped stray tool-call markup (`</content>`/`</invoke>`) the worker accidentally wrote into the tail of both the ADR and `RELEASE.md` before commit — cosmetic, no criterion impact, flagged by the verifier.
+- **All todo/ and doing/ are now empty across every BC.** Nothing left ready.
+- Untouched pre-existing working-tree state (not part of this run): `skills/capture/` and `skills/capture-workspace/` (untracked) — surfaced to the builder for a separate decision.
+
+---
+
+## 2026-06-08 -- Task verified and completed: infrastructure-006 - Plugin release discipline
+
+**Type:** Work / Task completion
+**Task:** infrastructure-006 - Plugin release discipline — stop the manifest version from silently drifting
+**Summary:** Recorded the release policy as ADR-0013 — a release is the deliberate act of cutting a `vX.Y.Z` git tag matching the sole version source (`plugin.json` `version`), enforced by a documented checklist (CI guard and commit-derived versioning weighed and rejected). Shipped the discoverable top-level `RELEASE.md` (bump → commit → push to `main` → tag, with push-to-`main` named as the step that actually moves marketplace users off "already at latest") and pointed the infrastructure BC README at it.
+**Verification:** PASS (iteration 1) — all six acceptance criteria covered; orchestrator stripped stray tool-markup the worker leaked into the tail of the ADR and RELEASE.md before commit.
+**Commit:** e6ded37
+**Files changed:** 3 (ADR-0013, RELEASE.md, infrastructure README)
+**Tests added:** 0 (doc-only decision task)
+**ADRs written:** 0013-plugin-release-discipline.md
+
+---
+
+## 2026-06-08 -- Batch started: [infrastructure-006]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-006 - Plugin release discipline — stop the manifest version from silently drifting
+**Parallel:** no (1 worker — sole ready task)
+
+---
+
+## 2026-06-08 -- Modeling / Refined: infrastructure-006 - Plugin release discipline
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo (promoted backlog → todo)
+**Summary:** Cornered the decision direction with the builder. Chosen: a **documented
+release checklist** (CI guard and commit-derived versioning weighed and rejected), bump
+triggered at **deliberate releases** = cutting a `vX.Y.Z` git tag (manifest may lag `main`
+between releases), checklist bound to the tag act so the bump can't be skipped. Recon
+recorded: only `plugin.json` carries a version (`marketplace.json` has none); no CI/hooks
+today but a GitHub remote exists. Rewrote acceptance criteria — output is ADR + a
+discoverable `RELEASE.md` checklist + BC README pointer; no follow-up tooling task
+(enforcement is doc-only). Promoted to todo.
+**Split into:** none
+**ADRs written:** none (the ADR is this task's deliverable, written when worked)
+
+---
+
+## 2026-06-08 -- Work session ended (resumed)
+
+**Type:** Work / Session end
+**Completed:** 1 (agentic-workflow-010 — verification skipped: human-verified spike) — this resumed leg
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (06f0ac0 agentic-workflow-010) — on branch `POSIX-dashboard-fixes`
+**Notes:**
+- Resumed after the builder confirmed the POSIX contributor re-ran the infrastructure-004 fix and the foreign-project asset path now serves on POSIX. That closed agentic-workflow-010's last (environmental) criterion, so the spike moved backlog/todo → done.
+- **All todo/ and doing/ are now empty across every BC.** Session total across both legs: 3 tasks completed (infrastructure-004, infrastructure-005, agentic-workflow-010), 0 bounced, 0 failed, 0 escalated.
+- Open follow-up still in backlog: **infrastructure-006** (plugin release discipline) — needs a refine pass before it is workable. Not part of this run.
+
+---
+
+## 2026-06-08 -- Task completed (verification skipped): agentic-workflow-010 - Dashboard cross-OS verification (POSIX leg)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-010 - Dashboard cross-OS verification — POSIX leg
+**Summary:** Closed the spike. Windows + POSIX parity confirmed: the macOS leg passed clean except the one divergence it existed to catch (`defaultAssetRoot` 404 on a foreign project), which was carved to infrastructure-004, fixed module-relative (716c7f0), and re-verified on POSIX by the contributor with the fix in place. No ADR addendum — infra-004 restored the ADR-0002/0004 contract rather than shifting it. BC README left unchanged (verification status belongs in the task Outcome + protocol, not the domain-model README).
+**Verification:** SKIPPED — spike completion; the substantive verification was performed by a human POSIX contributor, and the only change is the task file's own outcome bookkeeping (no code / ADR diff to audit).
+**Commit:** 06f0ac0
+**Files changed:** 1 (the task file)
+
+---
+
+## 2026-06-08 -- Batch started: [agentic-workflow-010]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-010 - Dashboard cross-OS verification (POSIX leg)
+**Parallel:** no (1 worker — closing the spike now that its infra-004 blocker is fixed and the POSIX contributor confirmed the foreign-project re-check)
+
+---
+
+## 2026-06-08 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (716c7f0 infrastructure-004, 41fabcb infrastructure-005) — on branch `POSIX-dashboard-fixes`
+**Notes:**
+- infrastructure-004 (assetRoot module-relative) and infrastructure-005 (version bump 0.8.0) both landed, each verified PASS on iteration 1. infrastructure todo/ + doing/ are now empty.
+- **agentic-workflow-010 NOT dispatched.** Its blocker (infrastructure-004) is now fixed, so it is dependency-unblocked, but its sole remaining acceptance criterion — installed-plugin-against-a-foreign-project asset serving re-checked **on a POSIX box** — is environmental and cannot be satisfied from this Windows session. Left in todo for coordination with a POSIX contributor. Dispatching a Windows worker would only bounce.
+- **Pre-existing uncommitted modeling state left untouched** (predates this session, belongs to the aw-010 refine / infra-004-005-006 capture): `.agentheim/contexts/agentic-workflow/INDEX.md` (M), the aw-010 backlog→todo move (`backlog/` deletion + new `todo/`), and the infrastructure-006 backlog task. Not part of this work run — surfaced to the builder for a separate commit decision.
+
+---
+
+## 2026-06-08 -- Task verified and completed: infrastructure-005 - Bump plugin version to 0.8.0
+
+**Type:** Work / Task completion
+**Task:** infrastructure-005 - Bump plugin version to 0.8.0 to unblock marketplace updates
+**Summary:** Bumped `.claude-plugin/plugin.json` version 0.7.0 → 0.8.0 so `/plugin` stops reporting marketplace users as already-latest and ships the ~30 commits of accumulated dashboard/design-system/infrastructure work. No other manifest field changed; no other version reference in the repo to reconcile.
+**Verification:** PASS (iteration 1) — manifest reads 0.8.0, sole field changed, valid JSON; criterion 3 (other version references) N/A.
+**Commit:** 41fabcb
+**Files changed:** 1
+**Tests added:** 0
+**ADRs written:** none
+
+---
+
+## 2026-06-08 -- Batch started: [infrastructure-005]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-005 - Bump plugin version to 0.8.0 to unblock marketplace updates
+**Parallel:** no (1 worker)
+
+---
+
+## 2026-06-08 -- Task verified and completed: infrastructure-004 - Resolve dashboard assetRoot relative to the module
+
+**Type:** Work / Task completion
+**Task:** infrastructure-004 - Resolve dashboard assetRoot relative to the module, not the project root
+**Summary:** `defaultAssetRoot` now resolves dist/ module-relative (via import.meta.url) instead of against the discovered project root, so an installed plugin against a foreign project serves its committed assets (no false "dist absent" 404). Added a foreign-root regression test + AGENTHEIM_DASHBOARD_DIST dev override.
+**Verification:** PASS (iteration 1) — dashboard suite 108/108, lib 13/13 green; all in-suite acceptance criteria met. POSIX foreign-project box re-check deferred to aw-010 (environmental).
+**Commit:** 716c7f0
+**Files changed:** 4
+**Tests added:** 2
+**ADRs written:** none
+
+---
+
+## 2026-06-08 -- Batch started: [infrastructure-004]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-004 - Resolve dashboard assetRoot relative to the module, not the project root
+**Parallel:** no (1 worker — infra-005 held to next wave to avoid a same-BC-README conflict)
+
+---
+
+## 2026-06-08 -- Modeling / Refined: agentic-workflow-010 - Dashboard POSIX cross-OS verification
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (promoted from backlog)
+**Summary:** Reconciled the spike with reality — its "keep in backlog until a POSIX box is
+available" premise was stale. A macOS contributor (protocol 2026-06-08) had already run the leg
+to an effectively clean full pass; builder confirmed all six criteria were exercised. Rewrote the
+task to re-state the macOS pass as confirmed (criteria checked) and narrow the residual to the one
+divergence the leg surfaced: the `defaultAssetRoot` bug (now **infrastructure-004**). Added
+`infrastructure-004` to `depends_on` (alongside aw-001) — aw-010 is not done until that fix lands
+and the installed-plugin-against-foreign-project asset path is re-checked on POSIX. The final
+re-check remains environmental (needs a POSIX box).
+**Split into:** none (infra-004 / infra-005 were carved out in the prior capture, not this refine)
+**ADRs written:** none
+
+---
+
 ## 2026-06-08 -- Modeling / Captured: infrastructure-006 - Plugin release discipline
 
 **Type:** Modeling / Capture

@@ -1,0 +1,34 @@
+{
+  "eval_id": 2,
+  "eval_name": "infra-routing",
+  "prompt": "jot this down for later: we should throttle the dashboards file-watcher so a huge git checkout doesnt fire a thousand tree-changed events at once",
+  "assertions": [
+    {
+      "text": "Exactly one new task .md file is created"
+    },
+    {
+      "text": "Routed to the infrastructure BC (file-watcher/live-update transport is infrastructure, not agentic-workflow)"
+    },
+    {
+      "text": "Task is in backlog/ with status backlog and context infrastructure"
+    },
+    {
+      "text": "id matches <bc>-NNN and filename is <id>-<slug>.md"
+    },
+    {
+      "text": "infrastructure INDEX backlog-list and Backlog count updated"
+    },
+    {
+      "text": "protocol.md has a new capture entry referencing the task"
+    },
+    {
+      "text": "The agent asked the user NO clarifying questions before filing"
+    },
+    {
+      "text": "Task is tagged captured"
+    },
+    {
+      "text": "Protocol entry uses the standard spec header format"
+    }
+  ]
+}

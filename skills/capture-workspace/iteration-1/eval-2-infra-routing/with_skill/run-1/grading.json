@@ -1,0 +1,59 @@
+{
+  "expectations": [
+    {
+      "text": "Exactly one new task .md file is created",
+      "passed": true,
+      "evidence": "1 file: infrastructure-007-throttle-dashboard-file-watcher.md"
+    },
+    {
+      "text": "Routed to the infrastructure BC (file-watcher/live-update transport is infrastructure, not agentic-workflow)",
+      "passed": true,
+      "evidence": "context=infrastructure; cites ADR-0006 live-update transport"
+    },
+    {
+      "text": "Task is in backlog/ with status backlog and context infrastructure",
+      "passed": true,
+      "evidence": "folder=backlog, status: backlog, context: infrastructure"
+    },
+    {
+      "text": "id matches <bc>-NNN and filename is <id>-<slug>.md",
+      "passed": true,
+      "evidence": "id=infrastructure-007; filename matches"
+    },
+    {
+      "text": "infrastructure INDEX backlog-list and Backlog count updated",
+      "passed": true,
+      "evidence": "INDEX ids=[infrastructure-007, infrastructure-006], Backlog: 2"
+    },
+    {
+      "text": "protocol.md has a new capture entry referencing the task",
+      "passed": true,
+      "evidence": "spec entry referencing infrastructure-007"
+    },
+    {
+      "text": "The agent asked the user NO clarifying questions before filing",
+      "passed": true,
+      "evidence": "QUESTIONS_ASKED: No"
+    },
+    {
+      "text": "Task is tagged captured",
+      "passed": true,
+      "evidence": "tags: [captured]"
+    },
+    {
+      "text": "Protocol entry uses the standard spec header format",
+      "passed": true,
+      "evidence": "'-- Capture / Captured: infrastructure-007 - ...' + Type/BC/Filed-to"
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "total_tool_calls": 14,
+    "errors_encountered": 0
+  }
+}

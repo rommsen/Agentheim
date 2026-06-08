@@ -1,0 +1,69 @@
+{
+  "expectations": [
+    {
+      "text": "Exactly one new task .md file is created",
+      "passed": true,
+      "evidence": "1 file: backlog/agentic-workflow-012-dashboard-remember-scroll-column.md"
+    },
+    {
+      "text": "The task is in a backlog/ folder, not todo/doing/done/",
+      "passed": true,
+      "evidence": "folder=backlog"
+    },
+    {
+      "text": "Routed to the agentic-workflow BC",
+      "passed": true,
+      "evidence": "context=agentic-workflow"
+    },
+    {
+      "text": "Frontmatter has status: backlog and context: agentic-workflow",
+      "passed": true,
+      "evidence": "status: backlog, context: agentic-workflow"
+    },
+    {
+      "text": "id matches <bc>-NNN and filename is <id>-<slug>.md",
+      "passed": true,
+      "evidence": "id=agentic-workflow-012; filename matches"
+    },
+    {
+      "text": "type is feature",
+      "passed": true,
+      "evidence": "type: feature"
+    },
+    {
+      "text": "agentic-workflow INDEX backlog-list has the id and Backlog count incremented to 1",
+      "passed": true,
+      "evidence": "INDEX ids=[agentic-workflow-012], Backlog: 1"
+    },
+    {
+      "text": "protocol.md has a new capture entry at top referencing the task",
+      "passed": true,
+      "evidence": "'## ... Idea captured (agentic-workflow)' references agentic-workflow-012"
+    },
+    {
+      "text": "The agent asked the user NO clarifying questions before filing",
+      "passed": true,
+      "evidence": "QUESTIONS_ASKED: No -- acted immediately"
+    },
+    {
+      "text": "Task is tagged captured (refinement-handoff marker), not ad-hoc keyword tags",
+      "passed": false,
+      "evidence": "tags: [dashboard, ui, frontend, board, ux] -- no captured marker; refiner cannot tell it is a raw dump from tags"
+    },
+    {
+      "text": "Protocol entry uses the standard spec header -- Capture / Captured: <id> - <title> with Type/BC/Filed-to fields",
+      "passed": false,
+      "evidence": "freeform '## 2026-06-08 14:32 -- Idea captured (agentic-workflow)' with prose, no Type/Filed-to fields"
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 2,
+    "total": 11,
+    "pass_rate": 0.8182
+  },
+  "execution_metrics": {
+    "total_tool_calls": 15,
+    "errors_encountered": 0
+  }
+}

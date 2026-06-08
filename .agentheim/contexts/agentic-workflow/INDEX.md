@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 10
+- **Done:** 11
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-010** — Dashboard cross-OS verification: POSIX leg (spike) — `done/agentic-workflow-010-dashboard-posix-cross-os-verification.md`
 - **agentic-workflow-011** — /dashboard command — launch, stop, status, auto-open (feature) — `done/agentic-workflow-011-dashboard-slash-command.md`
 - **agentic-workflow-001** — Dashboard — local web UI over the project's .agentheim folder (epic / integration gate; Windows v1) — `done/agentic-workflow-001-dashboard.md`
 - **agentic-workflow-009** — Dashboard interactivity: SSE live-update consumer + Promote → applyTaskMove (feature) — `done/agentic-workflow-009-dashboard-live-update-and-promote.md`
@@ -40,7 +41,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-010** — Dashboard cross-OS verification: POSIX leg (spike) — `backlog/agentic-workflow-010-dashboard-posix-cross-os-verification.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

@@ -56,6 +56,18 @@ pointer, never an interpreted Task transition (that is agentic-workflow-009's jo
 Until infrastructure-002 lands, `dashboard/dist/` is absent and the static handler
 returns a graceful 404 ("assets not built yet"). The server itself runs fine.
 
+### Static assets: module-relative asset root — ADR-0002 / ADR-0004
+
+The static handler serves the committed build from a **module-relative** directory:
+`defaultAssetRoot()` resolves `dist/` beside `server.mjs` (via `import.meta.url`), not
+against the discovered project root. This is the ADR-0002 "plugin-relative directory"
+contract and the asset-serving consequence of ADR-0004's cwd/root decoupling — when the
+plugin is installed and pointed at a **foreign project** (project root ≠ plugin dir), the
+built `dist/` still lives in the plugin cache beside the module, so the foreign root holds
+none. `serve.mjs` honours `AGENTHEIM_DASHBOARD_DIST` as a dev override; the explicit
+`assetRoot` parameter on `createDashboardServer` remains the test/override seam.
+(infrastructure-004)
+
 ## Usage
 
 ```sh

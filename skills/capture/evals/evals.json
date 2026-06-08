@@ -1,0 +1,26 @@
+{
+  "skill_name": "capture",
+  "evals": [
+    {
+      "id": 0,
+      "name": "single-route-no-bc",
+      "prompt": "capture this real quick: the dashboard should remember which board column I last scrolled to, so reopening it doesn't jump back to the top every time",
+      "expected_output": "Exactly one backlog task in agentic-workflow. status: backlog, type: feature, context: agentic-workflow, tags include captured. INDEX backlog list + count updated. One protocol Capture entry. A one-line report. NO clarifying questions asked.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "multi-idea-split",
+      "prompt": "quick dump, three things so I don't forget: 1) we keep forgetting to bump the plugin version before a release, 2) the dashboard needs a dark-mode toggle, 3) clicking a card should let me copy its task id to the clipboard. don't ask me questions, just file them",
+      "expected_output": "Three separate backlog tasks, one per idea, routed independently (version-discipline -> infrastructure; dark-mode + copy-id -> agentic-workflow or design-system as appropriate). All status backlog, none in todo. Each BC's INDEX + count updated, three protocol entries. No clarifying questions.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "infra-routing",
+      "prompt": "jot this down for later: we should throttle the dashboard's file-watcher so a huge git checkout doesn't fire a thousand tree-changed events at once",
+      "expected_output": "Exactly one backlog task routed to infrastructure (the live-update transport / file-watcher is infrastructure per ADR-0006, a globally-true transport concern). status: backlog, type feature/decision. INDEX + count updated, one protocol entry, one-line report, no questions.",
+      "files": []
+    }
+  ]
+}
