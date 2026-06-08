@@ -12,9 +12,9 @@ Newest entries on top.
 **Bounced:** 0
 **Failed:** 0
 **Escalated after verification:** 0
-**Commits:** 1 (6e69b80 infrastructure-007) on `main`
-**Release:** annotated tag `v0.8.2` cut at 6e69b80 and pushed with `main` — manifest now 0.8.2 > 0.8.0, so the marketplace offers the update (off "already at latest"). Published `v0.8.1` tag left untouched.
-**Notes:** all todo/ and doing/ are empty across every BC.
+**Commits:** 1 (6e69b80 infrastructure-007) — on branch `Marketplace-update-not-working`, NOT yet on `main`
+**Release:** manifest bumped to 0.8.2 in 6e69b80, but the release is **NOT yet shipped** — the `v0.8.2` tag is **not** cut and nothing is pushed. Discovered the work landed on feature branch `Marketplace-update-not-working` (5 ahead of local `main`), and local `main` is itself 11 ahead of `origin/main`. The tag-cut + push-to-`main` is paused pending the builder's call on how to land it (merge feature→main then push+tag, vs. push the branch for a PR). Published `v0.8.1` tag untouched.
+**Notes:** all todo/ and doing/ are empty across every BC. Release ship step outstanding (see above).
 
 ---
 
@@ -22,10 +22,10 @@ Newest entries on top.
 
 **Type:** Work / Task completion
 **Task:** infrastructure-007 - Bump plugin version to 0.8.2 + cut v0.8.2 tag to unblock marketplace updates
-**Summary:** Bumped the sole version source `.claude-plugin/plugin.json` 0.8.0 → 0.8.2, correcting the bump skipped when `v0.8.1` was tagged. Repo-wide check confirmed no other version reference must agree (`marketplace.json` has none; no CHANGELOG/badge). Builder authorized the release act, so the orchestrator cut and pushed the `v0.8.2` tag.
+**Summary:** Bumped the sole version source `.claude-plugin/plugin.json` 0.8.0 → 0.8.2, correcting the bump skipped when `v0.8.1` was tagged. Repo-wide check confirmed no other version reference must agree (`marketplace.json` has none; no CHANGELOG/badge).
 **Verification:** PASS (iteration 1) — manifest reads 0.8.2, no other field changed, no second version source; worker-satisfiable core only (tag/push are the orchestrator release act).
-**Commit:** 6e69b80
-**Release tag:** v0.8.2 (annotated, at 6e69b80, pushed with main)
+**Commit:** 6e69b80 (on branch `Marketplace-update-not-working`)
+**Release tag:** v0.8.2 — NOT yet cut/pushed; paused pending the builder's branch-landing decision (see session-end entry above).
 **Files changed:** 1 (`.claude-plugin/plugin.json`)
 **Tests added:** 0 (manifest bump)
 **ADRs written:** none (mechanics per ADR-0013 / RELEASE.md)
