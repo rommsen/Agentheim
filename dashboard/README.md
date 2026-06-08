@@ -82,24 +82,33 @@ launcher. `/dashboard`, `/dashboard stop`, `/dashboard status`. It is the single
 exception to Agentheim's "phrasing, not slash commands" rule (a process-launcher, not a
 dialogue).
 
-### Launcher location: invoked by plugin root, run from the project cwd — ADR-0002 (infrastructure-008)
+### Launcher location: env-independent resolver, run from the project cwd — ADR-0002 (infrastructure-010)
 
 `launch.mjs` ships **inside the plugin's install dir**, not in the consumer project. When
 Agentheim runs as an installed plugin against a foreign codebase there is no `dashboard/`
 beside that project's `.agentheim/`, so a project-relative `node dashboard/launch.mjs` would
-fail with a module-not-found error. The `/dashboard` command therefore invokes the launcher by
-its plugin-rooted path — `node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs" [verb]` — where
-Claude Code exports `$CLAUDE_PLUGIN_ROOT` into the command's shell environment; the `:-.`
-fallback resolves to `.` when running from the Agentheim repo itself (where the launcher sits
-beside `.agentheim/`). This is the command-invocation sibling of the infrastructure-004
-module-relative asset fix: the project-root assumption survives one layer up at the
-slash-command → launcher seam.
+fail with a module-not-found error.
+
+infrastructure-008 first reached the launcher via `node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs"`,
+but the field disproved that approach: `$CLAUDE_PLUGIN_ROOT` comes through **empty** in the
+command's Bash context for an installed plugin, so `${VAR:-.}` collapsed back to `.` → the
+consumer project → the exact module-not-found error it set out to fix. **The launcher location
+must never depend on `$CLAUDE_PLUGIN_ROOT`** (infrastructure-010; see the ADR-0002 addendum).
+
+The `/dashboard` command instead runs a tiny env-free `node -e` bootstrap that derives the plugin
+cache path from `os.homedir()` (`<home>/.claude/plugins/cache/agentheim/agentheim`), picks the
+newest cached version by **semver** (`0.8.10 > 0.8.9 > 0.8.3`), imports
+`dashboard/resolve-launcher.mjs` from there (or the repo-local copy when run from the Agentheim
+repo), and that resolver spawns `launch.mjs`. If no cached launcher is found the bootstrap **fails
+loudly** naming the searched path — never a silent `.`-relative fallback. The pure helpers
+(`cacheRoot`, `pickNewestVersion`, `resolveLauncher`, `locateLauncher`) are exported and
+unit-tested.
 
 The split is load-bearing: the **script** path may live in the plugin cache while the **cwd**
-stays the consumer project. The launcher's CLI discovers the root via `discoverRoot(process.cwd())`
-(walk up from cwd for `.agentheim/`), so launch/stop/status all find the foreign project and
-write the runfile under it regardless of where the script lives. The command must not `cd` or
-pass a project path.
+stays the consumer project. The resolver spawns the launcher with cwd inherited, and the
+launcher's CLI discovers the root via `discoverRoot(process.cwd())` (walk up from cwd for
+`.agentheim/`), so launch/stop/status all find the foreign project and write the runfile under it
+regardless of where the script lives. The command must not `cd` or pass a project path.
 
 `launch` spawns the server **detached** so the terminal returns to a prompt, then **auto-opens**
 the default browser at the served URL — `cmd /c start "" <url>` (Windows), `open <url>` (macOS),
@@ -145,7 +154,11 @@ taskkill /PID <pid> /F /T
 - `serve.mjs` — the long-running entry spawned detached; binds, writes the runfile.
 - `launch.mjs` — the single cross-platform launcher (`launch` / `stop` / `status` CLI),
   including `statusDashboard` (pure runfile read) and the OS-divergent `openBrowser` /
-  `browserCommand` auto-open helpers. Driven by the `commands/dashboard.md` slash command.
+  `browserCommand` auto-open helpers. Driven by `resolve-launcher.mjs`.
+- `resolve-launcher.mjs` — env-independent launcher locator (infrastructure-010): derives the
+  plugin cache from `os.homedir()`, picks the newest version by semver, fails loud, and spawns
+  `launch.mjs` cwd-inherited. Exposes pure `cacheRoot` / `pickNewestVersion` / `resolveLauncher`
+  / `locateLauncher` + a `run()` the `commands/dashboard.md` `node -e` bootstrap delegates to.
 
 ## Tests
 

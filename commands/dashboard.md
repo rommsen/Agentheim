@@ -14,55 +14,62 @@ It is a thin trigger over the single cross-platform launcher `launch.mjs`
 (ADR-0002 — one launcher, all OS differences confined there). Pass the verb
 straight through; do not re-implement launch/stop/status logic here.
 
-## Locating the launcher — it ships with the plugin, not the project
+## Locating the launcher — env-independent, never via `$CLAUDE_PLUGIN_ROOT`
 
-`launch.mjs` lives **inside this plugin's install directory**, not in the
-project you are pointing the dashboard at. When Agentheim runs as an installed
-plugin against a foreign codebase, there is **no** `dashboard/` folder beside
-that project's `.agentheim/` — so a bare `node dashboard/launch.mjs` from the
-project root fails with `Cannot find module '...\<project>\dashboard\launch.mjs'`.
+`launch.mjs` ships **inside this plugin's install dir**, not in the project you
+are pointing the dashboard at. When Agentheim runs as an installed plugin against
+a foreign codebase, there is **no** `dashboard/` folder beside that project's
+`.agentheim/`.
 
-Claude Code exports **`$CLAUDE_PLUGIN_ROOT`** into the command's shell
-environment, pointing at this plugin's active install dir. Use it to reach the
-launcher. The launcher must still run with the **consumer project as the current
-working directory** (the default) — it discovers the foreign `.agentheim/` by
-walking **up from cwd**, so the script can live in the plugin cache while the
-project stays the cwd. Do **not** `cd` anywhere; do **not** pass a project path.
+The earlier fix reached the launcher via `${CLAUDE_PLUGIN_ROOT:-.}` — but that
+variable comes through **empty** in the command's Bash context for an installed
+plugin (verified in the field, v0.8.3), so `${VAR:-.}` collapses to `.` → the
+consumer project → `Cannot find module`. **Correctness must never depend on that
+variable** (infrastructure-010; ADR-0002 addendum).
+
+Instead, a tiny inline `node -e` bootstrap derives the plugin cache path from
+`os.homedir()` (`<home>/.claude/plugins/cache/agentheim/agentheim`), picks the
+newest cached version by **semver** (`0.8.10 > 0.8.9 > 0.8.3`), imports
+`dashboard/resolve-launcher.mjs` from there (or the repo-local copy when running
+from the Agentheim repo), and that resolver spawns the real `launch.mjs`. The
+launcher still runs with the **consumer project as the current working
+directory** (the default) — it discovers the foreign `.agentheim/` by walking
+**up from cwd**, so the script lives in the plugin cache while the project stays
+the cwd. Do **not** `cd` anywhere; do **not** pass a project path. If no cached
+launcher is found, the bootstrap **fails loudly** naming the searched path — it
+never silently falls back to a `.`-relative path.
 
 The argument (if any) is: `$ARGUMENTS`
 
-Run **exactly one** Bash command based on that argument. Each command resolves
-the launcher via `$CLAUDE_PLUGIN_ROOT`, with a fallback to the repo-local path
-for the case where Agentheim is being run from its **own** repo during
-development (where `$CLAUDE_PLUGIN_ROOT` is unset but `dashboard/launch.mjs`
-exists beside `.agentheim/`):
+Run **exactly one** Bash command based on that argument.
 
 - No argument (empty) → launch (or reuse) the detached server and auto-open the
   browser:
 
   ```
-  node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs"
+  node -e "const fs=require('node:fs'),os=require('node:os'),p=require('node:path'),u=require('node:url');const sv=/^(\d+)\.(\d+)\.(\d+)$/;const c=p.join(os.homedir(),'.claude','plugins','cache','agentheim','agentheim');const cand=[p.join(process.cwd(),'dashboard','resolve-launcher.mjs')];let vs=[];try{vs=fs.readdirSync(c).filter(n=>sv.test(n)).sort((a,b)=>{const A=a.match(sv),B=b.match(sv);for(let i=1;i<4;i++){const d=+B[i]-+A[i];if(d)return d}return 0})}catch{}for(const v of vs)cand.push(p.join(c,v,'dashboard','resolve-launcher.mjs'));const r=cand.find(fs.existsSync);if(!r){console.error('no Agentheim dashboard resolver found under '+c+' (is the plugin installed?)');process.exit(1)}import(u.pathToFileURL(r).href).then(m=>m.run(process.argv.slice(1))).catch(e=>{console.error(e.message);process.exit(1)});"
   ```
 
 - `stop` → terminate the detached server and remove the runfile:
 
   ```
-  node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs" stop
+  node -e "const fs=require('node:fs'),os=require('node:os'),p=require('node:path'),u=require('node:url');const sv=/^(\d+)\.(\d+)\.(\d+)$/;const c=p.join(os.homedir(),'.claude','plugins','cache','agentheim','agentheim');const cand=[p.join(process.cwd(),'dashboard','resolve-launcher.mjs')];let vs=[];try{vs=fs.readdirSync(c).filter(n=>sv.test(n)).sort((a,b)=>{const A=a.match(sv),B=b.match(sv);for(let i=1;i<4;i++){const d=+B[i]-+A[i];if(d)return d}return 0})}catch{}for(const v of vs)cand.push(p.join(c,v,'dashboard','resolve-launcher.mjs'));const r=cand.find(fs.existsSync);if(!r){console.error('no Agentheim dashboard resolver found under '+c+' (is the plugin installed?)');process.exit(1)}import(u.pathToFileURL(r).href).then(m=>m.run(process.argv.slice(1))).catch(e=>{console.error(e.message);process.exit(1)});" stop
   ```
 
 - `status` → report whether a server is running and on which port, without
   launching or stopping:
 
   ```
-  node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs" status
+  node -e "const fs=require('node:fs'),os=require('node:os'),p=require('node:path'),u=require('node:url');const sv=/^(\d+)\.(\d+)\.(\d+)$/;const c=p.join(os.homedir(),'.claude','plugins','cache','agentheim','agentheim');const cand=[p.join(process.cwd(),'dashboard','resolve-launcher.mjs')];let vs=[];try{vs=fs.readdirSync(c).filter(n=>sv.test(n)).sort((a,b)=>{const A=a.match(sv),B=b.match(sv);for(let i=1;i<4;i++){const d=+B[i]-+A[i];if(d)return d}return 0})}catch{}for(const v of vs)cand.push(p.join(c,v,'dashboard','resolve-launcher.mjs'));const r=cand.find(fs.existsSync);if(!r){console.error('no Agentheim dashboard resolver found under '+c+' (is the plugin installed?)');process.exit(1)}import(u.pathToFileURL(r).href).then(m=>m.run(process.argv.slice(1))).catch(e=>{console.error(e.message);process.exit(1)});" status
   ```
 
-The `${CLAUDE_PLUGIN_ROOT:-.}` form expands to the plugin install dir when
-installed, and to `.` (the current project) when run from the Agentheim repo
-itself — so the same command is correct in both contexts. If the chosen verb
-ever fails with a module-not-found error, the launcher path is wrong, not the
-project: report the error verbatim and stop — do **not** start guessing or
-listing the plugin cache by hand.
+The bootstrap touches **no** environment variable — it locates the launcher from
+the home cache regardless of whether `$CLAUDE_PLUGIN_ROOT` is set. From the
+Agentheim repo itself (where `dashboard/resolve-launcher.mjs` sits beside
+`.agentheim/`) it uses the repo-local copy and skips the cache walk. If the
+chosen verb fails with `no Agentheim dashboard resolver found`, the plugin cache
+is missing or unreadable: report the error verbatim and stop — do **not** start
+guessing or listing the plugin cache by hand.
 
 The launcher is detached, so the command returns to a prompt immediately. Report
 the printed URL / pid / status back to the builder verbatim — do not poll, do not

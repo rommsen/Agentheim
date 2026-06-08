@@ -13,7 +13,7 @@ research touching this BC, and concept synthesis pages.
 - **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 9
+- **Done:** 10
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-010** — $CLAUDE_PLUGIN_ROOT is empty at /dashboard runtime — 008's fix collapses to the broken project path (bug) — `done/infrastructure-010-dashboard-plugin-root-empty-foreign-project.md`
 - **infrastructure-009** — Add a test seam for slash-command card invocation (catch project-relative launcher paths) (chore) — `done/infrastructure-009-command-card-invocation-test-infra.md`
 - **infrastructure-008** — Dashboard command must invoke the launcher by plugin path, not project-relative (bug) — `done/infrastructure-008-dashboard-command-plugin-root-launcher-path.md`
 - **infrastructure-007** — Bump plugin version to 0.8.2 + cut v0.8.2 tag to unblock marketplace updates (chore) — `done/infrastructure-007-bump-plugin-version-0-8-2.md`

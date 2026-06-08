@@ -1,13 +1,18 @@
-// Static guard for infrastructure-009 (guarding infrastructure-008's fix, ADR-0002).
+// Static guard for the /dashboard command card (ADR-0002 + infrastructure-010 addendum).
 //
-// The /dashboard slash-command card is plain markdown prose with no automated
-// invocation check — the infrastructure-008 bug (a bare `node dashboard/launch.mjs`
-// that breaks in every foreign consumer project) and its sibling infrastructure-004
-// were both "project-root assumption" regressions that NO test would have caught.
-// This test extracts the launcher invocation lines from the card and asserts the
-// plugin-rooted form, so the next edit to the card can't silently reintroduce the
-// project-relative-path regression class. It also guards the launcher's printed
-// user-facing hint strings against the same class.
+// History of the regression class this guards:
+//   - infrastructure-008: a bare `node dashboard/launch.mjs` broke in every foreign
+//     consumer project (project-root assumption). "Fixed" with ${CLAUDE_PLUGIN_ROOT:-.}.
+//   - infrastructure-010: that fix was inert — $CLAUDE_PLUGIN_ROOT is EMPTY in the
+//     command's Bash context for an installed plugin, so ${VAR:-.} collapsed back to
+//     the project path and reproduced the exact module-not-found error. The card now
+//     uses an env-INDEPENDENT `node -e` bootstrap that derives the launcher from
+//     os.homedir() via dashboard/resolve-launcher.mjs.
+//
+// This test extracts the launcher invocations from the card and asserts the
+// env-independent resolver shape, so the next edit to the card can't silently
+// reintroduce either the project-relative-path OR the $CLAUDE_PLUGIN_ROOT-dependent
+// regression. It also guards the launcher's printed user-facing hint strings.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,22 +20,46 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { extractLauncherInvocations, verbOf, isPluginRooted } from './helpers/card.mjs';
+import {
+  extractLauncherInvocations,
+  verbOf,
+  isPluginRooted,
+  isEnvIndependentResolver,
+} from './helpers/card.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(here, '..', '..');
 const cardPath = path.join(repoRoot, 'commands', 'dashboard.md');
 const launchPath = path.join(here, '..', 'launch.mjs');
 
-test('every launcher invocation in the card is plugin-rooted (no bare project-relative path)', () => {
+test('every launcher invocation in the card is the env-independent resolver bootstrap', () => {
   const card = readFileSync(cardPath, 'utf8');
   const invocations = extractLauncherInvocations(card);
   assert.ok(invocations.length >= 3, 'expected at least three launcher invocations in the card');
   for (const line of invocations) {
     assert.ok(
-      isPluginRooted(line),
-      `card invocation is not plugin-rooted (infrastructure-008 regression): ${line}`
+      isEnvIndependentResolver(line),
+      `card invocation is not the env-independent resolver bootstrap ` +
+        `(infrastructure-010 regression): ${line}`
     );
+  }
+});
+
+test('no card invocation depends on $CLAUDE_PLUGIN_ROOT (infrastructure-010 field failure)', () => {
+  const card = readFileSync(cardPath, 'utf8');
+  for (const line of extractLauncherInvocations(card)) {
+    assert.ok(
+      !isPluginRooted(line),
+      `card invocation depends on $CLAUDE_PLUGIN_ROOT, which is empty in installed ` +
+        `consumers (infrastructure-010): ${line}`
+    );
+  }
+});
+
+test('the card derives the cache path from os.homedir() (never raw env vars)', () => {
+  const card = readFileSync(cardPath, 'utf8');
+  for (const line of extractLauncherInvocations(card)) {
+    assert.match(line, /os\.homedir\(\)/, `card invocation must derive the path from os.homedir(): ${line}`);
   }
 });
 
@@ -44,8 +73,6 @@ test('the card carries all three verbs: launch, stop, status', () => {
 
 test('the card issues no `cd` directive (launcher must run from the consumer cwd)', () => {
   const card = readFileSync(cardPath, 'utf8');
-  // Match a `cd ` command at the start of a fenced/runnable line, not the prose
-  // word "cd" inside a sentence. Runnable lines are the ones we'd execute.
   const offending = card
     .split(/\r?\n/)
     .map((l) => l.trim())
@@ -55,10 +82,6 @@ test('the card issues no `cd` directive (launcher must run from the consumer cwd
 
 test('the launcher prints no bare project-relative `node dashboard/launch.mjs` hint', () => {
   const src = readFileSync(launchPath, 'utf8');
-  // The infrastructure-008 fix replaced the stale `node dashboard/launch.mjs stop`
-  // hint with `/dashboard stop`. Guard against any printed string reintroducing the
-  // project-relative invocation form. We look only at user-facing console output:
-  // a bare `node dashboard/launch.mjs` anywhere in a printed string is the regression.
   const stringLiterals = src.match(/(['"`])(?:\\.|(?!\1).)*\1/g) || [];
   for (const lit of stringLiterals) {
     assert.ok(
@@ -68,39 +91,47 @@ test('the launcher prints no bare project-relative `node dashboard/launch.mjs` h
   }
 });
 
-// --- Meta: prove the extractor/assertions actually CATCH the regression class. ---
+// --- Meta: prove the extractor/predicates actually CATCH the regression classes. ---
 // A passing guard against an already-correct card is worthless unless we show it
-// would fail against the bad form. These exercise the pure extraction/predicate
-// logic against deliberately-bad samples (the infrastructure-008 pre-fix card).
+// would fail against the bad forms (both the 008 bare-relative and the 010
+// $CLAUDE_PLUGIN_ROOT-dependent ones).
 
-test('extractor + plugin-rooted predicate FAIL against a bare project-relative card (Red proof)', () => {
+test('predicate REJECTS a bare project-relative card (infrastructure-008 Red proof)', () => {
   const badCard = [
     'No argument → launch:',
     '```',
     'node dashboard/launch.mjs',
     '```',
-    '`stop`:',
-    '```',
-    'node dashboard/launch.mjs stop',
-    '```',
   ].join('\n');
   const invocations = extractLauncherInvocations(badCard);
-  assert.equal(invocations.length, 2, 'extractor must find the bad invocations');
+  assert.equal(invocations.length, 1, 'extractor must find the bad invocation');
   assert.ok(
-    invocations.some((line) => !isPluginRooted(line)),
-    'the plugin-rooted predicate must reject a bare `node dashboard/launch.mjs`'
+    !isEnvIndependentResolver(invocations[0]),
+    'the resolver predicate must reject a bare `node dashboard/launch.mjs`'
   );
 });
 
-test('verb-missing detection FAILS a card that drops the status verb (Red proof)', () => {
+test('predicate REJECTS a $CLAUDE_PLUGIN_ROOT-dependent card (infrastructure-010 Red proof)', () => {
   const badCard = [
     '```',
     'node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs"',
     '```',
-    '```',
-    'node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs" stop',
-    '```',
   ].join('\n');
+  const invocations = extractLauncherInvocations(badCard);
+  assert.equal(invocations.length, 1, 'extractor must find the env-dependent invocation');
+  assert.ok(isPluginRooted(invocations[0]), 'plugin-rooted predicate must flag it');
+  assert.ok(
+    !isEnvIndependentResolver(invocations[0]),
+    'the resolver predicate must reject a $CLAUDE_PLUGIN_ROOT-dependent invocation'
+  );
+});
+
+test('verb-missing detection FAILS a card that drops the status verb (Red proof)', () => {
+  const goodLaunch =
+    "node -e \"const os=require('node:os');os.homedir();/*resolve-launcher.mjs*/\"";
+  const goodStop =
+    "node -e \"const os=require('node:os');os.homedir();/*resolve-launcher.mjs*/\" stop";
+  const badCard = ['```', goodLaunch, '```', '```', goodStop, '```'].join('\n');
   const verbs = new Set(extractLauncherInvocations(badCard).map(verbOf));
   assert.ok(!verbs.has('status'), 'detection must notice the dropped status verb');
 });

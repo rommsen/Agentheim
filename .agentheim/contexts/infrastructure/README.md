@@ -45,15 +45,22 @@ for an infrastructure BC.
   back: static assets + a JSON API over localhost.
 - **Launch / Stop** — how the runtime is started from a terminal inside a Claude Code
   plugin context, on a chosen host/port, and how it is torn down. The launcher
-  (`launch.mjs`) **ships with the plugin, not the consumer project**, so the `/dashboard`
-  command invokes it by its **plugin-rooted path** (`node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs"`,
-  the `:-.` fallback covering a run from the Agentheim repo itself) while keeping the
-  consumer project as cwd so **project discovery** still resolves the foreign `.agentheim/`.
-  Script-in-cache + cwd-in-project is load-bearing. (infrastructure-008.) This contract is
-  now guarded by a committed test seam — a static guard over `commands/dashboard.md` (all
-  three verbs plugin-rooted, no `cd`) plus a foreign-project integration test that runs the
-  literal card command form launch→status→stop and asserts the runfile lands under the
-  consumer project (infrastructure-009).
+  (`launch.mjs`) **ships with the plugin, not the consumer project**. The `/dashboard` command
+  locates it through an **environment-variable-independent resolver** (`resolve-launcher.mjs`):
+  `$CLAUDE_PLUGIN_ROOT` is **empty** in the command's Bash context for an installed plugin
+  (the v0.8.3 field failure that made infrastructure-008's `${CLAUDE_PLUGIN_ROOT:-.}` path
+  collapse to the broken project root), so correctness must never depend on it. The resolver
+  derives the plugin cache from `os.homedir()` (`<home>/.claude/plugins/cache/agentheim/agentheim`),
+  picks the newest version by **semver** (`0.8.10 > 0.8.9`), **fails loud** if none is found,
+  and spawns `launch.mjs` with the consumer project as cwd so **project discovery** still
+  resolves the foreign `.agentheim/`. Script-in-cache + cwd-in-project remains load-bearing.
+  (infrastructure-010, superseding 008's locator; ADR-0002 addendum.) The contract is guarded
+  by a committed test seam — a static guard over `commands/dashboard.md` (all three verbs use
+  the env-independent `node -e` resolver bootstrap, none depend on `$CLAUDE_PLUGIN_ROOT`, no
+  `cd`), resolver unit tests (semver-max incl. the `0.8.10` lexical trap, homedir derivation on
+  win32- and POSIX-shaped homes, fail-loud), and a foreign-project integration test that runs
+  the literal card form with `CLAUDE_PLUGIN_ROOT` **deleted** from the child env and asserts the
+  runfile lands under the consumer project (infrastructure-009, amended by 010).
 - **Project discovery** — how the running runtime locates and reads the current project's
   `.agentheim/` folder: **walk up from the invocation directory** until a `.agentheim/`
   folder is found (the way git finds `.git`), resolve an **absolute root once at startup**,

@@ -5,6 +5,48 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 14:35 -- Task verified and completed: infrastructure-010 - $CLAUDE_PLUGIN_ROOT empty at /dashboard runtime
+
+**Type:** Work / Task completion
+**Task:** infrastructure-010 - $CLAUDE_PLUGIN_ROOT is empty at /dashboard runtime — 008's fix collapses to the broken project path
+**Summary:** Replaced the empty-`$CLAUDE_PLUGIN_ROOT` `/dashboard` launcher locator with an env-var-independent resolver (`dashboard/resolve-launcher.mjs`) that derives the plugin cache from `os.homedir()`, picks newest version by **semver** (not lexical), fails loud, and spawns `launch.mjs` cwd-inherited so foreign-project discovery still resolves. Card now uses a minimal env-free `node -e` bootstrap delegating to the resolver.
+**Verification:** PASS (iteration 1)
+**Commit:** <sha>
+**Files changed:** 9
+**Tests added:** resolve-launcher.test.mjs (semver-max incl. 0.8.10>0.8.9 trap, homedir→cache on win32+POSIX, fail-loud, repo-local short-circuit); foreign-launch.test.mjs amended to DELETE the env var from the child; command-card guard updated. Full dashboard suite 150/150 green.
+**ADRs written:** 0002-dashboard-runtime-transport.md (addendum — env-independent locator contract)
+**Caveat:** Installed-plugin end-to-end run + cross-shell `node -e` quoting confirmable only by the maintainer post-release (repo-bound worker cannot observe a real Claude Code `/dashboard` invocation). Flagged, not falsely claimed verified.
+
+---
+
+## 2026-06-08 14:20 -- Batch started: [infrastructure-010]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-010 - $CLAUDE_PLUGIN_ROOT empty at /dashboard runtime — env-independent Node resolver
+**Parallel:** no (1 worker — sole ready task)
+
+---
+
+## 2026-06-08 14:10 -- Modeling / Refined: infrastructure-010 - $CLAUDE_PLUGIN_ROOT empty at /dashboard runtime
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Routed to claude-code-guide (platform ground truth) + orchestrator/architect (mechanism). Confirmed `$CLAUDE_PLUGIN_ROOT` is doc-gapped for command-card Bash calls and empirically empty on Windows; decided fix is a stdlib Node resolver (`dashboard/resolve-launcher.mjs`) that derives the cache path from `os.homedir()`, picks newest version by SEMVER (not lexical), fails loudly, and spawns the real launcher with cwd inherited (script-in-cache + cwd-in-project preserved). Sharpened to 11 testable acceptance criteria; infrastructure-009 test seam to be amended to delete the env var from the child. Flagged one worker-settles-empirically open question (the `node -e` bootstrap that locates the resolver itself has the same chicken-and-egg) and a verification-realism caveat: a repo-bound worker can build + simulate but only the maintainer can confirm end-to-end as an installed plugin post-release (the exact gap that let 008 ship broken). ADR-0002 addendum to be written by the worker. Promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none yet (ADR-0002 addendum specified as worker deliverable)
+
+---
+
+## 2026-06-08 14:00 -- Modeling / Captured: infrastructure-010 - $CLAUDE_PLUGIN_ROOT empty at /dashboard runtime
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** Real v0.8.3 run from a foreign project (jump_n_rogue/dorc) proves infrastructure-008's central assumption false: `$CLAUDE_PLUGIN_ROOT` comes through **empty** in the /dashboard command's Bash context, so the `${VAR:-.}` fallback collapses to the project path and reproduces the exact module-not-found error 008 set out to fix. Captured as a distinct follow-up bug (008 is done, not re-openable). Mechanism — resolve the launcher without relying on the env var — left to refinement.
+
+---
+
 ## 2026-06-08 13:35 -- Release shipped: v0.8.3
 
 **Type:** Release

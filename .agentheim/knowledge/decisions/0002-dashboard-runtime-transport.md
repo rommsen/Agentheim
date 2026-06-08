@@ -4,7 +4,7 @@ title: Dashboard runtime — Node-stdlib localhost transport with detached launc
 scope: infrastructure
 status: proposed
 date: 2026-06-05
-related_tasks: [infrastructure-001, agentic-workflow-001, agentic-workflow-002, agentic-workflow-003]
+related_tasks: [infrastructure-001, agentic-workflow-001, agentic-workflow-002, agentic-workflow-003, infrastructure-010]
 related_adrs: [ADR-0006]
 superseded_in_part_by: [ADR-0006]
 ---
@@ -174,3 +174,65 @@ static handler, `/api/tree`, `/api/doc`, `/api/task/move`) is built by **agentic
 (the dashboard), once **agentic-workflow-003** (`applyTaskMove`) and the pre-bundled UI assets
 (**infrastructure-002**) land. The transport's write endpoint cannot exist before the operation
 it delegates to.
+
+## Addendum — env-independent launcher location (2026-06-08, infrastructure-010)
+
+> Adds a sub-clause to the **detached launch + walk-up discovery** decision above. Does not
+> reverse any prior clause; it removes a hidden dependency the original launch decision left
+> unstated. Not a new ADR number — it is part of this transport decision.
+
+### Context
+
+The `/dashboard` slash-command card must reach `launch.mjs`, which ships **inside the plugin's
+install dir**, while running with the **consumer project as cwd** (so the launcher's
+`discoverRoot(process.cwd())` walks up to the foreign `.agentheim/`). infrastructure-008 reached
+the launcher via `node "${CLAUDE_PLUGIN_ROOT:-.}/dashboard/launch.mjs"` on the **unverified
+assumption** that Claude Code exports `$CLAUDE_PLUGIN_ROOT` into the command's Bash context.
+
+The field disproved it: on an **installed** plugin (v0.8.3, Windows 11), `$CLAUDE_PLUGIN_ROOT`
+came through **empty** in the command's Bash context. `${VAR:-.}` treats empty exactly like
+unset, so it collapsed to `.` → the consumer project root → `Cannot find module
+'…\<project>\dashboard\launch.mjs'`. 008's fix was inert in the exact case it targeted.
+Platform ground truth (claude-code-guide): `$CLAUDE_PLUGIN_ROOT` is documented for *hook
+processes and MCP/LSP subprocesses*; there is a **doc gap** for command-card Bash calls, and no
+other env var (`$CLAUDE_PLUGIN_DATA` is state; `$CLAUDE_PROJECT_DIR` is the project) gives a
+command its own plugin root.
+
+### Decision
+
+The launcher is located by an **environment-variable-independent resolver**, not by
+`$CLAUDE_PLUGIN_ROOT`. Contract (`dashboard/resolve-launcher.mjs`, stdlib-only):
+
+1. **Cache path from `os.homedir()`**, never raw env vars — covers `%USERPROFILE%` and `$HOME`
+   alike: `<home>/.claude/plugins/cache/agentheim/agentheim`. The `agentheim/agentheim`
+   `<source>/<plugin>` segment is confirmed against the live cache. The cache layout is a
+   stable-in-practice implementation detail, not a formal platform contract.
+2. **Newest version by SEMVER maximum**, numeric per field — `0.8.10 > 0.8.9 > 0.8.3` — ignoring
+   non-semver dir names and skipping a version dir whose `dashboard/launch.mjs` is absent.
+3. **Fail loud**, naming the searched cache path, when nothing is found. Never a silent
+   `.`-relative fallback (the silent collapse is precisely what caused the bug).
+4. **Spawn the real launcher with cwd inherited** (the consumer project) and `stdio: 'inherit'`,
+   exiting with the child's code — preserving the load-bearing **script-in-cache + cwd-in-project**
+   split so foreign `.agentheim/` discovery still works.
+5. **Repo-local short-circuit**: when run from the Agentheim repo itself (launcher beside the
+   module via `import.meta.url`, or `./dashboard/resolve-launcher.mjs` under cwd), use it and skip
+   the cache walk.
+
+The card's entry point is a minimal, env-free `node -e` bootstrap doing only
+homedir→cache→newest-version→`import()`, delegating to the resolver's exported `run()` — because
+locating the *resolver file itself* has the **same** empty-`$CLAUDE_PLUGIN_ROOT` chicken-and-egg
+as locating the launcher, so it cannot reference that var either. `$CLAUDE_PLUGIN_ROOT` may only
+ever be a *fast-path*; correctness never depends on it.
+
+### Consequences
+
+- The dashboard launches from any consumer project without manual cache spelunking.
+- A new constraint: the home plugin-cache layout (`agentheim/agentheim/<semver>/dashboard/`) is now
+  load-bearing for `/dashboard`; if Claude Code changes it, the resolver must change with it (and
+  fails loud meanwhile).
+- **Verification realism (the reason 008 shipped broken):** a worker in the Agentheim repo can
+  unit-test the resolver fully and simulate the foreign + empty-var case (temp foreign project,
+  `CLAUDE_PLUGIN_ROOT` deleted, `os.homedir()` redirected to a fake cache linking the repo
+  dashboard). It **cannot** observe a real Claude Code `/dashboard` invocation against an installed
+  plugin — and the cross-shell `node -e` quoting can only be fully confirmed there. The
+  installed-plugin run remains a **post-release maintainer confirmation step**.
