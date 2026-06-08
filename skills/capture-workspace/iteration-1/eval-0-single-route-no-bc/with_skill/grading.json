@@ -1,0 +1,69 @@
+{
+  "expectations": [
+    {
+      "text": "Exactly one new task .md file is created",
+      "passed": true,
+      "evidence": "1 file: backlog/agentic-workflow-012-dashboard-remember-scrolled-column.md"
+    },
+    {
+      "text": "The task is in a backlog/ folder, not todo/doing/done/",
+      "passed": true,
+      "evidence": "folder=backlog; todo/doing empty"
+    },
+    {
+      "text": "Routed to the agentic-workflow BC",
+      "passed": true,
+      "evidence": "context=agentic-workflow (board/dashboard frontend app owns scroll/UI state)"
+    },
+    {
+      "text": "Frontmatter has status: backlog and context: agentic-workflow",
+      "passed": true,
+      "evidence": "status: backlog, context: agentic-workflow"
+    },
+    {
+      "text": "id matches <bc>-NNN and filename is <id>-<slug>.md",
+      "passed": true,
+      "evidence": "id=agentic-workflow-012; filename agentic-workflow-012-dashboard-remember-scrolled-column.md"
+    },
+    {
+      "text": "type is feature",
+      "passed": true,
+      "evidence": "type: feature"
+    },
+    {
+      "text": "agentic-workflow INDEX backlog-list has the id and Backlog count incremented to 1",
+      "passed": true,
+      "evidence": "INDEX ids=[agentic-workflow-012], Backlog: 1"
+    },
+    {
+      "text": "protocol.md has a new capture entry at top referencing the task",
+      "passed": true,
+      "evidence": "entry present referencing agentic-workflow-012"
+    },
+    {
+      "text": "The agent asked the user NO clarifying questions before filing",
+      "passed": true,
+      "evidence": "QUESTIONS_ASKED: No -- filed immediately"
+    },
+    {
+      "text": "Task is tagged captured (refinement-handoff marker), not ad-hoc keyword tags",
+      "passed": true,
+      "evidence": "tags: [captured]"
+    },
+    {
+      "text": "Protocol entry uses the standard spec header -- Capture / Captured: <id> - <title> with Type/BC/Filed-to fields",
+      "passed": true,
+      "evidence": "'-- Capture / Captured: agentic-workflow-012 - ...' + Type: Capture / BC: / Filed to: backlog"
+    }
+  ],
+  "summary": {
+    "passed": 11,
+    "failed": 0,
+    "total": 11,
+    "pass_rate": 1.0
+  },
+  "execution_metrics": {
+    "total_tool_calls": 15,
+    "errors_encountered": 0
+  }
+}

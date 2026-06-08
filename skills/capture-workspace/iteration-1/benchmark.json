@@ -1,0 +1,473 @@
+{
+  "metadata": {
+    "skill_name": "capture",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-06-08T08:46:33Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 11,
+        "failed": 0,
+        "total": 11,
+        "time_seconds": 55.3,
+        "tokens": 44690,
+        "tool_calls": 15,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Exactly one new task .md file is created",
+          "passed": true,
+          "evidence": "1 file: backlog/agentic-workflow-012-dashboard-remember-scrolled-column.md"
+        },
+        {
+          "text": "The task is in a backlog/ folder, not todo/doing/done/",
+          "passed": true,
+          "evidence": "folder=backlog; todo/doing empty"
+        },
+        {
+          "text": "Routed to the agentic-workflow BC",
+          "passed": true,
+          "evidence": "context=agentic-workflow (board/dashboard frontend app owns scroll/UI state)"
+        },
+        {
+          "text": "Frontmatter has status: backlog and context: agentic-workflow",
+          "passed": true,
+          "evidence": "status: backlog, context: agentic-workflow"
+        },
+        {
+          "text": "id matches <bc>-NNN and filename is <id>-<slug>.md",
+          "passed": true,
+          "evidence": "id=agentic-workflow-012; filename agentic-workflow-012-dashboard-remember-scrolled-column.md"
+        },
+        {
+          "text": "type is feature",
+          "passed": true,
+          "evidence": "type: feature"
+        },
+        {
+          "text": "agentic-workflow INDEX backlog-list has the id and Backlog count incremented to 1",
+          "passed": true,
+          "evidence": "INDEX ids=[agentic-workflow-012], Backlog: 1"
+        },
+        {
+          "text": "protocol.md has a new capture entry at top referencing the task",
+          "passed": true,
+          "evidence": "entry present referencing agentic-workflow-012"
+        },
+        {
+          "text": "The agent asked the user NO clarifying questions before filing",
+          "passed": true,
+          "evidence": "QUESTIONS_ASKED: No -- filed immediately"
+        },
+        {
+          "text": "Task is tagged captured (refinement-handoff marker), not ad-hoc keyword tags",
+          "passed": true,
+          "evidence": "tags: [captured]"
+        },
+        {
+          "text": "Protocol entry uses the standard spec header -- Capture / Captured: <id> - <title> with Type/BC/Filed-to fields",
+          "passed": true,
+          "evidence": "'-- Capture / Captured: agentic-workflow-012 - ...' + Type: Capture / BC: / Filed to: backlog"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 10,
+        "failed": 0,
+        "total": 10,
+        "time_seconds": 86.1,
+        "tokens": 47408,
+        "tool_calls": 18,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Exactly three new task .md files are created (split, not bundled)",
+          "passed": true,
+          "evidence": "3 files: infrastructure-007, agentic-workflow-012, agentic-workflow-013"
+        },
+        {
+          "text": "All three tasks are in backlog/; none in todo/",
+          "passed": true,
+          "evidence": "all folder=backlog; todo empty"
+        },
+        {
+          "text": "Plugin-version-bump idea routed to the infrastructure BC",
+          "passed": true,
+          "evidence": "infrastructure-007-bump-plugin-version-before-release (globally-true release concern)"
+        },
+        {
+          "text": "Dark-mode and copy-id routed to a UI-bearing BC (agentic-workflow or design-system), not infrastructure",
+          "passed": true,
+          "evidence": "dark-mode->agentic-workflow-012, copy-id->agentic-workflow-013"
+        },
+        {
+          "text": "Each created task has valid frontmatter (status backlog, matching context, id pattern)",
+          "passed": true,
+          "evidence": "all status backlog; contexts match folders; ids well-formed"
+        },
+        {
+          "text": "Each affected BC INDEX backlog-list and count updated",
+          "passed": true,
+          "evidence": "agentic-workflow Backlog:2 ids[012,013]; infrastructure Backlog:2 id[007]"
+        },
+        {
+          "text": "protocol.md has a Capture entry for EACH of the three tasks",
+          "passed": true,
+          "evidence": "3 spec entries: aw-013, aw-012, infrastructure-007"
+        },
+        {
+          "text": "The agent asked the user NO clarifying questions",
+          "passed": true,
+          "evidence": "QUESTIONS_ASKED: No"
+        },
+        {
+          "text": "All three tasks tagged captured",
+          "passed": true,
+          "evidence": "every task tags: [captured]"
+        },
+        {
+          "text": "Protocol entries use the standard spec header format",
+          "passed": true,
+          "evidence": "each '-- Capture / Captured: <id> - <title>' + Type/BC/Filed-to"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 9,
+        "failed": 0,
+        "total": 9,
+        "time_seconds": 55.3,
+        "tokens": 41703,
+        "tool_calls": 14,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Exactly one new task .md file is created",
+          "passed": true,
+          "evidence": "1 file: infrastructure-007-throttle-dashboard-file-watcher.md"
+        },
+        {
+          "text": "Routed to the infrastructure BC (file-watcher/live-update transport is infrastructure, not agentic-workflow)",
+          "passed": true,
+          "evidence": "context=infrastructure; cites ADR-0006 live-update transport"
+        },
+        {
+          "text": "Task is in backlog/ with status backlog and context infrastructure",
+          "passed": true,
+          "evidence": "folder=backlog, status: backlog, context: infrastructure"
+        },
+        {
+          "text": "id matches <bc>-NNN and filename is <id>-<slug>.md",
+          "passed": true,
+          "evidence": "id=infrastructure-007; filename matches"
+        },
+        {
+          "text": "infrastructure INDEX backlog-list and Backlog count updated",
+          "passed": true,
+          "evidence": "INDEX ids=[infrastructure-007, infrastructure-006], Backlog: 2"
+        },
+        {
+          "text": "protocol.md has a new capture entry referencing the task",
+          "passed": true,
+          "evidence": "spec entry referencing infrastructure-007"
+        },
+        {
+          "text": "The agent asked the user NO clarifying questions before filing",
+          "passed": true,
+          "evidence": "QUESTIONS_ASKED: No"
+        },
+        {
+          "text": "Task is tagged captured",
+          "passed": true,
+          "evidence": "tags: [captured]"
+        },
+        {
+          "text": "Protocol entry uses the standard spec header format",
+          "passed": true,
+          "evidence": "'-- Capture / Captured: infrastructure-007 - ...' + Type/BC/Filed-to"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8182,
+        "passed": 9,
+        "failed": 2,
+        "total": 11,
+        "time_seconds": 73.7,
+        "tokens": 40990,
+        "tool_calls": 15,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Exactly one new task .md file is created",
+          "passed": true,
+          "evidence": "1 file: backlog/agentic-workflow-012-dashboard-remember-scroll-column.md"
+        },
+        {
+          "text": "The task is in a backlog/ folder, not todo/doing/done/",
+          "passed": true,
+          "evidence": "folder=backlog"
+        },
+        {
+          "text": "Routed to the agentic-workflow BC",
+          "passed": true,
+          "evidence": "context=agentic-workflow"
+        },
+        {
+          "text": "Frontmatter has status: backlog and context: agentic-workflow",
+          "passed": true,
+          "evidence": "status: backlog, context: agentic-workflow"
+        },
+        {
+          "text": "id matches <bc>-NNN and filename is <id>-<slug>.md",
+          "passed": true,
+          "evidence": "id=agentic-workflow-012; filename matches"
+        },
+        {
+          "text": "type is feature",
+          "passed": true,
+          "evidence": "type: feature"
+        },
+        {
+          "text": "agentic-workflow INDEX backlog-list has the id and Backlog count incremented to 1",
+          "passed": true,
+          "evidence": "INDEX ids=[agentic-workflow-012], Backlog: 1"
+        },
+        {
+          "text": "protocol.md has a new capture entry at top referencing the task",
+          "passed": true,
+          "evidence": "'## ... Idea captured (agentic-workflow)' references agentic-workflow-012"
+        },
+        {
+          "text": "The agent asked the user NO clarifying questions before filing",
+          "passed": true,
+          "evidence": "QUESTIONS_ASKED: No -- acted immediately"
+        },
+        {
+          "text": "Task is tagged captured (refinement-handoff marker), not ad-hoc keyword tags",
+          "passed": false,
+          "evidence": "tags: [dashboard, ui, frontend, board, ux] -- no captured marker; refiner cannot tell it is a raw dump from tags"
+        },
+        {
+          "text": "Protocol entry uses the standard spec header -- Capture / Captured: <id> - <title> with Type/BC/Filed-to fields",
+          "passed": false,
+          "evidence": "freeform '## 2026-06-08 14:32 -- Idea captured (agentic-workflow)' with prose, no Type/Filed-to fields"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.7,
+        "passed": 7,
+        "failed": 3,
+        "total": 10,
+        "time_seconds": 142.2,
+        "tokens": 53570,
+        "tool_calls": 27,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Exactly three new task .md files are created (split, not bundled)",
+          "passed": true,
+          "evidence": "3 files: infrastructure-007, design-system-004, agentic-workflow-012"
+        },
+        {
+          "text": "All three tasks are in backlog/; none in todo/",
+          "passed": true,
+          "evidence": "all folder=backlog"
+        },
+        {
+          "text": "Plugin-version-bump idea routed to the infrastructure BC",
+          "passed": true,
+          "evidence": "infrastructure-007-bump-plugin-version-before-release"
+        },
+        {
+          "text": "Dark-mode and copy-id routed to a UI-bearing BC (agentic-workflow or design-system), not infrastructure",
+          "passed": true,
+          "evidence": "dark-mode->design-system-004 (owns theming), copy-id->agentic-workflow-012"
+        },
+        {
+          "text": "Each created task has valid frontmatter (status backlog, matching context, id pattern)",
+          "passed": true,
+          "evidence": "all valid"
+        },
+        {
+          "text": "Each affected BC INDEX backlog-list and count updated",
+          "passed": true,
+          "evidence": "agentic-workflow Backlog:1, design-system Backlog:1, infrastructure Backlog:2"
+        },
+        {
+          "text": "protocol.md has a Capture entry for EACH of the three tasks",
+          "passed": false,
+          "evidence": "ONE lumped entry '## ... Idea captured (quick dump, 3 items -> 3 BCs)' covers all three; not one entry per task per spec"
+        },
+        {
+          "text": "The agent asked the user NO clarifying questions",
+          "passed": true,
+          "evidence": "QUESTIONS_ASKED: No"
+        },
+        {
+          "text": "All three tasks tagged captured",
+          "passed": false,
+          "evidence": "ad-hoc keyword tags (e.g. [plugin, release, versioning,...]); no captured marker on any"
+        },
+        {
+          "text": "Protocol entries use the standard spec header format",
+          "passed": false,
+          "evidence": "freeform header + prose, no Type/BC/Filed-to fields"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.7778,
+        "passed": 7,
+        "failed": 2,
+        "total": 9,
+        "time_seconds": 83.3,
+        "tokens": 41971,
+        "tool_calls": 17,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Exactly one new task .md file is created",
+          "passed": true,
+          "evidence": "1 file: infrastructure-007-dashboard-watcher-throttle-burst-changes.md"
+        },
+        {
+          "text": "Routed to the infrastructure BC (file-watcher/live-update transport is infrastructure, not agentic-workflow)",
+          "passed": true,
+          "evidence": "context=infrastructure; cites infrastructure-003/ADR-0006"
+        },
+        {
+          "text": "Task is in backlog/ with status backlog and context infrastructure",
+          "passed": true,
+          "evidence": "folder=backlog, status: backlog, context: infrastructure"
+        },
+        {
+          "text": "id matches <bc>-NNN and filename is <id>-<slug>.md",
+          "passed": true,
+          "evidence": "id=infrastructure-007; filename matches"
+        },
+        {
+          "text": "infrastructure INDEX backlog-list and Backlog count updated",
+          "passed": true,
+          "evidence": "INDEX count Backlog: 2, id present"
+        },
+        {
+          "text": "protocol.md has a new capture entry referencing the task",
+          "passed": true,
+          "evidence": "'## ... Idea captured (infrastructure)' references infrastructure-007"
+        },
+        {
+          "text": "The agent asked the user NO clarifying questions before filing",
+          "passed": true,
+          "evidence": "QUESTIONS_ASKED: none"
+        },
+        {
+          "text": "Task is tagged captured",
+          "passed": false,
+          "evidence": "tags: [dashboard, sse, file-watcher, live-update, throttle, debounce, performance] -- no captured marker"
+        },
+        {
+          "text": "Protocol entry uses the standard spec header format",
+          "passed": false,
+          "evidence": "freeform '## ... Idea captured (infrastructure)' with prose, no Type/BC/Filed-to fields"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 65.5667,
+        "stddev": 17.7824,
+        "min": 55.3,
+        "max": 86.1
+      },
+      "tokens": {
+        "mean": 44600.3333,
+        "stddev": 2853.5568,
+        "min": 41703,
+        "max": 47408
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.7653,
+        "stddev": 0.0601,
+        "min": 0.7,
+        "max": 0.8182
+      },
+      "time_seconds": {
+        "mean": 99.7333,
+        "stddev": 37.0891,
+        "min": 73.7,
+        "max": 142.2
+      },
+      "tokens": {
+        "mean": 45510.3333,
+        "stddev": 6997.0894,
+        "min": 40990,
+        "max": 53570
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.23",
+      "time_seconds": "-34.2",
+      "tokens": "-910"
+    }
+  },
+  "notes": []
+}

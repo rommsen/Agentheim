@@ -1,0 +1,64 @@
+{
+  "expectations": [
+    {
+      "text": "Exactly three new task .md files are created (split, not bundled)",
+      "passed": true,
+      "evidence": "3 files: infrastructure-007, design-system-004, agentic-workflow-012"
+    },
+    {
+      "text": "All three tasks are in backlog/; none in todo/",
+      "passed": true,
+      "evidence": "all folder=backlog"
+    },
+    {
+      "text": "Plugin-version-bump idea routed to the infrastructure BC",
+      "passed": true,
+      "evidence": "infrastructure-007-bump-plugin-version-before-release"
+    },
+    {
+      "text": "Dark-mode and copy-id routed to a UI-bearing BC (agentic-workflow or design-system), not infrastructure",
+      "passed": true,
+      "evidence": "dark-mode->design-system-004 (owns theming), copy-id->agentic-workflow-012"
+    },
+    {
+      "text": "Each created task has valid frontmatter (status backlog, matching context, id pattern)",
+      "passed": true,
+      "evidence": "all valid"
+    },
+    {
+      "text": "Each affected BC INDEX backlog-list and count updated",
+      "passed": true,
+      "evidence": "agentic-workflow Backlog:1, design-system Backlog:1, infrastructure Backlog:2"
+    },
+    {
+      "text": "protocol.md has a Capture entry for EACH of the three tasks",
+      "passed": false,
+      "evidence": "ONE lumped entry '## ... Idea captured (quick dump, 3 items -> 3 BCs)' covers all three; not one entry per task per spec"
+    },
+    {
+      "text": "The agent asked the user NO clarifying questions",
+      "passed": true,
+      "evidence": "QUESTIONS_ASKED: No"
+    },
+    {
+      "text": "All three tasks tagged captured",
+      "passed": false,
+      "evidence": "ad-hoc keyword tags (e.g. [plugin, release, versioning,...]); no captured marker on any"
+    },
+    {
+      "text": "Protocol entries use the standard spec header format",
+      "passed": false,
+      "evidence": "freeform header + prose, no Type/BC/Filed-to fields"
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 3,
+    "total": 10,
+    "pass_rate": 0.7
+  },
+  "execution_metrics": {
+    "total_tool_calls": 27,
+    "errors_encountered": 0
+  }
+}

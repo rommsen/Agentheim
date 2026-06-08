@@ -1,0 +1,40 @@
+{
+  "eval_id": 0,
+  "eval_name": "single-route-no-bc",
+  "prompt": "capture this real quick: the dashboard should remember which board column I last scrolled to, so reopening it doesnt jump back to the top every time",
+  "assertions": [
+    {
+      "text": "Exactly one new task .md file is created"
+    },
+    {
+      "text": "The task is in a backlog/ folder, not todo/doing/done/"
+    },
+    {
+      "text": "Routed to the agentic-workflow BC"
+    },
+    {
+      "text": "Frontmatter has status: backlog and context: agentic-workflow"
+    },
+    {
+      "text": "id matches <bc>-NNN and filename is <id>-<slug>.md"
+    },
+    {
+      "text": "type is feature"
+    },
+    {
+      "text": "agentic-workflow INDEX backlog-list has the id and Backlog count incremented to 1"
+    },
+    {
+      "text": "protocol.md has a new capture entry at top referencing the task"
+    },
+    {
+      "text": "The agent asked the user NO clarifying questions before filing"
+    },
+    {
+      "text": "Task is tagged captured (refinement-handoff marker), not ad-hoc keyword tags"
+    },
+    {
+      "text": "Protocol entry uses the standard spec header -- Capture / Captured: <id> - <title> with Type/BC/Filed-to fields"
+    }
+  ]
+}

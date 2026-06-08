@@ -1,0 +1,37 @@
+{
+  "eval_id": 1,
+  "eval_name": "multi-idea-split",
+  "prompt": "quick dump, three things so I dont forget: 1) we keep forgetting to bump the plugin version before a release, 2) the dashboard needs a dark-mode toggle, 3) clicking a card should let me copy its task id to the clipboard. dont ask me questions, just file them",
+  "assertions": [
+    {
+      "text": "Exactly three new task .md files are created (split, not bundled)"
+    },
+    {
+      "text": "All three tasks are in backlog/; none in todo/"
+    },
+    {
+      "text": "Plugin-version-bump idea routed to the infrastructure BC"
+    },
+    {
+      "text": "Dark-mode and copy-id routed to a UI-bearing BC (agentic-workflow or design-system), not infrastructure"
+    },
+    {
+      "text": "Each created task has valid frontmatter (status backlog, matching context, id pattern)"
+    },
+    {
+      "text": "Each affected BC INDEX backlog-list and count updated"
+    },
+    {
+      "text": "protocol.md has a Capture entry for EACH of the three tasks"
+    },
+    {
+      "text": "The agent asked the user NO clarifying questions"
+    },
+    {
+      "text": "All three tasks tagged captured"
+    },
+    {
+      "text": "Protocol entries use the standard spec header format"
+    }
+  ]
+}

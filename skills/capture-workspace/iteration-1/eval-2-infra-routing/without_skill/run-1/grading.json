@@ -1,0 +1,59 @@
+{
+  "expectations": [
+    {
+      "text": "Exactly one new task .md file is created",
+      "passed": true,
+      "evidence": "1 file: infrastructure-007-dashboard-watcher-throttle-burst-changes.md"
+    },
+    {
+      "text": "Routed to the infrastructure BC (file-watcher/live-update transport is infrastructure, not agentic-workflow)",
+      "passed": true,
+      "evidence": "context=infrastructure; cites infrastructure-003/ADR-0006"
+    },
+    {
+      "text": "Task is in backlog/ with status backlog and context infrastructure",
+      "passed": true,
+      "evidence": "folder=backlog, status: backlog, context: infrastructure"
+    },
+    {
+      "text": "id matches <bc>-NNN and filename is <id>-<slug>.md",
+      "passed": true,
+      "evidence": "id=infrastructure-007; filename matches"
+    },
+    {
+      "text": "infrastructure INDEX backlog-list and Backlog count updated",
+      "passed": true,
+      "evidence": "INDEX count Backlog: 2, id present"
+    },
+    {
+      "text": "protocol.md has a new capture entry referencing the task",
+      "passed": true,
+      "evidence": "'## ... Idea captured (infrastructure)' references infrastructure-007"
+    },
+    {
+      "text": "The agent asked the user NO clarifying questions before filing",
+      "passed": true,
+      "evidence": "QUESTIONS_ASKED: none"
+    },
+    {
+      "text": "Task is tagged captured",
+      "passed": false,
+      "evidence": "tags: [dashboard, sse, file-watcher, live-update, throttle, debounce, performance] -- no captured marker"
+    },
+    {
+      "text": "Protocol entry uses the standard spec header format",
+      "passed": false,
+      "evidence": "freeform '## ... Idea captured (infrastructure)' with prose, no Type/BC/Filed-to fields"
+    }
+  ],
+  "summary": {
+    "passed": 7,
+    "failed": 2,
+    "total": 9,
+    "pass_rate": 0.7778
+  },
+  "execution_metrics": {
+    "total_tool_calls": 17,
+    "errors_encountered": 0
+  }
+}
