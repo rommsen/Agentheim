@@ -5,6 +5,81 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (716c7f0 infrastructure-004, 41fabcb infrastructure-005) — on branch `POSIX-dashboard-fixes`
+**Notes:**
+- infrastructure-004 (assetRoot module-relative) and infrastructure-005 (version bump 0.8.0) both landed, each verified PASS on iteration 1. infrastructure todo/ + doing/ are now empty.
+- **agentic-workflow-010 NOT dispatched.** Its blocker (infrastructure-004) is now fixed, so it is dependency-unblocked, but its sole remaining acceptance criterion — installed-plugin-against-a-foreign-project asset serving re-checked **on a POSIX box** — is environmental and cannot be satisfied from this Windows session. Left in todo for coordination with a POSIX contributor. Dispatching a Windows worker would only bounce.
+- **Pre-existing uncommitted modeling state left untouched** (predates this session, belongs to the aw-010 refine / infra-004-005-006 capture): `.agentheim/contexts/agentic-workflow/INDEX.md` (M), the aw-010 backlog→todo move (`backlog/` deletion + new `todo/`), and the infrastructure-006 backlog task. Not part of this work run — surfaced to the builder for a separate commit decision.
+
+---
+
+## 2026-06-08 -- Task verified and completed: infrastructure-005 - Bump plugin version to 0.8.0
+
+**Type:** Work / Task completion
+**Task:** infrastructure-005 - Bump plugin version to 0.8.0 to unblock marketplace updates
+**Summary:** Bumped `.claude-plugin/plugin.json` version 0.7.0 → 0.8.0 so `/plugin` stops reporting marketplace users as already-latest and ships the ~30 commits of accumulated dashboard/design-system/infrastructure work. No other manifest field changed; no other version reference in the repo to reconcile.
+**Verification:** PASS (iteration 1) — manifest reads 0.8.0, sole field changed, valid JSON; criterion 3 (other version references) N/A.
+**Commit:** 41fabcb
+**Files changed:** 1
+**Tests added:** 0
+**ADRs written:** none
+
+---
+
+## 2026-06-08 -- Batch started: [infrastructure-005]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-005 - Bump plugin version to 0.8.0 to unblock marketplace updates
+**Parallel:** no (1 worker)
+
+---
+
+## 2026-06-08 -- Task verified and completed: infrastructure-004 - Resolve dashboard assetRoot relative to the module
+
+**Type:** Work / Task completion
+**Task:** infrastructure-004 - Resolve dashboard assetRoot relative to the module, not the project root
+**Summary:** `defaultAssetRoot` now resolves dist/ module-relative (via import.meta.url) instead of against the discovered project root, so an installed plugin against a foreign project serves its committed assets (no false "dist absent" 404). Added a foreign-root regression test + AGENTHEIM_DASHBOARD_DIST dev override.
+**Verification:** PASS (iteration 1) — dashboard suite 108/108, lib 13/13 green; all in-suite acceptance criteria met. POSIX foreign-project box re-check deferred to aw-010 (environmental).
+**Commit:** 716c7f0
+**Files changed:** 4
+**Tests added:** 2
+**ADRs written:** none
+
+---
+
+## 2026-06-08 -- Batch started: [infrastructure-004]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-004 - Resolve dashboard assetRoot relative to the module, not the project root
+**Parallel:** no (1 worker — infra-005 held to next wave to avoid a same-BC-README conflict)
+
+---
+
+## 2026-06-08 -- Modeling / Refined: agentic-workflow-010 - Dashboard POSIX cross-OS verification
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (promoted from backlog)
+**Summary:** Reconciled the spike with reality — its "keep in backlog until a POSIX box is
+available" premise was stale. A macOS contributor (protocol 2026-06-08) had already run the leg
+to an effectively clean full pass; builder confirmed all six criteria were exercised. Rewrote the
+task to re-state the macOS pass as confirmed (criteria checked) and narrow the residual to the one
+divergence the leg surfaced: the `defaultAssetRoot` bug (now **infrastructure-004**). Added
+`infrastructure-004` to `depends_on` (alongside aw-001) — aw-010 is not done until that fix lands
+and the installed-plugin-against-foreign-project asset path is re-checked on POSIX. The final
+re-check remains environmental (needs a POSIX box).
+**Split into:** none (infra-004 / infra-005 were carved out in the prior capture, not this refine)
+**ADRs written:** none
+
+---
+
 ## 2026-06-08 -- Modeling / Captured: infrastructure-006 - Plugin release discipline
 
 **Type:** Modeling / Capture
