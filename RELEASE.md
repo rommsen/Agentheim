@@ -52,10 +52,22 @@ Run these in order. The tag is the last step and the point of no return.
 4. **Tag the release, matching the manifest exactly.** The tag string must equal the manifest
    version with a `v` prefix — `plugin.json` `"version": "X.Y.Z"` ⇔ tag `vX.Y.Z`:
    ```
-   git tag vX.Y.Z
+   git tag -a vX.Y.Z -m "vX.Y.Z"
    git push origin vX.Y.Z
    ```
+5. **Publish release notes on GitHub.** Create a GitHub Release on the tag so the change has a
+   human-readable description under `/releases`. Write the notes by hand from the protocol
+   "Release shipped" entry for this version — **do not** use `--generate-notes`, which dumps
+   every raw `chore`/protocol commit since the last tag (we commit straight to `main`):
+   ```
+   gh release create vX.Y.Z --title "vX.Y.Z" --notes "<one-paragraph summary, semver level + what landed>"
+   ```
+   The protocol entry and the release notes say the same thing — write it once, reuse it.
 
 A release is complete only when the tag is pushed **and** the bumped manifest is on `main`'s
 remote. The pushed manifest is what moves users; the tag is what marks (and remembers) the
-release.
+release; the GitHub Release is where a human reads *what changed*.
+
+> Requires the GitHub CLI (`gh`), authenticated once via `gh auth login`. If `gh` isn't
+> installed, the release still "counts" (tag + pushed manifest), but cut the Release object
+> later or via the web UI (`Releases → Draft a new release → pick the tag`).
