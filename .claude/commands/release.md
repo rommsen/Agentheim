@@ -16,24 +16,37 @@ to `main` is what moves every plugin user off *"already at latest"*. Treat it as
 outward-facing — run the steps in order, stop and report on the first failure, and
 never force-push or `git add -A`.
 
-## Precondition — this releases **Agentheim itself**, only from the Agentheim repo
+## Why this is a project-local command — invisible to plugin consumers
 
-This is the **mirror image of `/dashboard`**. `/dashboard` is built to run against a
-**foreign** project (it reaches into the plugin via `$CLAUDE_PLUGIN_ROOT` while the
-consumer project stays cwd). `/release` is the opposite: it operates on the **current
-working directory's git repo**, and that repo **must be the Agentheim source repo**.
-Because plugin command cards are exposed in *every* project that installs Agentheim,
-this card will also appear in consumer projects — where running it would bump/push the
-**wrong** repo. So it must refuse there.
+This card lives in the Agentheim repo's **`.claude/commands/`**, *not* in the plugin's
+distributed **`commands/`** directory (where `/dashboard` lives). That placement is
+deliberate and load-bearing: project commands are loaded **only** when you are working
+in *this* repo, so they are **never shipped to projects that install Agentheim as a
+plugin** and never appear in a consumer's command list. `/release` releases Agentheim
+*itself* — it has no meaning in a consumer project, so consumers must not even see it.
+
+> Keep this file under `.claude/commands/`. If it is ever moved into the plugin's
+> `commands/` directory it becomes `agentheim:release` and leaks into every install —
+> exactly what we do not want.
+
+## Precondition — operate only on the Agentheim source repo
+
+This is the **mirror image of `/dashboard`**. `/dashboard` reaches into the plugin via
+`$CLAUDE_PLUGIN_ROOT` and runs against a **foreign** cwd. `/release` is the opposite: it
+operates on the **current working directory's git repo**, and that repo **must be the
+Agentheim source repo**. The `.claude/commands/` placement already keeps consumers from
+ever seeing this command; the checks below are the belt-and-suspenders guard against
+running it against the wrong repo (e.g. a copy, or a fresh clone with a misconfigured
+remote).
 
 **Do not** use `$CLAUDE_PLUGIN_ROOT` anywhere in this command — every path is
 **cwd-relative** (`./.claude-plugin/plugin.json`), and every git op targets the cwd
 repo's `origin`.
 
 Before doing anything else, confirm **all** of these. If **any** fails → **STOP** and
-tell the builder: *"`/release` is a maintainer command that releases Agentheim itself.
-You appear to be in a project that uses Agentheim as a plugin, not the Agentheim source
-repo — refusing so I don't bump/push the wrong repository."* Make no edits, no commits.
+tell the builder: *"`/release` only releases the Agentheim source repo, and this does not
+look like it — refusing so I don't bump/push the wrong repository."* Make no edits, no
+commits.
 
 1. `./.claude-plugin/plugin.json` exists **at cwd** and its `name` is exactly
    `agentheim`. (A consumer project does not carry Agentheim's own manifest; this file
