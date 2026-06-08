@@ -5,13 +5,36 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 14:40 -- Release shipped: v0.8.4
+
+**Type:** Release
+**Version:** 0.8.3 → 0.8.4 (patch — infrastructure-010: env-independent `/dashboard` launcher resolver, fixing the empty-`$CLAUDE_PLUGIN_ROOT` field failure that made the dashboard unlaunchable from consumer projects)
+**Manifest:** `.claude-plugin/plugin.json` bumped, committed `9b8d783` (`chore(release): v0.8.4`)
+**Pushed to main:** yes (`99179c6..9b8d783` on `origin/main`)
+**Tag:** `v0.8.4` (annotated) → `9b8d783`, pushed to origin
+**GitHub Release:** deferred (gh unavailable — `gh release create` line handed to builder)
+
+---
+
+## 2026-06-08 14:36 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (f74cd97 infrastructure-010)
+**Note:** Only ready task was infrastructure-010. Three backlog items remain unrefined (agentic-workflow-014, agentic-workflow-015, design-system-004) — not ready work; need `modeling` to refine/promote.
+
+---
+
 ## 2026-06-08 14:35 -- Task verified and completed: infrastructure-010 - $CLAUDE_PLUGIN_ROOT empty at /dashboard runtime
 
 **Type:** Work / Task completion
 **Task:** infrastructure-010 - $CLAUDE_PLUGIN_ROOT is empty at /dashboard runtime — 008's fix collapses to the broken project path
 **Summary:** Replaced the empty-`$CLAUDE_PLUGIN_ROOT` `/dashboard` launcher locator with an env-var-independent resolver (`dashboard/resolve-launcher.mjs`) that derives the plugin cache from `os.homedir()`, picks newest version by **semver** (not lexical), fails loud, and spawns `launch.mjs` cwd-inherited so foreign-project discovery still resolves. Card now uses a minimal env-free `node -e` bootstrap delegating to the resolver.
 **Verification:** PASS (iteration 1)
-**Commit:** <sha>
+**Commit:** f74cd97
 **Files changed:** 9
 **Tests added:** resolve-launcher.test.mjs (semver-max incl. 0.8.10>0.8.9 trap, homedir→cache on win32+POSIX, fail-loud, repo-local short-circuit); foreign-launch.test.mjs amended to DELETE the env var from the child; command-card guard updated. Full dashboard suite 150/150 green.
 **ADRs written:** 0002-dashboard-runtime-transport.md (addendum — env-independent locator contract)
