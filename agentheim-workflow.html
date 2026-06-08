@@ -232,6 +232,21 @@
     color: var(--ink-faint);
   }
 
+  /* capture — modeling's fast-path sibling */
+  .fastpath {
+    display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center;
+    border: 1.5px solid var(--model); border-radius: 11px; background: var(--model-bg);
+    padding: 14px 18px; margin-bottom: 20px;
+  }
+  .fastpath .fp-kick {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--model);
+    border-right: 1.5px solid var(--line-strong); padding-right: 18px;
+    white-space: nowrap; line-height: 1.5;
+  }
+  .fastpath p { font-size: 12.8px; color: var(--ink-soft); line-height: 1.55; }
+  .fastpath p b { color: var(--ink); font-weight: 700; }
+
   /* ---------- MODES GRID ---------- */
   .modes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   .mode {
@@ -473,7 +488,7 @@
     header.hero > .wrap    { zoom: 0.88; }
     #pipeline > .wrap      { zoom: 0.84; }
     #brainstorm > .wrap    { zoom: 0.82; }
-    #model > .wrap         { zoom: 0.70; }
+    #model > .wrap         { zoom: 0.62; }
     #modes > .wrap         { zoom: 0.88; }
     #research > .wrap      { zoom: 0.86; }
     #work > .wrap          { zoom: 0.54; }
@@ -646,9 +661,11 @@
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-num">03 / SKILL TWO</div>
-      <h2>Modeling — the main entry point for ideas</h2>
+      <h2>Modeling — where ideas become tasks</h2>
       <p>Every thought from here on enters through <b>Modeling</b> — a one-line bug, a feature request,
-        a refinement, a whole new subsystem. It does three things, and it routes deep thinking to the orchestrator.</p>
+        a refinement, a whole new subsystem. It does three things, and it routes deep thinking to the
+        orchestrator. When you'd rather just dump an idea and keep moving, its no-conversation sibling
+        <b>capture</b> files it straight to the backlog — the fast path shown first below.</p>
     </div>
 
     <div class="card skill-block b-model">
@@ -664,10 +681,19 @@
         </div>
       </div>
       <div class="body">
+        <div class="fastpath">
+          <div class="fp-kick">Fast path<br />/capture</div>
+          <p><b>capture</b> is modeling's no-conversation sibling — for when you want to offload a thought,
+            not think it through. It routes each idea to a bounded context and writes one <b>raw
+            <code>backlog/</code> task</b>, then gets out of the way: no questions, no modes, no prior-art
+            interrogation, and <b>never</b> straight to <code>todo/</code>. A multi-idea dump becomes one
+            task each. Those captured tasks re-enter through <b>REFINE</b> below before any worker sees them —
+            raw is the whole point.</p>
+        </div>
         <div class="actions3">
           <div class="action">
             <h4>CAPTURE</h4>
-            <p>An idea arrives. Route it to a BC, run a prior-art lookup, decide refinement level.</p>
+            <p>The conversational capture: an idea arrives, route it to a BC, run a prior-art lookup, decide refinement level.</p>
             <div class="out">→ backlog/ or todo/</div>
           </div>
           <div class="action">

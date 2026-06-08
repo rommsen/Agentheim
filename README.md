@@ -37,16 +37,19 @@ To update manually:
 
 The first command refreshes the marketplace's view of the source repo, the second pulls the new plugin version into your project, and the third reloads skills/hooks so the change is live in the current session.
 
-## The four skills
+## The five skills
 
 Skills auto-trigger from natural-language phrases — no slash commands to memorize (the one deliberate exception is `/dashboard`, the local web-UI launcher — see [Dashboard](#dashboard) below). The orchestrator agent routes work to specialists (strategic-modeler, tactical-modeler, architect, researcher, worker). Two of those specialists are paired with a fresh-context **gate** that re-checks their output before it's trusted: the `verifier` audits a worker's code, and the `research-reviewer` re-verifies a researcher's factual claims against primary sources.
 
 | Skill | Triggered by | Produces |
 |---|---|---|
 | **brainstorm** | "let's brainstorm", "start a new project", "create a vision", "model this from scratch" | `.agentheim/vision.md` (+ `context-map.md` when warranted). Closes with an architecture foundation pass that emits `type: decision` tasks, a walking-skeleton spike, and (when frontend exists) a styleguide task. No code yet — those land in `todo/` for `work` to execute. |
-| **modeling** | "I have an idea", "capture this", "refine the auth backlog", "promote X to todo", "there's a bug" | Task markdown files in `contexts/<bc>/backlog\|todo/` with status, dependencies, acceptance criteria. A bare invocation first shows the backlog and offers to refine before capturing. |
+| **capture** | "capture this", "jot this down", "just file it", "dump this in the backlog", "brain-dump", rapid-fire multi-idea lists | One raw `backlog/` task per idea, routed to the best-fit bounded context — **no questions, no refinement, no conversation.** The fast sibling of `modeling` for when you want to offload a thought and keep moving; captured tasks always get a later `modeling` refine pass before a worker sees them. Never writes to `todo/`. |
+| **modeling** | "I have an idea", "let's model this", "refine the auth backlog", "promote X to todo", "there's a bug" | Task markdown files in `contexts/<bc>/backlog\|todo/` with status, dependencies, acceptance criteria. The conversational counterpart to `capture`: a bare invocation first shows the backlog and offers to refine before capturing. |
 | **work** | "start working", "execute the todo", "let's go", "pick up where you left off" | Code, commits, ADRs. Parallel workers respect the dependency DAG. Each worker runs TDD (red-green-refactor) by default, and every `SUCCESS` passes through a fresh-context **verifier** agent before the commit. |
 | **research** | "research X", "state of the art for", "compare options for" | A markdown report in `.agentheim/knowledge/research/`. Every report passes through a fresh-context **research-reviewer** agent that re-verifies its checkable claims (versions, prices, package names, API surface) against primary sources before the report is citable. Cited by tasks and ADRs. |
+
+**`capture` vs. `modeling`** — both create backlog tasks, so disambiguate by intent. Reach for `capture` when you're dumping a thought and moving on (terse one-liners, "just", "for later", an explicit BC, multi-idea lists); reach for `modeling` when you want to *work* the idea — explore it, refine acceptance criteria, talk it through. When it's genuinely ambiguous, `capture` is the cheaper mistake: a too-thin task gets refined later, a too-heavy conversation can't be undone.
 
 ## How the workflow works
 
@@ -108,7 +111,7 @@ Want Claude Code to speak its end-of-turn summaries and attention prompts aloud?
 ```
 .claude-plugin/plugin.json         # plugin manifest
 agents/                            # orchestrator + specialists (incl. verifier, research-reviewer)
-skills/                            # brainstorm, modeling, research, work, test-driven-development, verification-before-completion, research-review
+skills/                            # brainstorm, capture, modeling, research, work, test-driven-development, verification-before-completion, research-review
 commands/dashboard.md              # the one slash command — a thin trigger over the dashboard launcher
 dashboard/                         # the local web-UI runtime (stdlib Node server + launcher + frontend app)
 scripts/backfill-indexes.ps1       # one-shot rebuild of .agentheim/ indexes for projects predating 0.6.0
