@@ -5,6 +5,40 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 -- Work session ended (resumed)
+
+**Type:** Work / Session end
+**Completed:** 1 (agentic-workflow-010 — verification skipped: human-verified spike) — this resumed leg
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (06f0ac0 agentic-workflow-010) — on branch `POSIX-dashboard-fixes`
+**Notes:**
+- Resumed after the builder confirmed the POSIX contributor re-ran the infrastructure-004 fix and the foreign-project asset path now serves on POSIX. That closed agentic-workflow-010's last (environmental) criterion, so the spike moved backlog/todo → done.
+- **All todo/ and doing/ are now empty across every BC.** Session total across both legs: 3 tasks completed (infrastructure-004, infrastructure-005, agentic-workflow-010), 0 bounced, 0 failed, 0 escalated.
+- Open follow-up still in backlog: **infrastructure-006** (plugin release discipline) — needs a refine pass before it is workable. Not part of this run.
+
+---
+
+## 2026-06-08 -- Task completed (verification skipped): agentic-workflow-010 - Dashboard cross-OS verification (POSIX leg)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-010 - Dashboard cross-OS verification — POSIX leg
+**Summary:** Closed the spike. Windows + POSIX parity confirmed: the macOS leg passed clean except the one divergence it existed to catch (`defaultAssetRoot` 404 on a foreign project), which was carved to infrastructure-004, fixed module-relative (716c7f0), and re-verified on POSIX by the contributor with the fix in place. No ADR addendum — infra-004 restored the ADR-0002/0004 contract rather than shifting it. BC README left unchanged (verification status belongs in the task Outcome + protocol, not the domain-model README).
+**Verification:** SKIPPED — spike completion; the substantive verification was performed by a human POSIX contributor, and the only change is the task file's own outcome bookkeeping (no code / ADR diff to audit).
+**Commit:** 06f0ac0
+**Files changed:** 1 (the task file)
+
+---
+
+## 2026-06-08 -- Batch started: [agentic-workflow-010]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-010 - Dashboard cross-OS verification (POSIX leg)
+**Parallel:** no (1 worker — closing the spike now that its infra-004 blocker is fixed and the POSIX contributor confirmed the foreign-project re-check)
+
+---
+
 ## 2026-06-08 -- Work session ended
 
 **Type:** Work / Session end

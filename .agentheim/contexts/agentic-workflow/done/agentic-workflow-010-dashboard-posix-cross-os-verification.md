@@ -6,7 +6,7 @@ type: spike
 context: agentic-workflow
 created: 2026-06-06
 completed: 2026-06-08
-commit:
+commit: 06f0ac0
 depends_on: [agentic-workflow-001, infrastructure-004]
 blocks: []
 tags: [dashboard, cross-os, posix, verification, runtime]
