@@ -1,5 +1,5 @@
 ---
-description: Cut an Agentheim release — bump the manifest, push main, tag, and publish GitHub release notes for the given vX.Y.Z.
+description: Release Agentheim itself (maintainer-only, run from the Agentheim source repo) — bump the manifest, push main, tag, and publish GitHub release notes for vX.Y.Z. Refuses in projects that merely use Agentheim as a plugin.
 argument-hint: "x.y.z"
 allowed-tools: Bash(git:*), Bash(gh:*), Read, Edit, Grep
 ---
@@ -15,6 +15,36 @@ A release is **one act with marketplace consequences**: pushing a bumped manifes
 to `main` is what moves every plugin user off *"already at latest"*. Treat it as
 outward-facing — run the steps in order, stop and report on the first failure, and
 never force-push or `git add -A`.
+
+## Precondition — this releases **Agentheim itself**, only from the Agentheim repo
+
+This is the **mirror image of `/dashboard`**. `/dashboard` is built to run against a
+**foreign** project (it reaches into the plugin via `$CLAUDE_PLUGIN_ROOT` while the
+consumer project stays cwd). `/release` is the opposite: it operates on the **current
+working directory's git repo**, and that repo **must be the Agentheim source repo**.
+Because plugin command cards are exposed in *every* project that installs Agentheim,
+this card will also appear in consumer projects — where running it would bump/push the
+**wrong** repo. So it must refuse there.
+
+**Do not** use `$CLAUDE_PLUGIN_ROOT` anywhere in this command — every path is
+**cwd-relative** (`./.claude-plugin/plugin.json`), and every git op targets the cwd
+repo's `origin`.
+
+Before doing anything else, confirm **all** of these. If **any** fails → **STOP** and
+tell the builder: *"`/release` is a maintainer command that releases Agentheim itself.
+You appear to be in a project that uses Agentheim as a plugin, not the Agentheim source
+repo — refusing so I don't bump/push the wrong repository."* Make no edits, no commits.
+
+1. `./.claude-plugin/plugin.json` exists **at cwd** and its `name` is exactly
+   `agentheim`. (A consumer project does not carry Agentheim's own manifest; this file
+   ships *inside* the plugin, not into projects that install it.)
+2. `./RELEASE.md` and `./.claude-plugin/marketplace.json` both exist at cwd — the
+   Agentheim **source** repo markers.
+3. `git remote get-url origin` resolves and points at the Agentheim repository
+   (case-insensitively contains `heimeshoff/Agentheim`). This guarantees the push and
+   tag in later steps land on Agentheim's own remote, never a foreign project's.
+
+Only if all three hold are you in the Agentheim source repo and may proceed.
 
 The requested version is: `$ARGUMENTS`
 
