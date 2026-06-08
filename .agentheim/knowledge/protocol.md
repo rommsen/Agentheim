@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 13:35 -- Release shipped: v0.8.3
+
+**Type:** Release
+**Version:** 0.8.2 → 0.8.3 (patch — infrastructure-009 test seam, no new user-facing capability)
+**Manifest:** `.claude-plugin/plugin.json` bumped, committed `635cca5` (`chore(release): v0.8.3`)
+**Pushed to main:** yes (`dc48448..635cca5` on `origin/main`) — this is what moves marketplace users off "already at latest"
+**Tag:** `v0.8.3` (annotated) → `635cca5`, pushed to origin
+**Note:** origin still points at the old lowercase URL (`heimeshoff/agentheim`); GitHub redirected to `heimeshoff/Agentheim` and both push + tag-push succeeded. Worth updating the remote URL at some point.
+
+---
+
 ## 2026-06-08 13:30 -- Capture / Captured: agentic-workflow-015 - Show the project name next to "Agentheim" in the dashboard header
 
 **Type:** Capture
