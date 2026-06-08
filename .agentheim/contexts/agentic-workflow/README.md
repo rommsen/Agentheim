@@ -88,6 +88,18 @@ separate BC, but today the whole tool lives in this one.
   column is a non-drop target. The board also stays **live** — it subscribes to the SSE stream and
   re-fetches `/api/tree` on any change (see *Live-update* and *Promote write path* below). See
   ADR-0009, ADR-0001.
+- **Column sort** — each board column has its own **independent** sort control (agentic-workflow-012),
+  a board-only `<select>` rendered as a *sibling* of the styleguide `ColumnHeader` (the `DragColumn`
+  precedent — the styleguide `kanban.js` is consumed unmodified, ADR-0003). Orderings: **Name** (task
+  `title`) asc/desc and **Modification-date** desc/asc, where modification time is the per-task `mtimeMs`
+  the projection carries (aw-013). Default per column is **modification-date descending**, so
+  recently-touched cards sit at the top. The reordering is a **pure** function of the already-projected
+  list — `dashboard/app/board-sort.js` (`sortTickets`, unit-tested under `node --test`), run board-side
+  *after* `treeToColumns`; it never mutates the transform, the read model, or disk. Name ties and
+  mod-date ties both break by `id` ascending, and an absent/`null` `mtimeMs` sorts as oldest (never
+  `NaN`, never a throw). The choice is **in-session view-state only** — no `localStorage`, so every load
+  resets to the default; because the order is derived at render, every live re-projection (SSE
+  `tree-changed` / reconnect) re-applies the column's current choice rather than silently resetting it.
 - **Live-update (SSE consumer)** — the board keeps itself current (agentic-workflow-009) by
   subscribing to `GET /api/events` (the SSE transport, infrastructure-003 / ADR-0006) via the
   framework-free `dashboard/app/live-update.js` (`createLiveUpdate`). On every `tree-changed`

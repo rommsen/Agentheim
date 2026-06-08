@@ -41,6 +41,11 @@ export function treeTicket(task) {
     type: t.type ?? '',
     context: t.context ?? '',
     path: t.path ?? '',
+    // File modification time the projection carries (aw-013), consumed by the
+    // board-side sort's modification-date orderings (aw-012). Normalized to null
+    // when absent — null means "could not stat" (ADR-0002) and the sort treats it
+    // as the oldest; the TicketCard itself does not render it.
+    mtimeMs: typeof t.mtimeMs === 'number' ? t.mtimeMs : null,
     // Card meta the read model does not carry — defined, quiet defaults.
     est: '—',
     updated: '',

@@ -112,3 +112,25 @@ test('treeTicket maps a tree task into the TicketCard shape the styleguide expec
   assert.notEqual(t.est, undefined);
   assert.notEqual(t.updated, undefined);
 });
+
+test('treeTicket carries mtimeMs through so the board-side sort can order by it (aw-012/aw-013)', () => {
+  // The /api/tree projection carries each task's file modification time (aw-013);
+  // the default board sort (modification date descending, aw-012) needs it on the
+  // projected ticket. Pass it through unchanged.
+  const t = treeTicket({
+    id: 'alpha-002', title: 'A todo task', status: 'todo',
+    type: 'feature', context: 'alpha',
+    path: '.agentheim/contexts/alpha/todo/alpha-002.md',
+    mtimeMs: 1717000000000,
+  });
+  assert.equal(t.mtimeMs, 1717000000000);
+});
+
+test('treeTicket leaves mtimeMs null when the read model could not stat the file', () => {
+  // aw-013/ADR-0002: mtimeMs is null when the file cannot be stat'd. The board
+  // sort treats null as oldest — so it must arrive as null, not undefined/0.
+  const t = treeTicket({ id: 'x-1', title: 'x', status: 'todo', mtimeMs: null });
+  assert.equal(t.mtimeMs, null);
+  const t2 = treeTicket({ id: 'x-2', title: 'x', status: 'todo' });
+  assert.equal(t2.mtimeMs, null);
+});

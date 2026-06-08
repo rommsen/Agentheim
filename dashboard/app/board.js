@@ -41,6 +41,7 @@ import { Glyph, ThemeCtx } from "../../.agentheim/contexts/design-system/stylegu
 import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
+import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
 import { SlideOver } from "./slide-over.js";
 import { DashboardLibrary } from "./library.js";
 import { createLiveUpdate } from "./live-update.js";
@@ -95,13 +96,46 @@ function LoadState({ children }) {
     }}>${children}</div>`;
 }
 
+// The per-column sort control. A board-only affordance rendered as a SIBLING of
+// the styleguide ColumnHeader (the exact precedent DragColumn sets for its drag
+// affordances): the styleguide kanban.js is consumed unmodified, never forked
+// (ADR-0003). It is a plain native <select> styled off the design-system tokens —
+// no new styleguide pattern. Changing it lifts the column's choice into board
+// view-state via onChange; it never reorders anything itself (the pure
+// board-sort.sortTickets does that, board-side, after the projection).
+function ColumnSortControl({ status, value, onChange }) {
+  return html`
+    <label style=${{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      padding: "0 4px 12px", marginTop: -4,
+    }}>
+      <span style=${{
+        fontFamily: "var(--font-ui)", fontSize: 10.5, color: "var(--fg-4)",
+      }}>Sort</span>
+      <select
+        aria-label=${`Sort ${status} column`}
+        value=${value}
+        onChange=${(e) => onChange(e.target.value)}
+        className="focusable"
+        style=${{
+          fontFamily: "var(--font-ui)", fontSize: 11.5, color: "var(--fg-2)",
+          background: "var(--surface-1)", border: "1px solid var(--hairline)",
+          borderRadius: "var(--radius-sm)", padding: "3px 6px", cursor: "pointer",
+        }}>
+        ${SORT_OPTIONS.map((o) => html`<option key=${o.value} value=${o.value}>${o.label}</option>`)}
+      </select>
+    </label>`;
+}
+
 // A drop-target lifecycle column that COMPOSES the approved styleguide
 // sub-components (ColumnHeader, TicketCard, EmptyColumn) exactly as the styleguide
 // `Column` does — same pattern, no fork — and adds the HTML5 drag affordances the
 // styleguide does not carry: each card is a drag SOURCE, and a column whose drop
 // is legal (isLegalDrop, ADR-0001) is a drop TARGET. Non-legal columns set no
-// drop handlers, so they are inert non-drop targets.
-function DragColumn({ status, tickets, selectedId, onOpen, draggingFrom, onDragStart, onDragEnd, onDrop }) {
+// drop handlers, so they are inert non-drop targets. It also hosts the board-only
+// per-column sort control (aw-012) as a sibling of ColumnHeader; `tickets` arrives
+// already ordered (the board sorts before passing it in).
+function DragColumn({ status, tickets, sort, onSortChange, selectedId, onOpen, draggingFrom, onDragStart, onDragEnd, onDrop }) {
   const isTarget = draggingFrom != null && isLegalDrop(draggingFrom, status);
   const [over, setOver] = useState(false);
 
@@ -124,6 +158,7 @@ function DragColumn({ status, tickets, selectedId, onOpen, draggingFrom, onDragS
       transition: "background var(--duration-fast) var(--ease-base)",
     }}>
       <${ColumnHeader} status=${status} count=${tickets.length} onAdd=${() => {}} />
+      <${ColumnSortControl} status=${status} value=${sort} onChange=${onSortChange} />
       <div style=${{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 8 }}>
         ${tickets.length === 0
           ? html`<${EmptyColumn} status=${status} />`
@@ -159,6 +194,21 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
   const [selectedId, setSelectedId] = useState(null);
   const [notice, setNotice] = useState(null); // a refused-move domain reason
   const [dragging, setDragging] = useState(null); // { id, from } | null
+
+  // Per-column sort choice — independent per column, held in board view-state
+  // ONLY (no localStorage / no client persistence, aw-012). Initialized to the
+  // default for every column, so each load resets to the default ordering. The
+  // ordering is then DERIVED below at render time, which means every loadTree
+  // re-projection (SSE tree-changed / reconnect) re-applies the current choice —
+  // a live change never silently resets the visible order.
+  const [sorts, setSorts] = useState(() => {
+    const s = {};
+    for (const c of COLUMN_ORDER) s[c] = DEFAULT_SORT;
+    return s;
+  });
+  const setColumnSort = useCallback((status, value) => {
+    setSorts((prev) => (prev[status] === value ? prev : { ...prev, [status]: value }));
+  }, []);
 
   // The single board re-projection: re-fetch /api/tree and rebuild the columns.
   // Called on mount, on every SSE tree-changed frame / reconnect, and after a
@@ -249,7 +299,8 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
           <div style=${{ display: "flex", gap: 20, alignItems: "flex-start" }}>
             ${COLUMN_ORDER.map((status) => html`
               <${DragColumn} key=${status} status=${status}
-                tickets=${columns[status]}
+                tickets=${sortTickets(columns[status], sorts[status])}
+                sort=${sorts[status]} onSortChange=${(v) => setColumnSort(status, v)}
                 selectedId=${selectedId} onOpen=${handleOpen}
                 draggingFrom=${dragging ? dragging.from : null}
                 onDragStart=${handleDragStart} onDragEnd=${handleDragEnd}
