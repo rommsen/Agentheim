@@ -1,11 +1,11 @@
 ---
 id: infrastructure-005
 title: Bump plugin version to 0.8.0 to unblock marketplace updates
-status: todo
+status: done
 type: chore
 context: infrastructure
 created: 2026-06-08
-completed:
+completed: 2026-06-08
 commit:
 depends_on: []
 blocks: []
@@ -46,3 +46,17 @@ reflecting the new dashboard / design-system / infrastructure features added sin
   a follow-up to decide release discipline — a bump-on-feature policy, a release checklist,
   or a CI guard that fails when `main` advances without a manifest bump. Surface to the
   builder whether to capture that separately.
+
+## Outcome
+
+Bumped `.claude-plugin/plugin.json` `version` from `0.7.0` to `0.8.0` (single field; no
+other manifest fields touched). This is the version `/plugin` reads to decide whether
+marketplace users are up to date, so the accumulated dashboard / design-system /
+infrastructure work since 0.7.0 now ships.
+
+No other version reference needed to agree: a repo-wide grep for `0.7.0` found only the
+manifest plus narrative mentions in protocol.md and task files (which are not version
+sources). No CHANGELOG, README badge, or marketplace/catalog manifest carries the plugin
+version. Acceptance criterion 3 is N/A.
+
+Key file: `C:\src\heimeshoff\agentic\agentheim\.claude-plugin\plugin.json`
