@@ -5,6 +5,41 @@ Newest entries on top.
 
 ---
 
+## 2026-06-08 -- Work session ended (resumed)
+
+**Type:** Work / Session end
+**Completed:** 1 (infrastructure-007 — first-try PASS) — this resumed leg, after the builder authorized the full release
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (6e69b80 infrastructure-007) on `main`
+**Release:** annotated tag `v0.8.2` cut at 6e69b80 and pushed with `main` — manifest now 0.8.2 > 0.8.0, so the marketplace offers the update (off "already at latest"). Published `v0.8.1` tag left untouched.
+**Notes:** all todo/ and doing/ are empty across every BC.
+
+---
+
+## 2026-06-08 -- Task verified and completed: infrastructure-007 - Bump plugin version to 0.8.2
+
+**Type:** Work / Task completion
+**Task:** infrastructure-007 - Bump plugin version to 0.8.2 + cut v0.8.2 tag to unblock marketplace updates
+**Summary:** Bumped the sole version source `.claude-plugin/plugin.json` 0.8.0 → 0.8.2, correcting the bump skipped when `v0.8.1` was tagged. Repo-wide check confirmed no other version reference must agree (`marketplace.json` has none; no CHANGELOG/badge). Builder authorized the release act, so the orchestrator cut and pushed the `v0.8.2` tag.
+**Verification:** PASS (iteration 1) — manifest reads 0.8.2, no other field changed, no second version source; worker-satisfiable core only (tag/push are the orchestrator release act).
+**Commit:** 6e69b80
+**Release tag:** v0.8.2 (annotated, at 6e69b80, pushed with main)
+**Files changed:** 1 (`.claude-plugin/plugin.json`)
+**Tests added:** 0 (manifest bump)
+**ADRs written:** none (mechanics per ADR-0013 / RELEASE.md)
+
+---
+
+## 2026-06-08 -- Batch started: [infrastructure-007]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-007 - Bump plugin version to 0.8.2 + cut v0.8.2 tag to unblock marketplace updates
+**Parallel:** no (1 worker — picked up after the builder authorized the full release, incl. the tag-cut + push the task flagged as a builder act)
+
+---
+
 ## 2026-06-08 -- Work session ended
 
 **Type:** Work / Session end

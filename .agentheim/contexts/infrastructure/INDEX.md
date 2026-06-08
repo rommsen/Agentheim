@@ -13,7 +13,7 @@ research touching this BC, and concept synthesis pages.
 - **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 6
+- **Done:** 7
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-007** — Bump plugin version to 0.8.2 + cut v0.8.2 tag to unblock marketplace updates (chore) — `done/infrastructure-007-bump-plugin-version-0-8-2.md`
 - **infrastructure-006** — Plugin release discipline — stop the manifest version from silently drifting (decision) — `done/infrastructure-006-plugin-release-version-discipline.md`
 - **infrastructure-005** — Bump plugin version to 0.8.0 to unblock marketplace updates (chore) — `done/infrastructure-005-bump-plugin-version-0-8-0.md`
 - **infrastructure-004** — Resolve dashboard assetRoot relative to the module, not the project root (bug) — `done/infrastructure-004-dashboard-assetroot-module-relative.md`

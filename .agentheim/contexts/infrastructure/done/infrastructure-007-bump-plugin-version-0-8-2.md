@@ -6,7 +6,7 @@ type: chore
 context: infrastructure
 created: 2026-06-08
 completed: 2026-06-08
-commit:
+commit: 6e69b80
 depends_on: []
 blocks: []
 tags: [plugin, packaging, distribution, release, version, marketplace]
