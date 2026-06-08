@@ -6,7 +6,7 @@ type: bug
 context: infrastructure
 created: 2026-06-08
 completed: 2026-06-08
-commit:
+commit: a702143
 depends_on: []
 blocks: []
 tags: [dashboard, runtime, plugin, command, launcher, cross-project]
