@@ -155,16 +155,14 @@ tree's `TreeGroup` and a board-local clone). Both consume it **unforked**
 
 The canvas documents the pattern in BOTH modes (section 09, `CollapsibleSpecimen`).
 
-> **Gate status after the shared-Collapsible extraction (`design-system-005`):
-> REOPENED — pending builder re-review.** The unified header is a **visual change
-> to the library tree** (`TreeGroup`'s count moved to the right edge; its label now
-> truncates with an ellipsis), so the gate reopens for a fresh builder sign-off, per
-> the `design-system-002` / `003` / `004` precedent. The change is visible on the
-> canvas (`styleguide/index.html` → section 09 — the tree specimen now wears the
-> unified header, and the new Collapsible specimen shows both controlled and
-> uncontrolled modes). Until the builder re-confirms, treat the gate as **open against
-> the prior header** and this delta as awaiting review. The exact canonical look is
-> adjustable at that review.
+> **Gate re-confirmed after the shared-Collapsible extraction (`design-system-005`):
+> OPEN — re-approved by the builder 2026-06-09.** The unified header is a **visual
+> change to the library tree** (`TreeGroup`'s count moved to the right edge; its label
+> now truncates with an ellipsis), which lightly reopened the gate per the
+> `design-system-002` / `003` / `004` precedent. The builder reviewed the canvas
+> (`styleguide/index.html` → section 09 — the tree specimen wearing the unified header,
+> and the new Collapsible specimen in both controlled and uncontrolled modes) and
+> re-confirmed. The gate now stands open against the **unified canonical header**.
 
 > Live-board note: same as Motion — the served dashboard `dist/` is a derived
 > artifact (ADR-0003) and was **rebuilt** (`node build.mjs`) to pick up this change.
@@ -199,12 +197,13 @@ header — same `value` / `onChange` / `options` contract, same persistence
 (`dashboard/app/theme-state.js`, agentic-workflow-017); only the control's look
 changed.
 
-> **Gate status after the ThemeToggle redesign (`design-system-007`): part of the
-> pending re-review.** This adds a visible change — the theme control in the
-> styleguide `TopBar` (every page) now wears the swatched look (each button its own
-> theme, the inactive one dimmed) instead of the inverse-filled `Segmented`. It
-> rides the same re-review already open from `design-system-005`. The live control
-> in the canvas header is the specimen to review.
+> **Gate re-confirmed after the ThemeToggle redesign (`design-system-007`): OPEN —
+> re-approved by the builder 2026-06-09.** The theme control in the styleguide
+> `TopBar` (every page) now wears the swatched look (each button its own theme, the
+> inactive one dimmed) instead of the inverse-filled `Segmented`. This visible change
+> rode the same re-review as `design-system-005`; the builder reviewed the live
+> control in the canvas header and re-confirmed. The gate stands open against the
+> **swatched theme control**.
 
 > Live-board note: same as Motion — the served dashboard `dist/` is a derived
 > artifact (ADR-0003) and was **rebuilt** (`node build.mjs`) to pick up the new

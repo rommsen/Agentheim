@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 13:05 -- Styleguide gate re-confirmed (OPEN)
+
+**Type:** Gate / Re-approval
+**BC:** design-system
+**Re-approved by:** builder, 2026-06-09
+**Scope:** The two visible styleguide changes from this session's tasks — ds-005's unified `Collapsible`/`TreeGroup` header (count right-aligned, label truncates) and ds-007's swatched `ThemeToggle` in the `TopBar` (every page). Builder reviewed the canvas (`styleguide/index.html` section 09 + the TopBar control) and re-confirmed. The gate now stands **OPEN** against the unified header + swatched theme control; the two BC README gate notes flipped from REOPENED → OPEN.
+
+---
+
 ## 2026-06-09 13:00 -- Work session ended
 
 **Type:** Work / Session end
