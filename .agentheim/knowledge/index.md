@@ -27,6 +27,7 @@ Research reports relevant to more than one BC (or to the project as a whole). BC
 reports are listed in each BC's `INDEX.md`.
 
 <!-- research-global:start -->
+- **Dashboard button → Claude Code in a VS Code terminal** (2026-06-09) — bridge options for triggering `claude` from a Simple-Browser dashboard button; recommends a tiny localhost-listener VS Code extension — `knowledge/research/vscode-dashboard-terminal-bridge-2026-06-09.md`
 <!-- research-global:end -->
 
 ## Pointers
