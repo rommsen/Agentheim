@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-08
 completed: 2026-06-09
-commit:
+commit: 7c2facf
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, board, view-state, captured]

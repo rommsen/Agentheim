@@ -6,7 +6,7 @@ type: feature
 context: design-system
 created: 2026-06-08
 completed: 2026-06-09
-commit:
+commit: 86711f0
 depends_on: [design-system-001]
 blocks: []
 tags: [captured, frontend, motion]

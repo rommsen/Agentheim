@@ -5,13 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 3 (first-try PASS: 3, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3 (86711f0 ds-004, 7c2facf aw-014, eaacf67 aw-015) + SHA-backfill chore
+**New backlog items:** design-system-005 (shared collapsible-section primitive — design-system)
+**Notes:** Two waves. Wave 1 ran aw-014 + ds-004 in parallel (held aw-015 — it conflicted with aw-014 on `dashboard/app/board.js` + the agentic-workflow README); wave 2 ran aw-015 alone once aw-014 freed the file. Both parallel workers independently wrote ADRs and raced on the next ADR number — resolved cleanly (ds-004 → ADR-0014, aw-014 → ADR-0015). The shared dashboard `dist/` bundle (one esbuild output over both BCs' source) was authoritatively rebuilt after each wave so the committed bundle reflects every source change; verified to contain both ds-004's pulse and aw-014's grouping. All three passed verification first try.
+
+---
+
 ## 2026-06-09 -- Task verified and completed: agentic-workflow-015 - Show the project name next to "Agentheim" in the dashboard header
 
 **Type:** Work / Task completion
 **Task:** agentic-workflow-015 - Show the project name next to "Agentheim" in the dashboard header
 **Summary:** The `/api/tree` projection now carries a derived `project: { name }` parsed server-side from `vision.md`'s `# Vision: <name>` heading (the first projection value drawn from a markdown body — kept to one trimmed string, body-free ADR-0002 contract intact, mirroring aw-013's `mtimeMs`); `ShellRail` renders `Agentheim · <name>` in muted tokens, degrading to "Agentheim" alone when the vision is missing/headingless.
 **Verification:** PASS (iteration 1)
-**Commit:** <pending>
+**Commit:** eaacf67
 **Files changed:** 3 dashboard source/test + derived dist bundle + BC README
 **Tests added:** dashboard/test/tree.test.mjs — `parseProjectName` (heading present / absent / empty-after-colon / whitespace+trailing) + `buildTree` project.name populated and null, asserting the vision body never leaks. Full dashboard suite 177/177 green.
 **ADRs written:** none (additive metadata field within ADR-0002's pointers+metadata contract, consistent with the aw-013 precedent)
@@ -32,7 +45,7 @@ Newest entries on top.
 **Task:** agentic-workflow-014 - Group Kanban board columns by bounded context (collapsible)
 **Summary:** Each dashboard board column gained an independent group-by-bounded-context lens with collapsible per-BC sections (pure `board-group.js`, run after sort in a project→sort→group pipeline); the per-column view lens (group + sort + collapse) now persists across reloads and live re-projections via a single versioned `localStorage` store (`board-view-state.js`), reversing ADR-0009's no-localStorage clause while keeping board content a pure projection of disk.
 **Verification:** PASS (iteration 1)
-**Commit:** <pending>
+**Commit:** 7c2facf
 **Files changed:** 5 dashboard source/test + derived dist bundle + BC README + ADR
 **Tests added:** board-group.test.mjs (pure partition, sort-preserved, ascending BC order, zero-card sections, no mutation), board-view-state.test.mjs (versioned round-trip, malformed/stale/absent degrade safely). Dashboard suite 171/171 green; dist rebuilt to bundle both this and ds-004.
 **ADRs written:** 0015-board-view-state-persisted-localstorage.md (ADR-0009 addendum: view-state persistence reversal, board stays a projection of disk)
@@ -46,7 +59,7 @@ Newest entries on top.
 **Task:** design-system-004 - Animated "actively working" treatment for doing-column tickets
 **Summary:** Doing-status ticket cards now carry a calm ambient pulse — a slow, low-amplitude breathing glow on the ochre status rail — the styleguide's first continuous (looping) animation, status-keyed (`status === "doing"`, not the `agent` field) in the unforked `TicketCard` so the dashboard inherits it with zero dashboard-side change, and fully stripped under `prefers-reduced-motion`.
 **Verification:** PASS (iteration 1)
-**Commit:** <pending>
+**Commit:** 86711f0
 **Files changed:** 6 source + BC README + ADR
 **Tests added:** styleguide/test/doing-pulse.test.mjs (doing card carries the hook, non-doing does not, reduced-motion guard exists). Styleguide 5/5 + dashboard 171/171 green.
 **ADRs written:** 0014-ambient-motion-signals-active-status.md (ambient-motion-as-status-signal principle, `--duration-ambient` token, reduced-motion-strips-to-plain contract)
