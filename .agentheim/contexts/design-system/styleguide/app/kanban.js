@@ -7,7 +7,12 @@ import { html } from "./html.js";
 import { Icon } from "./icons.js";
 import { StatusDot, StatusChip, MonoId, MetaChip } from "./primitives.js";
 import { EmptyColumn } from "./empty.js";
+import { doingPulseClass } from "./motion.js";
 import { STATUSES, COLUMN_ORDER, TICKETS } from "./data.js";
+
+// Re-export so the doing-pulse decision (design-system-004 / ADR-0014) is
+// reachable from the kanban surface as well as ./motion.js.
+export { doingPulseClass };
 
 // ---- Column header ----
 export function ColumnHeader({ status, count, onAdd }) {
@@ -70,7 +75,7 @@ export function TicketCard({ ticket, variant = "rail", selected = false, onClick
       style=${base}>
 
       ${variant === "rail" && html`
-        <span style=${{
+        <span className=${doingPulseClass(ticket.status)} style=${{
           position: "absolute", left: 0, top: 0, bottom: 0, width: 3,
           background: s.color, opacity: 0.9,
         }} />`}

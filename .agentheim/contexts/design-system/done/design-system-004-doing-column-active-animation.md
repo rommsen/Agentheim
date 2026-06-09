@@ -1,16 +1,16 @@
 ---
 id: design-system-004
 title: Animated "actively working" treatment for doing-column tickets
-status: todo
+status: done
 type: feature
 context: design-system
 created: 2026-06-08
-completed:
+completed: 2026-06-09
 commit:
 depends_on: [design-system-001]
 blocks: []
 tags: [captured, frontend, motion]
-related_adrs: []
+related_adrs: [ADR-0014]
 related_research: []
 prior_art: []
 ---
@@ -105,3 +105,42 @@ ADR id to this task's `related_adrs` and the task id to the ADR's `related_tasks
 **OPEN** (re-approved 2026-06-06), so this is promotable. Editing the gated styleguide
 source/canvas lightly reopens the gate — the builder reviews the doing-card state on the
 canvas before this is considered done.
+
+## Outcome
+
+Doing-status ticket cards now carry a **calm ambient pulse** — a slow,
+low-amplitude breathing glow on the ochre status rail — so the doing column reads
+as *actively worked* at a glance. The system's first continuous animation /
+first `@keyframes` / first loop motion token, and a small design-language
+extension recorded in **ADR-0014** (*ambient motion may signal active status*).
+
+- **Mechanism:** `@keyframes ambient-rail-pulse` (opacity 0.9→0.62→0.9 + a soft
+  `--st-doing` `box-shadow` glow) on `.ticket-rail--pulse`, in
+  `styleguide/styles/agentheim.css`. Ochre-only, no new hue.
+- **Token:** `--duration-ambient: 2600ms` in the motion block of
+  `styleguide/styles/colors_and_type.css`.
+- **Status-keyed:** `doingPulseClass(status)` in `styleguide/app/motion.js`
+  (re-exported from `app/kanban.js`); the `TicketCard` rail span gets the class
+  iff `status === "doing"` — independent of the `agent` field.
+- **Single source (ADR-0003):** `dashboard/app/board.js` imports `TicketCard`
+  unforked, so the pulse reaches the live board with **zero dashboard-side
+  change** (verified by reading the import, not editing dashboard/).
+- **Reduced motion:** `@media (prefers-reduced-motion: reduce)` fully strips the
+  pulse to a plain ochre rail — pure progressive enhancement.
+- **Canvas:** section 06 (Ticket card) gains an explicit "Doing — ambient pulse ·
+  vs. static" row (doing card beside a non-doing card) for the gate review; the
+  live board in section 05 already renders doing cards.
+- **Tests:** `styleguide/test/doing-pulse.test.mjs` (5 tests, `node --test`) —
+  asserts the pulse class is status-keyed and agent-independent, the
+  `--duration-ambient` token exists, the keyframes/class are ochre-only and use
+  the token, and a `prefers-reduced-motion` guard sets `animation: none`. Both the
+  styleguide (5) and dashboard (171) suites are green.
+
+**Gate:** editing the gated styleguide source/canvas lightly reopens the gate —
+the builder reviews the doing-card state on canvas sections 05/06.
+
+**Rebuild note:** the served dashboard `dist/` is a derived artifact (ADR-0003);
+it must be rebuilt to show the pulse on the live board. Rebuild deliberately NOT
+done here (a parallel sibling owns `dashboard/` this wave).
+
+See ADR-0014 (`.agentheim/knowledge/decisions/0014-ambient-motion-signals-active-status.md`).

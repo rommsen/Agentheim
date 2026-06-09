@@ -5,6 +5,28 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 -- Task verified and completed: design-system-004 - Animated "actively working" treatment for doing-column tickets
+
+**Type:** Work / Task completion
+**Task:** design-system-004 - Animated "actively working" treatment for doing-column tickets
+**Summary:** Doing-status ticket cards now carry a calm ambient pulse — a slow, low-amplitude breathing glow on the ochre status rail — the styleguide's first continuous (looping) animation, status-keyed (`status === "doing"`, not the `agent` field) in the unforked `TicketCard` so the dashboard inherits it with zero dashboard-side change, and fully stripped under `prefers-reduced-motion`.
+**Verification:** PASS (iteration 1)
+**Commit:** <pending>
+**Files changed:** 6 source + BC README + ADR
+**Tests added:** styleguide/test/doing-pulse.test.mjs (doing card carries the hook, non-doing does not, reduced-motion guard exists). Styleguide 5/5 + dashboard 171/171 green.
+**ADRs written:** 0014-ambient-motion-signals-active-status.md (ambient-motion-as-status-signal principle, `--duration-ambient` token, reduced-motion-strips-to-plain contract)
+
+---
+
+## 2026-06-09 -- Batch started: [agentic-workflow-014, design-system-004]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-014 - Group Kanban board columns by bounded context (collapsible), design-system-004 - Animated "actively working" treatment for doing-column tickets
+**Parallel:** yes (2 workers)
+**Held to next wave:** agentic-workflow-015 (conflicts with aw-014 on dashboard/app/board.js + the agentic-workflow BC README)
+
+---
+
 ## 2026-06-09 -- Modeling / Refined: design-system-004 - Animated "actively working" treatment for doing-column tickets
 
 **Type:** Modeling / Refine

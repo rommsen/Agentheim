@@ -23,7 +23,8 @@ import { TypographySection, SpacingSection, IconSection } from "./foundations2.j
 import { Markdown } from "./primitives.js";
 import { TICKETS, LIBRARY, CONTENT_TYPES, MD_ADR } from "./data.js";
 
-const SAMPLE_TICKET = TICKETS.find((t) => t.id === "AGH-128");
+const SAMPLE_TICKET = TICKETS.find((t) => t.id === "AGH-128"); // status: doing
+const SAMPLE_TICKET_STATIC = TICKETS.find((t) => t.status !== "doing"); // contrast: no pulse
 const SAMPLE_DOC = LIBRARY[2].items[0]; // ADR-0007
 
 function TopBar({ theme, setTheme }) {
@@ -109,6 +110,17 @@ function CardStates({ variant, title, note }) {
         <div><${StateLabel}>Default</${StateLabel}><${TicketCard} ticket=${SAMPLE_TICKET} variant=${variant} /></div>
         <div><${StateLabel}>Hover</${StateLabel}><${TicketCard} ticket=${SAMPLE_TICKET} variant=${variant} forceHover /></div>
         <div><${StateLabel}>Selected</${StateLabel}><${TicketCard} ticket=${SAMPLE_TICKET} variant=${variant} selected /></div>
+        ${variant === "rail" && html`
+          <div>
+            <${StateLabel}>Doing — ambient pulse · vs. static</${StateLabel}>
+            <p style=${{ margin: "0 0 10px", fontFamily: "var(--font-ui)", fontSize: 11.5, lineHeight: 1.5, color: "var(--fg-3)", maxWidth: 280 }}>
+              A doing card's ochre rail breathes (calm, low-amplitude, <code>--duration-ambient</code>) so the column reads as actively-worked; any other status rail stays still. Honored by <code>prefers-reduced-motion</code> — the pulse drops to a plain rail.
+            </p>
+            <div style=${{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <${TicketCard} ticket=${SAMPLE_TICKET} variant=${variant} />
+              <${TicketCard} ticket=${SAMPLE_TICKET_STATIC} variant=${variant} />
+            </div>
+          </div>`}
       </div>
     </${DocCard}>`;
 }

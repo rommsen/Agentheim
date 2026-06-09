@@ -82,6 +82,28 @@ copies `styles/fonts/` → `dist/fonts/`). Result: the canvas and the bundled da
 render the correct type with **no network at view time**. Adding non-latin glyphs later
 requires vendoring the matching subset. See ADR-0008.
 
+### Motion — transitions plus one ambient cue (ADR-0014)
+
+Motion is **quiet and mostly transition-only**: short, event-triggered eases
+(`--duration-fast` / `--duration-base`, `--ease-base`) on hover, theme flip, and
+the drawer. As of `design-system-004` the language admits **one ambient
+(looping) cue**: a doing-status ticket card's ochre rail **breathes** — a calm,
+low-amplitude pulse — so the doing column reads as *actively worked* at a glance.
+This is the system's first `@keyframes` and its first loop token,
+`--duration-ambient` (`styles/colors_and_type.css`); the pulse keyframes +
+`.ticket-rail--pulse` class live in `styles/agentheim.css`. It is **status-keyed**
+(`status === "doing"`, never the `agent` field) via `doingPulseClass()` in
+`app/motion.js`, applied by the styleguide `TicketCard`; the dashboard inherits it
+unforked (ADR-0003), no dashboard-side change. The cue stays inside the quiet-by-
+default law: **ochre-only** (draws solely from `--st-doing`, no new hue) and
+**low amplitude**. Under `prefers-reduced-motion: reduce` it is **fully stripped**
+to a plain rail (pure progressive enhancement) — the standing contract for any
+future ambient motion: always strippable to a still-legible static baseline.
+
+> Live-board note: the served dashboard `dist/` is a derived artifact (ADR-0003)
+> and must be **rebuilt** to pick up this styleguide change; the source edit alone
+> does not update the bundle.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.

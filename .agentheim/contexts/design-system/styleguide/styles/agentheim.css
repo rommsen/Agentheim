@@ -257,3 +257,47 @@ html, body { transition: background var(--duration-base) var(--ease-base); }
   outline: 1.5px solid var(--accent-ochre);
   outline-offset: 2px;
 }
+
+/* ============================================================
+   Doing-card ambient pulse (design-system-004 / ADR-0014)
+
+   The system's FIRST continuous/ambient animation — it was
+   transition-only until now. A card whose status is "doing" gets
+   a calm, low-amplitude "breathing" glow on its ochre status rail,
+   so the doing column reads as actively-worked at a glance. Motion
+   (not just the ochre hue) now carries a status signal.
+
+   Quiet-by-default law upheld: the glow draws ONLY from the
+   existing --st-doing status color family — no new hue — and the
+   amplitude stays low so it never demands attention. Composited on
+   opacity + box-shadow only (cheap to run continuously). The loop
+   cadence is the --duration-ambient motion token, not a magic
+   number. The component (kanban.js / motion.js) adds the
+   .ticket-rail--pulse class only when status === "doing".
+   ============================================================ */
+@keyframes ambient-rail-pulse {
+  0%, 100% {
+    opacity: 0.9;
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--st-doing) 0%, transparent);
+  }
+  50% {
+    opacity: 0.62;
+    box-shadow: 0 0 7px 0 color-mix(in oklab, var(--st-doing) 38%, transparent);
+  }
+}
+
+.ticket-rail--pulse {
+  animation: ambient-rail-pulse var(--duration-ambient) var(--ease-base) infinite;
+  will-change: opacity;
+}
+
+/* Reduced motion: the pulse is pure progressive enhancement. Strip it
+   entirely — no loop, no residual static glow — leaving the ordinary card
+   with its normal ochre rail (the rail color alone still conveys "doing"). */
+@media (prefers-reduced-motion: reduce) {
+  .ticket-rail--pulse {
+    animation: none;
+    box-shadow: none;
+    opacity: 0.9;
+  }
+}
