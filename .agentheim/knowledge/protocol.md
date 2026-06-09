@@ -5,6 +5,20 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 -- Task verified and completed: agentic-workflow-014 - Group Kanban board columns by bounded context (collapsible)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-014 - Group Kanban board columns by bounded context (collapsible)
+**Summary:** Each dashboard board column gained an independent group-by-bounded-context lens with collapsible per-BC sections (pure `board-group.js`, run after sort in a project→sort→group pipeline); the per-column view lens (group + sort + collapse) now persists across reloads and live re-projections via a single versioned `localStorage` store (`board-view-state.js`), reversing ADR-0009's no-localStorage clause while keeping board content a pure projection of disk.
+**Verification:** PASS (iteration 1)
+**Commit:** <pending>
+**Files changed:** 5 dashboard source/test + derived dist bundle + BC README + ADR
+**Tests added:** board-group.test.mjs (pure partition, sort-preserved, ascending BC order, zero-card sections, no mutation), board-view-state.test.mjs (versioned round-trip, malformed/stale/absent degrade safely). Dashboard suite 171/171 green; dist rebuilt to bundle both this and ds-004.
+**ADRs written:** 0015-board-view-state-persisted-localstorage.md (ADR-0009 addendum: view-state persistence reversal, board stays a projection of disk)
+**New backlog items:** design-system-005 (shared collapsible-section primitive — the styleguide gap this task's board-local header revealed)
+
+---
+
 ## 2026-06-09 -- Task verified and completed: design-system-004 - Animated "actively working" treatment for doing-column tickets
 
 **Type:** Work / Task completion

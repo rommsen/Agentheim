@@ -97,9 +97,36 @@ separate BC, but today the whole tool lives in this one.
   list — `dashboard/app/board-sort.js` (`sortTickets`, unit-tested under `node --test`), run board-side
   *after* `treeToColumns`; it never mutates the transform, the read model, or disk. Name ties and
   mod-date ties both break by `id` ascending, and an absent/`null` `mtimeMs` sorts as oldest (never
-  `NaN`, never a throw). The choice is **in-session view-state only** — no `localStorage`, so every load
-  resets to the default; because the order is derived at render, every live re-projection (SSE
-  `tree-changed` / reconnect) re-applies the column's current choice rather than silently resetting it.
+  `NaN`, never a throw). The choice is now **persisted** (agentic-workflow-014 / ADR-0015) in the
+  single versioned `localStorage` view-state store, so it survives a reload; because the order is
+  derived at render, every live re-projection (SSE `tree-changed` / reconnect) re-applies the
+  column's current choice rather than silently resetting it. (This supersedes aw-012's original
+  in-session-only clause; aw-012 stays `done`.)
+- **Column grouping (group by bounded context)** — each board column also has its own **independent**
+  group-by-BC toggle (agentic-workflow-014), a board-only control rendered as a *sibling* of the sort
+  `<select>` (same `DragColumn` precedent — the styleguide `kanban.js` is consumed unmodified, ADR-0003).
+  Toggling a column **on** partitions its cards into per-BC sections, each with a header showing the BC
+  name + a card count; a BC with zero cards in that column renders **no** section, and sections are
+  ordered by BC name **ascending**. Each section is independently **collapsible** (collapsing hides its
+  cards, retains the count). Cards *within* a section still obey the column's current sort — the
+  pipeline is **project (`treeToColumns`) → sort (`board-sort.js`) → group (`board-group.js`)**; grouping
+  only partitions, never re-orders, so all sort semantics are preserved inside each section. The
+  partitioning is a **pure** function of the already-sorted list — `dashboard/app/board-group.js`
+  (`groupTickets`, unit-tested under `node --test`); it never mutates the transform, the read model, or
+  disk. A column with no stored state, or a brand-new BC, defaults to **flat + default sort +
+  all-expanded** (never `NaN`, never a throw). The collapsible section header is **board-local**,
+  token-matched (the styleguide `TreeGroup` primitive is coupled to `TreeItem` rows and owns its own
+  open state — it does not fit a board section rendering draggable `TicketCard`s with externally-persisted
+  collapse state); a `design-system` capture (design-system-005) is filed for the shared primitive. See
+  ADR-0015, ADR-0009, ADR-0003.
+- **Persisted board view-state** — the per-column **view lens** — grouped/flat, sort choice, and each
+  `(column, BC)` collapse state — is persisted across reloads in a **single versioned `localStorage`
+  store** (`dashboard/app/board-view-state.js`, key `agentheim.board.viewState`; agentic-workflow-014,
+  ADR-0015). This deliberately **reverses** ADR-0009's "in-session view-state only — no `localStorage`"
+  clause, but the reversal is bounded to **presentation view-state**: the store never records lifecycle
+  truth — which task is in which column stays a pure projection of disk (`/api/tree`), re-fetched on
+  every SSE frame. A stale-version / malformed / absent blob degrades to "every column defaults" rather
+  than throwing — a corrupt preference can never blank the board. See ADR-0015, ADR-0001.
 - **Live-update (SSE consumer)** — the board keeps itself current (agentic-workflow-009) by
   subscribing to `GET /api/events` (the SSE transport, infrastructure-003 / ADR-0006) via the
   framework-free `dashboard/app/live-update.js` (`createLiveUpdate`). On every `tree-changed`

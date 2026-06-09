@@ -42,6 +42,8 @@ import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
+import { groupTickets } from "./board-group.js";
+import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
 import { SlideOver } from "./slide-over.js";
 import { DashboardLibrary } from "./library.js";
 import { createLiveUpdate } from "./live-update.js";
@@ -107,7 +109,6 @@ function ColumnSortControl({ status, value, onChange }) {
   return html`
     <label style=${{
       display: "inline-flex", alignItems: "center", gap: 6,
-      padding: "0 4px 12px", marginTop: -4,
     }}>
       <span style=${{
         fontFamily: "var(--font-ui)", fontSize: 10.5, color: "var(--fg-4)",
@@ -127,6 +128,76 @@ function ColumnSortControl({ status, value, onChange }) {
     </label>`;
 }
 
+// The per-column group-by-BC toggle (aw-014). A board-only affordance, SIBLING of
+// the sort control — same precedent: the styleguide kanban.js is consumed
+// unmodified (ADR-0003), the control is native and token-styled, no new styleguide
+// pattern. Flipping it lifts the column's grouped choice into persisted board
+// view-state; the pure board-group.groupTickets does the partitioning at render
+// time, so a live re-projection re-applies the choice rather than resetting it.
+function ColumnGroupToggle({ status, grouped, onToggle }) {
+  return html`
+    <button
+      type="button"
+      className="focusable"
+      aria-pressed=${grouped}
+      aria-label=${`Group ${status} column by bounded context`}
+      onClick=${() => onToggle(!grouped)}
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 5,
+        fontFamily: "var(--font-ui)", fontSize: 11.5,
+        color: grouped ? "var(--fg-1)" : "var(--fg-2)",
+        background: grouped ? "var(--surface-2)" : "var(--surface-1)",
+        border: `1px solid ${grouped ? "var(--hairline-strong)" : "var(--hairline)"}`,
+        borderRadius: "var(--radius-sm)", padding: "3px 7px", cursor: "pointer",
+        transition: "background var(--duration-fast) var(--ease-base)",
+      }}>
+      <${Icon} name="box" size=${12.5} color=${grouped ? "var(--fg-1)" : "var(--fg-3)"} />
+      <span>Group</span>
+    </button>`;
+}
+
+// The board-only control strip beneath the styleguide ColumnHeader: sort + group,
+// laid out as siblings. Both are board view-state affordances; neither forks the
+// styleguide (ADR-0003).
+function ColumnControls({ status, sort, onSortChange, grouped, onGroupToggle }) {
+  return html`
+    <div style=${{
+      display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
+      padding: "0 4px 12px", marginTop: -4,
+    }}>
+      <${ColumnSortControl} status=${status} value=${sort} onChange=${onSortChange} />
+      <${ColumnGroupToggle} status=${status} grouped=${grouped} onToggle=${onGroupToggle} />
+    </div>`;
+}
+
+// A board-local, collapsible per-BC section header. The styleguide's TreeGroup
+// collapsible primitive (design-system library.js) is coupled to TreeItem rows and
+// owns its own open state — it does not fit a board section that renders draggable
+// TicketCards with externally-PERSISTED collapse state. So this is a board-local
+// header matching the SAME styleguide tokens (chevron, uppercase label, mono
+// count) as TreeGroup, exactly as the sort <select> is a board-local control
+// (ADR-0003 precedent). A design-system capture is filed for the shared collapsible
+// primitive this reveals (design-system backlog).
+function BCSectionHeader({ bc, count, collapsed, onToggle }) {
+  return html`
+    <button className="focusable" onClick=${onToggle}
+      aria-expanded=${!collapsed}
+      style=${{
+        display: "flex", alignItems: "center", gap: 6, width: "100%",
+        padding: "5px 6px", border: "none", background: "transparent", cursor: "pointer",
+        textAlign: "left",
+      }}>
+      <${Icon} name="chevron-right" size=${13} color="var(--fg-3)"
+        style=${{ transform: collapsed ? "rotate(0deg)" : "rotate(90deg)", transition: "transform var(--duration-fast) var(--ease-base)" }} />
+      <span style=${{
+        flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 600,
+        letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--fg-3)",
+      }}>${bc}</span>
+      <span style=${{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--fg-4)" }}>${count}</span>
+    </button>`;
+}
+
 // A drop-target lifecycle column that COMPOSES the approved styleguide
 // sub-components (ColumnHeader, TicketCard, EmptyColumn) exactly as the styleguide
 // `Column` does — same pattern, no fork — and adds the HTML5 drag affordances the
@@ -135,7 +206,24 @@ function ColumnSortControl({ status, value, onChange }) {
 // drop handlers, so they are inert non-drop targets. It also hosts the board-only
 // per-column sort control (aw-012) as a sibling of ColumnHeader; `tickets` arrives
 // already ordered (the board sorts before passing it in).
-function DragColumn({ status, tickets, sort, onSortChange, selectedId, onOpen, draggingFrom, onDragStart, onDragEnd, onDrop }) {
+// One draggable TicketCard. Factored out so the flat list and the grouped
+// sections render cards identically (same drag source, same selection ring).
+function DraggableCard({ ticket, status, selectedId, onOpen, onDragStart, onDragEnd }) {
+  return html`
+    <div key=${ticket.id} draggable=${true}
+      onDragStart=${(e) => { e.dataTransfer.effectAllowed = "move"; onDragStart(ticket, status); }}
+      onDragEnd=${onDragEnd}
+      style=${{ cursor: "grab" }}>
+      <${TicketCard} ticket=${ticket} variant="rail"
+        selected=${selectedId === ticket.id} onClick=${() => onOpen(ticket)} />
+    </div>`;
+}
+
+function DragColumn({
+  status, tickets, sort, onSortChange, grouped, onGroupToggle,
+  collapsed, onToggleSection,
+  selectedId, onOpen, draggingFrom, onDragStart, onDragEnd, onDrop,
+}) {
   const isTarget = draggingFrom != null && isLegalDrop(draggingFrom, status);
   const [over, setOver] = useState(false);
 
@@ -148,6 +236,16 @@ function DragColumn({ status, tickets, sort, onSortChange, selectedId, onOpen, d
       }
     : {};
 
+  // Pipeline: tickets arrive ALREADY sorted (the board sorts before passing them
+  // in); group them into sections here (board-group.groupTickets, pure). A flat
+  // column yields one null-bc section; the toggle re-shapes presentation only.
+  const sections = groupTickets(tickets, { grouped, collapsed });
+
+  const renderCard = (t) => html`
+    <${DraggableCard} key=${t.id} ticket=${t} status=${status}
+      selectedId=${selectedId} onOpen=${onOpen}
+      onDragStart=${onDragStart} onDragEnd=${onDragEnd} />`;
+
   return html`
     <div ...${dropProps} style=${{
       flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column",
@@ -158,19 +256,27 @@ function DragColumn({ status, tickets, sort, onSortChange, selectedId, onOpen, d
       transition: "background var(--duration-fast) var(--ease-base)",
     }}>
       <${ColumnHeader} status=${status} count=${tickets.length} onAdd=${() => {}} />
-      <${ColumnSortControl} status=${status} value=${sort} onChange=${onSortChange} />
-      <div style=${{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 8 }}>
-        ${tickets.length === 0
-          ? html`<${EmptyColumn} status=${status} />`
-          : tickets.map((t) => html`
-              <div key=${t.id} draggable=${true}
-                onDragStart=${(e) => { e.dataTransfer.effectAllowed = "move"; onDragStart(t, status); }}
-                onDragEnd=${onDragEnd}
-                style=${{ cursor: "grab" }}>
-                <${TicketCard} ticket=${t} variant="rail"
-                  selected=${selectedId === t.id} onClick=${() => onOpen(t)} />
-              </div>`)}
-      </div>
+      <${ColumnControls} status=${status} sort=${sort} onSortChange=${onSortChange}
+        grouped=${grouped} onGroupToggle=${onGroupToggle} />
+      ${tickets.length === 0
+        ? html`<div style=${{ paddingBottom: 8 }}><${EmptyColumn} status=${status} /></div>`
+        : grouped
+          ? html`
+            <div style=${{ display: "flex", flexDirection: "column", gap: 6, paddingBottom: 8 }}>
+              ${sections.map((sec) => html`
+                <div key=${sec.bc} style=${{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <${BCSectionHeader} bc=${sec.bc} count=${sec.count}
+                    collapsed=${sec.collapsed} onToggle=${() => onToggleSection(sec.bc)} />
+                  ${!sec.collapsed && html`
+                    <div style=${{ display: "flex", flexDirection: "column", gap: 10, paddingLeft: 2 }}>
+                      ${sec.tickets.map(renderCard)}
+                    </div>`}
+                </div>`)}
+            </div>`
+          : html`
+            <div style=${{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 8 }}>
+              ${sections[0].tickets.map(renderCard)}
+            </div>`}
     </div>`;
 }
 
@@ -195,19 +301,50 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
   const [notice, setNotice] = useState(null); // a refused-move domain reason
   const [dragging, setDragging] = useState(null); // { id, from } | null
 
-  // Per-column sort choice — independent per column, held in board view-state
-  // ONLY (no localStorage / no client persistence, aw-012). Initialized to the
-  // default for every column, so each load resets to the default ordering. The
-  // ordering is then DERIVED below at render time, which means every loadTree
-  // re-projection (SSE tree-changed / reconnect) re-applies the current choice —
-  // a live change never silently resets the visible order.
-  const [sorts, setSorts] = useState(() => {
-    const s = {};
-    for (const c of COLUMN_ORDER) s[c] = DEFAULT_SORT;
-    return s;
+  // Per-column VIEW LENS — { grouped, sort, collapsed } per column, independent
+  // per column. PERSISTED across reloads via the single versioned localStorage
+  // store (aw-014, reversing ADR-0009's no-localStorage clause; supersedes
+  // aw-012's in-session-only sort). It is VIEW-STATE ONLY: the board's CONTENT
+  // stays a projection of disk, re-fetched on every SSE frame. A column with no
+  // stored state defaults to flat + default sort + all-expanded. The order and
+  // grouping are DERIVED below at render time, so every loadTree re-projection
+  // (SSE tree-changed / reconnect) re-applies the current choice — never resets.
+  const [view, setView] = useState(() => {
+    const storage = typeof window !== "undefined" ? window.localStorage : null;
+    const stored = loadViewState(storage);
+    const v = {};
+    for (const c of COLUMN_ORDER) v[c] = { ...defaultColumnState(), ...(stored[c] || {}) };
+    return v;
   });
+
+  // Persist on every change. A failed preference write is swallowed by the store;
+  // it must never surface as a board error.
+  useEffect(() => {
+    const storage = typeof window !== "undefined" ? window.localStorage : null;
+    saveViewState(storage, view);
+  }, [view]);
+
   const setColumnSort = useCallback((status, value) => {
-    setSorts((prev) => (prev[status] === value ? prev : { ...prev, [status]: value }));
+    setView((prev) => (prev[status].sort === value
+      ? prev
+      : { ...prev, [status]: { ...prev[status], sort: value } }));
+  }, []);
+
+  const setColumnGrouped = useCallback((status, grouped) => {
+    setView((prev) => (prev[status].grouped === grouped
+      ? prev
+      : { ...prev, [status]: { ...prev[status], grouped } }));
+  }, []);
+
+  // Toggle one (column, BC) section's collapse state. Stored as the list of
+  // COLLAPSED BC names per column — absent = expanded (the all-expanded default).
+  const toggleSection = useCallback((status, bc) => {
+    setView((prev) => {
+      const col = prev[status];
+      const has = col.collapsed.includes(bc);
+      const collapsed = has ? col.collapsed.filter((x) => x !== bc) : [...col.collapsed, bc];
+      return { ...prev, [status]: { ...col, collapsed } };
+    });
   }, []);
 
   // The single board re-projection: re-fetch /api/tree and rebuild the columns.
@@ -299,8 +436,10 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
           <div style=${{ display: "flex", gap: 20, alignItems: "flex-start" }}>
             ${COLUMN_ORDER.map((status) => html`
               <${DragColumn} key=${status} status=${status}
-                tickets=${sortTickets(columns[status], sorts[status])}
-                sort=${sorts[status]} onSortChange=${(v) => setColumnSort(status, v)}
+                tickets=${sortTickets(columns[status], view[status].sort)}
+                sort=${view[status].sort} onSortChange=${(v) => setColumnSort(status, v)}
+                grouped=${view[status].grouped} onGroupToggle=${(g) => setColumnGrouped(status, g)}
+                collapsed=${view[status].collapsed} onToggleSection=${(bc) => toggleSection(status, bc)}
                 selectedId=${selectedId} onOpen=${handleOpen}
                 draggingFrom=${dragging ? dragging.from : null}
                 onDragStart=${handleDragStart} onDragEnd=${handleDragEnd}

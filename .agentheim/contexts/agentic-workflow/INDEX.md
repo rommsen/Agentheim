@@ -11,15 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 2
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 13
+- **Done:** 14
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
 - **agentic-workflow-015** — Show the project name next to "Agentheim" in the dashboard header — `todo/agentic-workflow-015-header-show-project-name.md`
-- **agentic-workflow-014** — Group Kanban board columns by bounded context (collapsible) — `todo/agentic-workflow-014-board-group-by-bounded-context.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-014** — Group Kanban board columns by bounded context (collapsible) — `done/agentic-workflow-014-board-group-by-bounded-context.md`
 - **agentic-workflow-012** — Add sorting options to Kanban board columns — `done/agentic-workflow-012-board-column-sorting.md`
 - **agentic-workflow-013** — Carry task file modification time (mtimeMs) in the /api/tree projection — `done/agentic-workflow-013-tree-projection-mtime.md`
 - **agentic-workflow-010** — Dashboard cross-OS verification: POSIX leg (spike) — `done/agentic-workflow-010-dashboard-posix-cross-os-verification.md`
@@ -57,6 +57,7 @@ research touching this BC, and concept synthesis pages.
 - **ADR-0010** — The dashboard slide-over feeds the styleguide Drawer a doc-shaped item (accepted) — `../../knowledge/decisions/0010-slide-over-doc-shaped-item.md`
 - **ADR-0011** — The dashboard library/navigation surface is the non-task half of the tree projection, grouped client-side (accepted) — `../../knowledge/decisions/0011-dashboard-library-groups-from-tree-locations.md`
 - **ADR-0012** — applyTaskMove resolves slugged task filenames from a bare id; the SSE consumer re-fetches, never interprets (proposed) — `../../knowledge/decisions/0012-applytaskmove-resolves-slugged-filenames-by-bare-id.md`
+- **ADR-0015** — Board per-column view-state (group + sort + collapse) persists in versioned `localStorage` (proposed) — `../../knowledge/decisions/0015-board-view-state-persisted-localstorage.md`
 <!-- adr-local:end -->
 
 ## Research touching this BC

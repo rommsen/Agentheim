@@ -1,16 +1,16 @@
 ---
 id: agentic-workflow-014
 title: Group Kanban board columns by bounded context (collapsible)
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-08
-completed:
+completed: 2026-06-09
 commit:
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, board, view-state, captured]
-related_adrs: [0009]
+related_adrs: [0009, 0015]
 related_research: []
 prior_art: [agentic-workflow-006, agentic-workflow-012]
 ---
@@ -114,3 +114,47 @@ server endpoint; `applyTaskMove` and the read API are untouched.
   would create an artificial store-first dependency. Kept as one coherent commit:
   "persisted per-column view-state, with collapsible BC grouping." Revisit if the worker
   finds the store substantial enough to land first.
+
+## Outcome
+Each dashboard board column now carries an independent **group-by-bounded-context**
+toggle as a sibling of its sort `<select>` (the `DragColumn` / board-`<select>`
+precedent; styleguide `kanban.js` consumed unmodified, ADR-0003). Toggling a column
+on partitions its cards into per-BC sections — header = BC name + card count,
+ordered by BC name ascending, no section for a BC with zero cards — each
+independently **collapsible** (collapse hides cards, retains count). Cards within a
+section keep the column's current sort: the render pipeline is project
+(`treeToColumns`) → sort (`board-sort.js`) → **group (`board-group.js`)**; grouping
+only partitions, never re-orders.
+
+The partitioning is a pure, DOM-free transform `dashboard/app/board-group.js`
+(`groupTickets(sorted, { grouped, collapsed })` → ordered sections), unit-tested
+(`dashboard/test/board-group.test.mjs`, 12 tests). It never mutates the transform,
+read model, or disk.
+
+**View-state persistence (reverses ADR-0009's "no localStorage", supersedes
+aw-012's in-session-only sort):** grouped/flat, sort, and each `(column, BC)`
+collapse state now persist in one **versioned** `localStorage` store
+(`dashboard/app/board-view-state.js`, key `agentheim.board.viewState`,
+`VIEW_STATE_VERSION = 1`), unit-tested (`dashboard/test/board-view-state.test.mjs`,
+8 tests). It is pure over an injected backend; a stale-version / malformed / absent
+blob degrades to "every column defaults" (flat + default sort + all-expanded) —
+never `NaN`, never a throw, never a blank board. Persistence is presentation-only:
+content stays a projection of disk, re-fetched on every SSE frame, so a live
+re-projection re-applies (never resets) the lens. The reversal is recorded in
+**ADR-0015** (addendum to ADR-0009).
+
+The board React glue lives in `dashboard/app/board.js` (`ColumnGroupToggle`,
+`ColumnControls`, board-local `BCSectionHeader`, grouped/flat rendering in
+`DragColumn`, unified per-column `view` state seeded from + persisted to the store).
+The collapsible section header is **board-local**, token-matched: the styleguide
+`TreeGroup` primitive is coupled to `TreeItem` rows and owns its own open state, so
+it does not fit a board section rendering draggable `TicketCard`s with
+externally-persisted collapse state. A `design-system` capture
+(**design-system-005**) is filed for the shared collapsible primitive.
+
+Bundle rebuilt (`dashboard/dist/`). Full dashboard suite green: **171 tests pass**
+(20 new). Key files: `dashboard/app/board-group.js`,
+`dashboard/app/board-view-state.js`, `dashboard/app/board.js`,
+`dashboard/test/board-group.test.mjs`, `dashboard/test/board-view-state.test.mjs`,
+`dashboard/dist/app.js`, ADR-0015, README *Column grouping* / *Persisted board
+view-state* sections.

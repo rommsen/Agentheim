@@ -115,6 +115,10 @@
   --ease-base: cubic-bezier(0.4, 0, 0.2, 1);
   --duration-fast: 120ms;
   --duration-base: 180ms;
+  /* The system's first *ambient* (looping) duration — a slow "breathing"
+     cadence, not a transition (ADR-0014). Used by the doing-card pulse; tuned
+     to read as alive in peripheral vision, never as a blink. */
+  --duration-ambient: 2600ms;
 }
 
 /* ---------- Dark mode ---------- */
