@@ -5,6 +5,47 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 -- Modeling / Refined: design-system-004 - Animated "actively working" treatment for doing-column tickets
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** todo
+**Summary:** Interrogator pass on the raw capture. Cornered three forks against the styleguide's "quiet by default, color only signals status" law: (1) Intensity → **calm ambient pulse** (low-amplitude breathing on the ochre rail), not the capture's literal rotating/glowing background — extends the law rather than breaking it; loud option explicitly declined. (2) Scope → **all doing-status cards** (status-driven, keyed off `ticket.status === "doing"`, not the `agent` field) — the `/api/tree` disk projection can't truthfully know a worker is live, so "in `doing/`" is the honest proxy. (3) Reduced-motion → **plain card** (ordinary ochre rail, no static-glow fallback); pulse is pure progressive enhancement. Settled placement as a finding, not a fork: lives in the styleguide `TicketCard` (`styleguide/app/kanban.js`); dashboard inherits via the unforked import (`board.js:37`, ADR-0003) with zero dashboard-side change. Wrote Why + What + 8 testable AC; added a `--duration-ambient` motion-token requirement (first loop token; styleguide has no `@keyframes` today). Left exact pulse mechanism / token value / keyframes-vs-transition to the worker as TDD-time implementation. Added `depends_on: [design-system-001]` (styleguide gate, OPEN). Promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none yet — a short ADR (ambient-motion-as-status-signal principle + `--duration-ambient` token + reduced-motion-strips-to-plain contract) specified as a worker deliverable, bidirectionally linked back to ds-004.
+
+---
+
+## 2026-06-09 -- Modeling / Refined: agentic-workflow-015 - Show the project name next to "Agentheim" in the dashboard header
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Cornered three ambiguities in Interrogator mode. (1) Display: `Agentheim · <project>` — project name muted/smaller, separator-dot treatment, no new styleguide pattern. (2) Data path: extend the `/api/tree` projection (`dashboard/tree.mjs`) with a `project: { name }` field parsed server-side from `vision.md`'s `# Vision:` heading — one fetch, rides SSE, follows the aw-013 `mtimeMs` precedent; flagged it as the first projection field drawn from a markdown *body* (one trimmed string, body-free contract from ADR-0002 holds). (3) Fallback: missing/headingless vision → show "Agentheim" only (loss-tolerant). Sharpened to 7 testable AC across projection / header / tests. Noted the shell-sources-the-name implementation choice (only `DashboardBoard` fetches `/api/tree` today). Added `depends_on: [design-system-001]` (frontend gate, met). Promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none (projection-field extension consistent with existing precedent; no standalone ADR warranted)
+
+---
+
+## 2026-06-09 -- Modeling / Promoted: agentic-workflow-014 - Group Kanban board columns by bounded context (collapsible)
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-09 -- Modeling / Refined: agentic-workflow-014 - Group Kanban board columns by bounded context (collapsible)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Interrogator pass on the raw capture. Cornered three forks: per-column toggle (not board-wide); collapsible BC sections (not contiguous runs); persist view-state across reloads — and the builder extended that to the existing column-sort too. Surfaced the flat-board tension (ADR-0009) and reframed grouping as an optional per-column *view lens* over the same read model. The persistence ask **reverses** ADR-0009's "in-session view-state only, no localStorage" clause and amends agentic-workflow-012's sort behavior — specified as a worker-written ADR-0009 addendum (infrastructure-010 precedent). Wrote Why + What + 13 testable acceptance criteria, a new pure `board-group.js` transform (project→sort→group), styleguide-gate `depends_on: [design-system-001]`, prior_art [aw-006, aw-012], related_adrs [0009]. Flagged the open styleguide-component question (reuse `TreeGroup` collapsible vs board-local + design-system capture) for the worker to settle during TDD. Considered splitting the sort-persistence flip into its own task; kept as one commit (shared localStorage store). Left in backlog pending promote decision.
+**Split into:** none
+**ADRs written:** none yet (ADR-0009 addendum specified as worker deliverable)
+
+---
+
 ## 2026-06-08 14:40 -- Release shipped: v0.8.4
 
 **Type:** Release

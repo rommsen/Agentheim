@@ -10,14 +10,16 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 2
 - **Doing:** 0
 - **Done:** 13
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-015** — Show the project name next to "Agentheim" in the dashboard header — `todo/agentic-workflow-015-header-show-project-name.md`
+- **agentic-workflow-014** — Group Kanban board columns by bounded context (collapsible) — `todo/agentic-workflow-014-board-group-by-bounded-context.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -43,8 +45,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-015** — Show the project name next to "Agentheim" in the dashboard header — `backlog/agentic-workflow-015-header-show-project-name.md`
-- **agentic-workflow-014** — Group Kanban board columns by bounded context (collapsible) — `backlog/agentic-workflow-014-board-group-by-bounded-context.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

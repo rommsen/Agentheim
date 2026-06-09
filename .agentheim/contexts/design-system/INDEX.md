@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 3
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **design-system-004** — Animated "actively working" treatment for doing-column tickets — `todo/design-system-004-doing-column-active-animation.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -33,7 +34,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **design-system-004** — Animated "actively working" treatment for doing-column tickets — `backlog/design-system-004-doing-column-active-animation.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
