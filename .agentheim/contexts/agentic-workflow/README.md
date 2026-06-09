@@ -132,6 +132,17 @@ separate BC, but today the whole tool lives in this one.
   truth — which task is in which column stays a pure projection of disk (`/api/tree`), re-fetched on
   every SSE frame. A stale-version / malformed / absent blob degrades to "every column defaults" rather
   than throwing — a corrupt preference can never blank the board. See ADR-0015, ADR-0001.
+- **Persisted theme choice (light/dark toggle)** — the dashboard consumes the styleguide's "dark-first
+  with a light toggle" theme switch **unforked** (ADR-0003): the `Segmented` Dark/Light control (from
+  `styleguide/app/live.js`) sits in the `ShellRail` header next to the project name and the board↔library
+  switch, feeding the existing `ThemeCtx.Provider` and a `data-theme` documentElement effect that animates
+  the flip with the styleguide `theme-fade` transition (agentic-workflow-017). **Theme resolution +
+  persistence** is a sibling presentation concern to the board view-state: a **separate** versioned
+  `localStorage` store (`dashboard/app/theme-state.js`, key `agentheim.dashboard.theme`) with the same
+  safe-degradation shape. On a **first visit** (no stored override) the OS `prefers-color-scheme` wins;
+  once the user toggles, that override is remembered across reloads. A malformed / stale-version / absent
+  blob degrades to the **system default**, and the resolved theme is read once on mount so an SSE
+  re-projection never resets it mid-session. See ADR-0015, ADR-0009, ADR-0003.
 - **Copy modeling command (backlog refine affordance)** -- a backlog ticket's next action is to
   **refine** it by running `/agentheim:modeling <id>` in the Claude Code terminal (the fully-qualified
   command, not the bare `/modeling` alias). The board surfaces this (agentic-workflow-016) as a one-click

@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 11:27 -- Task verified and completed: agentic-workflow-017 - Wire the styleguide light/dark theme toggle into the dashboard
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-017 - Wire the styleguide light/dark theme toggle into the dashboard
+**Summary:** The dashboard now has a working light/dark switch — the styleguide's `Segmented` Dark/Light control rendered unforked in the `ShellRail` header (next to the project name), feeding `ThemeCtx.Provider` and a `data-theme`/`theme-fade` documentElement effect that matches the styleguide `App()` behaviour. Theme resolution + persistence is a sibling of the board view-state: its own versioned `localStorage` store (`dashboard/app/theme-state.js`, key `agentheim.dashboard.theme`) that honors OS `prefers-color-scheme` on first visit, remembers the user's override across reloads, safe-degrades a malformed/stale/absent blob to the system default, and (read once via a lazy mount initializer) survives SSE re-projections without resetting. No design-system source touched — the styleguide gate is not reopened.
+**Verification:** PASS (iteration 1)
+**Commit:** (backfilled at session end)
+**Files changed:** 4 authored (theme-state.js + its test, board.js, BC README) + derived dist bundle
+**Tests added:** dashboard/test/theme-state.test.mjs — 13 cases (systemTheme dark/light/no-matchMedia; load empty→null, round-trip, versioned, different-version/malformed/unknown → null, no-backend no-throw; saveTheme refuses unknown; resolveTheme override-wins / first-visit-honors-prefers / malformed-stale→system default). Full dashboard suite 196/196 green; dist byte-identical to a fresh `node build.mjs`.
+**ADRs written:** none (pure unforked consumption of the styleguide toggle under ADR-0003/0009, mirroring the ADR-0015 versioned-localStorage persistence pattern; no new decision)
+
+---
+
+## 2026-06-09 11:23 -- Batch started: [agentic-workflow-017]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-017 - Wire the styleguide light/dark theme toggle into the dashboard
+**Parallel:** no (1 worker — sole remaining ready task; was held in the prior wave for conflicting with aw-016 on dashboard/app/board.js, now unblocked)
+
+---
+
 ## 2026-06-09 -- Research: Dashboard button → Claude Code in a VS Code terminal
 
 **Type:** Research

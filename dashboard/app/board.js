@@ -39,8 +39,10 @@ import { EmptyColumn } from "../../.agentheim/contexts/design-system/styleguide/
 import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/icons.js";
 import { Glyph, ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
 import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
+import { Segmented } from "../../.agentheim/contexts/design-system/styleguide/app/live.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
+import { resolveTheme, saveTheme } from "./theme-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
 import { modelingCommandFor } from "./modeling-command.js";
 import { groupTickets } from "./board-group.js";
@@ -534,7 +536,7 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
 // The shell's surface switch — Board (aw-006) vs Library (aw-008). Built from the
 // approved styleguide RailItem (ADR-0003), the same primary-nav pattern the
 // styleguide demo uses for exactly this toggle. No new pattern.
-function ShellRail({ view, onView, projectName }) {
+function ShellRail({ view, onView, projectName, theme, setTheme }) {
   return html`
     <header style=${{
       display: "flex", alignItems: "center", gap: 14,
@@ -563,6 +565,11 @@ function ShellRail({ view, onView, projectName }) {
             active=${view === "library"} onClick=${() => onView("library")} />
         </div>
       </div>
+      <div style=${{ flex: 1 }} />
+      <${Segmented} value=${theme} onChange=${setTheme} options=${[
+        { value: "dark", label: "Dark", icon: "moon" },
+        { value: "light", label: "Light", icon: "sun" },
+      ]} />
     </header>`;
 }
 
@@ -575,10 +582,31 @@ function ShellRail({ view, onView, projectName }) {
  * client-side. Esc / scrim close by clearing the intent.
  */
 export function DashboardApp() {
-  const [theme] = useState("dark");
+  // Theme is owned here and fed to the ThemeCtx.Provider + the data-theme effect.
+  // First paint resolves from a persisted override (versioned localStorage) or,
+  // on a first visit, the OS prefers-color-scheme — mirroring the styleguide's
+  // "dark-first with a light toggle". The resolution is pure (theme-state.js) and
+  // safe-degrades a malformed/stale/absent blob to the system default. The lazy
+  // initializer keeps it a ONE-TIME read on mount, so an SSE re-projection of
+  // /api/tree (a re-render of the surfaces below) never resets the chosen theme.
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "dark";
+    return resolveTheme(window.localStorage, window.matchMedia);
+  });
+  // Reflect the theme onto the documentElement and animate the flip with the
+  // styleguide's theme-fade transition, matching the styleguide App() behaviour.
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.classList.add("theme-fade");
+    const t = setTimeout(() => document.documentElement.classList.remove("theme-fade"), 320);
+    return () => clearTimeout(t);
   }, [theme]);
+  // The user's explicit toggle is the only thing we persist — once set, it
+  // overrides the system preference on the next reload.
+  const onThemeChange = useCallback((next) => {
+    setTheme(next);
+    if (typeof window !== "undefined") saveTheme(window.localStorage, next);
+  }, []);
 
   // Which surface is shown — the task board or the non-task library/discovery.
   const [view, setView] = useState("board"); // board | library
@@ -611,7 +639,8 @@ export function DashboardApp() {
   return html`
     <${ThemeCtx.Provider} value=${theme}>
       <main style=${{ maxWidth: 1160, margin: "0 auto", padding: "28px 28px 56px" }}>
-        <${ShellRail} view=${view} onView=${setView} projectName=${projectName} />
+        <${ShellRail} view=${view} onView=${setView} projectName=${projectName}
+          theme=${theme} setTheme=${onThemeChange} />
         ${view === "library"
           ? html`<${DashboardLibrary} onOpen=${onOpen} />`
           : html`<${DashboardBoard} onOpen=${onOpen} />`}
