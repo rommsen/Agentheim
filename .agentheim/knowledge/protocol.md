@@ -5,12 +5,60 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 -- Research: Dashboard button → Claude Code in a VS Code terminal
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/vscode-dashboard-terminal-bridge-2026-06-09.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- `claude "prompt"` officially starts an interactive session seeded with that prompt; the CLI half is trivial — the bridge is the hard part.
+- A Simple-Browser page is sandboxed and a server-spawned process can't reach the visible VS Code terminal (confirmed: the dashboard server itself is detached/`stdio:'ignore'`); only a VS Code-side bridge can.
+- Easiest reliable path: a ~30–50-line custom extension running a `127.0.0.1` HTTP listener that calls `createTerminal()` + `sendText('claude "<prompt>"')` (or `activeTerminal.sendText` to inject into a running session).
+
+---
+
 ## 2026-06-09 -- Modeling / Captured: agentic-workflow-017 - Wire the styleguide light/dark theme toggle into the dashboard
 
 **Type:** Modeling / Capture
 **BC:** agentic-workflow
 **Filed to:** todo
 **Summary:** The styleguide is "dark-first with a light toggle" and already ships the *whole* switch — a `Segmented` Dark/Light control in its `TopBar`, the `data-theme` documentElement mechanism, a `theme-fade` transition, and light-mode tokens — but the dashboard (its only consumer) never wires it up: `DashboardApp` hardcodes `useState("dark")` (`board.js:497`) with no setter or control, so the live dashboard is permanently dark. Captured as a **single agentic-workflow task** (not a 2-BC split like aw-016/ds-006): routing test — *if agentic-workflow didn't exist, would this need to happen?* No; the styleguide side already exists and exports everything (`Segmented` from `live.js`, `ThemeCtx`, `[data-theme]` tokens, `theme-fade`), so this is **pure unforked consumption (ADR-0003), no design-system change, gate not reopened**. Two forks pinned with the builder: (1) persistence → **persist + system default** — first visit honors `prefers-color-scheme`, user override remembered in versioned `localStorage` per the ADR-0015 / `board-view-state.js` precedent (malformed/stale/absent → system default), choice survives SSE re-projection; (2) control form → **reuse the styleguide `Segmented` control unforked** in the `ShellRail` header (the dashboard analogue of the styleguide `TopBar`), declining a new dashboard-local icon toggle. Filed straight to todo — pieces all exist, decisions locked, worker can execute without ambiguity. Frontend task → `depends_on: [design-system-001]` (styleguide gate OPEN since 2026-06-05). Wrote Why + What + 9 testable AC (incl. dist rebuild + persistence/default tests); related_adrs [0003, 0009, 0015], prior_art [agentic-workflow-015] (the ShellRail header it lands in).
+
+---
+
+## 2026-06-09 11:18 -- Task verified and completed: agentic-workflow-016 - Backlog cards & the add-ticket button copy the matching /modeling command to the clipboard
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-016 - Backlog cards & the add-ticket button copy the matching /modeling command to the clipboard
+**Summary:** Backlog board cards now carry a quiet "Copy" button — supplied into the styleguide `TicketCard`'s `cornerAction` slot (design-system-006), where the dropped estimate chip used to sit — that writes the fully-qualified `/agentheim:modeling <id>` to the system clipboard; the backlog column's add-ticket `+` writes the bare `/agentheim:modeling`. The command string is a pure, unit-tested builder (`dashboard/app/modeling-command.js`) and the clipboard write degrades silently when the API is blocked/absent, so the board never crashes. No lifecycle write — clipboard side-effect only; board stays a projection of disk.
+**Verification:** PASS (iteration 1)
+**Commit:** (backfilled at session end)
+**Files changed:** 4 authored (modeling-command.js + its test, board.js, BC README) + derived dist bundle
+**Tests added:** dashboard/test/modeling-command.test.mjs — 6 cases (qualified+id; bare for no-id/undefined/null/empty; non-string → bare, never "[object Object]"; whitespace trim; all-whitespace → bare). Full dashboard suite 183/183 green; dist rebuilt and reproducible from source.
+**ADRs written:** none (consumes the ds-006 slot unforked under ADR-0003/0009; no new decision)
+
+---
+
+## 2026-06-09 11:14 -- Batch started: [agentic-workflow-016]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-016 - Backlog cards & the add-ticket button copy the matching /modeling command to the clipboard
+**Parallel:** no (1 worker — unblocked now that design-system-006 is done; agentic-workflow-017 held to next wave, conflicts on dashboard/app/board.js + the agentic-workflow README + the dist bundle)
+
+---
+
+## 2026-06-09 11:10 -- Task verified and completed: design-system-006 - TicketCard: optional corner action; hide the empty estimate chip
+
+**Type:** Work / Task completion
+**Task:** design-system-006 - TicketCard: optional corner action; hide the empty estimate chip
+**Summary:** The styleguide `TicketCard` now hides the `… pt` estimate chip when there's no real estimate (the em-dash `—` the dashboard projection feeds no longer shows as dead space; decision lives in the pure, React-free `showEstimate()` in the new `app/card.js`, mirroring `doingPulseClass`), and gained an optional bottom-right `cornerAction` render-prop — a click-isolated (stopPropagation) slot where the styleguide owns look/placement and the consumer owns behavior. Dashboard inherits both unforked (ADR-0003).
+**Verification:** PASS (iteration 1)
+**Commit:** 4588599
+**Files changed:** 6 (2 new styleguide source/test, kanban.js, canvas app.js, BC README, derived dist bundle)
+**Tests added:** styleguide/test/ticket-card.test.mjs — showEstimate truth table (real value incl "?" → show; —/empty/whitespace/null/undefined → hide) + source-guard asserts (est chip gated by showEstimate; cornerAction accepted; click stops propagation). Dashboard suite 177/177 green; dist reproducible from source via build.mjs.
+**ADRs written:** none (extends ADR-0003's unforked-consumption seam; no new decision)
+**Unblocks:** agentic-workflow-016 (its dependency on design-system-006 is now satisfied)
 
 ---
 

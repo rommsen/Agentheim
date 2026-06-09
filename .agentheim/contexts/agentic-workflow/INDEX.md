@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 15
+- **Done:** 16
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-017** — Wire the styleguide light/dark theme toggle into the dashboard — `todo/agentic-workflow-017-dashboard-theme-toggle.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -26,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-016** — Backlog cards & the add-ticket button copy the matching /modeling command to the clipboard — `done/agentic-workflow-016-backlog-copy-modeling-command.md`
 - **agentic-workflow-015** — Show the project name next to "Agentheim" in the dashboard header — `done/agentic-workflow-015-header-show-project-name.md`
 - **agentic-workflow-014** — Group Kanban board columns by bounded context (collapsible) — `done/agentic-workflow-014-board-group-by-bounded-context.md`
 - **agentic-workflow-012** — Add sorting options to Kanban board columns — `done/agentic-workflow-012-board-column-sorting.md`

@@ -132,6 +132,22 @@ separate BC, but today the whole tool lives in this one.
   truth — which task is in which column stays a pure projection of disk (`/api/tree`), re-fetched on
   every SSE frame. A stale-version / malformed / absent blob degrades to "every column defaults" rather
   than throwing — a corrupt preference can never blank the board. See ADR-0015, ADR-0001.
+- **Copy modeling command (backlog refine affordance)** -- a backlog ticket's next action is to
+  **refine** it by running `/agentheim:modeling <id>` in the Claude Code terminal (the fully-qualified
+  command, not the bare `/modeling` alias). The board surfaces this (agentic-workflow-016) as a one-click
+  copy-to-clipboard: each **backlog** card carries a small **Copy** button supplied *into* the styleguide
+  `TicketCard`'s `cornerAction` slot (design-system-006) -- the card's bottom-right meta slot where the
+  now-dropped `... pt` estimate chip used to sit -- writing exactly `/agentheim:modeling <id>`; the
+  backlog column's add-ticket **`+`** (the styleguide `ColumnHeader` `onAdd`) writes the **bare**
+  `/agentheim:modeling`. Other columns get no corner action. The slot is click-isolated by the styleguide,
+  so copying never opens the slide-over. The command **string** is a **pure** function of the id --
+  `dashboard/app/modeling-command.js` (`modelingCommandFor`, `MODELING_COMMAND`, unit-tested under
+  `node --test`); a missing/non-string id degrades to the bare command (never `[object Object]`, never a
+  throw). The clipboard write uses `navigator.clipboard.writeText` with a graceful, no-throw fallback --
+  a blocked/absent clipboard API simply skips the transient "Copied" feedback, it never crashes or
+  surfaces an error. This is a clipboard side-effect only: it adds **no** lifecycle write, the board stays
+  a projection of disk. "Copy into memory" here means the **system clipboard** (for Ctrl+V), not
+  Agentheim's `.agentheim/` memory. See ADR-0003, ADR-0009.
 - **Live-update (SSE consumer)** — the board keeps itself current (agentic-workflow-009) by
   subscribing to `GET /api/events` (the SSE transport, infrastructure-003 / ADR-0006) via the
   framework-free `dashboard/app/live-update.js` (`createLiveUpdate`). On every `tree-changed`

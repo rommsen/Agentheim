@@ -42,6 +42,7 @@ import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
+import { modelingCommandFor } from "./modeling-command.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
 import { SlideOver } from "./slide-over.js";
@@ -170,6 +171,73 @@ function ColumnControls({ status, sort, onSortChange, grouped, onGroupToggle }) 
     </div>`;
 }
 
+// Write `text` to the system clipboard with a graceful, no-throw fallback. The
+// board's copy affordance is a convenience — a blocked/absent clipboard API (no
+// secure context, denied permission, an old browser) must NEVER crash the board
+// or surface an error (aw-016 AC). Returns a Promise<boolean> that resolves to
+// whether the write succeeded; the caller only uses it for the transient
+// "copied" feedback, so a false (or a rejection swallowed here) just means no
+// feedback flashes — never a thrown error.
+function copyToClipboard(text) {
+  try {
+    const clip = typeof navigator !== "undefined" ? navigator.clipboard : null;
+    if (clip && typeof clip.writeText === "function") {
+      return clip.writeText(text).then(() => true, () => false);
+    }
+  } catch {
+    // navigator access itself threw (exotic sandbox) — fall through.
+  }
+  return Promise.resolve(false);
+}
+
+// The backlog-only copy affordance, supplied INTO the styleguide TicketCard via
+// its `cornerAction` render-prop (design-system-006) — it lands in the meta row's
+// bottom-right, where the (now-dropped) estimate chip used to sit. The styleguide
+// card already wraps cornerAction in a propagation-stopping container, so this
+// button's click never bubbles to the card's own onClick (the slide-over open) —
+// no extra isolation needed here. The dashboard does NOT fork the card (ADR-0003);
+// it only provides the control. Clicking it copies `command` to the clipboard and
+// flashes a quiet, transient "Copied" label swap (consistent with the styleguide's
+// quiet, token-styled affordances).
+function CopyCommandButton({ command, title }) {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
+  const onClick = useCallback((e) => {
+    // The styleguide isolates the slot, but also stop here so a future change to
+    // that wrapper can't re-open the card from this button.
+    if (e && typeof e.stopPropagation === "function") e.stopPropagation();
+    copyToClipboard(command).then((ok) => {
+      if (!ok) return; // clipboard blocked/absent — stay quiet, never error.
+      setCopied(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 1100);
+    });
+  }, [command]);
+
+  return html`
+    <button
+      type="button"
+      className="focusable"
+      title=${title || `Copy ${command}`}
+      aria-label=${title || `Copy ${command}`}
+      onClick=${onClick}
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 5,
+        fontFamily: "var(--font-ui)", fontSize: 10.5, fontWeight: 500,
+        color: copied ? "var(--st-done)" : "var(--fg-3)",
+        background: "transparent", border: "1px solid var(--hairline)",
+        borderRadius: "var(--radius-sm)", padding: "2px 7px", cursor: "pointer",
+        transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
+      }}
+      onMouseEnter=${(e) => { e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+      onMouseLeave=${(e) => { e.currentTarget.style.borderColor = "var(--hairline)"; }}>
+      <${Icon} name="copy" size=${12} color=${copied ? "var(--st-done)" : "var(--fg-3)"} />
+      <span>${copied ? "Copied" : "Copy"}</span>
+    </button>`;
+}
+
 // A board-local, collapsible per-BC section header. The styleguide's TreeGroup
 // collapsible primitive (design-system library.js) is coupled to TreeItem rows and
 // owns its own open state — it does not fit a board section that renders draggable
@@ -209,13 +277,25 @@ function BCSectionHeader({ bc, count, collapsed, onToggle }) {
 // One draggable TicketCard. Factored out so the flat list and the grouped
 // sections render cards identically (same drag source, same selection ring).
 function DraggableCard({ ticket, status, selectedId, onOpen, onDragStart, onDragEnd }) {
+  // Backlog cards carry a copy affordance in the styleguide card's bottom-right
+  // cornerAction slot (design-system-006): copy `/agentheim:modeling <id>`, the
+  // command the builder runs next to refine this unrefined ticket (aw-016). Other
+  // columns pass no cornerAction, so their cards render the slot empty (and, since
+  // ds-006, no dead estimate chip either). The slot is click-isolated by the
+  // styleguide, so copying never opens the slide-over.
+  const cornerAction = status === "backlog"
+    ? () => html`<${CopyCommandButton}
+        command=${modelingCommandFor(ticket.id)}
+        title=${`Copy ${modelingCommandFor(ticket.id)}`} />`
+    : undefined;
   return html`
     <div key=${ticket.id} draggable=${true}
       onDragStart=${(e) => { e.dataTransfer.effectAllowed = "move"; onDragStart(ticket, status); }}
       onDragEnd=${onDragEnd}
       style=${{ cursor: "grab" }}>
       <${TicketCard} ticket=${ticket} variant="rail"
-        selected=${selectedId === ticket.id} onClick=${() => onOpen(ticket)} />
+        selected=${selectedId === ticket.id} onClick=${() => onOpen(ticket)}
+        cornerAction=${cornerAction} />
     </div>`;
 }
 
@@ -255,7 +335,8 @@ function DragColumn({
       background: isTarget && over ? "var(--accent-ochre-soft)" : "transparent",
       transition: "background var(--duration-fast) var(--ease-base)",
     }}>
-      <${ColumnHeader} status=${status} count=${tickets.length} onAdd=${() => {}} />
+      <${ColumnHeader} status=${status} count=${tickets.length}
+        onAdd=${status === "backlog" ? () => copyToClipboard(modelingCommandFor()) : () => {}} />
       <${ColumnControls} status=${status} sort=${sort} onSortChange=${onSortChange}
         grouped=${grouped} onGroupToggle=${onGroupToggle} />
       ${tickets.length === 0
