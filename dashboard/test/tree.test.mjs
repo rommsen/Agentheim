@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { buildTree, projectTask } from '../tree.mjs';
+import { buildTree, projectTask, parseProjectName } from '../tree.mjs';
 
 /**
  * Build a small but realistic .agentheim/ fixture:
@@ -16,7 +16,7 @@ function makeProject() {
   const base = mkdtempSync(path.join(tmpdir(), 'aw005-tree-'));
   const ah = path.join(base, '.agentheim');
   mkdirSync(ah);
-  writeFileSync(path.join(ah, 'vision.md'), '# Vision');
+  writeFileSync(path.join(ah, 'vision.md'), '# Vision: Acme Platform\n\nsome body');
   writeFileSync(path.join(ah, 'context-map.md'), '# Context map');
 
   const knowledge = path.join(ah, 'knowledge');
@@ -175,6 +175,57 @@ test('an unstattable task file projects mtimeMs: null without throwing (aw-013)'
     assert.equal(t.id, 'h-001-gone');
   } finally {
     rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('parseProjectName extracts the trimmed name after "# Vision:" (aw-015)', () => {
+  assert.equal(parseProjectName('# Vision: Acme Platform'), 'Acme Platform');
+});
+
+test('parseProjectName trims surrounding whitespace and ignores trailing content (aw-015)', () => {
+  assert.equal(
+    parseProjectName('   # Vision:   Acme Platform   \n\nintro paragraph\n## More'),
+    'Acme Platform'
+  );
+});
+
+test('parseProjectName returns null when there is no "# Vision:" heading (aw-015)', () => {
+  assert.equal(parseProjectName('# Some Other Heading\n\nbody'), null);
+  assert.equal(parseProjectName('Vision: not a heading'), null);
+  assert.equal(parseProjectName(''), null);
+  assert.equal(parseProjectName(null), null);
+});
+
+test('parseProjectName returns null when the heading has an empty name (aw-015)', () => {
+  assert.equal(parseProjectName('# Vision:'), null);
+  assert.equal(parseProjectName('# Vision:    '), null);
+});
+
+test('buildTree projects project.name from the vision.md "# Vision:" heading (aw-015)', () => {
+  const { base } = makeProject();
+  try {
+    const tree = buildTree(base);
+    assert.deepEqual(tree.project, { name: 'Acme Platform' });
+    // metadata only — no vision body crosses the boundary
+    assert.equal(JSON.stringify(tree.project).includes('some body'), false);
+  } finally {
+    rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('buildTree project.name is null when vision.md is missing or headingless (aw-015)', () => {
+  const base = mkdtempSync(path.join(tmpdir(), 'aw015-novis-'));
+  try {
+    mkdirSync(path.join(base, '.agentheim', 'contexts', 'beta', 'todo'), { recursive: true });
+    // no vision.md at all
+    let tree = buildTree(base);
+    assert.deepEqual(tree.project, { name: null });
+    // vision.md present but without a "# Vision:" heading
+    writeFileSync(path.join(base, '.agentheim', 'vision.md'), '# Goals\n\nno vision heading');
+    tree = buildTree(base);
+    assert.deepEqual(tree.project, { name: null });
+  } finally {
+    rmSync(base, { recursive: true, force: true });
   }
 });
 

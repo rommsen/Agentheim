@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 14
+- **Done:** 15
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-015** — Show the project name next to "Agentheim" in the dashboard header — `todo/agentic-workflow-015-header-show-project-name.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-015** — Show the project name next to "Agentheim" in the dashboard header — `done/agentic-workflow-015-header-show-project-name.md`
 - **agentic-workflow-014** — Group Kanban board columns by bounded context (collapsible) — `done/agentic-workflow-014-board-group-by-bounded-context.md`
 - **agentic-workflow-012** — Add sorting options to Kanban board columns — `done/agentic-workflow-012-board-column-sorting.md`
 - **agentic-workflow-013** — Carry task file modification time (mtimeMs) in the /api/tree projection — `done/agentic-workflow-013-tree-projection-mtime.md`

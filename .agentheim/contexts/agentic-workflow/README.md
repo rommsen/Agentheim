@@ -62,7 +62,12 @@ separate BC, but today the whole tool lives in this one.
   per BC, its four lifecycle folders and each task's frontmatter projection
   (`id, title, status, type, context, path`) plus the *locations* of vision / context-map / BC
   READMEs+INDEXes+concepts / ADRs / research — pointers and metadata only, never document
-  bodies. A task whose `status`/`context` frontmatter is missing falls back to its folder / BC
+  bodies. It also carries `project: { name }` — the project name parsed server-side from
+  `vision.md`'s `# Vision: <name>` heading (aw-015), so the dashboard header can show which
+  project's `.agentheim/` is being viewed; missing/headingless vision degrades to `null`. This
+  is the one projection value drawn from a markdown *body* rather than frontmatter, kept to a
+  single trimmed string so the pointers-and-metadata-only contract still holds. A task whose
+  `status`/`context` frontmatter is missing falls back to its folder / BC
   name (disk is the source of truth), and malformed frontmatter degrades gracefully — the card
   is still listed, the walk never aborts. Document bodies are carried separately by
   `GET /api/doc?path=<in-root path>`, a validated raw-markdown carrier (rendering is

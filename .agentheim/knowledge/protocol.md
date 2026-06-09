@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 -- Task verified and completed: agentic-workflow-015 - Show the project name next to "Agentheim" in the dashboard header
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-015 - Show the project name next to "Agentheim" in the dashboard header
+**Summary:** The `/api/tree` projection now carries a derived `project: { name }` parsed server-side from `vision.md`'s `# Vision: <name>` heading (the first projection value drawn from a markdown body — kept to one trimmed string, body-free ADR-0002 contract intact, mirroring aw-013's `mtimeMs`); `ShellRail` renders `Agentheim · <name>` in muted tokens, degrading to "Agentheim" alone when the vision is missing/headingless.
+**Verification:** PASS (iteration 1)
+**Commit:** <pending>
+**Files changed:** 3 dashboard source/test + derived dist bundle + BC README
+**Tests added:** dashboard/test/tree.test.mjs — `parseProjectName` (heading present / absent / empty-after-colon / whitespace+trailing) + `buildTree` project.name populated and null, asserting the vision body never leaks. Full dashboard suite 177/177 green.
+**ADRs written:** none (additive metadata field within ADR-0002's pointers+metadata contract, consistent with the aw-013 precedent)
+
+---
+
+## 2026-06-09 -- Batch started: [agentic-workflow-015]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-015 - Show the project name next to "Agentheim" in the dashboard header
+**Parallel:** no (1 worker — sole ready task; unblocked now that aw-014 freed dashboard/app/board.js)
+
+---
+
 ## 2026-06-09 -- Task verified and completed: agentic-workflow-014 - Group Kanban board columns by bounded context (collapsible)
 
 **Type:** Work / Task completion

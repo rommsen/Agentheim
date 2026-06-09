@@ -453,7 +453,7 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
 // The shell's surface switch — Board (aw-006) vs Library (aw-008). Built from the
 // approved styleguide RailItem (ADR-0003), the same primary-nav pattern the
 // styleguide demo uses for exactly this toggle. No new pattern.
-function ShellRail({ view, onView }) {
+function ShellRail({ view, onView, projectName }) {
   return html`
     <header style=${{
       display: "flex", alignItems: "center", gap: 14,
@@ -462,9 +462,14 @@ function ShellRail({ view, onView }) {
       <div style=${{ display: "flex", alignItems: "center", gap: 9 }}>
         <${Glyph} size=${22} />
         <span style=${{
-          fontFamily: "var(--font-ui)", fontSize: 15, fontWeight: 600,
-          letterSpacing: "-0.01em", color: "var(--fg-1)",
-        }}>Agentheim</span>
+          display: "flex", alignItems: "baseline", gap: 7,
+          fontFamily: "var(--font-ui)", letterSpacing: "-0.01em",
+        }}>
+          <span style=${{ fontSize: 15, fontWeight: 600, color: "var(--fg-1)" }}>Agentheim</span>
+          ${projectName ? html`
+            <span aria-hidden="true" style=${{ color: "var(--fg-4)", fontSize: 13 }}>·</span>
+            <span style=${{ fontSize: 13.5, fontWeight: 500, color: "var(--fg-3)" }}>${projectName}</span>` : null}
+        </span>
       </div>
       <span style=${{ width: 1, height: 18, background: "var(--hairline-strong)" }} />
       <div style=${{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -497,6 +502,21 @@ export function DashboardApp() {
   // Which surface is shown — the task board or the non-task library/discovery.
   const [view, setView] = useState("board"); // board | library
 
+  // Project name for the header (aw-015) — disambiguates WHICH project's
+  // .agentheim is being viewed (Agentheim is installed across many repos). It
+  // rides the existing /api/tree projection (project.name, parsed server-side
+  // from vision.md's `# Vision:` heading). The vision name is static within a
+  // session, so a one-time read on mount suffices — no SSE re-read needed.
+  const [projectName, setProjectName] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/tree")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((tree) => { if (alive && tree && tree.project) setProjectName(tree.project.name); })
+      .catch(() => {}); // header name is non-essential; failure leaves "Agentheim" alone
+    return () => { alive = false; };
+  }, []);
+
   // The clicked task/artifact, or null when the slide-over is closed. Either
   // surface emits the open-intent on click; the slide-over consumes it, fetches
   // the doc, and renders it.
@@ -510,7 +530,7 @@ export function DashboardApp() {
   return html`
     <${ThemeCtx.Provider} value=${theme}>
       <main style=${{ maxWidth: 1160, margin: "0 auto", padding: "28px 28px 56px" }}>
-        <${ShellRail} view=${view} onView=${setView} />
+        <${ShellRail} view=${view} onView=${setView} projectName=${projectName} />
         ${view === "library"
           ? html`<${DashboardLibrary} onOpen=${onOpen} />`
           : html`<${DashboardBoard} onOpen=${onOpen} />`}

@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-015
 title: Show the project name next to "Agentheim" in the dashboard header
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-08
-completed:
+completed: 2026-06-09
 commit:
 depends_on: [design-system-001]
 blocks: []
@@ -75,5 +75,27 @@ trimmed string and not start shipping body content through the projection.
   derived metadata field. ADR-0002 holds the projection's transport-vs-body contract.
 - **Styleguide gate:** frontend task → `depends_on: [design-system-001]` (approved/done,
   so the gate is satisfied).
+
+## Outcome
+Extended the `/api/tree` projection with a derived `project: { name }` metadata field,
+parsed server-side from `vision.md`'s `# Vision: <name>` heading via a new
+`parseProjectName(text)` export in `dashboard/tree.mjs`. Missing/headingless/empty heading
+degrades to `null` and never aborts the walk — mirroring the malformed-frontmatter and
+aw-013 `mtimeMs` graceful-degradation posture. It is exactly one trimmed string, so ADR-0002's
+"pointers + metadata only, never document bodies" contract still holds (the first projection
+value drawn from a markdown body rather than frontmatter). No ADR/addendum (additive,
+backward-compatible, consistent with the aw-013 precedent).
+
+The dashboard header now renders `Agentheim · <name>` in `ShellRail` (`dashboard/app/board.js`):
+the name in muted, slightly smaller text (`--fg-3`, 13.5px) on the same baseline with a
+`--fg-4` separator dot, using existing design-system tokens — no new styleguide component. When
+`project.name` is `null`/absent the header shows only "Agentheim", with no separator and no
+trailing gap. `DashboardApp` sources the name via a one-time `/api/tree` read on mount (the
+vision name is static within a session) and passes it down to `ShellRail`.
+
+Key files: `dashboard/tree.mjs` (parse + projection), `dashboard/app/board.js`
+(`ShellRail`/`DashboardApp` header), `dashboard/test/tree.test.mjs` (parse + projection cases),
+`dashboard/dist/` (rebuilt bundle). Full suite green (177 tests). BC README's Tree-projection
+entry documents the new field.
 </content>
 </invoke>

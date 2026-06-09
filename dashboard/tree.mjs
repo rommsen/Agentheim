@@ -80,6 +80,27 @@ export function parseFrontmatter(text) {
 }
 
 /**
+ * Extract the project name from the body of `vision.md`: the trimmed text that
+ * follows the `# Vision:` heading (aw-015). This is the FIRST projection value
+ * drawn from a markdown BODY rather than frontmatter — it stays EXACTLY ONE
+ * trimmed string (a derived metadata field, not a document body), so ADR-0002's
+ * "pointers + metadata only, never document bodies" contract still holds, the
+ * same way aw-013's `mtimeMs` does. Missing/headingless/empty → null (loss
+ * tolerant, mirroring the malformed-frontmatter posture: never abort the walk).
+ */
+export function parseProjectName(text) {
+  const src = String(text ?? '');
+  for (const raw of src.split(/\r?\n/)) {
+    const m = raw.match(/^\s*#\s*Vision:\s*(.*?)\s*$/);
+    if (m) {
+      const name = m[1].trim();
+      return name.length ? name : null;
+    }
+  }
+  return null;
+}
+
+/**
  * Project a single task file into the tree shape. Never throws: an unreadable or
  * frontmatter-less file still produces a card with a filename-derived id so the
  * board can show it. No document body is ever included.
@@ -168,8 +189,22 @@ export function buildTree(root) {
     projectContext(absRoot, path.join(contextsDir, name), name)
   );
 
+  // Derived project METADATA: the project name from vision.md's `# Vision:`
+  // heading (aw-015). Disambiguates WHICH project's .agentheim the dashboard
+  // header is showing (Agentheim is installed across many repos). One trimmed
+  // string, never the vision body — still pointers+metadata only (ADR-0002).
+  let projectName = null;
+  if (existsSync(visionPath)) {
+    try {
+      projectName = parseProjectName(readFileSync(visionPath, 'utf8'));
+    } catch {
+      projectName = null;
+    }
+  }
+
   return {
     root: absRoot,
+    project: { name: projectName },
     locations: {
       vision: existsSync(visionPath) ? relPointer(absRoot, visionPath) : null,
       contextMap: existsSync(contextMapPath) ? relPointer(absRoot, contextMapPath) : null,
