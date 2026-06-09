@@ -16,7 +16,7 @@ import { ColumnHeader, TicketCard } from "./kanban.js";
 import { HeaderMinimal, HeaderContextual, describeItem } from "./drawer.js";
 import { TreeGroup } from "./library.js";
 import { Collapsible } from "./collapsible.js";
-import { Segmented, LiveApp } from "./live.js";
+import { Segmented, ThemeToggle, LiveApp } from "./live.js";
 import {
   ThemeCtx, Glyph, GuideSection, SubHead, DocCard, ColorSection,
 } from "./foundations.js";
@@ -64,7 +64,7 @@ function TopBar({ theme, setTheme }) {
       <span style=${{ fontFamily: "var(--font-ui)", fontSize: 13.5, color: "var(--fg-3)" }}>Design system</span>
       <div style=${{ flex: 1 }} />
       <span style=${{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)", padding: "3px 8px", border: "1px solid var(--hairline)", borderRadius: "var(--radius-sm)" }}>derived from Ledger</span>
-      <${Segmented} value=${theme} onChange=${setTheme} options=${[
+      <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
         { value: "dark", label: "Dark", icon: "moon" },
         { value: "light", label: "Light", icon: "sun" },
       ]} />

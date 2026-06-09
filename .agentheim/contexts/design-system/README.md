@@ -169,6 +169,47 @@ The canvas documents the pattern in BOTH modes (section 09, `CollapsibleSpecimen
 > Live-board note: same as Motion — the served dashboard `dist/` is a derived
 > artifact (ADR-0003) and was **rebuilt** (`node build.mjs`) to pick up this change.
 
+### ThemeToggle — the swatched theme control (design-system-007, ADR-0016)
+
+The Dark/Light theme control is a **dedicated `ThemeToggle`** (`app/live.js`,
+alongside the generic `Segmented`), not `Segmented` itself. `Segmented` fills the
+**selected** option with `--surface-inverse` — a token that **flips under
+`[data-theme]`** — which read *backwards* for a theme toggle (in dark mode the
+selected "Dark" button went bright). Two rules fix it (ADR-0016):
+
+- **Fixed, non-theming swatch tokens.** Each button **previews** the theme it
+  switches to via two `:root` tokens that are **deliberately NOT redefined under
+  `.dark` / `[data-theme="dark"]`**: `--swatch-light` (`#FAF8F4`) and
+  `--swatch-dark` (`#0F1115`), plus fixed on-swatch foregrounds
+  (`--swatch-light-fg`, `--swatch-dark-fg`) so the label + moon/sun icon stay
+  legible on each swatch in **both** themes. The "Dark" button is always dark and
+  the "Light" button always light, in either theme. These are the system's first
+  **frozen** (theme-independent) tokens — the precedent: a control that *previews*
+  a mode paints from frozen tokens, never the live surface tokens.
+- **Selection by de-emphasis, never accent.** The selected option is at full
+  strength; the unselected one is **dimmed** (opacity). No ring, no ochre, no new
+  hue — keeping the accent reserved for status / focus (ADR-0014) and "color =
+  status / content-type only" intact.
+
+`Segmented` is **unchanged** — its inverse-fill selection still serves the
+card-variant, drawer-header, and dashboard Board↔Library switchers (those are mode
+switches, not theme previews, and read correctly inverse-filled). Both consumers
+swap unforked (ADR-0003): the styleguide `TopBar` and the dashboard `ShellRail`
+header — same `value` / `onChange` / `options` contract, same persistence
+(`dashboard/app/theme-state.js`, agentic-workflow-017); only the control's look
+changed.
+
+> **Gate status after the ThemeToggle redesign (`design-system-007`): part of the
+> pending re-review.** This adds a visible change — the theme control in the
+> styleguide `TopBar` (every page) now wears the swatched look (each button its own
+> theme, the inactive one dimmed) instead of the inverse-filled `Segmented`. It
+> rides the same re-review already open from `design-system-005`. The live control
+> in the canvas header is the specimen to review.
+
+> Live-board note: same as Motion — the served dashboard `dist/` is a derived
+> artifact (ADR-0003) and was **rebuilt** (`node build.mjs`) to pick up the new
+> control + swatch tokens.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.

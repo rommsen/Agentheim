@@ -46,6 +46,19 @@
   --hairline: #E5E1D8;           /* default 1px borders */
   --hairline-strong: #D4CFC2;    /* table headers, dividers w/ weight */
 
+  /* ---------- Color: theme-preview swatches (FIXED — never flip, ADR-0016) ----------
+     The ThemeToggle's two buttons each PREVIEW the theme they switch to, so their
+     backgrounds must stay constant regardless of the active [data-theme]. These are
+     deliberately NOT redefined under .dark / [data-theme="dark"] — that is the whole
+     point. They mirror the light/dark --surface-0 values, frozen. The on-swatch
+     foreground colors are likewise fixed so labels + moon/sun icons stay legible on
+     each swatch in BOTH themes. Selection is signalled by de-emphasis, never accent
+     (ochre stays status/focus-only, ADR-0014). */
+  --swatch-light: #FAF8F4;       /* light theme preview bg (frozen light --surface-0) */
+  --swatch-dark: #0F1115;        /* dark theme preview bg (frozen dark --surface-0) */
+  --swatch-light-fg: #1A1A1F;    /* on the light swatch — dark text/icon */
+  --swatch-dark-fg: #E8E8EC;     /* on the dark swatch — light text/icon */
+
   /* ---------- Color: accent (reserved) ---------- */
   --accent-ochre: #B8741A;       /* zero-money day ONLY */
   --accent-ochre-soft: #E8C896;  /* accent fill background */

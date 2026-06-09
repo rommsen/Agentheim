@@ -5,6 +5,42 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 12:58 -- Task verified and completed: design-system-007 - Theme toggle buttons swatch their own theme
+
+**Type:** Work / Task completion
+**Task:** design-system-007 - Theme toggle buttons swatch their own theme (Dark = dark bg, Light = light bg)
+**Summary:** Replaced the backwards-reading `Segmented` theme control with a dedicated `ThemeToggle` whose two buttons each preview their own theme via fixed, non-flipping `:root` swatch tokens (`--swatch-light`/`--swatch-dark` + fixed on-swatch fg, NOT redefined under `[data-theme]`), signalling the selected theme by de-emphasis (dimming the unselected) rather than the reserved accent. Swapped unforked into BOTH the styleguide `TopBar` and the dashboard `ShellRail`; `Segmented` and the existing theme persistence (`theme-state.js`) are untouched.
+**Verification:** PASS (iteration 1)
+**Commit:** <pending>
+**Files changed:** 7 authored (colors_and_type.css, live.js, app.js, dashboard/app/board.js, README, ADR-0016) + styleguide/test/theme-toggle.test.mjs + derived dist (app.js, colors_and_type.css)
+**Tests added:** styleguide test/theme-toggle.test.mjs (8 cases: swatch-per-theme non-flip, fixed on-swatch fg, de-emphasis selection / no accent, Segmented unchanged source-guard, TopBar uses ThemeToggle) — styleguide 23/23, dashboard 196/196 green; dist reproducible (identical sha1 on rebuild).
+**ADRs written:** ADR-0016 — Theme-preview swatches use fixed (non-theming) tokens; selection by de-emphasis, never the reserved accent (scope: design-system; bidirectional link to design-system-007).
+**Gate:** styleguide gate remains REOPENED (from ds-005); the ThemeToggle look is folded into the same pending builder re-review (the TopBar theme control now wears the swatched look on every page).
+
+---
+
+## 2026-06-09 12:52 -- Batch started: [design-system-007]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-007 - Theme toggle buttons swatch their own theme (Dark = dark bg, Light = light bg)
+**Parallel:** no (1 worker — sole remaining ready task; was held wave 1 for conflicting with ds-005 on dashboard/app/board.js, the dashboard dist bundle, and the design-system BC README; now unblocked)
+
+---
+
+## 2026-06-09 12:50 -- Task verified and completed: design-system-005 - Shared collapsible-section primitive (decoupled from TreeItem) for board + library
+
+**Type:** Work / Task completion
+**Task:** design-system-005 - Shared collapsible-section primitive (decoupled from TreeItem) for board + library
+**Summary:** Extracted a single shared `Collapsible` styleguide primitive (canonical chevron header + revealed body, controlled-or-uncontrolled, body-agnostic via a `bodyStyle` override) consumed unforked by both the library `TreeGroup` (uncontrolled, `defaultOpen`) and the dashboard board's per-BC section (controlled via persisted view-state, ADR-0015). The board-local `BCSectionHeader` clone is retired; the unified header reopens the styleguide gate pending builder re-review.
+**Verification:** PASS (iteration 1)
+**Commit:** fbfba13
+**Files changed:** 7 authored (collapsible.js, collapsible-state.js, library.js, app.js, collapsible.test.mjs, dashboard/app/board.js, design-system README) + derived dist bundle
+**Tests added:** styleguide test/collapsible.test.mjs (5 cases: owns reveal, controlled/uncontrolled toggle semantics, TreeGroup composition, board composition + BCSectionHeader deletion source-guard, pure isControlled) — styleguide 15/15, dashboard 196/196 green; dist reproducible from `node build.mjs`.
+**ADRs written:** none (governed by ADR-0003 unforked single-source, ADR-0005 htm, ADR-0015 board controlled collapse)
+**Gate:** styleguide gate REOPENED — TreeGroup's header changed visually (count right-aligned, label truncates); awaiting builder re-review (canvas section 09). Surfaced to user.
+
+---
+
 ## 2026-06-09 12:40 -- Batch started: [design-system-005]
 
 **Type:** Work / Batch start

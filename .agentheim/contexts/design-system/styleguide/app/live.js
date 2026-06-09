@@ -33,6 +33,49 @@ export function Segmented({ options, value, onChange }) {
     </div>`;
 }
 
+// ---- Theme toggle (dedicated; design-system-007, ADR-0016) ----
+// Unlike the generic `Segmented` — which fills the SELECTED option with the
+// flipping `--surface-inverse` and so reads BACKWARDS for a Dark/Light control —
+// each ThemeToggle button PREVIEWS the theme it switches to via FIXED swatch
+// tokens (`--swatch-dark` / `--swatch-light`) that never flip with `[data-theme]`.
+// Selection is signalled by DE-EMPHASIS: the active option sits at full strength,
+// the other is dimmed (opacity). No accent, no ochre, no ring — color stays
+// reserved for status / content-type (ADR-0014). Fixed on-swatch foreground
+// tokens keep the labels + moon/sun icons legible on each swatch in BOTH themes.
+// Drop-in compatible with Segmented's theme usage: same `value` / `onChange` /
+// `options` ({ value, label, icon }) contract.
+export function ThemeToggle({ value, onChange, options }) {
+  // Per-theme fixed swatch palette, keyed by option value. Light bg -> dark fg,
+  // dark bg -> light fg; both frozen so they don't track the active theme.
+  const SWATCH = {
+    light: { bg: "var(--swatch-light)", fg: "var(--swatch-light-fg)" },
+    dark: { bg: "var(--swatch-dark)", fg: "var(--swatch-dark-fg)" },
+  };
+  return html`
+    <div role="group" aria-label="Theme" style=${{ display: "inline-flex", padding: 2, gap: 2, background: "var(--surface-1)", border: "1px solid var(--hairline)", borderRadius: "var(--radius-sm)" }}>
+      ${options.map((o) => {
+        const active = o.value === value;
+        const sw = SWATCH[o.value] || SWATCH.dark;
+        return html`
+          <button key=${o.value} className="focusable" type="button"
+            aria-pressed=${active} title=${o.label}
+            onClick=${() => onChange(o.value)} style=${{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "5px 11px", border: "none", borderRadius: 3, cursor: "pointer",
+            background: sw.bg, color: sw.fg,
+            // De-emphasis, NOT accent: the unselected option dims; the selected
+            // one stands at full strength. Quiet-motion law — transition only.
+            opacity: active ? 1 : 0.42,
+            fontFamily: "var(--font-ui)", fontSize: 12, fontWeight: 500,
+            transition: "opacity var(--duration-fast) var(--ease-base)",
+          }}>
+            ${o.icon && html`<${Icon} name=${o.icon} size=${13} />`}
+            ${o.label}
+          </button>`;
+      })}
+    </div>`;
+}
+
 // ---- The board's own topbar (inside the demo frame) ----
 export function BoardTopbar({ view }) {
   return html`

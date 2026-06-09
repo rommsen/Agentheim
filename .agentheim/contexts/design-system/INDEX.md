@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 6
+- **Done:** 7
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **design-system-007** — Theme toggle buttons swatch their own theme (Dark = dark bg, Light = light bg) — `todo/design-system-007-theme-toggle-swatch-buttons.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **design-system-007** — Theme toggle buttons swatch their own theme (Dark = dark bg, Light = light bg) — `done/design-system-007-theme-toggle-swatch-buttons.md`
 - **design-system-005** — Shared collapsible-section primitive (decoupled from TreeItem) for board + library — `done/design-system-005-shared-collapsible-section.md`
 - **design-system-006** — TicketCard: optional corner action; hide the empty estimate chip — `done/design-system-006-ticket-card-corner-action.md`
 - **design-system-004** — Animated "actively working" treatment for doing-column tickets — `done/design-system-004-doing-column-active-animation.md`
@@ -42,6 +42,7 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0016** — Theme-preview swatches use fixed (non-theming) tokens; selection by de-emphasis, never the reserved accent (accepted) — `../../knowledge/decisions/0016-theme-preview-swatches-fixed-tokens-deemphasis-selection.md`
 - **ADR-0003** — Styleguide as ES-module single source — buildless canvas, esbuild-bundled dashboard (proposed) — `../../knowledge/decisions/0003-styleguide-esm-single-source.md`
 - **ADR-0005** — Styleguide views authored with htm tagged templates (buildless, no JSX runtime compile) (accepted) — `../../knowledge/decisions/0005-styleguide-htm-buildless-viewfactory.md`
 - **ADR-0008** — Vendored webfonts — latin-subset woff2, `fonts/` beside the token CSS (accepted) — `../../knowledge/decisions/0008-vendored-webfonts-latin-subset.md`

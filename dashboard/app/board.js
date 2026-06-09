@@ -40,7 +40,7 @@ import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/ico
 import { Glyph, ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
 import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
 import { Collapsible } from "../../.agentheim/contexts/design-system/styleguide/app/collapsible.js";
-import { Segmented } from "../../.agentheim/contexts/design-system/styleguide/app/live.js";
+import { ThemeToggle } from "../../.agentheim/contexts/design-system/styleguide/app/live.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
@@ -543,7 +543,7 @@ function ShellRail({ view, onView, projectName, theme, setTheme }) {
         </div>
       </div>
       <div style=${{ flex: 1 }} />
-      <${Segmented} value=${theme} onChange=${setTheme} options=${[
+      <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
         { value: "dark", label: "Dark", icon: "moon" },
         { value: "light", label: "Light", icon: "sun" },
       ]} />
