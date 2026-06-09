@@ -23,6 +23,21 @@ export const COLUMN_ORDER = ['backlog', 'todo', 'doing', 'done'];
 const COLUMN_SET = new Set(COLUMN_ORDER);
 
 /**
+ * Normalize any task status into one of the four canonical lifecycle values.
+ * Disk is the source of truth, but a hand-edited task file can carry a malformed
+ * status (e.g. a leaked frontmatter-template comment: `todo  # backlog | …`). The
+ * styleguide `TicketCard` indexes a fixed STATUSES registry by this value and
+ * reads `.color` off the result — an unrecognized key would be `undefined` and
+ * throw AT RENDER TIME, unmounting the whole React root (a blank board). So the
+ * board never lets a non-canonical status reach the card: an unknown status is
+ * bucketed into `backlog`, matching where `columnFor` places the same task. One
+ * bad task file can no longer crash the board.
+ */
+function normalizeStatus(status) {
+  return typeof status === 'string' && COLUMN_SET.has(status) ? status : 'backlog';
+}
+
+/**
  * Map one /api/tree task into the object the styleguide `TicketCard` reads.
  * The tree projection carries { id, title, status, type, context, path }; the
  * card additionally renders `est` and `updated` meta and an `agent` flag. The
@@ -37,7 +52,9 @@ export function treeTicket(task) {
   return {
     id: t.id ?? '',
     title: t.title ?? '',
-    status: t.status ?? '',
+    // Always one of the four canonical statuses — never the raw disk value, which
+    // the card would index into STATUSES and crash on if malformed (normalizeStatus).
+    status: normalizeStatus(t.status),
     type: t.type ?? '',
     context: t.context ?? '',
     path: t.path ?? '',
@@ -55,10 +72,11 @@ export function treeTicket(task) {
 
 /** Which lifecycle column a task belongs to — by status, falling back safely. */
 function columnFor(task) {
-  const status = task && typeof task.status === 'string' ? task.status : '';
-  // Disk is the source of truth; status drives placement. An unrecognized status
-  // is bucketed into backlog so a malformed/odd task is still shown, never lost.
-  return COLUMN_SET.has(status) ? status : 'backlog';
+  // Disk is the source of truth; status drives placement. Shares normalizeStatus
+  // with treeTicket so a card's status and its column can never disagree: an
+  // unrecognized status is bucketed into backlog so a malformed task is still
+  // shown, never lost.
+  return normalizeStatus(task && task.status);
 }
 
 /**

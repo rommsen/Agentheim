@@ -113,6 +113,24 @@ test('treeTicket maps a tree task into the TicketCard shape the styleguide expec
   assert.notEqual(t.updated, undefined);
 });
 
+test('treeTicket normalizes a malformed status so it can never crash the card', () => {
+  // Regression: a hand-edited task file leaked its frontmatter-template comment
+  // into the status (`todo  # backlog | todo | doing | done`). The styleguide
+  // TicketCard indexes STATUSES[status] and reads .color off it — an unknown key
+  // is undefined and throws AT RENDER TIME, unmounting the whole board (blank
+  // page). treeTicket must hand the card a canonical status, never the raw value.
+  const leaked = treeTicket({
+    id: 'aw-014', title: 'malformed', status: 'todo                # backlog | todo | doing | done',
+  });
+  assert.equal(leaked.status, 'backlog'); // unknown → bucketed, matches its column
+  assert.ok(COLUMN_ORDER.includes(leaked.status), 'status is always one of the four columns');
+
+  // A well-formed status still passes through untouched.
+  assert.equal(treeTicket({ id: 'x', title: 'x', status: 'doing' }).status, 'doing');
+  // A missing/empty status also lands on a canonical value, never '' or undefined.
+  assert.ok(COLUMN_ORDER.includes(treeTicket({ id: 'x', title: 'x' }).status));
+});
+
 test('treeTicket carries mtimeMs through so the board-side sort can order by it (aw-012/aw-013)', () => {
   // The /api/tree projection carries each task's file modification time (aw-013);
   // the default board sort (modification date descending, aw-012) needs it on the

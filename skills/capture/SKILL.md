@@ -105,14 +105,14 @@ Files live at `contexts/<bc>/backlog/<id>-<slug>.md`. Same shape every other ski
 id: <bc-short>-<NNN>
 title: <short imperative title>
 status: backlog
-type: feature              # feature | bug | refactor | chore | spike | decision
+type: feature
 context: <bc>
 created: <YYYY-MM-DD>
 completed:
 commit:
 depends_on: []
 blocks: []
-tags: [captured]           # mark captured so refinement knows it's a raw dump
+tags: [captured]
 related_adrs: []
 related_research: []
 prior_art: []
@@ -131,6 +131,11 @@ prior_art: []
 Captured via `capture` on <date> — raw, unrefined. Needs a `modeling` refine pass before
 it can be promoted. <Any verbatim extra context the user gave that didn't fit above.>
 ```
+
+Keep the frontmatter values clean — **no inline `# …` comments**; the dashboard
+parses the whole line as the value. `type` is one of
+`feature | bug | refactor | chore | spike | decision`, and the `captured` tag
+marks the item a raw dump so `modeling`'s REFINE knows it still needs a pass.
 
 **Keep `related_adrs` / `related_research` / `prior_art` empty.** Capture deliberately
 skips the prior-art matcher — running it is a read-heavy step whose payoff is an

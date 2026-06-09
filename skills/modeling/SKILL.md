@@ -167,18 +167,18 @@ Files live as `contexts/<bc>/<status>/<id>-<slug>.md`. Example: `contexts/auth/b
 ---
 id: auth-003
 title: Password reset flow
-status: backlog              # backlog | todo | doing | done
-type: feature                # feature | bug | refactor | chore | spike | decision
+status: backlog
+type: feature
 context: auth
 created: 2026-04-24
-completed:                   # set by worker when done
-commit:                      # git SHA set by worker when done
-depends_on: []               # list of task ids
-blocks: []                   # populated automatically by worker / refine
+completed:
+commit:
+depends_on: []
+blocks: []
 tags: []
-related_adrs: []             # ADR ids (e.g., [0007]) — auto-populated by model at capture/refine; orchestrator appends ADRs it writes
-related_research: []         # research slugs (e.g., [auth-tokens-2026-04-24]) — auto-populated by model from research-index
-prior_art: []                # done task ids from same BC matching keyword/tags — auto-populated by model at capture
+related_adrs: []
+related_research: []
+prior_art: []
 ---
 
 ## Why
@@ -195,6 +195,19 @@ What the change is, in domain language.
 Open questions, links to ADRs, references to research reports,
 rough sketches — anything a worker or refiner would want.
 ```
+
+Keep the frontmatter values clean — **no inline `# …` comments**. They are
+trivial to leave in when filling the template, and the dashboard parses the whole
+line as the value (a leaked comment on `status` once blanked the board). The
+field legend lives here instead:
+
+- `status` — one of `backlog | todo | doing | done` (also the lifecycle folder).
+- `type` — one of `feature | bug | refactor | chore | spike | decision`.
+- `completed` / `commit` — left empty; the worker sets the date and git SHA when done.
+- `depends_on` — list of task ids this one waits on; `blocks` is populated automatically by worker / refine.
+- `related_adrs` — ADR ids (e.g. `[0007]`); auto-populated by model at capture/refine, orchestrator appends ADRs it writes.
+- `related_research` — research slugs (e.g. `[auth-tokens-2026-04-24]`); auto-populated by model from the research index.
+- `prior_art` — done task ids from the same BC matching keyword/tags; auto-populated by model at capture.
 
 ### ID convention
 
