@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 5
+- **Done:** 6
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **design-system-007** — Theme toggle buttons swatch their own theme (Dark = dark bg, Light = light bg) — `todo/design-system-007-theme-toggle-swatch-buttons.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -26,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **design-system-005** — Shared collapsible-section primitive (decoupled from TreeItem) for board + library — `done/design-system-005-shared-collapsible-section.md`
 - **design-system-006** — TicketCard: optional corner action; hide the empty estimate chip — `done/design-system-006-ticket-card-corner-action.md`
 - **design-system-004** — Animated "actively working" treatment for doing-column tickets — `done/design-system-004-doing-column-active-animation.md`
 - **design-system-003** — Vendor the dashboard's webfonts offline (local @font-face, drop the Google Fonts CDN @import) (chore) — `done/design-system-003-offline-webfonts.md`
@@ -35,7 +37,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **design-system-005** — Shared collapsible-section primitive (decoupled from TreeItem) for board + library — `backlog/design-system-005-shared-collapsible-section.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

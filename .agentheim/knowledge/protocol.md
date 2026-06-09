@@ -5,6 +5,61 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 12:40 -- Batch started: [design-system-005]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-005 - Shared collapsible-section primitive (decoupled from TreeItem) for board + library
+**Parallel:** no (1 worker — ds-007 held this wave; conflicts with ds-005 on dashboard/app/board.js, the dashboard dist bundle, and the design-system BC README)
+
+---
+
+## 2026-06-09 -- Modeling / Refined: design-system-007 - Theme toggle buttons swatch their own theme
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** todo (promoted from backlog)
+**Summary:** Cornered the three open forks with the builder and pinned the design. (1) **Swatch tokens** — the fixed swatch backgrounds can't reuse `--surface-0`/`--surface-inverse` (they flip under `[data-theme="dark"]`), so introduce two theme-independent tokens `--swatch-light: #FAF8F4` / `--swatch-dark: #0F1115` in `:root`, NOT redefined under `.dark`, with fixed on-swatch fg. (2) **Selected cue** — de-emphasize the unselected button (selected full strength, other dimmed); NO accent/ochre/ring, preserving the quiet-by-default + accent-reservation law (ochre stays status/focus-only per ADR-0014). (3) **Code seam** — a dedicated `ThemeToggle` component beside `Segmented` in `live.js`; the generic `Segmented` is left untouched so the card/header switchers and the dashboard Board/Library switcher can't regress. (4) **Task shape** — kept as a single design-system task: the dashboard `ShellRail` consumer swap in `board.js` (agentic-workflow) is mechanical propagation, not new behavior, so no separate aw ticket; flagged board.js as cross-BC in-scope for `work` conflict-avoidance. Rewrote What + 9 testable AC + Notes; promoted to todo (deps met, gate OPEN). An ADR recording the swatch-token + selection-by-de-emphasis precedent is deferred to work-time (worker allocates the number — concurrency-safe).
+**Split into:** none
+**ADRs written:** none (one deferred to work-time; see task Notes)
+
+---
+
+## 2026-06-09 -- Modeling / Captured: design-system-007 - Theme toggle buttons swatch their own theme
+
+**Type:** Modeling / Capture
+**BC:** design-system
+**Filed to:** backlog
+**Summary:** The Dark/Light theme toggle reads backwards — it uses the generic `Segmented` control (`live.js:15`), which fills the *selected* option with `--surface-inverse`, so in dark mode the selected "Dark" button goes bright and the unselected "Light" stays dark. Builder wants each button to swatch its own theme (Dark = dark bg, Light = light/bright bg) with a separate ring/border cue for selection. Routed to design-system (single-source styleguide per ADR-0003 feeds both its own TopBar and the dashboard ShellRail; the dashboard didn't need to exist for the bug to be true). Scoped to the theme toggle only — the same `Segmented` drives the styleguide card/header switchers and the dashboard Board/Library switcher, which must stay unchanged. Held in backlog (not todo) over a real design fork: fixed swatch values can't reuse the theme-flipping `--surface-0` tokens, and the selected-state cue needs a considered design answer. Frontend → depends_on [design-system-001] (gate OPEN); related_adrs [0003, 0005].
+
+---
+
+## 2026-06-09 11:45 -- Modeling / Refined: design-system-005 - Shared collapsible-section primitive (decoupled from TreeItem) for board + library
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** todo (promoted from backlog)
+**Summary:** Refined the shared-`Collapsible` extraction by cornering three API forks
+the original capture glossed over (the two existing headers — `TreeGroup` and the
+board's `BCSectionHeader` — are not pixel-identical today: count placement, label
+truncation, and padding all differ). Builder pinned: (1) **primitive owns show/hide +
+renders a styleable body** (`bodyStyle` override) so it holds the open truth and the
+`{open && body}` logic lives in one place — controlled (`open`+`onToggle`, board's
+persisted view-state ADR-0015) OR uncontrolled (`defaultOpen`, the `TreeGroup`
+behavior); (2) **unify to one canonical header look** (a small redesign, not pure
+dedup) — adopts the board's stronger treatment (label `flex:1`+ellipsis truncation,
+right-aligned count) at the tree's roomier `6px 8px` padding, so `TreeGroup`'s header
+shifts visually → **reopens the styleguide gate** for builder re-review (ds-002/003/004
+precedent); (3) name+home **`Collapsible` in new `styleguide/app/collapsible.js`**, imported
+by both `library.js` and the board. Rewrote What + 6 testable AC (incl. delete the
+board-local `BCSectionHeader`, document the pattern on the canvas in both modes, rebuild
+the derived `dist/`, and gate re-review). Added ADR-0015 to related_adrs. No split —
+cohesive one-commit extraction. Promoted to todo (decisions locked, AC concrete, gate
+currently OPEN so a frontend task may be promoted).
+**Split into:** none
+**ADRs written:** none (decisions captured in the task; ADR-0003/0005/0015 govern)
+
+---
+
 ## 2026-06-09 11:30 -- Work session ended
 
 **Type:** Work / Session end

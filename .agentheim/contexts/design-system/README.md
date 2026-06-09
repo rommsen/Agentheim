@@ -128,6 +128,47 @@ contracts:
 > Live-board note: same as Motion — the served dashboard `dist/` is a derived
 > artifact (ADR-0003) and must be **rebuilt** to pick up this styleguide change.
 
+### Collapsible — the shared section primitive (design-system-005)
+
+The chevron-header + revealed-body affordance is now a single shared primitive,
+`Collapsible` (`app/collapsible.js`), instead of two near-identical headers (the
+tree's `TreeGroup` and a board-local clone). Both consume it **unforked**
+(ADR-0003) — the styleguide owns the look, the consumer drives the state:
+
+- **One canonical header look** — chevron rotating to 90° when open, an
+  ellipsis-truncating uppercase `--font-ui` label that takes the row (`flex:1`),
+  and a right-aligned `--font-mono` count (or an arbitrary trailing slot). This
+  **unified** the two pre-existing headers (a small redesign, not pure dedup):
+  the tree's count moved to the right edge and its label gained truncation.
+- **Owns the reveal; body-agnostic.** The primitive holds the open truth and
+  conditionally renders the body it reveals — so the `{open && …}` logic lives in
+  ONE place. Children are arbitrary (`TreeItem` rows in the tree, draggable
+  `TicketCard`s on the board); each consumer passes its own spacing via a
+  **`bodyStyle`** override.
+- **Controlled OR uncontrolled.** Controlled when `open` + `onToggle` are
+  supplied — the board drives it from collapse state persisted per `(column, BC)`
+  (ADR-0015); the primitive writes no internal state, only announces every
+  toggle. Uncontrolled when `open` is omitted and `defaultOpen` is given — the
+  `TreeGroup` behavior, the primitive holds its own `useState`. The pure
+  resolution (`isControlled(open)`) lives React-free in `app/collapsible-state.js`
+  so it is testable under `node --test` (mirroring `showEstimate` / `doingPulseClass`).
+
+The canvas documents the pattern in BOTH modes (section 09, `CollapsibleSpecimen`).
+
+> **Gate status after the shared-Collapsible extraction (`design-system-005`):
+> REOPENED — pending builder re-review.** The unified header is a **visual change
+> to the library tree** (`TreeGroup`'s count moved to the right edge; its label now
+> truncates with an ellipsis), so the gate reopens for a fresh builder sign-off, per
+> the `design-system-002` / `003` / `004` precedent. The change is visible on the
+> canvas (`styleguide/index.html` → section 09 — the tree specimen now wears the
+> unified header, and the new Collapsible specimen shows both controlled and
+> uncontrolled modes). Until the builder re-confirms, treat the gate as **open against
+> the prior header** and this delta as awaiting review. The exact canonical look is
+> adjustable at that review.
+
+> Live-board note: same as Motion — the served dashboard `dist/` is a derived
+> artifact (ADR-0003) and was **rebuilt** (`node build.mjs`) to pick up this change.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.
@@ -138,4 +179,5 @@ contracts:
 ## Pointers
 
 - Styleguide artifact: `styleguide/index.html` (+ `styleguide/styles/`, `styleguide/app/*.js` ES modules; entry `app/app.js`)
+- Shared `Collapsible` primitive: `styleguide/app/collapsible.js` (+ React-free `collapsible-state.js`), consumed by `TreeGroup` and the dashboard board (design-system-005)
 - BC index: `INDEX.md`

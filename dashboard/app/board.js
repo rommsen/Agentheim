@@ -39,6 +39,7 @@ import { EmptyColumn } from "../../.agentheim/contexts/design-system/styleguide/
 import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/icons.js";
 import { Glyph, ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
 import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
+import { Collapsible } from "../../.agentheim/contexts/design-system/styleguide/app/collapsible.js";
 import { Segmented } from "../../.agentheim/contexts/design-system/styleguide/app/live.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
@@ -240,33 +241,12 @@ function CopyCommandButton({ command, title }) {
     </button>`;
 }
 
-// A board-local, collapsible per-BC section header. The styleguide's TreeGroup
-// collapsible primitive (design-system library.js) is coupled to TreeItem rows and
-// owns its own open state — it does not fit a board section that renders draggable
-// TicketCards with externally-PERSISTED collapse state. So this is a board-local
-// header matching the SAME styleguide tokens (chevron, uppercase label, mono
-// count) as TreeGroup, exactly as the sort <select> is a board-local control
-// (ADR-0003 precedent). A design-system capture is filed for the shared collapsible
-// primitive this reveals (design-system backlog).
-function BCSectionHeader({ bc, count, collapsed, onToggle }) {
-  return html`
-    <button className="focusable" onClick=${onToggle}
-      aria-expanded=${!collapsed}
-      style=${{
-        display: "flex", alignItems: "center", gap: 6, width: "100%",
-        padding: "5px 6px", border: "none", background: "transparent", cursor: "pointer",
-        textAlign: "left",
-      }}>
-      <${Icon} name="chevron-right" size=${13} color="var(--fg-3)"
-        style=${{ transform: collapsed ? "rotate(0deg)" : "rotate(90deg)", transition: "transform var(--duration-fast) var(--ease-base)" }} />
-      <span style=${{
-        flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-        fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 600,
-        letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--fg-3)",
-      }}>${bc}</span>
-      <span style=${{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--fg-4)" }}>${count}</span>
-    </button>`;
-}
+// The board's per-BC section now COMPOSES the shared styleguide Collapsible
+// primitive (design-system-005), CONTROLLED: the board owns each (column, BC)
+// collapse state in its persisted view-state store (ADR-0015), so it supplies
+// `open` + `onToggle` and the primitive writes no internal state of its own. The
+// former board-local section header (a token-matched clone) is retired — the
+// header look now lives once, in the styleguide, consumed unforked (ADR-0003).
 
 // A drop-target lifecycle column that COMPOSES the approved styleguide
 // sub-components (ColumnHeader, TicketCard, EmptyColumn) exactly as the styleguide
@@ -347,14 +327,11 @@ function DragColumn({
           ? html`
             <div style=${{ display: "flex", flexDirection: "column", gap: 6, paddingBottom: 8 }}>
               ${sections.map((sec) => html`
-                <div key=${sec.bc} style=${{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <${BCSectionHeader} bc=${sec.bc} count=${sec.count}
-                    collapsed=${sec.collapsed} onToggle=${() => onToggleSection(sec.bc)} />
-                  ${!sec.collapsed && html`
-                    <div style=${{ display: "flex", flexDirection: "column", gap: 10, paddingLeft: 2 }}>
-                      ${sec.tickets.map(renderCard)}
-                    </div>`}
-                </div>`)}
+                <${Collapsible} key=${sec.bc} label=${sec.bc} count=${sec.count}
+                  open=${!sec.collapsed} onToggle=${() => onToggleSection(sec.bc)}
+                  bodyStyle=${{ gap: 10, paddingLeft: 2 }}>
+                  ${sec.tickets.map(renderCard)}
+                </${Collapsible}>`)}
             </div>`
           : html`
             <div style=${{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 8 }}>

@@ -8,6 +8,7 @@ import { useState } from "react";
 import { html } from "./html.js";
 import { Icon } from "./icons.js";
 import { Glyph } from "./foundations.js";
+import { Collapsible } from "./collapsible.js";
 import { CONTENT_TYPES, TICKETS, LIBRARY } from "./data.js";
 
 // ---- A single document row in the tree ----
@@ -37,28 +38,19 @@ export function TreeItem({ item, selected, onOpen }) {
 }
 
 // ---- A collapsible group ----
+// Composes the shared Collapsible primitive (design-system-005), UNCONTROLLED:
+// the tree owns no external collapse state, so it hands `defaultOpen` to the
+// primitive and lets it hold its own open `useState`. The primitive renders the
+// canonical unified header (chevron + ellipsis-truncated uppercase label +
+// right-aligned mono count) and reveals the body — TreeGroup only supplies the
+// TreeItem children and the tree's own body spacing (`gap 1 / paddingLeft 8`).
 export function TreeGroup({ group, items, selectedId, onOpen, defaultOpen = true }) {
-  const [open, setOpen] = useState(defaultOpen);
   return html`
-    <div style=${{ marginBottom: 4 }}>
-      <button className="focusable" onClick=${() => setOpen(!open)} style=${{
-        display: "flex", alignItems: "center", gap: 6, width: "100%",
-        padding: "6px 8px", border: "none", background: "transparent", cursor: "pointer",
-      }}>
-        <${Icon} name="chevron-right" size=${13} color="var(--fg-3)"
-          style=${{ transform: open ? "rotate(90deg)" : "rotate(0deg)", transition: "transform var(--duration-fast) var(--ease-base)" }} />
-        <span style=${{
-          fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 600,
-          letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--fg-3)",
-        }}>${group}</span>
-        <span style=${{ fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--fg-4)" }}>${items.length}</span>
-      </button>
-      ${open && html`
-        <div style=${{ display: "flex", flexDirection: "column", gap: 1, paddingLeft: 8 }}>
-          ${items.map((it) => html`
-            <${TreeItem} key=${it.id} item=${it} selected=${selectedId === it.id} onOpen=${onOpen} />`)}
-        </div>`}
-    </div>`;
+    <${Collapsible} label=${group} count=${items.length} defaultOpen=${defaultOpen}
+      bodyStyle=${{ gap: 1, paddingLeft: 8 }}>
+      ${items.map((it) => html`
+        <${TreeItem} key=${it.id} item=${it} selected=${selectedId === it.id} onOpen=${onOpen} />`)}
+    </${Collapsible}>`;
 }
 
 // ---- Primary nav item (Board / Library) ----

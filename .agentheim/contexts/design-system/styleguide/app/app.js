@@ -15,6 +15,7 @@ import { EmptyColumn, EmptyDrawer } from "./empty.js";
 import { ColumnHeader, TicketCard } from "./kanban.js";
 import { HeaderMinimal, HeaderContextual, describeItem } from "./drawer.js";
 import { TreeGroup } from "./library.js";
+import { Collapsible } from "./collapsible.js";
 import { Segmented, LiveApp } from "./live.js";
 import {
   ThemeCtx, Glyph, GuideSection, SubHead, DocCard, ColorSection,
@@ -247,6 +248,54 @@ function TreeSpecimen() {
         <${TreeGroup} key=${g.group} group=${g.group} items=${g.items} selectedId=${sel} onOpen=${(it) => setSel(it.id)} defaultOpen=${g.group !== "Research"} />`)}
     </div>`;
 }
+// A row of demo cards standing in for a collapsible's arbitrary body — the
+// primitive is body-agnostic (TreeItem rows in the tree, draggable TicketCards on
+// the board), so the specimen reveals plain swatches to make that point.
+function DemoBodyRow({ label }) {
+  return html`
+    <div style=${{
+      display: "flex", alignItems: "center", gap: 8,
+      padding: "7px 10px", borderRadius: "var(--radius-sm)",
+      background: "var(--surface-1)", border: "1px solid var(--hairline)",
+      fontFamily: "var(--font-ui)", fontSize: 12.5, color: "var(--fg-2)",
+    }}>
+      <span style=${{ width: 6, height: 6, borderRadius: 99, background: "var(--accent-ochre)" }} />${label}
+    </div>`;
+}
+
+// Documents the shared Collapsible primitive (design-system-005) in BOTH modes:
+//   • UNCONTROLLED — `defaultOpen`, the primitive holds its own open state (the
+//     TreeGroup behavior). Click the header; the primitive remembers.
+//   • CONTROLLED — `open` + `onToggle` lifted into THIS specimen's React state
+//     (the board's pattern: collapse persisted per (column, BC), ADR-0015). The
+//     parent owns the truth; the primitive announces every toggle and stores none.
+// Both wear the ONE canonical header: chevron → 90° when open, an ellipsis-
+// truncating uppercase label that takes the row, a right-aligned mono count.
+function CollapsibleSpecimen() {
+  const [open, setOpen] = useState(true);
+  return html`
+    <${DocCard} style=${{ flex: 1, minWidth: 300 }}>
+      <${SubHead}>Collapsible — controlled & uncontrolled</${SubHead}>
+      <p style=${{ margin: "0 0 16px", fontFamily: "var(--font-ui)", fontSize: 12.5, lineHeight: 1.6, color: "var(--fg-3)" }}>
+        One section primitive, two ownership modes. It owns the open/close reveal and is body-agnostic; each consumer supplies its own body spacing via <code>bodyStyle</code>.
+      </p>
+      <${StateLabel}>Uncontrolled — owns its own state (defaultOpen)</${StateLabel}>
+      <${Collapsible} label="design-system" count=${3} defaultOpen=${true}
+        bodyStyle=${{ gap: 6, paddingLeft: 4 }} style=${{ marginBottom: 18 }}>
+        ${["Styleguide source", "Tokens", "Collapsible primitive"].map((l) => html`<${DemoBodyRow} key=${l} label=${l} />`)}
+      </${Collapsible}>
+      <${StateLabel}>Controlled — parent owns open + onToggle (board, ADR-0015)</${StateLabel}>
+      <${Collapsible} label="agentic-workflow" count=${2}
+        open=${open} onToggle=${() => setOpen((o) => !o)}
+        bodyStyle=${{ gap: 6, paddingLeft: 4 }}>
+        ${["Dashboard board", "Slide-over reader"].map((l) => html`<${DemoBodyRow} key=${l} label=${l} />`)}
+      </${Collapsible}>
+      <div style=${{ marginTop: 10, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-4)" }}>
+        open = ${String(open)} (held in this specimen, not the primitive)
+      </div>
+    </${DocCard}>`;
+}
+
 function NavSection() {
   return html`
     <${GuideSection} index="09" title="Navigation &amp; file tree"
@@ -267,6 +316,9 @@ function NavSection() {
             Icons are the only chromatic element in the rail. Labels and chevrons stay neutral; color is doing one job — telling document kinds apart.
           </p>
         </${DocCard}>
+      </div>
+      <div style=${{ marginTop: 24, display: "flex", gap: 28, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <${CollapsibleSpecimen} />
       </div>
     </${GuideSection}>`;
 }
