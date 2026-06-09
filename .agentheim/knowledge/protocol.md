@@ -5,13 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 11:30 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 3 (first-try PASS: 3, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3 (4588599 ds-006, 67ade09 aw-016, ccdf43d aw-017) + this SHA-backfill chore
+**New backlog items:** none
+**Notes:** Three sequential waves driven by a dependency chain: ds-006 (TicketCard cornerAction slot + conditional estimate chip) unblocked aw-016 (backlog cards copy `/agentheim:modeling <id>` via that slot), which shared `dashboard/app/board.js` + the agentic-workflow README + the dist bundle with aw-017 (theme toggle) — so aw-017 was held one wave for conflict, then run solo. All three passed verification first try (styleguide 5→ /dashboard 196 tests green by the end). The single shared dashboard `dist/` bundle was rebuilt each wave; verifiers independently confirmed it reproducible from source via `node build.mjs`. Other Claude sessions were concurrently writing `knowledge/index.md`, a research report under `knowledge/research/`, and `lib/task-lifecycle.mjs` — kept strictly out of every `git add` (surgical staging only). Two tasks captured mid-run by a parallel modeling session: aw-017 (executed this session) and the research note on the VS Code terminal bridge.
+
+---
+
 ## 2026-06-09 11:27 -- Task verified and completed: agentic-workflow-017 - Wire the styleguide light/dark theme toggle into the dashboard
 
 **Type:** Work / Task completion
 **Task:** agentic-workflow-017 - Wire the styleguide light/dark theme toggle into the dashboard
 **Summary:** The dashboard now has a working light/dark switch — the styleguide's `Segmented` Dark/Light control rendered unforked in the `ShellRail` header (next to the project name), feeding `ThemeCtx.Provider` and a `data-theme`/`theme-fade` documentElement effect that matches the styleguide `App()` behaviour. Theme resolution + persistence is a sibling of the board view-state: its own versioned `localStorage` store (`dashboard/app/theme-state.js`, key `agentheim.dashboard.theme`) that honors OS `prefers-color-scheme` on first visit, remembers the user's override across reloads, safe-degrades a malformed/stale/absent blob to the system default, and (read once via a lazy mount initializer) survives SSE re-projections without resetting. No design-system source touched — the styleguide gate is not reopened.
 **Verification:** PASS (iteration 1)
-**Commit:** (backfilled at session end)
+**Commit:** ccdf43d
 **Files changed:** 4 authored (theme-state.js + its test, board.js, BC README) + derived dist bundle
 **Tests added:** dashboard/test/theme-state.test.mjs — 13 cases (systemTheme dark/light/no-matchMedia; load empty→null, round-trip, versioned, different-version/malformed/unknown → null, no-backend no-throw; saveTheme refuses unknown; resolveTheme override-wins / first-visit-honors-prefers / malformed-stale→system default). Full dashboard suite 196/196 green; dist byte-identical to a fresh `node build.mjs`.
 **ADRs written:** none (pure unforked consumption of the styleguide toggle under ADR-0003/0009, mirroring the ADR-0015 versioned-localStorage persistence pattern; no new decision)
@@ -54,7 +67,7 @@ Newest entries on top.
 **Task:** agentic-workflow-016 - Backlog cards & the add-ticket button copy the matching /modeling command to the clipboard
 **Summary:** Backlog board cards now carry a quiet "Copy" button — supplied into the styleguide `TicketCard`'s `cornerAction` slot (design-system-006), where the dropped estimate chip used to sit — that writes the fully-qualified `/agentheim:modeling <id>` to the system clipboard; the backlog column's add-ticket `+` writes the bare `/agentheim:modeling`. The command string is a pure, unit-tested builder (`dashboard/app/modeling-command.js`) and the clipboard write degrades silently when the API is blocked/absent, so the board never crashes. No lifecycle write — clipboard side-effect only; board stays a projection of disk.
 **Verification:** PASS (iteration 1)
-**Commit:** (backfilled at session end)
+**Commit:** 67ade09
 **Files changed:** 4 authored (modeling-command.js + its test, board.js, BC README) + derived dist bundle
 **Tests added:** dashboard/test/modeling-command.test.mjs — 6 cases (qualified+id; bare for no-id/undefined/null/empty; non-string → bare, never "[object Object]"; whitespace trim; all-whitespace → bare). Full dashboard suite 183/183 green; dist rebuilt and reproducible from source.
 **ADRs written:** none (consumes the ds-006 slot unforked under ADR-0003/0009; no new decision)

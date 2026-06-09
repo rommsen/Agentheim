@@ -6,7 +6,7 @@ type: feature
 context: design-system
 created: 2026-06-09
 completed: 2026-06-09
-commit:
+commit: 4588599
 depends_on: [design-system-001]
 blocks: [agentic-workflow-016]
 tags: [styleguide, ticket-card, dashboard]

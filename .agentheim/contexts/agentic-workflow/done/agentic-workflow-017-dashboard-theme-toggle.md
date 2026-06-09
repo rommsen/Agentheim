@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-09
 completed: 2026-06-09
-commit:
+commit: ccdf43d
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, theme, frontend, styleguide]
