@@ -5,6 +5,34 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 -- Modeling / Captured: agentic-workflow-017 - Wire the styleguide light/dark theme toggle into the dashboard
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** The styleguide is "dark-first with a light toggle" and already ships the *whole* switch — a `Segmented` Dark/Light control in its `TopBar`, the `data-theme` documentElement mechanism, a `theme-fade` transition, and light-mode tokens — but the dashboard (its only consumer) never wires it up: `DashboardApp` hardcodes `useState("dark")` (`board.js:497`) with no setter or control, so the live dashboard is permanently dark. Captured as a **single agentic-workflow task** (not a 2-BC split like aw-016/ds-006): routing test — *if agentic-workflow didn't exist, would this need to happen?* No; the styleguide side already exists and exports everything (`Segmented` from `live.js`, `ThemeCtx`, `[data-theme]` tokens, `theme-fade`), so this is **pure unforked consumption (ADR-0003), no design-system change, gate not reopened**. Two forks pinned with the builder: (1) persistence → **persist + system default** — first visit honors `prefers-color-scheme`, user override remembered in versioned `localStorage` per the ADR-0015 / `board-view-state.js` precedent (malformed/stale/absent → system default), choice survives SSE re-projection; (2) control form → **reuse the styleguide `Segmented` control unforked** in the `ShellRail` header (the dashboard analogue of the styleguide `TopBar`), declining a new dashboard-local icon toggle. Filed straight to todo — pieces all exist, decisions locked, worker can execute without ambiguity. Frontend task → `depends_on: [design-system-001]` (styleguide gate OPEN since 2026-06-05). Wrote Why + What + 9 testable AC (incl. dist rebuild + persistence/default tests); related_adrs [0003, 0009, 0015], prior_art [agentic-workflow-015] (the ShellRail header it lands in).
+
+---
+
+## 2026-06-09 11:04 -- Batch started: [design-system-006]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-006 - TicketCard: optional corner action; hide the empty estimate chip
+**Parallel:** no (1 worker — sole ready task; agentic-workflow-016 blocked on it)
+
+---
+
+## 2026-06-09 -- Modeling / Captured: agentic-workflow-016 + design-system-006 - Copy the /modeling command from backlog cards & the add-ticket button
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow (+ design-system)
+**Filed to:** todo (both)
+**Summary:** Builder wants the dead "— pt" estimate chip on dashboard board cards (the projection carries no estimate, so `board-data.js` feeds the placeholder `est: '—'`) replaced on backlog cards by a button that copies the command they'll run next, for Ctrl+V into the terminal. Captured as a **2-task set across two BCs**, because the affordance lives *inside* the styleguide `TicketCard`, which the dashboard consumes unforked (ADR-0003) — so a styleguide change blocks the dashboard wiring. **design-system-006:** `TicketCard` hides the estimate chip when there's no real estimate, and gains an optional bottom-right corner-action slot (generic, token-styled, click-isolated from card-open). **agentic-workflow-016:** backlog cards' slot copies `/agentheim:modeling <id>` to the clipboard; the backlog column's add-ticket `+` copies bare `/agentheim:modeling`; todo/doing/done cards get no action and lose the dead chip. Two ambiguities pinned with the builder: (1) command text = fully-qualified `/agentheim:modeling`, not the bare `/modeling` alias; (2) drop the dead estimate chip board-wide, not just backlog. aw-016 `depends_on: [design-system-001, design-system-006]`; ds-006 `blocks: [agentic-workflow-016]`. Both pass the styleguide gate (design-system-001 approved/open). "Copy into memory" disambiguated as the system clipboard, not `.agentheim/` memory.
+**Split into:** agentic-workflow-016, design-system-006 (one capture → two BC-scoped tasks)
+**ADRs written:** none (extends ADR-0003 / ADR-0009; no new decision)
+
+---
+
 ## 2026-06-09 -- Work session ended
 
 **Type:** Work / Session end

@@ -12,7 +12,7 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 1
 - **Todo:** 0
-- **Doing:** 0
+- **Doing:** 1
 - **Done:** 4
 <!-- task-counts:end -->
 
@@ -22,6 +22,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
+- **design-system-006** — TicketCard: optional corner action; hide the empty estimate chip — `doing/design-system-006-ticket-card-corner-action.md`
 <!-- doing-list:end -->
 
 ### Done (most recent first; older entries kept for prior-art search)

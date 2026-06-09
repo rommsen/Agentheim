@@ -104,6 +104,30 @@ future ambient motion: always strippable to a still-legible static baseline.
 > and must be **rebuilt** to pick up this styleguide change; the source edit alone
 > does not update the bundle.
 
+### TicketCard — estimate chip is conditional; an optional corner-action slot (design-system-006)
+
+The `TicketCard` (`app/kanban.js`) is consumed by the dashboard **unforked**
+(ADR-0003), so consumer-shaped affordances live here, not board-side. Two
+contracts:
+
+- **Estimate chip is conditional.** The `… pt` meta chip renders **only when
+  there is a real estimate**. An absent / empty / whitespace value, or the
+  em-dash `—` placeholder the dashboard feeds (the `/api/tree` read projection
+  carries no estimate, ADR-0002), hides the chip — no dead `— pt` space. The
+  decision is the pure, React-free `showEstimate(est)` in `app/card.js` (testable
+  under `node --test` without the canvas import map, mirroring `doingPulseClass`).
+- **Optional `cornerAction` render-prop.** The card accepts an optional
+  `cornerAction` function rendering a single quiet control in the **bottom-right
+  of the meta row** (the former estimate-chip position). The **styleguide owns the
+  slot's look/placement and click isolation**; the **consumer owns the control's
+  behavior**. The card wraps the slot in a `stopPropagation` container so
+  activating the action never bubbles to the card's own `onClick` (the card is a
+  button that opens the slide-over). Absent → the card is unchanged. The downstream
+  consumer (a backlog card's copy-command button) is `agentic-workflow-016`.
+
+> Live-board note: same as Motion — the served dashboard `dist/` is a derived
+> artifact (ADR-0003) and must be **rebuilt** to pick up this styleguide change.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.

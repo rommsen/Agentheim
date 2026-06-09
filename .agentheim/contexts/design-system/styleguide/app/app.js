@@ -25,6 +25,29 @@ import { TICKETS, LIBRARY, CONTENT_TYPES, MD_ADR } from "./data.js";
 
 const SAMPLE_TICKET = TICKETS.find((t) => t.id === "AGH-128"); // status: doing
 const SAMPLE_TICKET_STATIC = TICKETS.find((t) => t.status !== "doing"); // contrast: no pulse
+// design-system-006: a card whose estimate is the dashboard's em-dash placeholder
+// — the "… pt" chip must NOT render (a real est would still show).
+const SAMPLE_TICKET_NO_EST = { ...SAMPLE_TICKET_STATIC, est: "—" };
+
+// A quiet, token-styled icon button — the kind of control a consumer drops into
+// the TicketCard corner-action slot (design-system-006). Look/placement is the
+// card's; behavior is the consumer's. Reads as a subtle affordance, not a loud
+// button, and brightens on hover only.
+function DemoCornerButton() {
+  return html`
+    <button className="focusable" title="Copy command" type="button"
+      onClick=${() => {}}
+      style=${{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        width: 22, height: 22, borderRadius: "var(--radius-sm)",
+        border: "none", background: "transparent", color: "var(--fg-3)", cursor: "pointer",
+        transition: "background var(--duration-fast) var(--ease-base), color var(--duration-fast) var(--ease-base)",
+      }}
+      onMouseEnter=${(e) => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--fg-1)"; }}
+      onMouseLeave=${(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-3)"; }}>
+      <${Icon} name="copy" size=${13} />
+    </button>`;
+}
 const SAMPLE_DOC = LIBRARY[2].items[0]; // ADR-0007
 
 function TopBar({ theme, setTheme }) {
@@ -110,6 +133,20 @@ function CardStates({ variant, title, note }) {
         <div><${StateLabel}>Default</${StateLabel}><${TicketCard} ticket=${SAMPLE_TICKET} variant=${variant} /></div>
         <div><${StateLabel}>Hover</${StateLabel}><${TicketCard} ticket=${SAMPLE_TICKET} variant=${variant} forceHover /></div>
         <div><${StateLabel}>Selected</${StateLabel}><${TicketCard} ticket=${SAMPLE_TICKET} variant=${variant} selected /></div>
+        <div>
+          <${StateLabel}>No estimate — chip hidden</${StateLabel}>
+          <p style=${{ margin: "0 0 10px", fontFamily: "var(--font-ui)", fontSize: 11.5, lineHeight: 1.5, color: "var(--fg-3)", maxWidth: 280 }}>
+            When a ticket carries no real estimate (the dashboard read projection has none, ADR-0002), the <code>… pt</code> chip does not render — no dead space, no <code>— pt</code>. A real estimate still shows (above).
+          </p>
+          <${TicketCard} ticket=${SAMPLE_TICKET_NO_EST} variant=${variant} />
+        </div>
+        <div>
+          <${StateLabel}>Corner action</${StateLabel}>
+          <p style=${{ margin: "0 0 10px", fontFamily: "var(--font-ui)", fontSize: 11.5, lineHeight: 1.5, color: "var(--fg-3)", maxWidth: 280 }}>
+            An optional quiet affordance in the bottom-right meta slot. The card owns its look + placement and isolates its click (it never opens the card); the consumer owns the behavior — here a copy-command button.
+          </p>
+          <${TicketCard} ticket=${SAMPLE_TICKET_NO_EST} variant=${variant} cornerAction=${() => html`<${DemoCornerButton} />`} />
+        </div>
         ${variant === "rail" && html`
           <div>
             <${StateLabel}>Doing — ambient pulse · vs. static</${StateLabel}>

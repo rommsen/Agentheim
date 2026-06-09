@@ -8,11 +8,13 @@ import { Icon } from "./icons.js";
 import { StatusDot, StatusChip, MonoId, MetaChip } from "./primitives.js";
 import { EmptyColumn } from "./empty.js";
 import { doingPulseClass } from "./motion.js";
+import { showEstimate } from "./card.js";
 import { STATUSES, COLUMN_ORDER, TICKETS } from "./data.js";
 
 // Re-export so the doing-pulse decision (design-system-004 / ADR-0014) is
-// reachable from the kanban surface as well as ./motion.js.
-export { doingPulseClass };
+// reachable from the kanban surface as well as ./motion.js. Same for the
+// estimate-visibility decision (design-system-006).
+export { doingPulseClass, showEstimate };
 
 // ---- Column header ----
 export function ColumnHeader({ status, count, onAdd }) {
@@ -47,7 +49,13 @@ export function ColumnHeader({ status, count, onAdd }) {
 
 // ---- Ticket card ----
 // variant: "rail" (status as a colored left edge) | "badge" (status pill on top)
-export function TicketCard({ ticket, variant = "rail", selected = false, onClick, forceHover = false }) {
+// cornerAction: optional render-prop for a single quiet affordance in the
+//   bottom-right of the meta row (design-system-006). The styleguide owns the
+//   slot's placement + isolation; the CONSUMER owns the control's look/behavior.
+//   The card wraps whatever the prop returns in a propagation-stopping container
+//   so activating it never bubbles to the card's own onClick (the card is a
+//   button that opens the slide-over). Absent -> the card is unchanged.
+export function TicketCard({ ticket, variant = "rail", selected = false, onClick, forceHover = false, cornerAction }) {
   const [hover, setHover] = useState(false);
   const s = STATUSES[ticket.status];
   const isHover = hover || forceHover;
@@ -108,11 +116,18 @@ export function TicketCard({ ticket, variant = "rail", selected = false, onClick
       <!-- Meta row -->
       <div style=${{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
         <${MetaChip} icon="folder">${ticket.context}</${MetaChip}>
-        <${MetaChip} mono>${ticket.est} pt</${MetaChip}>
+        ${showEstimate(ticket.est) && html`<${MetaChip} mono>${ticket.est} pt</${MetaChip}>`}
         <div style=${{ flex: 1 }} />
-        <span style=${{
+        ${ticket.updated && html`<span style=${{
           fontFamily: "var(--font-mono)", fontSize: 10.5, color: "var(--fg-4)",
-        }}>${ticket.updated}</span>
+        }}>${ticket.updated}</span>`}
+        ${cornerAction && html`
+          <span
+            onClick=${(e) => e.stopPropagation()}
+            onKeyDown=${(e) => e.stopPropagation()}
+            style=${{ display: "inline-flex", alignItems: "center", marginLeft: 2 }}>
+            ${cornerAction()}
+          </span>`}
       </div>
     </div>`;
 }
