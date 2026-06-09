@@ -6,7 +6,7 @@ type: feature
 context: design-system
 created: 2026-06-09
 completed: 2026-06-09
-commit:
+commit: fbfba13
 depends_on: [design-system-001]
 blocks: []
 tags: [captured, frontend, styleguide]

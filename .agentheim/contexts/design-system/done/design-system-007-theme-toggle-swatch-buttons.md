@@ -6,7 +6,7 @@ type: bug
 context: design-system
 created: 2026-06-09
 completed: 2026-06-09
-commit:
+commit: 8545b92
 depends_on: [design-system-001]
 blocks: []
 tags: [bug, frontend, styleguide, theme]

@@ -5,13 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-09 13:00 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (fbfba13 ds-005, 8545b92 ds-007) + this SHA-backfill / session-close chore
+**New backlog items:** none
+**Notes:** Two design-system tasks, run as two SEQUENTIAL solo waves — not parallel — because they collided on three shared resources: `dashboard/app/board.js`, the single dashboard `dist/` bundle, and the design-system BC README. ds-005 (shared `Collapsible` primitive: canonical chevron header + revealed body, controlled-or-uncontrolled, body-agnostic via `bodyStyle`; `TreeGroup` + board per-BC section both consume it unforked; board-local `BCSectionHeader` retired) ran wave 1; ds-007 (dedicated `ThemeToggle` swatching each button's own theme via fixed non-flipping tokens, selection by de-emphasis; replaces `Segmented` as the theme control in styleguide TopBar + dashboard ShellRail; wrote ADR-0016) ran wave 2 once unblocked. Both PASSED verification first try (styleguide 15→23 tests, dashboard 196 green throughout; the shared `dist/` rebuilt each wave and verifier-confirmed reproducible from `node build.mjs`). **Builder action needed: the styleguide gate is REOPENED** — ds-005 shifted `TreeGroup`'s header (count right-aligned, label truncates) and ds-007 reskinned the theme control on every page; both await a fresh builder sign-off on the canvas (`styleguide/index.html`, section 09 + the TopBar control). Concurrent edits from other sessions (`lib/task-lifecycle.mjs` + its test, `knowledge/index.md`, an untracked `knowledge/research/`) were kept out of every commit via surgical staging.
+
+---
+
 ## 2026-06-09 12:58 -- Task verified and completed: design-system-007 - Theme toggle buttons swatch their own theme
 
 **Type:** Work / Task completion
 **Task:** design-system-007 - Theme toggle buttons swatch their own theme (Dark = dark bg, Light = light bg)
 **Summary:** Replaced the backwards-reading `Segmented` theme control with a dedicated `ThemeToggle` whose two buttons each preview their own theme via fixed, non-flipping `:root` swatch tokens (`--swatch-light`/`--swatch-dark` + fixed on-swatch fg, NOT redefined under `[data-theme]`), signalling the selected theme by de-emphasis (dimming the unselected) rather than the reserved accent. Swapped unforked into BOTH the styleguide `TopBar` and the dashboard `ShellRail`; `Segmented` and the existing theme persistence (`theme-state.js`) are untouched.
 **Verification:** PASS (iteration 1)
-**Commit:** <pending>
+**Commit:** 8545b92
 **Files changed:** 7 authored (colors_and_type.css, live.js, app.js, dashboard/app/board.js, README, ADR-0016) + styleguide/test/theme-toggle.test.mjs + derived dist (app.js, colors_and_type.css)
 **Tests added:** styleguide test/theme-toggle.test.mjs (8 cases: swatch-per-theme non-flip, fixed on-swatch fg, de-emphasis selection / no accent, Segmented unchanged source-guard, TopBar uses ThemeToggle) — styleguide 23/23, dashboard 196/196 green; dist reproducible (identical sha1 on rebuild).
 **ADRs written:** ADR-0016 — Theme-preview swatches use fixed (non-theming) tokens; selection by de-emphasis, never the reserved accent (scope: design-system; bidirectional link to design-system-007).
