@@ -8,6 +8,80 @@ Newest entries on top.
 ## 2026-06-14 -- Work session ended
 
 **Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3 (013: 7ccd2a7, ADR-0017 refactor: d13bb66, 014: f6d73d6)
+**Note:** infrastructure-013 (VS Code bridge extension) + infrastructure-014 (`GET /api/bridge`) both shipped, serialized across two batches because they share the infrastructure BC README. todo emptied. Surprise: the working tree carried a large pre-existing UNcommitted ADR-0017 refactor overlapping 014's server.mjs — committed it first (d13bb66) per the user's call, then landed 014 cleanly. Downstream **agentic-workflow-020** (board bridge buttons) now has both its dependencies (012 contract, 014 endpoint) done, but stays in **backlog** until `modeling` promotes it. Left uncommitted (not this session's work): `repo-review-2026-06-10.md`, new agentic-workflow backlog items.
+
+---
+
+## 2026-06-14 -- Task verified and completed: infrastructure-014 - Dashboard server GET /api/bridge
+
+**Type:** Work / Task completion
+**Task:** infrastructure-014 - Dashboard server GET /api/bridge — serve the bridge port+token to the sandboxed frontend
+**Summary:** Added the read-only `GET /api/bridge` endpoint to the dashboard server: reads `.agentheim/.dashboard/bridge.json` (written by the infrastructure-013 extension) via ADR-0002's in-root validator and serves the `{ port, token, v }` subset (no pid/startedAt leak), degrading to `200 { present: false }` on absent/unreadable/malformed — never a 5xx — so the filesystem-blind Simple Browser frontend can discover the bridge and silently fall back to clipboard. Pure read transport; zero-dep, stdlib-only.
+**Verification:** PASS (iteration 1)
+**Commit:** f6d73d6
+**Files changed:** 4 (read-api.mjs, server.mjs, new bridge-api test, infra BC README)
+**Tests added:** 3 (present / absent / malformed; full dashboard suite 200/200)
+**ADRs written:** none (built against frozen ADR-0018)
+**Note:** Blocks agentic-workflow-020 — that task's bridge-detection probe (`GET /api/bridge` → token-bearing `GET /health`) now has its server seam.
+
+---
+
+## 2026-06-14 -- Change / Git hygiene: committed the pre-existing uncommitted ADR-0017 dashboard read-only refactor
+
+**Type:** Change / Git hygiene (work-skill, user-authorized)
+**Summary:** At this work session's start the tree carried a large UNcommitted refactor — the ADR-0017 "dashboard made read-only" change (board.js drag removal, promote.js/move-api.mjs + their tests deleted, server.mjs write-path unmounted, dist rebuilt, READMEs, lib/task-lifecycle.mjs, ADR-0017 written, ADR-0001 superseded) — that overlapped infrastructure-014's `server.mjs`. Per the user's call, committed that refactor as its own commit **d13bb66** (hunk-split so 014's `/api/bridge` route was excluded), then landed 014 cleanly on top (**f6d73d6**). Left genuinely-unrelated tree changes uncommitted (repo-review-2026-06-10.md, new agentic-workflow backlog items).
+
+---
+
+## 2026-06-14 -- Batch started: [infrastructure-014]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-014 - Dashboard server GET /api/bridge — serve the bridge port+token to the sandboxed frontend
+**Parallel:** no (1 worker)
+**Note:** Second serialized batch — held from batch 1 because it shares the infrastructure BC README with infrastructure-013 (now done).
+
+---
+
+## 2026-06-14 -- Task verified and completed: infrastructure-013 - Build the VS Code bridge extension
+
+**Type:** Work / Task completion
+**Task:** infrastructure-013 - Build the VS Code bridge extension — 127.0.0.1 listener that opens a seeded Claude terminal
+**Summary:** Built Agentheim's first deployable VS Code extension (`vscode-extension/`): a 127.0.0.1-only `node:http` listener implementing the ADR-0018 bridge contract — token-gated `POST /run` opens a real interactive terminal seeded with `claude "<prompt>"`, fixed port 31425 + 31426/27 fallback ladder, per-activation 32-hex token written to `.agentheim/.dashboard/bridge.json` on activation and removed on deactivation, load-bearing OPTIONS/CORS preflight answered, no permission-bypass flag.
+**Verification:** PASS (iteration 1)
+**Commit:** 7ccd2a7
+**Files changed:** 8 (6 new under vscode-extension/, .gitignore, infra BC README)
+**Tests added:** 9 (node:test, all green)
+**ADRs written:** none (built against frozen ADR-0018)
+
+---
+
+## 2026-06-14 -- Batch started: [infrastructure-013]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-013 - Build the VS Code bridge extension — 127.0.0.1 listener that opens a seeded Claude terminal
+**Parallel:** no (1 worker)
+**Note:** infrastructure-014 held to next batch — both tasks touch the infrastructure BC README (Phase-3 conflict), so they are serialized rather than run in parallel.
+
+---
+
+## 2026-06-14 -- Modeling / Promoted: infrastructure-013, infrastructure-014 (bridge build tasks)
+
+**Type:** Modeling / Promote
+**BC:** infrastructure
+**From → To:** backlog → todo (013, 014)
+**Summary:** With infrastructure-012 (ADR-0018) done, both build tasks have their only dependency satisfied — promoted to todo. agentic-workflow-020 stays in backlog: it depends on infrastructure-014, which is now todo but not yet done, so it is not ready to work.
+**ADR ref fix:** Replaced stale "ADR-0017" → "ADR-0018" in the bodies of infrastructure-013, infrastructure-014, and agentic-workflow-020 (the bridge contract shipped as 0018; 0017 is the unrelated dashboard read-only ADR).
+
+---
+
+## 2026-06-14 -- Work session ended
+
+**Type:** Work / Session end
 **Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
 **Bounced:** 0
 **Failed:** 0

@@ -6,7 +6,7 @@ type: feature
 context: infrastructure
 created: 2026-06-14
 completed: 2026-06-14
-commit:
+commit: f6d73d6
 depends_on: [infrastructure-012]
 blocks: [agentic-workflow-020]
 tags: [dashboard, vscode, bridge, transport]

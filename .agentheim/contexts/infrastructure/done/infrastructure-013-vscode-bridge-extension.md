@@ -6,7 +6,7 @@ type: feature
 context: infrastructure
 created: 2026-06-14
 completed: 2026-06-14
-commit:
+commit: 7ccd2a7
 depends_on: [infrastructure-012]
 blocks: []
 tags: [dashboard, vscode, bridge, transport, extension]
