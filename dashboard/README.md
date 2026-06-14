@@ -10,9 +10,14 @@ transport/launch/discovery decision this implements.
 
 Server skeleton (agentic-workflow-004): static asset serving + a health check, the
 **live-update SSE stream** (infrastructure-003, ADR-0006), and the **read endpoints**
-`GET /api/tree` + `GET /api/doc` (agentic-workflow-005). Deliberately *not* here:
+`GET /api/tree` + `GET /api/doc` (agentic-workflow-005). The dashboard is **read-only**
+(ADR-0017): it has **no write path**. Not here:
 
-- `POST /api/task/move` write path (delegates to `applyTaskMove`) — agentic-workflow-009
+- **No `POST /api/task/move`** — the dashboard never writes lifecycle state. The drag-to-Promote
+  endpoint (agentic-workflow-009) was **removed** (ADR-0017); skills (`modeling` / `work`) are
+  the sole owners of task-lifecycle transitions and the board reflects their on-disk moves via
+  the SSE stream. The canonical mover `applyTaskMove` (`lib/task-lifecycle.mjs`) lives on for the
+  skills.
 - The pre-bundled `dist/` assets — infrastructure-002
 
 ### Read endpoints: `GET /api/tree` + `GET /api/doc` — ADR-0002

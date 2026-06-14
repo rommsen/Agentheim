@@ -2,12 +2,20 @@
 id: ADR-0001
 title: Dashboard write-semantics — Promote-only UI moves, one shared mover, optimistic concurrency
 scope: agentic-workflow
-status: proposed
+status: superseded
+superseded_by: ADR-0017
 date: 2026-06-05
 related_tasks: [agentic-workflow-001, agentic-workflow-002, agentic-workflow-003, infrastructure-001]
 ---
 
 # ADR-0001: Dashboard write-semantics — Promote-only UI moves, one shared mover, optimistic concurrency
+
+> **Superseded by [ADR-0017](0017-dashboard-read-only-skills-own-lifecycle.md) (2026-06-14).**
+> The dashboard's single write path (drag `backlog→todo` to Promote) was removed: the board is
+> now read-only and the skills are the sole owners of task-lifecycle transitions. The decision
+> below is retained for history. `applyTaskMove` (§2) survives as the skills' canonical mover;
+> the UI legal-move set (§1) and the optimistic-concurrency wiring (§3) no longer have a UI
+> caller.
 
 ## Context
 

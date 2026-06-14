@@ -147,18 +147,24 @@ test('GET / returns a graceful 404 when dist/ is absent (assets not built)', asy
 });
 
 // /api/tree is wired in by agentic-workflow-005 (covered by read-api.test.mjs).
-// The write path POST /api/task/move is wired in by agentic-workflow-009 (its
-// behaviour is covered by move-api.test.mjs). Here we only assert the route now
-// EXISTS as a POST-only endpoint — a GET is rejected 405, not 404, proving the
-// route is mounted (and not silently swallowed as a static 404).
-test('the write route POST /api/task/move is mounted (GET → 405, not 404)', async () => {
+// The dashboard is READ-ONLY (ADR-0017): there is NO write path. The former
+// POST /api/task/move endpoint was removed when drag-to-Promote was retired, so
+// skills are the sole owners of task lifecycle. Here we pin that the route is
+// gone — a POST is not a mounted endpoint, it falls through to the read-only
+// 405 (non-GET/HEAD rejected), and a GET is a plain static 404, never a live
+// route. Either way nothing on disk can be mutated through the server.
+test('the dashboard exposes no write path — POST /api/task/move is not a route', async () => {
   const { base, dist } = makeProjectWithDist();
   const server = createDashboardServer({ root: base, assetRoot: dist });
   try {
     const { port } = await start(server);
-    const res = await fetch(`http://127.0.0.1:${port}/api/task/move`);
-    assert.equal(res.status, 405);
-    assert.equal(res.headers.get('allow'), 'POST');
+    // POST is refused by the read-only method guard (405), NOT handled.
+    const post = await fetch(`http://127.0.0.1:${port}/api/task/move`, { method: 'POST' });
+    assert.equal(post.status, 405);
+    // And there is no special-cased route for it: a GET is just a static miss.
+    const get = await fetch(`http://127.0.0.1:${port}/api/task/move`);
+    assert.equal(get.status, 404);
+    assert.equal(get.headers.get('allow'), null);
   } finally {
     server.close();
     rmSync(base, { recursive: true, force: true });

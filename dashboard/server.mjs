@@ -1,9 +1,10 @@
 // Dashboard HTTP server (ADR-0002 + ADR-0006): node:http, stdlib-only, no deps.
-// Routes now live here: static assets + health check (agentic-workflow-004), the
-// SSE live-update channel GET /api/events (infrastructure-003, ADR-0006), and the
-// read endpoints GET /api/tree + GET /api/doc (agentic-workflow-005, ADR-0002),
-// and the ONE write path POST /api/task/move (agentic-workflow-009, ADR-0001),
-// which delegates to the shared lifecycle mover — never moving a file itself.
+// The server is READ-ONLY (ADR-0017): it serves static assets + a health check
+// (agentic-workflow-004), the SSE live-update channel GET /api/events
+// (infrastructure-003, ADR-0006), and the read endpoints GET /api/tree +
+// GET /api/doc (agentic-workflow-005, ADR-0002). It has NO write path — task
+// lifecycle is owned entirely by the skills (`modeling` / `work`); the board
+// reflects their on-disk moves via the live-update stream, it never makes them.
 
 import http from 'node:http';
 import path from 'node:path';
@@ -11,7 +12,6 @@ import { fileURLToPath } from 'node:url';
 import { serveStatic, serveIndexHtml } from './static.mjs';
 import { handleEvents } from './events.mjs';
 import { handleTree, handleDoc } from './read-api.mjs';
-import { handleMove } from './move-api.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -51,22 +51,6 @@ export function createDashboardServer({ root, assetRoot = defaultAssetRoot(root)
     // discovered project; emits tree-changed pointers + heartbeats.
     if (pathname === '/api/events' && req.method === 'GET') {
       handleEvents(req, res, root, sse);
-      return;
-    }
-
-    // The ONLY write path (aw-009, ADR-0001): Promote a task backlog→todo via the
-    // shared lifecycle mover. Transport-only — it delegates to applyTaskMove and
-    // translates the structured result to HTTP; it never moves a file itself.
-    if (pathname === '/api/task/move') {
-      if (req.method !== 'POST') {
-        res.writeHead(405, {
-          'content-type': 'text/plain; charset=utf-8',
-          allow: 'POST',
-        });
-        res.end('Method Not Allowed');
-        return;
-      }
-      handleMove(req, res, root);
       return;
     }
 

@@ -55,7 +55,8 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
-- **ADR-0001** — Dashboard write-semantics — Promote-only UI moves, one shared mover, optimistic concurrency (proposed) — `../../knowledge/decisions/0001-dashboard-write-semantics.md`
+- **ADR-0001** — Dashboard write-semantics — Promote-only UI moves, one shared mover, optimistic concurrency (superseded by ADR-0017) — `../../knowledge/decisions/0001-dashboard-write-semantics.md`
+- **ADR-0017** — Dashboard is read-only; skills are the sole owners of task lifecycle (accepted) — `../../knowledge/decisions/0017-dashboard-read-only-skills-own-lifecycle.md`
 - **ADR-0004** — Detached dashboard server uses a neutral cwd and AGENTHEIM_ROOT, not the project dir (proposed) — `../../knowledge/decisions/0004-dashboard-detached-process-cwd.md`
 - **ADR-0007** — applyTaskMove owns only the move; INDEX/protocol side-effects stay with skills (proposed) — `../../knowledge/decisions/0007-task-move-side-effect-boundary.md`
 - **ADR-0009** — Dashboard frontend app lives in `dashboard/app/`, consumes the styleguide; build retargets to it (proposed) — `../../knowledge/decisions/0009-dashboard-frontend-app-shell.md`

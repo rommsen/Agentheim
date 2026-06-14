@@ -87,14 +87,15 @@ separate BC, but today the whole tool lives in this one.
   contexts pooled into those columns — no swimlanes; each card carries its BC via the styleguide
   `context` chip. Rendered over the live tree projection (`GET /api/tree`); a status-driven,
   loss-tolerant transform (`dashboard/app/board-data.js`) buckets each task by status (unknown
-  status → backlog) and shapes it for the styleguide card. Read-only here — clicking a card emits
-  an *open-this-task* intent the slide-over (aw-007) consumes. Dragging a card **`backlog→todo`**
-  performs a **Promote** through the shared `applyTaskMove` write path (aw-009); every other
-  column is a non-drop target. The board also stays **live** — it subscribes to the SSE stream and
-  re-fetches `/api/tree` on any change (see *Live-update* and *Promote write path* below). See
-  ADR-0009, ADR-0001.
+  status → backlog) and shapes it for the styleguide card. **Read-only** (ADR-0017) — clicking a
+  card emits an *open-this-task* intent the slide-over (aw-007) consumes; the board never writes a
+  lifecycle move. Lifecycle changes are owned entirely by the skills (`modeling` / `work`); the
+  board stays **live** by subscribing to the SSE stream and re-fetching `/api/tree` on any change,
+  so a skill's on-disk move shows up within a frame (see *Live-update* below). To promote a task,
+  use `modeling` — backlog cards carry a *copy `/agentheim:modeling <id>`* affordance (aw-016) for
+  exactly this. See ADR-0009, ADR-0017.
 - **Column sort** — each board column has its own **independent** sort control (agentic-workflow-012),
-  a board-only `<select>` rendered as a *sibling* of the styleguide `ColumnHeader` (the `DragColumn`
+  a board-only `<select>` rendered as a *sibling* of the styleguide `ColumnHeader` (the board-column
   precedent — the styleguide `kanban.js` is consumed unmodified, ADR-0003). Orderings: **Name** (task
   `title`) asc/desc and **Modification-date** desc/asc, where modification time is the per-task `mtimeMs`
   the projection carries (aw-013). Default per column is **modification-date descending**, so
@@ -109,7 +110,7 @@ separate BC, but today the whole tool lives in this one.
   in-session-only clause; aw-012 stays `done`.)
 - **Column grouping (group by bounded context)** — each board column also has its own **independent**
   group-by-BC toggle (agentic-workflow-014), a board-only control rendered as a *sibling* of the sort
-  `<select>` (same `DragColumn` precedent — the styleguide `kanban.js` is consumed unmodified, ADR-0003).
+  `<select>` (same board-column precedent — the styleguide `kanban.js` is consumed unmodified, ADR-0003).
   Toggling a column **on** partitions its cards into per-BC sections, each with a header showing the BC
   name + a card count; a BC with zero cards in that column renders **no** section, and sections are
   ordered by BC name **ascending**. Each section is independently **collapsible** (collapsing hides its
@@ -121,7 +122,7 @@ separate BC, but today the whole tool lives in this one.
   disk. A column with no stored state, or a brand-new BC, defaults to **flat + default sort +
   all-expanded** (never `NaN`, never a throw). The collapsible section header is **board-local**,
   token-matched (the styleguide `TreeGroup` primitive is coupled to `TreeItem` rows and owns its own
-  open state — it does not fit a board section rendering draggable `TicketCard`s with externally-persisted
+  open state — it does not fit a board section rendering `TicketCard`s with externally-persisted
   collapse state); a `design-system` capture (design-system-005) is filed for the shared primitive. See
   ADR-0015, ADR-0009, ADR-0003.
 - **Persisted board view-state** — the per-column **view lens** — grouped/flat, sort choice, and each
@@ -169,19 +170,19 @@ separate BC, but today the whole tool lives in this one.
   framework-free `dashboard/app/live-update.js` (`createLiveUpdate`). On every `tree-changed`
   frame — and on every (re)connect — it does **one** thing: re-fetch `/api/tree` and re-project
   the whole board. It **never** interprets the raw pointer as a transition (the watcher stays
-  transport-only); re-fetching is idempotent, so a burst of changes, or the echo of the board's
-  own Promote, collapses into re-fetches with no double-apply. EventSource auto-reconnects and the
-  board re-syncs on reconnect — no missed-event bookkeeping. Disk is the source of truth; the board
-  is a projection rebuilt from it. See ADR-0012, ADR-0006, ADR-0001.
-- **Promote write path** — the dashboard's **only** write (agentic-workflow-009): `POST
-  /api/task/move` (`dashboard/move-api.mjs`, wired in `dashboard/server.mjs`). It is
-  **transport-only** — it parses `{ id, from, to, expectedMtimeMs? }`, delegates to `applyTaskMove`
-  with `policy: 'ui'` (Promote-only), and translates the structured result to HTTP (200 success;
-  409 stale-precondition / blocked-dependency; 404 not-found; 422 illegal-move; 400 bad body). It
-  never moves a file itself. The frontend core (`dashboard/app/promote.js`) decides which drop is
-  legal (`isLegalDrop` = `backlog→todo` only) and posts the optimistic precondition; a rejected
-  move surfaces the domain `reason` and the board re-fetches. There is **no UI-only writer** of
-  lifecycle state — `applyTaskMove` is the sole writer. See ADR-0001, ADR-0012.
+  transport-only); re-fetching is idempotent, so a burst of changes collapses into re-fetches with
+  no double-apply. EventSource auto-reconnects and the board re-syncs on reconnect — no
+  missed-event bookkeeping. Disk is the source of truth; the board is a projection rebuilt from it.
+  This is the **only** way state reaches the board — there is no UI write to echo (ADR-0017). See
+  ADR-0012, ADR-0006, ADR-0017.
+- **No write path (read-only dashboard)** — the dashboard never writes lifecycle state (ADR-0017).
+  The former drag-to-Promote endpoint (`POST /api/task/move`, agentic-workflow-009) and its client
+  (`dashboard/app/promote.js`) were **removed**: cards are not drag sources, columns are not drop
+  targets, and the HTTP server exposes only reads + the SSE stream + static assets. Task-lifecycle
+  transitions are owned entirely by the skills (`modeling` promotes, `work` claims/completes),
+  which move files on disk together with the readiness check, `depends_on`/gate guard, INDEX
+  update, and protocol entry; the board reflects those moves via the live-update stream. See
+  ADR-0017, ADR-0007.
 - **Slide-over** — the dashboard's universal right-hand detail panel (agentic-workflow-007):
   one Notion-style drawer that opens for *any* artifact — a board task or a non-task artifact
   (BC README, vision, context-map, research, ADR). It consumes the board's *open-this-task*
@@ -205,24 +206,24 @@ separate BC, but today the whole tool lives in this one.
   board emits (`{ type, title, path }`), routed into the one universal slide-over (aw-007). A
   board↔library toggle in the shell (built from the styleguide `RailItem`) switches surfaces. See
   ADR-0011, ADR-0009.
-- **Card move** — a UI drag of a task card between lifecycle columns; semantically a Task
-  transition command (v1: Promote / `backlog→todo` only), never a raw file operation. Every
-  other transition is a non-drop target, rejected with a domain reason. See ADR-0001.
-- **`applyTaskMove`** — the single lifecycle-transition operation shared by the skills and the
-  dashboard write endpoint; the sole writer of task lifecycle state and sole enforcer of
-  *status matches folder* and the legal-move policy. Built in agentic-workflow-003 as
-  `lib/task-lifecycle.mjs` (BC-owned domain logic, node stdlib only; the dashboard runtime
-  imports it). Signature `applyTaskMove(rootDir, id, from, to, options)` — takes `rootDir`
-  explicitly (no ambient cwd) so a skill context and the dashboard call it identically;
-  `options.policy` is `'ui'` (default — Promote `backlog→todo` only) or `'skill'` (the fuller
-  forward set: Promote, Claim, Complete); `options.expectedMtimeMs` is the optimistic mtime
-  precondition. Returns `{ ok: true, state }` or a structured rejection
+- **Task transition** — a lifecycle move of a task between folders (`backlog→todo` Promote,
+  `todo→doing` Claim, `doing→done` Complete), never a raw file operation: it is a command on the
+  **Task** aggregate, enforcing *status matches folder*. Owned by the skills (`modeling` / `work`),
+  not the dashboard, which is read-only (ADR-0017).
+- **`applyTaskMove`** — the canonical lifecycle-transition operation, owned by agentic-workflow and
+  available to the skills; enforcer of *status matches folder* and the legal-move policy. Built in
+  agentic-workflow-003 as `lib/task-lifecycle.mjs` (BC-owned domain logic, node stdlib only). The
+  dashboard does **not** call it — the board is read-only (ADR-0017). Signature
+  `applyTaskMove(rootDir, id, from, to, options)` — takes `rootDir` explicitly (no ambient cwd);
+  `options.policy` is `'skill'` (the forward set: Promote, Claim, Complete) or `'ui'` (a retained
+  restricted Promote-only set, no longer wired to a caller); `options.expectedMtimeMs` is the
+  optimistic mtime precondition. Returns `{ ok: true, state }` or a structured rejection
   `{ ok: false, code, reason }` (`code` ∈ illegal-move | blocked-dependency |
   stale-precondition | not-found). It owns ONLY the move + status rewrite + precondition;
   INDEX/protocol side-effects stay with the skills/orchestrator (ADR-0007). It is addressed by
   the **bare id** but resolves the real on-disk file `<id>-<slug>.md` (anchored so `alpha-001`
   never collides with `alpha-0010`) and preserves that filename across the move — only the folder
-  changes, the id is stable (ADR-0012). See ADR-0001, ADR-0007, ADR-0012.
+  changes, the id is stable (ADR-0012). See ADR-0017, ADR-0007, ADR-0012.
 
 ## Aggregates
 
@@ -248,7 +249,8 @@ Dashboard.
 **Dashboard** launches the local web UI over the project's `.agentheim/` folder — a flat Kanban
 board of every BC's tasks, a universal slide-over that renders any artifact (tasks, BC READMEs,
 the vision, the context map, ADRs, research) as markdown, live-updating as skills move files on
-disk, with one write-back intent: drag `backlog→todo` to Promote. Invoked via the `/dashboard`
+disk. It is **read-only** (ADR-0017): no write-back — task lifecycle is owned by the skills, and
+the board reflects their moves rather than making them. Invoked via the `/dashboard`
 slash command (agentic-workflow-011 — the documented slash-command exception above), with three
 verbs: bare `/dashboard` launches-or-reuses the detached server and **auto-opens** the default
 browser at `http://127.0.0.1:<port>/`; `/dashboard stop` terminates it and removes the runfile;

@@ -142,8 +142,8 @@ tree's `TreeGroup` and a board-local clone). Both consume it **unforked**
   the tree's count moved to the right edge and its label gained truncation.
 - **Owns the reveal; body-agnostic.** The primitive holds the open truth and
   conditionally renders the body it reveals — so the `{open && …}` logic lives in
-  ONE place. Children are arbitrary (`TreeItem` rows in the tree, draggable
-  `TicketCard`s on the board); each consumer passes its own spacing via a
+  ONE place. Children are arbitrary (`TreeItem` rows in the tree, `TicketCard`s
+  on the board); each consumer passes its own spacing via a
   **`bodyStyle`** override.
 - **Controlled OR uncontrolled.** Controlled when `open` + `onToggle` are
   supplied — the board drives it from collapse state persisted per `(column, BC)`
