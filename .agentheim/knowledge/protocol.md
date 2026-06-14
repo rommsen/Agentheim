@@ -5,6 +5,99 @@ Newest entries on top.
 
 ---
 
+## 2026-06-14 09:41 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 3 (first-try PASS: 3, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3 (6985ee7 infrastructure-011, a536cba agentic-workflow-018, df9792d agentic-workflow-019)
+**New backlog items:** none created by workers (aw-020 + infrastructure-012 were filed by a concurrent modeling session, not this run)
+**Notes:** Three tasks across two BCs, run as three SEQUENTIAL solo waves. infrastructure-011 (dashboard tab title names the discovered project, server-side `serveIndexHtml` injection from the `# Vision:` heading, folder-name fallback; new pure `project-name.mjs`) ran first as the sole ready task. A concurrent modeling session then promoted aw-018 + aw-019 to todo mid-run; both are agentic-workflow BC and both reference the agentic-workflow README (EmptyColumn / Capture), so they were serialized rather than parallelized to avoid a BC-memory race. aw-018 (dropped the dead "Add ticket" empty-card button + no-op header `+` on todo/doing/done via an optional `onAdd` slot on the styleguide `EmptyColumn`/`ColumnHeader`, default off, board supplies only for backlog — consumed unforked per ADR-0003/0009) ran wave 2; aw-019 (renamed the `capture` skill → `quick-capture` end-to-end) ran wave 3. All three PASSED verification first try (dashboard 210/210, styleguide 28/28; both committed `dist/` bundles confirmed byte-reproducible from `node build.mjs`). Concurrent untracked work from other sessions (agentic-workflow/INDEX backlog entry, repo-review-2026-06-10.md, the two new backlog tasks) was kept out of every commit via surgical staging. **Builder action needed:** the styleguide gate REOPENS from aw-018 — `EmptyColumn` and `ColumnHeader` are visual primitives that changed; awaiting a fresh builder canvas re-review (same flow as ds-005/ds-007).
+
+---
+
+## 2026-06-14 09:40 -- Task verified and completed: agentic-workflow-019 - Rename the `capture` skill to `quick-capture`
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-019 - Rename the `capture` skill to `quick-capture`
+**Summary:** Renamed the `capture` skill to `quick-capture` end-to-end (`skills/capture/` → `skills/quick-capture/`, evals subtree carried along, `name: quick-capture` frontmatter, body + "Handoff to modeling" wiring) so it invokes as `/agentheim:quick-capture`. The `modeling` CAPTURE action, the verb "capture", user trigger phrases, and `skills/capture-workspace/` eval scratch were left untouched per the scope boundary.
+**Verification:** PASS (iteration 1)
+**Commit:** df9792d
+**Files changed:** skills/{capture => quick-capture}/SKILL.md + evals/evals.json (git-tracked rename) + agentic-workflow README ("Capture" → "Quick Capture" in Key commands)
+**Tests added:** none (markdown skill rename; no skill-naming test infra — verifier re-grepped instead)
+**ADRs written:** none (ubiquitous-language naming change, not architectural)
+**Note:** Plugin manifest auto-discovers skills (no `skills` key, no capture reference) — no manifest edit needed. Only residual "agentheim:capture" / "skills/capture" hits are dated, append-only historical records (repo-review-2026-06-10.md, the protocol diary) — left intact deliberately so the dated observations stay true; verifier judged AC#6 ("no live stale cross-reference") satisfied.
+
+---
+
+## 2026-06-14 09:36 -- Batch started: [agentic-workflow-019]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-019 - Rename the `capture` skill to `quick-capture`
+**Parallel:** no (1 worker — sole remaining ready task)
+
+---
+
+## 2026-06-14 09:33 -- Task verified and completed: agentic-workflow-018 - Remove the non-functional "Add ticket" affordances from non-backlog columns
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-018 - Remove the non-functional "Add ticket" affordances from non-backlog columns
+**Summary:** The dead "Add ticket" affordances are gone from todo/doing/done. The styleguide `EmptyColumn` button and `ColumnHeader` `+` are now optional `onAdd` slots (default OFF, mirroring ds-006's `cornerAction`); `board.js` supplies them only for backlog — consumed unforked (ADR-0003/0009). Both AC#1 (empty-card button) and the optional AC#2 (header `+`) done.
+**Verification:** PASS (iteration 1)
+**Commit:** a536cba
+**Files changed:** 6 (styleguide empty.js, kanban.js, new add-affordance.test.mjs, dashboard board.js, dist/app.js, agentic-workflow README)
+**Tests added:** styleguide add-affordance.test.mjs (5 cases: slot present-when-supplied/absent-by-default on EmptyColumn + ColumnHeader, board supplies onAdd only for backlog) — styleguide 28/28, dashboard 210/210 green; dist/app.js reproducible (byte-identical on rebuild).
+**ADRs written:** none (extends ADR-0003 single-source + ADR-0009 unforked consumption)
+**Gate:** styleguide gate REOPENS — `EmptyColumn` and `ColumnHeader` are visual primitives that changed; awaiting builder canvas re-review (same flow as ds-005/ds-007).
+
+---
+
+## 2026-06-14 09:27 -- Batch started: [agentic-workflow-018]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-018 - Remove the non-functional "Add ticket" affordances from non-backlog columns
+**Parallel:** no (1 worker — aw-019 held this wave; both are agentic-workflow BC and may both touch the BC README / agentic-workflow concerns, so serialized to avoid a BC-memory race)
+
+---
+
+## 2026-06-14 -- Modeling / Captured: dashboard add-ticket cleanup + two launch buttons (4 tasks, 2 BCs)
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow, infrastructure
+**Filed to:** todo (2), backlog (2)
+**Summary:** Builder wants the dashboard's non-functional add-ticket affordances
+removed and the backlog one turned into real launchers. Decomposed into four tasks:
+**aw-018** (todo) — remove the dead "Add ticket" button from empty todo/doing/done
+columns (+ the no-op header `+`); **aw-019** (todo) — rename the `capture` skill to
+`quick-capture` so the button command reads `/agentheim:quick-capture`;
+**infrastructure-012** (backlog) — build the VS Code dashboard→terminal bridge
+(127.0.0.1 listener extension) per the 2026-06-09 research, the only path to a real
+interactive seeded `claude` session from the sandboxed Simple Browser;
+**aw-020** (backlog) — replace the backlog "Add ticket" with two buttons (Quick
+Capture → `/agentheim:quick-capture`, Modeling → `/agentheim:modeling`) that launch
+via the bridge, with a clipboard fallback when not in VS Code / the bridge is absent
+(builder's explicit requirement). aw-020 depends on infrastructure-012 + aw-019 +
+design-system-001; evolves aw-016 (clipboard copy) as `prior_art`. ID note:
+infrastructure-011 was taken by a concurrent session (title-project-name, done), so
+the bridge took 012.
+
+---
+
+## 2026-06-14 09:22 -- Task verified and completed: infrastructure-011 - Dashboard browser tab title reflects the discovered project's name
+
+**Type:** Work / Task completion
+**Task:** infrastructure-011 - Dashboard browser tab title reflects the discovered project's name
+**Summary:** The dashboard tab `<title>` is now rewritten server-side per request to `<ProjectName> — Dashboard`, where the name comes from the discovered project's `# Vision:` heading (falling back to the root folder basename). New `project-name.mjs` (pure, stdlib-only: parseVisionName / resolveProjectName / dashboardTitle / injectTitle, with HTML-escaping); `serveIndexHtml` in static.mjs transforms only `/` and `/index.html`, reusing the in-root resolver so ADR-0002 traversal guarantees stand; the baked `dist/`+`build.mjs` title is now a documented default/template. No flash, no new dependency.
+**Verification:** PASS (iteration 1)
+**Commit:** 6985ee7
+**Files changed:** 8 (project-name.mjs, static.mjs, server.mjs, build.mjs, dist/index.html, project-name.test.mjs, server.test.mjs, infrastructure README)
+**Tests added:** dashboard test/project-name.test.mjs (parse/casing/whitespace/fallback/suffix/inject + HTML-escape) and 2 new server.test.mjs integration cases (vision-heading injection, headingless folder fallback) — full dashboard suite 210/210 green; dist/index.html reproducible from `node build.mjs`.
+**ADRs written:** none (honors ADR-0002 Node-stdlib zero-deps + ADR-0003 committed dist/)
+
+---
+
 ## 2026-06-14 09:17 -- Batch started: [infrastructure-011]
 
 **Type:** Work / Batch start

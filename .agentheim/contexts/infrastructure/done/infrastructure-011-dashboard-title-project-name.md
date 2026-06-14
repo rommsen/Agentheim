@@ -6,7 +6,7 @@ type: feature
 context: infrastructure
 created: 2026-06-14
 completed: 2026-06-14
-commit:
+commit: 6985ee7
 depends_on: []
 blocks: []
 tags: [dashboard, runtime, project-discovery]

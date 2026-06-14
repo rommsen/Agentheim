@@ -6,7 +6,7 @@ type: chore
 context: agentic-workflow
 created: 2026-06-14
 completed: 2026-06-14
-commit:
+commit: df9792d
 depends_on: []
 blocks: []
 tags: [skills, ubiquitous-language, rename]

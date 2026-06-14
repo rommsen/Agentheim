@@ -6,7 +6,7 @@ type: chore
 context: agentic-workflow
 created: 2026-06-14
 completed: 2026-06-14
-commit:
+commit: a536cba
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, board, cleanup]
