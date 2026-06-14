@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
+- **Backlog:** 2
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 11
+- **Done:** 12
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-012** — VS Code dashboard→terminal bridge — pin the transport contract (ADR-0018) (decision) — `done/infrastructure-012-vscode-bridge-contract.md`
 - **infrastructure-011** — Dashboard browser tab title reflects the discovered project's name (feature) — `done/infrastructure-011-dashboard-title-project-name.md`
 - **infrastructure-010** — $CLAUDE_PLUGIN_ROOT is empty at /dashboard runtime — 008's fix collapses to the broken project path (bug) — `done/infrastructure-010-dashboard-plugin-root-empty-foreign-project.md`
 - **infrastructure-009** — Add a test seam for slash-command card invocation (catch project-relative launcher paths) (chore) — `done/infrastructure-009-command-card-invocation-test-infra.md`
@@ -41,11 +42,14 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **infrastructure-013** — Build the VS Code bridge extension — 127.0.0.1 listener that opens a seeded Claude terminal (feature) — `backlog/infrastructure-013-vscode-bridge-extension.md`
+- **infrastructure-014** — Dashboard server GET /api/bridge — serve the bridge port+token to the sandboxed frontend (feature) — `backlog/infrastructure-014-dashboard-bridge-discovery-endpoint.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0018** — VS Code dashboard→terminal bridge — fixed-port localhost-listener extension + server-mediated `bridge.json` / `GET /api/bridge` discovery (proposed; diverges-in-part from ADR-0002's ephemeral port) — `../../knowledge/decisions/0018-vscode-dashboard-terminal-bridge.md`
 - **ADR-0013** — Plugin release discipline — manifest bump bound to a `vX.Y.Z` git tag, by checklist (accepted) — `../../knowledge/decisions/0013-plugin-release-discipline.md`
 - **ADR-0002** — Dashboard runtime — Node-stdlib localhost transport with detached launch (proposed; superseded-in-part by ADR-0006) — `../../knowledge/decisions/0002-dashboard-runtime-transport.md`
 - **ADR-0006** — Dashboard live-update — SSE push + .agentheim/ file-watcher (proposed; supersedes-in-part ADR-0002) — `../../knowledge/decisions/0006-dashboard-live-update-sse.md`

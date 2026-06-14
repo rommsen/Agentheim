@@ -1,0 +1,211 @@
+---
+id: ADR-0018
+title: VS Code dashboard→terminal bridge — fixed-port localhost extension with server-mediated discovery
+scope: infrastructure
+status: proposed
+date: 2026-06-14
+related_tasks: [infrastructure-012, infrastructure-013, infrastructure-014, agentic-workflow-020]
+related_adrs: [ADR-0002]
+diverges_from: [ADR-0002]
+---
+
+# ADR-0018: VS Code dashboard→terminal bridge — fixed-port localhost extension with server-mediated discovery
+
+> **Diverges from [ADR-0002](0002-dashboard-runtime-transport.md) on one clause.** ADR-0002 fixed
+> the dashboard runtime as an **ephemeral `:0` port** read back into `runtime.json`. That pattern
+> **cannot serve this bridge**, because the discovery reader here is the dashboard *frontend* — a
+> sandboxed VS Code Simple Browser frame that is filesystem-blind and can only `fetch()` its own
+> origin. It can never read a runfile. This ADR therefore chooses a **fixed starting port** for the
+> bridge listener and a **server-mediated discovery** path. Every other ADR-0002 clause —
+> `127.0.0.1`-only binding, in-root path validation, the `.agentheim/.dashboard/` gitignored
+> runtime dir — **still stands and is reused here**.
+
+## Context
+
+The Agentheim dashboard runs inside VS Code's **Simple Browser**, a sandboxed webview that by
+design cannot touch the OS terminal or spawn a visible process. The builder wants board buttons
+(agentic-workflow-020) to open a **real, interactive** terminal running `claude "<prompt>"` —
+not a clipboard paste, and not a headless background process whose output is invisible.
+
+The 2026-06-09 research (`vscode-dashboard-terminal-bridge-2026-06-09`) established that the
+**only** path to a real, visible, interactive terminal from the sandboxed browser is a tiny
+custom VS Code extension that runs a `127.0.0.1` HTTP listener and, on request, calls
+`window.createTerminal()` + `terminal.show()` + `terminal.sendText('claude "<prompt>"')`. A plain
+`http` POST is the one cross-origin action the sandbox permits; every other bridge (`vscode://`
+deep links, `command:` URIs, server-spawned child processes) is either blocked from inside Simple
+Browser or cannot reach the user's visible terminal pane.
+
+Before any code is written, the **transport contract** must be pinned, so the extension
+(infrastructure-013), the dashboard server endpoint (infrastructure-014), and the board buttons
+(agentic-workflow-020) all build against one frozen interface instead of duplicating a magic
+number and an ad-hoc handshake across three codebases. This ADR is that contract. It mirrors the
+repo's decision-then-build precedent (ADR-0002 ← infrastructure-001): pin the decision first, so
+the three build tasks proceed in parallel against a frozen seam.
+
+This is Agentheim's **first cross-process discovery decision** — two independently-launched local
+processes (the dashboard server and the VS Code extension host) that must find each other without
+a shared launcher.
+
+## Decision
+
+### Bridge mechanism — custom VS Code extension with a 127.0.0.1 HTTP listener
+
+The bridge is a small VS Code extension whose activation starts a `node:http` listener bound to
+**`127.0.0.1` only** (never `0.0.0.0`). On a valid `POST /run`, it calls
+`window.createTerminal()` + `terminal.show()` + `terminal.sendText('claude "<prompt>"')`, yielding
+a real, visible, interactive Claude session in the user's editor. This is chosen over the
+alternatives below because it is the only path that controls a visible, interactive terminal from
+inside the sandboxed Simple Browser.
+
+### Fixed port, not ephemeral
+
+The extension listener binds **`127.0.0.1:31425`**, with a bounded fallback ladder
+**`31425 → 31426 → 31427`** on `EADDRINUSE`; the actually-bound port is recorded in the discovery
+file. The port literal is **arbitrary-but-fixed** — what is contractual is the *discovery
+mechanism*, not the number. ADR-0002's ephemeral `:0` is impossible here for the reason in the
+banner: the reader is a filesystem-blind sandboxed frame, so it cannot read a runfile to learn an
+OS-assigned port; it needs a fixed, knowable starting point to begin discovery.
+
+### Server-mediated discovery — no duplicated magic number
+
+The extension writes **`.agentheim/.dashboard/bridge.json`** =
+`{ port, token, pid, startedAt, v }` — a sibling of the existing `runtime.json` in the same
+gitignored `.agentheim/.dashboard/` dir. It is a **separate file**, not an extension of
+`runtime.json`, because a **different process** (the VS Code extension host) writes it on its own
+activation/deactivation lifecycle; folding it into `runtime.json` (owned by the dashboard server
+launcher) would couple two independent lifecycles to one file.
+
+The dashboard server gains a read endpoint **`GET /api/bridge`** that reads `bridge.json` through
+**ADR-0002's in-root path validator** (`path.resolve` + `startsWith(root)`) and returns
+`{ port, token, v }`, or **`200 { present: false }`** when the file is absent.
+
+The frontend obtains `port` + `token` **only** via `GET /api/bridge` — never hardcoded. This is
+the crux: it lets a sandboxed frame, which cannot read disk, learn a contract that lives on disk,
+by going through the one origin it *can* reach. The magic port is written and read in exactly one
+place each; no third party hardcodes it.
+
+### Scope — fresh-session only
+
+The bridge ships **`POST /run`** (open a new terminal, seed `claude "<prompt>"`). The
+inject-into-a-running-session path (`vscode.window.activeTerminal.sendText(prompt)`) is
+**deferred** as a named future **`POST /inject`**. It is purely additive (no consumer needs it —
+agentic-workflow-020 only wants fresh sessions) and carries distinct, untested edge cases
+(bracketed-paste / multi-line submission into a live TUI; see the research's open questions). It
+is named here so the build tasks reserve the route shape, not built.
+
+### Token — per-activation shared secret
+
+A **per-activation random token** (32 hex chars via `node:crypto`), regenerated each time the
+extension activates, is written into `bridge.json` and carried on every request as the
+**`X-Agentheim-Bridge-Token`** header. The listener **rejects** any request lacking or mismatching
+it, so other local pages on the dev box cannot trigger `claude`. Regenerating per activation means
+a stale `bridge.json` from a dead extension host carries a token no live listener will accept —
+absence degrades safely.
+
+### HTTP shape and status codes
+
+- **`POST /run { prompt }`** (extension listener; `X-Agentheim-Bridge-Token` required) → opens a
+  terminal and seeds the prompt → `200`/`202`. Missing/bad token → `401`. Malformed/empty body →
+  `400`.
+- **`GET /health`** (extension listener; token required) → `200`. Used by the frontend to confirm
+  a live listener at the advertised port.
+- **`GET /api/bridge`** lives on the **dashboard server**, not the extension → `{ port, token, v }`
+  or `200 { present: false }`.
+- **CORS preflight is load-bearing.** A custom-header (`X-Agentheim-Bridge-Token`) JSON `POST` is
+  **preflighted** by the browser, so the extension listener **must** answer the `OPTIONS`
+  preflight (echoing the allowed origin/headers/methods) or the real request never fires. This is
+  an easy build trap — called out explicitly for infrastructure-013.
+
+### Absence-detection contract for the frontend
+
+The frontend detects the bridge by calling **`GET /api/bridge`**, then a token-bearing
+**`GET /health`** against the advertised port (**≈800 ms timeout**). **Every** failure mode —
+timeout, connection-refused, non-200, CORS rejection, `present: false`, not-running-in-Simple-
+Browser, any thrown exception — collapses **silently** to the **clipboard fallback**. The board
+**must never** surface an error toast, console crash, or broken-looking button for an absent
+bridge: **absence is a normal mode**, not an error. This is the contract agentic-workflow-020's
+fallback relies on.
+
+### No permission-bypass
+
+The launch never hard-wires `--dangerously-skip-permissions` or any permission-bypass flag into
+the seeded command. The bridge runs `claude` with its normal permission prompts intact.
+
+### Trust boundary
+
+Loopback-only bind (`127.0.0.1`) **plus** the shared-secret token header, per the research note.
+Anything that can reach the listener can trigger `claude` (which edits files and runs shell
+commands), so the token is what stops other local pages from POSTing to it. Acceptable for a
+single-user dev box; **not** a model for any networked or multi-user deployment.
+
+## Consequences
+
+**Positive**
+
+- One frozen interface for three build tasks (013 extension, 014 endpoint, aw-020 buttons) — they
+  proceed in parallel with no shared magic number or handshake drift.
+- Reuses ADR-0002's `127.0.0.1` binding, in-root path validation, and `.agentheim/.dashboard/`
+  gitignored dir wholesale — the divergence is surgical (one clause: port + discovery).
+- A sandboxed, filesystem-blind frame learns an on-disk contract through its own origin — the
+  general pattern for any future Simple-Browser↔local-process bridge.
+- Per-activation token + loopback-only bind gives a defensible trust boundary for a single-user box.
+
+**Negative**
+
+- A fixed port can collide; the `31425→31427` fallback ladder is bounded, so a (pathological)
+  triple-collision leaves the bridge undiscoverable — at which point the frontend correctly falls
+  back to clipboard. Acceptable, but it is a real failure edge the fallback must cover.
+- The CORS-preflight `OPTIONS` requirement is a non-obvious build trap; getting it wrong yields a
+  bridge that silently never fires (and, per the absence contract, looks indistinguishable from
+  "no bridge").
+- A stale `bridge.json` (dead extension host) lingers until the next activation overwrites it; the
+  token mismatch and the `GET /health` probe are what keep a stale file from causing a false
+  positive.
+
+**Neutral**
+
+- `bridge.json` is a second runtime artifact under `.agentheim/.dashboard/` alongside
+  `runtime.json`, written by a different process; both stay gitignored.
+- Fresh-session-only scope means the live-inject UX (`POST /inject`) is a known, named future, not
+  a gap discovered later.
+
+## Alternatives considered
+
+- **Dashboard server spawns `claude` (headless `child_process.spawn`).** Rejected: a server-spawned
+  child does **not** appear in the user's visible VS Code terminal pane — that pane is a pty owned
+  by VS Code, and an unrelated server has no handle to write into it. Confirmed locally: the
+  dashboard server is itself spawned `detached` with `stdio:'ignore'`, so it has no terminal
+  connection. This path is headless-only (`claude -p`, render output back in the dashboard) and
+  fails the "real, interactive, visible terminal" requirement. (Research §4.)
+- **`vscode://` deep link / `command:` URI.** Rejected for the in-Simple-Browser case: the sandboxed
+  webview **blocks** navigation/popups to non-`http(s)` schemes ("sandboxed frame whose
+  'allow-popups' permission is not set"), and `command:` URIs only work inside an extension-authored
+  webview with `enableCommandUris: true` — not in Simple Browser. Deep links work only when opened
+  by a *real external* browser, which is not our context. (Research §2.)
+- **Ephemeral `:0` port + runfile (ADR-0002's pattern).** Rejected for this bridge: the discovery
+  reader is a filesystem-blind sandboxed frame that can never read the runfile to learn the
+  OS-assigned port. A fixed starting port is required so the frame has a knowable place to begin
+  server-mediated discovery.
+- **`workbench.action.terminal.sendSequence` via a bridge.** Subsumed: it still requires a bridge
+  extension calling `executeCommand`, at which point `terminal.sendText()` is simpler and can target
+  a specific terminal. Only worth it for control keys `sendText` can't express — not our need.
+  (Research §5.)
+
+## Deferred / open sub-questions (non-blocking)
+
+- **`POST /inject`** (inject into a running session) — named-but-deferred, see Scope above.
+- **Multi-root-workspace anchoring** for the extension's `.agentheim/` walk-up — a non-issue for
+  single-project use; revisit only if a multi-root workspace appears.
+- **Whether the port literal `31425` ever needs to move** — only the discovery *mechanism* is
+  contractual, so the number can change without breaking the contract.
+- **Bracketed-paste / multi-line submission edge cases** when `/inject` is eventually built — flagged
+  by the research's open questions; out of scope for the fresh-session `POST /run` path.
+
+## Scope note
+
+This ADR records the **decision only**. No extension, no server endpoint, no board button is built
+here. infrastructure-013 builds the extension + listener; infrastructure-014 builds the
+`GET /api/bridge` endpoint on the dashboard server; agentic-workflow-020 wires the board buttons +
+clipboard fallback. All three build against the contract frozen above.
+
+Full findings + source citations: `knowledge/research/vscode-dashboard-terminal-bridge-2026-06-09.md`.

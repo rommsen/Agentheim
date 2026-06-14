@@ -5,7 +5,7 @@ scope: infrastructure
 status: proposed
 date: 2026-06-05
 related_tasks: [infrastructure-001, agentic-workflow-001, agentic-workflow-002, agentic-workflow-003, infrastructure-010]
-related_adrs: [ADR-0006]
+related_adrs: [ADR-0006, ADR-0018]
 superseded_in_part_by: [ADR-0006]
 ---
 
@@ -17,6 +17,13 @@ superseded_in_part_by: [ADR-0006]
 > `.agentheim/` file-watcher. **Every other clause below still stands**: Node-stdlib / zero
 > dependencies, `127.0.0.1` binding, detached launch + runfile + explicit stop, walk-up project
 > discovery, in-root path validation, and the `applyTaskMove` write seam.
+
+> **Transport precedent for [ADR-0018](0018-vscode-dashboard-terminal-bridge.md).** ADR-0018 (the
+> VS Code dashboard→terminal bridge) reuses this ADR's `127.0.0.1`-only binding, in-root path
+> validation, and gitignored `.agentheim/.dashboard/` runtime dir, but **diverges on one clause**:
+> it chooses a **fixed starting port + server-mediated discovery** instead of this ADR's ephemeral
+> `:0` + runfile, because the bridge's discovery reader is a filesystem-blind sandboxed Simple
+> Browser frame that can never read a runfile.
 
 ## Context
 
