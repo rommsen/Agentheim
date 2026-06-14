@@ -5,7 +5,13 @@ import { html } from "./html.js";
 import { Icon } from "./icons.js";
 import { STATUSES } from "./data.js";
 
-export function EmptyColumn({ status }) {
+// onAdd: optional add-ticket affordance (agentic-workflow-018). The board is a
+//   projection of disk (ADR-0001) — you don't ADD tickets to todo/doing/done from
+//   the dashboard, so a dead "Add ticket" button on those empty states reads as
+//   "broken". The affordance is now an OPTIONAL slot the consumer supplies, mirroring
+//   ds-006's `cornerAction`: absent -> the empty state is just the icon + copy.
+//   The dashboard supplies onAdd ONLY for backlog.
+export function EmptyColumn({ status, onAdd }) {
   const s = STATUSES[status];
   return html`
     <div style=${{
@@ -18,13 +24,14 @@ export function EmptyColumn({ status }) {
       <div style=${{ fontFamily: "var(--font-ui)", fontSize: 12.5, color: "var(--fg-3)" }}>
         No tickets in ${s.label.toLowerCase()}.
       </div>
-      <button className="focusable" style=${{
-        border: "none", background: "transparent", cursor: "pointer",
-        fontFamily: "var(--font-ui)", fontSize: 12, fontWeight: 500, color: "var(--fg-2)",
-        display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 4px",
-      }}>
-        Add ticket <${Icon} name="arrow-right" size=${12} color="var(--fg-2)" />
-      </button>
+      ${onAdd && html`
+        <button className="focusable" onClick=${onAdd} style=${{
+          border: "none", background: "transparent", cursor: "pointer",
+          fontFamily: "var(--font-ui)", fontSize: 12, fontWeight: 500, color: "var(--fg-2)",
+          display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 4px",
+        }}>
+          Add ticket <${Icon} name="arrow-right" size=${12} color="var(--fg-2)" />
+        </button>`}
     </div>`;
 }
 

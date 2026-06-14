@@ -318,11 +318,12 @@ function DragColumn({
       transition: "background var(--duration-fast) var(--ease-base)",
     }}>
       <${ColumnHeader} status=${status} count=${tickets.length}
-        onAdd=${status === "backlog" ? () => copyToClipboard(modelingCommandFor()) : () => {}} />
+        onAdd=${status === "backlog" ? () => copyToClipboard(modelingCommandFor()) : undefined} />
       <${ColumnControls} status=${status} sort=${sort} onSortChange=${onSortChange}
         grouped=${grouped} onGroupToggle=${onGroupToggle} />
       ${tickets.length === 0
-        ? html`<div style=${{ paddingBottom: 8 }}><${EmptyColumn} status=${status} /></div>`
+        ? html`<div style=${{ paddingBottom: 8 }}><${EmptyColumn} status=${status}
+            onAdd=${status === "backlog" ? () => copyToClipboard(modelingCommandFor()) : undefined} /></div>`
         : grouped
           ? html`
             <div style=${{ display: "flex", flexDirection: "column", gap: 6, paddingBottom: 8 }}>

@@ -151,7 +151,12 @@ separate BC, but today the whole tool lives in this one.
   now-dropped `... pt` estimate chip used to sit -- writing exactly `/agentheim:modeling <id>`; the
   backlog column's add-ticket **`+`** (the styleguide `ColumnHeader` `onAdd`) writes the **bare**
   `/agentheim:modeling`. Other columns get no corner action. The slot is click-isolated by the styleguide,
-  so copying never opens the slide-over. The command **string** is a **pure** function of the id --
+  so copying never opens the slide-over. The **add-ticket affordances are backlog-only**
+  (agentic-workflow-018): the styleguide `EmptyColumn` empty-state **"Add ticket"** button and the
+  `ColumnHeader` **`+`** are now **optional slots** keyed off an `onAdd` prop (default OFF, mirroring
+  ds-006's `cornerAction`); the board supplies `onAdd` **only** for backlog, so **todo / doing / done**
+  render the empty-state icon + "No tickets in &lt;status&gt;." copy and a header with **no `+`** -- the
+  board is a projection of disk (ADR-0001), you don't *add* tickets to those columns from here. The command **string** is a **pure** function of the id --
   `dashboard/app/modeling-command.js` (`modelingCommandFor`, `MODELING_COMMAND`, unit-tested under
   `node --test`); a missing/non-string id degrades to the bare command (never `[object Object]`, never a
   throw). The clipboard write uses `navigator.clipboard.writeText` with a graceful, no-throw fallback --

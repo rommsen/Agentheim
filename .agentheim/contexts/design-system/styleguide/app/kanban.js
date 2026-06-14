@@ -17,6 +17,10 @@ import { STATUSES, COLUMN_ORDER, TICKETS } from "./data.js";
 export { doingPulseClass, showEstimate };
 
 // ---- Column header ----
+// onAdd: optional add-ticket affordance (agentic-workflow-018). Like EmptyColumn's
+//   slot, the header `+` is now OPTIONAL — absent -> no `+`. The board is a
+//   projection of disk (ADR-0001), so the dashboard supplies onAdd ONLY for backlog
+//   (where it copies the modeling command); todo/doing/done render no `+`.
 export function ColumnHeader({ status, count, onAdd }) {
   const s = STATUSES[status];
   return html`
@@ -34,16 +38,17 @@ export function ColumnHeader({ status, count, onAdd }) {
         fontFeatureSettings: '"tnum"',
       }}>${count}</span>
       <div style=${{ flex: 1 }} />
-      <button className="focusable" title="Add ticket" onClick=${onAdd} style=${{
-        display: "inline-flex", alignItems: "center", justifyContent: "center",
-        width: 22, height: 22, borderRadius: "var(--radius-sm)",
-        border: "none", background: "transparent", color: "var(--fg-3)", cursor: "pointer",
-        transition: "background var(--duration-fast) var(--ease-base), color var(--duration-fast) var(--ease-base)",
-      }}
-        onMouseEnter=${(e) => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--fg-1)"; }}
-        onMouseLeave=${(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-3)"; }}>
-        <${Icon} name="plus" size=${15} />
-      </button>
+      ${onAdd && html`
+        <button className="focusable" title="Add ticket" onClick=${onAdd} style=${{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 22, height: 22, borderRadius: "var(--radius-sm)",
+          border: "none", background: "transparent", color: "var(--fg-3)", cursor: "pointer",
+          transition: "background var(--duration-fast) var(--ease-base), color var(--duration-fast) var(--ease-base)",
+        }}
+          onMouseEnter=${(e) => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--fg-1)"; }}
+          onMouseLeave=${(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--fg-3)"; }}>
+          <${Icon} name="plus" size=${15} />
+        </button>`}
     </div>`;
 }
 
