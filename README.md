@@ -72,6 +72,27 @@ It is driven by **`/dashboard`** — the single, deliberate exception to the "ph
 
 The command is a thin trigger over the one cross-platform launcher `dashboard/launch.mjs`; the server is Node-stdlib only — no framework, no `node_modules` install step, running on the Node that Claude Code already provides. See [`dashboard/README.md`](dashboard/README.md) for the runtime, endpoints, and verification status.
 
+### VS Code bridge — launch buttons that open a real terminal
+
+The backlog column's **Quick Capture** and **Modeling** buttons start a seeded Claude session directly (`claude "/agentheim:quick-capture"` / `claude "/agentheim:modeling"`) instead of just copying the command. Because the dashboard runs inside VS Code's sandboxed Simple Browser, the only way to reach a real, visible terminal is a tiny local **VS Code bridge extension** — a `127.0.0.1`-only listener the dashboard talks to (see [ADR-0018](.agentheim/knowledge/decisions/0018-vscode-dashboard-terminal-bridge.md)). Without it, the buttons **silently fall back to copying the command to the clipboard** — that's a normal mode, not an error, so installing the bridge is optional.
+
+To enable the launch buttons, package and install the extension (it isn't on the Marketplace):
+
+```sh
+cd vscode-extension
+npm install                                    # fetches @vscode/vsce (packaging only — the runtime is stdlib)
+npx vsce package --allow-missing-repository    # → agentheim-bridge-0.1.0.vsix
+code --install-extension agentheim-bridge-0.1.0.vsix
+```
+
+Then **activate** it:
+
+1. Open the Agentheim project (any folder containing `.agentheim/`) as a workspace folder in VS Code.
+2. Reload the window — `Ctrl/Cmd+Shift+P` → **Developer: Reload Window**. On startup the extension walks up to find `.agentheim/`, binds `127.0.0.1:31425` (falling back to `31426`/`31427`), and writes the discovery file `.agentheim/.dashboard/bridge.json`.
+3. Click **Quick Capture** or **Modeling** — a `Claude` terminal opens and runs the seeded command. No dashboard refresh is needed; each click re-probes the bridge, and it works from an external browser too (the bridge echoes your origin in the CORS preflight; both ends are loopback).
+
+The terminal keeps Claude's **normal permission prompts intact** — the bridge never hard-wires `--dangerously-skip-permissions`. Trust boundary is loopback-only binding plus a per-activation shared-secret token, fine for a single-user dev box but not for any networked deployment. Uninstall with `code --uninstall-extension agentheim.agentheim-bridge` (it removes `bridge.json` on deactivation). See [`vscode-extension/README.md`](vscode-extension/README.md) for the full HTTP contract and architecture.
+
 ## Project state layout
 
 All state for a project lives in `.agentheim/` inside that project — never in the plugin dir:
