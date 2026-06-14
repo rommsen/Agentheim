@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-14 -- Modeling / Promoted: agentic-workflow-020 - Backlog two launch buttons (Quick Capture & Modeling)
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+**Summary:** All four dependencies now done — infrastructure-012 (ADR-0018 bridge contract), infrastructure-014 (`GET /api/bridge` endpoint), agentic-workflow-019 (capture→quick-capture rename), design-system-001 (styleguide gate). Task carries 7 concrete acceptance criteria and a clear scope (two bridge-launched buttons + clipboard fallback), so it is ready for `work`. The "open for refine" notes (exact button placement; whether the per-card copy button also gains a launch path) are within-scope worker decisions, not promotion blockers.
+
+---
+
 ## 2026-06-14 -- Work session ended
 
 **Type:** Work / Session end
