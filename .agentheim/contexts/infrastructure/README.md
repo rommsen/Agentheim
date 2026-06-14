@@ -81,9 +81,12 @@ for an infrastructure BC.
   `31425 → 31426 → 31427`. Surface: `POST /run { prompt }` (opens a seeded terminal → 202),
   `GET /health` (→ 200), `OPTIONS` preflight (load-bearing — the custom-header JSON POST is
   preflighted). Every request carries the `X-Agentheim-Bridge-Token` header; missing/mismatched
-  → 401, malformed/empty body → 400. The launch never hard-wires `--dangerously-skip-permissions`
-  or any permission-bypass flag. The trust boundary is loopback-only bind **plus** the
-  shared-secret token — single-user dev box only. The generic launcher carries *whatever* prompt
+  → 401, malformed/empty body → 400. `POST /run` takes an **optional `skipPermissions` boolean**
+  (off by default): only literal `true` seeds `claude --dangerously-skip-permissions "<prompt>"`;
+  absent/false/malformed seeds `claude "<prompt>"` verbatim. The bypass is **bridge-launch-only**
+  (startup flag — the clipboard fallback cannot carry it) and requires a per-launch at-a-glance
+  indicator. The trust boundary is loopback-only bind **plus** the shared-secret token — single-user
+  dev box only. The generic launcher carries *whatever* prompt
   it is handed, so all board affordances share it. The inject-into-running-session path
   (`POST /inject`) is deferred. (ADR-0018, infrastructure-013.)
 - **Bridge discovery file** — `.agentheim/.dashboard/bridge.json` =
@@ -215,8 +218,11 @@ Apply write request.
   with `claude "<prompt>"`. Binds fixed port **31425** with a `31425→31426→31427` fallback ladder;
   records the bound port + a per-activation 32-hex token in `.agentheim/.dashboard/bridge.json`
   (a separate process from the dashboard server's `runtime.json`), removed on deactivation. CORS
-  preflight is load-bearing; missing/bad token → 401, malformed body → 400; no permission-bypass
-  flag is ever wired in. **Diverges from ADR-0002 only on the port clause** (fixed + server-mediated
+  preflight is load-bearing; missing/bad token → 401, malformed body → 400. `POST /run` carries an
+  **optional, off-by-default `skipPermissions` boolean** (amended): only literal `true` seeds
+  `claude --dangerously-skip-permissions "<prompt>"`; absent/false/malformed seeds `claude "<prompt>"`
+  verbatim, and the bypass is bridge-launch-only (the clipboard fallback cannot carry the startup
+  flag) with a required per-launch indicator. **Diverges from ADR-0002 only on the port clause** (fixed + server-mediated
   discovery vs ephemeral + runfile); every other ADR-0002 clause stands (stdlib-only, loopback bind,
   in-root validation, walk-up discovery, gitignored `.agentheim/.dashboard/`). The contractual core
   lives in `vscode-extension/src/bridge.js` (pure, unit-tested with the terminal-launch action

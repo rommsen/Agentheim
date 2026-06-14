@@ -4,12 +4,20 @@ title: VS Code dashboard→terminal bridge — fixed-port localhost extension wi
 scope: infrastructure
 status: proposed
 date: 2026-06-14
-related_tasks: [infrastructure-012, infrastructure-013, infrastructure-014, agentic-workflow-020]
+related_tasks: [infrastructure-012, infrastructure-013, infrastructure-014, agentic-workflow-020, infrastructure-015, infrastructure-016, agentic-workflow-021]
 related_adrs: [ADR-0002]
 diverges_from: [ADR-0002]
 ---
 
 # ADR-0018: VS Code dashboard→terminal bridge — fixed-port localhost extension with server-mediated discovery
+
+> **Amended 2026-06-14 (infrastructure-015).** The original **"No permission-bypass"** section is
+> reversed: the bridge now permits an **opt-in, off-by-default** permission-bypass on `POST /run`,
+> via an optional `skipPermissions` boolean. The ADR stays `status: proposed` and gains no
+> `supersedes`/`diverges_from` change — this is an in-place additive amendment to a still-proposed
+> decision. The reversed section below is now **"Permission-bypass — opt-in, off by default"**; the
+> `POST /run` body and command construction in "HTTP shape and status codes" are extended to match.
+> Everything else in this ADR stands unchanged (see "What stays frozen" at the end of the Decision).
 
 > **Diverges from [ADR-0002](0002-dashboard-runtime-transport.md) on one clause.** ADR-0002 fixed
 > the dashboard runtime as an **ephemeral `:0` port** read back into `runtime.json`. That pattern
@@ -104,9 +112,18 @@ absence degrades safely.
 
 ### HTTP shape and status codes
 
-- **`POST /run { prompt }`** (extension listener; `X-Agentheim-Bridge-Token` required) → opens a
-  terminal and seeds the prompt → `200`/`202`. Missing/bad token → `401`. Malformed/empty body →
-  `400`.
+- **`POST /run { prompt: string, skipPermissions?: boolean }`** (extension listener;
+  `X-Agentheim-Bridge-Token` required) → opens a terminal and seeds the prompt → `200`/`202`.
+  Missing/bad token → `401`. Malformed/empty body → `400`. The `skipPermissions` field is
+  **optional and additive** — every existing `{ prompt }` caller (infrastructure-013/014,
+  agentic-workflow-020) remains valid unchanged, since omitting it is the off default.
+  **Command construction (frozen):**
+  - `skipPermissions === true` (the JSON boolean literal `true`, nothing else) → seed
+    `claude --dangerously-skip-permissions "<prompt>"`.
+  - **anything else** — field absent, `false`, `null`, the string `"true"`, a number, or any other
+    non-`true` value → seed `claude "<prompt>"` **verbatim**, exactly as before this amendment.
+    The activation test is a strict identity check (`skipPermissions === true`), so malformed input
+    fails toward the prompt-gated default, never toward the bypass.
 - **`GET /health`** (extension listener; token required) → `200`. Used by the frontend to confirm
   a live listener at the advertised port.
 - **`GET /api/bridge`** lives on the **dashboard server**, not the extension → `{ port, token, v }`
@@ -126,10 +143,48 @@ Browser, any thrown exception — collapses **silently** to the **clipboard fall
 bridge: **absence is a normal mode**, not an error. This is the contract agentic-workflow-020's
 fallback relies on.
 
-### No permission-bypass
+### Permission-bypass — opt-in, off by default
 
-The launch never hard-wires `--dangerously-skip-permissions` or any permission-bypass flag into
-the seeded command. The bridge runs `claude` with its normal permission prompts intact.
+> **Reverses the original "No permission-bypass" stance (amended 2026-06-14, infrastructure-015).**
+> The original section forbade the launch from ever carrying `--dangerously-skip-permissions`. The
+> builder needs an *opt-in* path so that an explicitly-armed launch can skip the per-action
+> permission prompts. The default is unchanged — **off** — and absent/false/malformed input still
+> reproduces today's prompt-gated `claude "<prompt>"` verbatim.
+
+The bridge **may** carry `--dangerously-skip-permissions`, but **only** when a launch explicitly
+asks for it via the optional `skipPermissions` boolean on `POST /run` (frozen in "HTTP shape and
+status codes" below). The field is **off by default**: the bypass is never the implicit behaviour
+of any board affordance, and a request that omits it — or sends anything other than literal `true`
+— launches with normal permission prompts intact.
+
+The field is **intent-named** (`skipPermissions`, not the flag-spelled `dangerouslySkipPermissions`)
+so it survives a future CLI-flag rename, and **strictly `true`-activated** so malformed input fails
+toward safety rather than toward the bypass.
+
+**Guardrails this amendment mandates:**
+
+- **The token is unchanged.** `X-Agentheim-Bridge-Token` stays required and identical for bypass
+  launches; a missing/mismatched token still returns a **byte-identical `401`** whether or not
+  `skipPermissions` is set. The bypass widens what an *already-authenticated* request may do — it
+  never changes *who* is authenticated, and it is never reachable without the token.
+- **A required at-a-glance, per-launch indicator.** Any UI affordance that can fire a bypass launch
+  **must** show, at the moment of each launch, a clear at-a-glance signal that *this launch will
+  skip permissions* — the conscious moment is each launch, not the one-time toggle flip. The visual
+  detail is deferred to agentic-workflow-021 / the design-system; this ADR mandates that the
+  indicator exist and be per-launch, not its pixels.
+- **Residual risk, stated plainly.** With `skipPermissions: true`, the seeded `claude` session edits
+  files and runs shell commands **without its per-action permission prompts** — the last
+  interactive gate on a request that has already cleared loopback + token. An armed launch trusts
+  the prompt and the session unconditionally for the life of that terminal. This is acceptable only
+  for the single-user dev box this whole bridge targets; it is **not** a model for any networked or
+  multi-user deployment, and it compounds the trust-boundary note below.
+
+**Clipboard fallback cannot carry the bypass.** `--dangerously-skip-permissions` is a **startup-only**
+flag — it is set when `claude` launches, not mid-session. The clipboard fallback copies a slash
+command to paste into an *already-running* session, so it has no launch to attach the flag to and
+therefore **cannot** carry the bypass. The resulting **bridge-present/absent asymmetry** — a bypass
+launch is possible only when the bridge is live — is **accepted, not a defect**: it is the direct
+consequence of the flag's startup-only nature, and it fails safe (no bridge ⇒ no bypass).
 
 ### Trust boundary
 
@@ -137,6 +192,24 @@ Loopback-only bind (`127.0.0.1`) **plus** the shared-secret token header, per th
 Anything that can reach the listener can trigger `claude` (which edits files and runs shell
 commands), so the token is what stops other local pages from POSTing to it. Acceptable for a
 single-user dev box; **not** a model for any networked or multi-user deployment.
+
+### What stays frozen (the opt-in bypass is purely additive)
+
+The 2026-06-14 amendment adds **only** the optional `skipPermissions` field and its command
+construction. It reopens nothing that infrastructure-013, infrastructure-014, or agentic-workflow-020
+already built against. Explicitly **unchanged**:
+
+- **Loopback bind** — `127.0.0.1` only, never `0.0.0.0`.
+- **Fixed port + ladder** — `31425`, falling back `31425 → 31426 → 31427` on `EADDRINUSE`.
+- **Token header** — `X-Agentheim-Bridge-Token` required on every request; missing/mismatched → `401`,
+  byte-identical regardless of `skipPermissions`.
+- **`OPTIONS` preflight** — still load-bearing; the listener must answer it or the POST never fires.
+- **Status codes** — malformed/empty body → `400`; bad/missing token → `401`.
+- **Absence degrades silently to clipboard** — every bridge-detection failure mode collapses to the
+  clipboard fallback, no error surfaced.
+- **`bridge.json` shape** — `{ port, token, pid, startedAt, v }`; `GET /api/bridge` returns the
+  `{ port, token, v }` subset or `200 { present: false }`.
+- **`POST /inject`** — still named-but-deferred; not built here.
 
 ## Consequences
 
