@@ -1,0 +1,258 @@
+// Tests for the dashboard board's pure, DOM-free bridge-launch decision logic
+// (agentic-workflow-020). The backlog "Quick Capture" / "Modeling" buttons each
+// try to LAUNCH a real interactive Claude session through the VS Code bridge
+// (ADR-0018), and on ANY failure fall back SILENTLY to copying the command to the
+// clipboard (the aw-016 behavior). The decision — discover the bridge via
+// `GET /api/bridge`, confirm a live listener via a token-bearing `GET /health`
+// (~800 ms timeout), `POST /run { prompt }`, else copy — is a pure function of an
+// injected `fetch` + an injected `copy`, so it is unit-testable under
+// `node --test`. The React shell in board.js is thin integration glue over this.
+//
+// ADR-0018 absence contract: EVERY failure mode (present:false, timeout,
+// connection-refused, non-200, CORS rejection, any thrown exception) collapses
+// silently to the clipboard fallback — never an error, never a throw.
+
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
+import {
+  BRIDGE_TOKEN_HEADER,
+  launchOrCopy,
+} from '../app/bridge-launch.js';
+
+// ---- fetch test doubles -----------------------------------------------------
+
+// A scriptable fetch: routes by URL substring to a queued response or thrower.
+function makeFetch(routes) {
+  const calls = [];
+  const fetchImpl = async (url, opts = {}) => {
+    calls.push({ url: String(url), opts });
+    for (const [needle, responder] of routes) {
+      if (String(url).includes(needle)) return responder(url, opts);
+    }
+    throw new Error(`unrouted fetch: ${url}`);
+  };
+  fetchImpl.calls = calls;
+  return fetchImpl;
+}
+
+function jsonResponse(status, body) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  };
+}
+
+// A copy double that records its argument and reports success.
+function makeCopy(result = true) {
+  const copied = [];
+  const copy = async (text) => { copied.push(text); return result; };
+  copy.copied = copied;
+  return copy;
+}
+
+const PROMPT = '/agentheim:quick-capture';
+
+// ---- the constant -----------------------------------------------------------
+
+test('BRIDGE_TOKEN_HEADER is the contract header (ADR-0018)', () => {
+  assert.equal(BRIDGE_TOKEN_HEADER, 'X-Agentheim-Bridge-Token');
+});
+
+// ---- happy path: bridge present -> launch -----------------------------------
+
+test('bridge present + healthy + run accepted -> launches, does NOT copy', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31425, token: 'abc', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true, v: 1 })],
+    ['/run', () => jsonResponse(202, { ok: true })],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'bridge');
+  assert.equal(copy.copied.length, 0, 'must not fall back to clipboard when the bridge launched');
+});
+
+test('the POST /run carries the token header and the {prompt} JSON body (ADR-0018 shape)', async () => {
+  let runCall = null;
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31426, token: 'tok-xyz', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', (url, opts) => { runCall = { url, opts }; return jsonResponse(202, { ok: true }); }],
+  ]);
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy: makeCopy() });
+
+  assert.equal(result.via, 'bridge');
+  assert.ok(runCall, 'POST /run must have fired');
+  assert.equal(runCall.opts.method, 'POST');
+  assert.match(String(runCall.url), /127\.0\.0\.1:31426\/run$/);
+  // token header (case-insensitive lookup, since fetch headers are case-insensitive)
+  const headers = runCall.opts.headers || {};
+  const tokenVal = headers[BRIDGE_TOKEN_HEADER] ?? headers[BRIDGE_TOKEN_HEADER.toLowerCase()];
+  assert.equal(tokenVal, 'tok-xyz');
+  assert.match(String(headers['Content-Type'] ?? headers['content-type']), /application\/json/);
+  assert.deepEqual(JSON.parse(runCall.opts.body), { prompt: PROMPT });
+});
+
+test('the health probe carries the token header and targets the advertised port', async () => {
+  let healthCall = null;
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31427, token: 'h-tok', v: 1 })],
+    ['/health', (url, opts) => { healthCall = { url, opts }; return jsonResponse(200, { ok: true }); }],
+    ['/run', () => jsonResponse(202, { ok: true })],
+  ]);
+
+  await launchOrCopy({ prompt: PROMPT, fetchImpl, copy: makeCopy() });
+
+  assert.ok(healthCall, 'GET /health must have fired');
+  assert.match(String(healthCall.url), /127\.0\.0\.1:31427\/health$/);
+  const headers = healthCall.opts.headers || {};
+  const tokenVal = headers[BRIDGE_TOKEN_HEADER] ?? headers[BRIDGE_TOKEN_HEADER.toLowerCase()];
+  assert.equal(tokenVal, 'h-tok');
+});
+
+// ---- fallback paths: every failure mode -> clipboard ------------------------
+
+test('bridge absent (present:false) -> copies the prompt, never errors', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { present: false })],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'clipboard');
+  assert.deepEqual(copy.copied, [PROMPT]);
+});
+
+test('/api/bridge itself throwing (e.g. not in Simple Browser, no origin) -> copies', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => { throw new Error('Failed to fetch'); }],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'clipboard');
+  assert.deepEqual(copy.copied, [PROMPT]);
+});
+
+test('/api/bridge non-200 -> copies', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(500, { error: 'boom' })],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'clipboard');
+});
+
+test('bridge advertised but /health fails (connection-refused, stale bridge.json) -> copies', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31425, token: 'stale', v: 1 })],
+    ['/health', () => { throw new Error('ECONNREFUSED'); }],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'clipboard');
+  assert.deepEqual(copy.copied, [PROMPT]);
+});
+
+test('bridge advertised + /health 401 (token mismatch on a stale file) -> copies', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31425, token: 'stale', v: 1 })],
+    ['/health', () => jsonResponse(401, { error: 'unauthorized' })],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'clipboard');
+});
+
+test('bridge healthy but POST /run fails (non-2xx) -> copies', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31425, token: 'ok', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', () => jsonResponse(500, { error: 'launch failed' })],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'clipboard');
+});
+
+test('bridge healthy but POST /run throws (CORS rejection) -> copies', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31425, token: 'ok', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', () => { throw new Error('blocked by CORS'); }],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'clipboard');
+});
+
+test('a missing port/token in the /api/bridge payload -> treated as absent -> copies', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { v: 1 })], // no port, no token
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+
+  assert.equal(result.via, 'clipboard');
+});
+
+// ---- never-throw guarantee --------------------------------------------------
+
+test('launchOrCopy never rejects even if the clipboard copy itself fails', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => { throw new Error('no origin'); }],
+  ]);
+  const copy = makeCopy(false); // clipboard blocked too
+
+  // Must resolve, not reject. via is clipboard (the attempted fallback), ok flags
+  // that the copy itself did not land.
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy });
+  assert.equal(result.via, 'clipboard');
+  assert.equal(result.copied, false);
+});
+
+test('no fetch available at all (undefined fetchImpl) -> copies, never throws', async () => {
+  const copy = makeCopy();
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl: undefined, copy });
+  assert.equal(result.via, 'clipboard');
+  assert.deepEqual(copy.copied, [PROMPT]);
+});
+
+// ---- the health timeout is applied ------------------------------------------
+
+test('a hanging /health is bounded by the timeout and falls back to clipboard', async () => {
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31425, token: 'ok', v: 1 })],
+    // /health hangs unless the abort signal fires; honor the injected AbortSignal.
+    ['/health', (url, opts) => new Promise((_resolve, reject) => {
+      const signal = opts && opts.signal;
+      if (signal) {
+        signal.addEventListener('abort', () => reject(new Error('aborted')));
+      }
+    })],
+  ]);
+  const copy = makeCopy();
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy, healthTimeoutMs: 30 });
+
+  assert.equal(result.via, 'clipboard');
+  assert.deepEqual(copy.copied, [PROMPT]);
+});

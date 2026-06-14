@@ -149,15 +149,14 @@ separate BC, but today the whole tool lives in this one.
   command, not the bare `/modeling` alias). The board surfaces this (agentic-workflow-016) as a one-click
   copy-to-clipboard: each **backlog** card carries a small **Copy** button supplied *into* the styleguide
   `TicketCard`'s `cornerAction` slot (design-system-006) -- the card's bottom-right meta slot where the
-  now-dropped `... pt` estimate chip used to sit -- writing exactly `/agentheim:modeling <id>`; the
-  backlog column's add-ticket **`+`** (the styleguide `ColumnHeader` `onAdd`) writes the **bare**
-  `/agentheim:modeling`. Other columns get no corner action. The slot is click-isolated by the styleguide,
+  now-dropped `... pt` estimate chip used to sit -- writing exactly `/agentheim:modeling <id>`. Other
+  columns get no corner action. The slot is click-isolated by the styleguide,
   so copying never opens the slide-over. The **add-ticket affordances are backlog-only**
   (agentic-workflow-018): the styleguide `EmptyColumn` empty-state **"Add ticket"** button and the
   `ColumnHeader` **`+`** are now **optional slots** keyed off an `onAdd` prop (default OFF, mirroring
-  ds-006's `cornerAction`); the board supplies `onAdd` **only** for backlog, so **todo / doing / done**
-  render the empty-state icon + "No tickets in &lt;status&gt;." copy and a header with **no `+`** -- the
-  board is a projection of disk (ADR-0001), you don't *add* tickets to those columns from here. The command **string** is a **pure** function of the id --
+  ds-006's `cornerAction`); todo / doing / done render the empty-state icon + "No tickets in
+  &lt;status&gt;." copy and a header with **no `+`** -- the board is a projection of disk (ADR-0001),
+  you don't *add* tickets to those columns from here. The command **string** is a **pure** function of the id --
   `dashboard/app/modeling-command.js` (`modelingCommandFor`, `MODELING_COMMAND`, unit-tested under
   `node --test`); a missing/non-string id degrades to the bare command (never `[object Object]`, never a
   throw). The clipboard write uses `navigator.clipboard.writeText` with a graceful, no-throw fallback --
@@ -165,6 +164,27 @@ separate BC, but today the whole tool lives in this one.
   surfaces an error. This is a clipboard side-effect only: it adds **no** lifecycle write, the board stays
   a projection of disk. "Copy into memory" here means the **system clipboard** (for Ctrl+V), not
   Agentheim's `.agentheim/` memory. See ADR-0003, ADR-0009.
+- **Backlog launch buttons (Quick Capture / Modeling)** -- the backlog column's former single
+  add-ticket **`+`** is replaced (agentic-workflow-020) by **two** labelled launch buttons rendered
+  as a board-composed sibling of the styleguide `ColumnHeader` (same precedent as the sort / group
+  controls; the styleguide stays consumed **unforked**, ADR-0003): **Quick Capture** seeds
+  `/agentheim:quick-capture` (the fast idea-dump, renamed in aw-019) and **Modeling** seeds
+  `/agentheim:modeling` (the full Socratic session). Each opens a **real, interactive Claude session**
+  through the VS Code **bridge** (ADR-0018): the frontend discovers the listener via the dashboard's
+  own `GET /api/bridge` (port + per-activation token, never hardcoded -- infrastructure-014), confirms
+  it is live with a token-bearing `GET /health` (~800 ms timeout), then `POST /run { prompt }` with the
+  `X-Agentheim-Bridge-Token` header; the extension wraps the prompt as `claude "<prompt>"` and opens
+  the terminal. **Bridge-absence is a normal mode, never an error**: when the page is not in VS Code's
+  Simple Browser, or the listener is unreachable, or `/health`/`/run` time out / refuse / reject CORS /
+  return non-200 -- *any* failure -- the button falls back **silently** to copying its command to the
+  clipboard (the aw-016 `copyToClipboard` no-throw guard + the same quiet "Copied" feedback). No toast,
+  no console crash, no broken-looking button. The **launch-vs-copy decision** is a **pure**, framework-free
+  function of an injected `fetch` + `copy` -- `dashboard/app/bridge-launch.js` (`launchOrCopy`,
+  `BRIDGE_TOKEN_HEADER`, unit-tested under `node --test`); it never throws or rejects. The exact
+  launched/copied command **strings** come from `dashboard/app/modeling-command.js`
+  (`QUICK_CAPTURE_COMMAND`, `MODELING_COMMAND`) -- one source of truth for both paths. Launching a
+  session is an **external side-effect** (like the clipboard copy), **not** a lifecycle write: the board
+  stays a projection of disk (ADR-0001). See ADR-0018, ADR-0003, ADR-0001, ADR-0009.
 - **Live-update (SSE consumer)** — the board keeps itself current (agentic-workflow-009) by
   subscribing to `GET /api/events` (the SSE transport, infrastructure-003 / ADR-0006) via the
   framework-free `dashboard/app/live-update.js` (`createLiveUpdate`). On every `tree-changed`

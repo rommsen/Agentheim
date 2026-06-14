@@ -41,7 +41,8 @@ import { ThemeToggle } from "../../.agentheim/contexts/design-system/styleguide/
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { modelingCommandFor } from "./modeling-command.js";
+import { modelingCommandFor, MODELING_COMMAND, QUICK_CAPTURE_COMMAND } from "./modeling-command.js";
+import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
 import { SlideOver } from "./slide-over.js";
@@ -237,6 +238,85 @@ function CopyCommandButton({ command, title }) {
     </button>`;
 }
 
+// A backlog LAUNCH button (agentic-workflow-020). Clicking it tries to open a
+// REAL, interactive Claude session seeded with `command` through the VS Code
+// bridge (ADR-0018); if the bridge is unavailable for ANY reason — not in VS
+// Code's Simple Browser, listener unreachable, timeout, CORS rejection — it
+// SILENTLY falls back to copying `command` to the clipboard (the aw-016 behavior),
+// flashing the same quiet "Copied" feedback. The whole try-bridge-then-copy
+// decision is the pure `launchOrCopy` (bridge-launch.js); this is thin glue that
+// supplies window.fetch + the no-throw copyToClipboard and renders the feedback.
+// The board stays a projection of disk (ADR-0001): launching is an external
+// side-effect, never a lifecycle write.
+function LaunchButton({ label, command, icon }) {
+  // feedback: "idle" | "launched" | "copied". A transient label/colour swap, same
+  // quiet treatment as CopyCommandButton — never an error state (absence is normal).
+  const [feedback, setFeedback] = useState("idle");
+  const timer = useRef(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
+  const onClick = useCallback(() => {
+    const fetchImpl = typeof window !== "undefined" && typeof window.fetch === "function"
+      ? window.fetch.bind(window)
+      : undefined;
+    launchOrCopy({ prompt: command, fetchImpl, copy: copyToClipboard }).then((res) => {
+      // Bridge launched -> a real terminal opened (flash "Launched"). Bridge absent
+      // -> the command was copied (flash "Copied" only if the copy actually landed,
+      // matching CopyCommandButton's quiet contract). Either way: never an error.
+      if (res.via === "bridge") setFeedback("launched");
+      else if (res.copied) setFeedback("copied");
+      else return; // clipboard blocked too — stay silent.
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setFeedback("idle"), 1100);
+    });
+  }, [command]);
+
+  const flashed = feedback !== "idle";
+  const labelText = feedback === "launched" ? "Launched" : feedback === "copied" ? "Copied" : label;
+  return html`
+    <button
+      type="button"
+      className="focusable"
+      title=${`${label} — launch ${command} (copies to clipboard if the bridge is unavailable)`}
+      aria-label=${`${label} — launch ${command}`}
+      onClick=${onClick}
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 5,
+        fontFamily: "var(--font-ui)", fontSize: 11.5, fontWeight: 500,
+        color: flashed ? "var(--st-done)" : "var(--fg-2)",
+        background: "var(--surface-1)",
+        border: `1px solid ${flashed ? "var(--st-done)" : "var(--hairline)"}`,
+        borderRadius: "var(--radius-sm)", padding: "4px 9px", cursor: "pointer",
+        transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
+      }}
+      onMouseEnter=${(e) => { if (!flashed) e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+      onMouseLeave=${(e) => { if (!flashed) e.currentTarget.style.borderColor = "var(--hairline)"; }}>
+      <${Icon} name=${icon} size=${12.5}
+        color=${flashed ? "var(--st-done)" : "var(--fg-3)"} />
+      <span>${labelText}</span>
+    </button>`;
+}
+
+// The backlog add affordance (agentic-workflow-020): the single "Add ticket" `+`
+// is REPLACED by TWO labelled launch buttons — Quick Capture (the fast idea-dump,
+// `/agentheim:quick-capture`, aw-019) and Modeling (the full Socratic session,
+// `/agentheim:modeling`). Each starts a seeded Claude session through the bridge,
+// with the clipboard fallback. Rendered as a board-composed sibling of the
+// styleguide ColumnHeader (the same precedent as ColumnSortControl /
+// ColumnGroupToggle): the styleguide kanban.js / empty.js stay consumed UNFORKED
+// (ADR-0003); these are native, token-styled board controls beside the primitive,
+// not a fork of it. Backlog-only — todo/doing/done carry no add affordance (aw-018).
+function BacklogLaunchPair() {
+  return html`
+    <div role="group" aria-label="Start a new backlog entry" style=${{
+      display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+      padding: "0 4px 12px", marginTop: -4,
+    }}>
+      <${LaunchButton} label="Quick Capture" command=${QUICK_CAPTURE_COMMAND} icon="plus" />
+      <${LaunchButton} label="Modeling" command=${MODELING_COMMAND} icon="compass" />
+    </div>`;
+}
+
 // The board's per-BC section now COMPOSES the shared styleguide Collapsible
 // primitive (design-system-005), CONTROLLED: the board owns each (column, BC)
 // collapse state in its persisted view-state store (ADR-0015), so it supplies
@@ -290,13 +370,12 @@ function BoardColumn({
       flex: "1 1 0", minWidth: 0, display: "flex", flexDirection: "column",
       borderRadius: "var(--radius-md)",
     }}>
-      <${ColumnHeader} status=${status} count=${tickets.length}
-        onAdd=${status === "backlog" ? () => copyToClipboard(modelingCommandFor()) : undefined} />
+      <${ColumnHeader} status=${status} count=${tickets.length} />
+      ${status === "backlog" && html`<${BacklogLaunchPair} />`}
       <${ColumnControls} status=${status} sort=${sort} onSortChange=${onSortChange}
         grouped=${grouped} onGroupToggle=${onGroupToggle} />
       ${tickets.length === 0
-        ? html`<div style=${{ paddingBottom: 8 }}><${EmptyColumn} status=${status}
-            onAdd=${status === "backlog" ? () => copyToClipboard(modelingCommandFor()) : undefined} /></div>`
+        ? html`<div style=${{ paddingBottom: 8 }}><${EmptyColumn} status=${status} /></div>`
         : grouped
           ? html`
             <div style=${{ display: "flex", flexDirection: "column", gap: 6, paddingBottom: 8 }}>

@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-020
 title: Backlog "Add ticket" becomes two launch buttons — Quick Capture & Modeling — that start a seeded Claude session
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-14
-completed:
+completed: 2026-06-14
 commit:
 depends_on: [infrastructure-012, infrastructure-014, agentic-workflow-019, design-system-001]
 blocks: []
@@ -73,4 +73,44 @@ side-effect, not a lifecycle write.
   backlog card vs. both), and whether the per-card backlog copy button (aw-016) stays
   as-is or also gains a launch path. Research backing the launch mechanism:
   `knowledge/research/vscode-dashboard-terminal-bridge-2026-06-09.md`.
+
+## Outcome
+The backlog column's single add-ticket `+` is replaced by **two labelled launch
+buttons** — **Quick Capture** (`/agentheim:quick-capture`) and **Modeling**
+(`/agentheim:modeling`) — each of which opens a real, interactive Claude session
+through the VS Code bridge (ADR-0018), with a silent clipboard fallback when the
+bridge is absent for **any** reason. All 7 acceptance criteria met; full dashboard
+suite green (217 tests), dist rebuilt.
+
+**Design decisions (within scope, per the task's "open for refine" notes):**
+- **Button placement:** the pair renders as a board-composed **sibling** of the
+  styleguide `ColumnHeader` for the backlog column — the same precedent as the sort
+  / group controls. The styleguide `kanban.js` / `empty.js` are consumed **unforked**
+  (ADR-0003); these are native, token-styled board controls beside the primitive, not
+  a fork of it. No new styleguide primitive was needed, so **no design-system child
+  task** was filed.
+- **Per-card backlog Copy button (aw-016) left as-is** — it keeps copying
+  `/agentheim:modeling <id>` (the per-ticket refine affordance). Only the
+  *column-level* add affordance became the launch pair.
+- **No new ADR:** the launch path is fully decided by ADR-0018; this task only
+  composes existing primitives against the frozen contract (like aw-016 / infra-013/014).
+
+**Key files:**
+- `dashboard/app/bridge-launch.js` (new) — pure, framework-free `launchOrCopy`:
+  discover (`GET /api/bridge`) → probe (`GET /health`, ~800 ms timeout) → launch
+  (`POST /run { prompt }` with `X-Agentheim-Bridge-Token`) → else copy. Never throws.
+- `dashboard/test/bridge-launch.test.mjs` (new) — 15 `node --test` cases covering the
+  happy launch path, the request shapes (token header, JSON body, port), and **every**
+  fallback mode (present:false, /api/bridge throw/non-200, /health refuse/401/timeout,
+  /run non-2xx/CORS-throw, missing fields, no fetch, copy-also-fails).
+- `dashboard/app/modeling-command.js` — added `QUICK_CAPTURE_COMMAND`
+  (`/agentheim:quick-capture`); existing `MODELING_COMMAND` / `modelingCommandFor`
+  unchanged.
+- `dashboard/test/modeling-command.test.mjs` — extended with quick-capture coverage.
+- `dashboard/app/board.js` — new `LaunchButton` + `BacklogLaunchPair` React glue
+  (thin over `launchOrCopy`, supplying `window.fetch` + aw-016 `copyToClipboard`);
+  backlog `ColumnHeader`/`EmptyColumn` no longer get the old clipboard `onAdd`.
+- `dashboard/dist/` — rebuilt so the served bundle carries the change.
+- `.agentheim/contexts/agentic-workflow/README.md` — documented the two launch
+  buttons and the bridge launch/fallback path.
 </content>

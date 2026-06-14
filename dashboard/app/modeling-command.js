@@ -22,6 +22,16 @@
 // copies, and the prefix every per-card command shares.
 export const MODELING_COMMAND = '/agentheim:modeling';
 
+// The fully-qualified quick-capture command (agentic-workflow-020) — the fast
+// idea-dump skill, renamed to `/agentheim:quick-capture` in aw-019. The backlog
+// add affordance is now TWO launch buttons (Quick Capture / Modeling); this is
+// the exact prompt the Quick Capture button hands to the bridge's POST /run (the
+// extension wraps it as `claude "<prompt>"`, ADR-0018) and the exact text it
+// copies to the clipboard on the bridge-absent fallback path. Bare and
+// fully-qualified for the same reason MODELING_COMMAND is — it resolves
+// regardless of the builder's alias setup.
+export const QUICK_CAPTURE_COMMAND = '/agentheim:quick-capture';
+
 /**
  * Build the modeling command to copy for a backlog affordance.
  * @param {string} [id] — the ticket id (card affordance) or omitted (add-button).

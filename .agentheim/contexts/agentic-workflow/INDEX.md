@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 19
+- **Done:** 20
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-020** — Backlog "Add ticket" becomes two launch buttons — Quick Capture & Modeling — that start a seeded Claude session — `todo/agentic-workflow-020-backlog-two-launch-buttons.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-020** — Backlog "Add ticket" becomes two launch buttons — Quick Capture & Modeling — that start a seeded Claude session — `done/agentic-workflow-020-backlog-two-launch-buttons.md`
 - **agentic-workflow-019** — Rename the `capture` skill to `quick-capture` — `done/agentic-workflow-019-rename-capture-skill-quick-capture.md`
 - **agentic-workflow-018** — Remove the non-functional "Add ticket" affordances from non-backlog columns — `done/agentic-workflow-018-remove-dead-add-ticket-affordances.md`
 - **agentic-workflow-017** — Wire the styleguide light/dark theme toggle into the dashboard — `done/agentic-workflow-017-dashboard-theme-toggle.md`

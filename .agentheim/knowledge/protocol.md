@@ -5,6 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-14 -- Task verified and completed: agentic-workflow-020 - Backlog two launch buttons (Quick Capture & Modeling)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-020 - Backlog "Add ticket" becomes two launch buttons — Quick Capture & Modeling — that start a seeded Claude session
+**Summary:** The backlog add affordance is now two labelled launch buttons — Quick Capture (`/agentheim:quick-capture`) and Modeling (`/agentheim:modeling`) — each opening a real interactive Claude session through the VS Code bridge (ADR-0018), with a silent clipboard fallback whenever the bridge is unavailable.
+**Verification:** PASS (iteration 1)
+**Commit:** COMMIT_SHA_PLACEHOLDER
+**Files changed:** 7 (board.js, modeling-command.js + test, new bridge-launch.js + test, README, dist/app.js)
+**Tests added:** 12 (10 bridge-launch + 2 modeling-command; full dashboard suite 217 green)
+**ADRs written:** none (built against frozen ADR-0018)
+**Note:** Pure launch-vs-copy decision logic (`bridge-launch.js`, `launchOrCopy`) injected with fetch+copy, never throws/rejects across every failure mode (absence-is-normal contract). Styleguide consumed unforked (ADR-0003) — buttons are board-composed siblings. Launch is an external side-effect, board stays a projection of disk (ADR-0001).
+
+---
+
+## 2026-06-14 -- Batch started: [agentic-workflow-020]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-020 - Backlog "Add ticket" becomes two launch buttons (Quick Capture & Modeling)
+**Parallel:** no (1 worker)
+**Note:** Single ready task; all four deps (infrastructure-012, infrastructure-014, agentic-workflow-019, design-system-001) done. No conflicts.
+
+---
+
 ## 2026-06-14 -- Modeling / Promoted: agentic-workflow-020 - Backlog two launch buttons (Quick Capture & Modeling)
 
 **Type:** Modeling / Promote
