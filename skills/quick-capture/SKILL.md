@@ -1,32 +1,32 @@
 ---
-name: capture
-description: Use whenever the user wants to dump an idea, bug, or feature into the backlog FAST — no conversation, no questions, no refinement. This is the quick-jot entry point: the user is offloading a thought and wants to keep moving, not think it through. Triggers on phrases like "capture this", "jot this down", "quick capture", "note for later", "dump this in the backlog", "just file it", "add this without discussing", "brain-dump", "stick this in <bc>", "log this idea", "don't ask, just record it", and on rapid-fire multi-idea lists ("three things: A, B, C"). Routes each idea to the best-fit bounded context, writes one backlog task per idea, and reports where each landed in a single line — then gets out of the way. If the user instead wants to think an idea through, refine it, or talk it over, that's `modeling`, not this. Capture never asks clarifying questions and never writes to todo — captured tasks are deliberately raw and always need a later refinement pass.
+name: quick-capture
+description: Use whenever the user wants to dump an idea, bug, or feature into the backlog FAST — no conversation, no questions, no refinement. This is the quick-jot entry point: the user is offloading a thought and wants to keep moving, not think it through. Triggers on phrases like "capture this", "jot this down", "quick capture", "note for later", "dump this in the backlog", "just file it", "add this without discussing", "brain-dump", "stick this in <bc>", "log this idea", "don't ask, just record it", and on rapid-fire multi-idea lists ("three things: A, B, C"). Routes each idea to the best-fit bounded context, writes one backlog task per idea, and reports where each landed in a single line — then gets out of the way. If the user instead wants to think an idea through, refine it, or talk it over, that's `modeling`, not this. Quick-capture never asks clarifying questions and never writes to todo — captured tasks are deliberately raw and always need a later refinement pass.
 ---
 
-# Capture — Fast idea dump into the backlog
+# Quick Capture — Fast idea dump into the backlog
 
-`capture` is the low-friction sibling of `modeling`. Its entire job is to take an idea
+`quick-capture` is the low-friction sibling of `modeling`. Its entire job is to take an idea
 out of the user's head and into a backlog task **as fast as possible**, so they can keep
 their train of thought going. No Socratic dialogue, no clarifying questions, no
 refinement — just route, write, report, done.
 
-The user reached for `capture` (not `modeling`) because they want to *offload*, not
+The user reached for `quick-capture` (not `modeling`) because they want to *offload*, not
 *think*. Honour that. Every question you ask is friction that defeats the point. If an
 idea genuinely needs thinking through, that's what `modeling` is for — and these captured
 tasks will get exactly that treatment later (see "Handoff to modeling" below).
 
-## Capture vs. modeling — which is this?
+## Quick-capture vs. modeling — which is this?
 
 Both create backlog tasks, so the trigger phrases overlap. Disambiguate by **intent**:
 
-- **`capture`** — the user is dumping and moving on. Signals: "just", "quick", "don't
+- **`quick-capture`** — the user is dumping and moving on. Signals: "just", "quick", "don't
   ask", "for later", rapid-fire lists, terse one-liners, an explicit BC ("stick this in
   infrastructure"). They do not want a conversation.
 - **`modeling`** — the user wants to work the idea: explore it, refine acceptance
   criteria, decide where it lives, talk it through. Signals: questions back to you,
   "let's think about", "help me model", "what should this look like".
 
-When it's genuinely ambiguous, **default to `capture`** — it's the cheaper mistake. A
+When it's genuinely ambiguous, **default to `quick-capture`** — it's the cheaper mistake. A
 too-thin task gets refined later; a too-heavy conversation the user didn't want wastes
 their time and can't be undone. If you capture and the user clearly wanted to model, they
 will tell you, and you can pick up the task in `modeling` from there.
@@ -128,7 +128,7 @@ prior_art: []
 - [ ] To be defined during refinement.
 
 ## Notes
-Captured via `capture` on <date> — raw, unrefined. Needs a `modeling` refine pass before
+Captured via `quick-capture` on <date> — raw, unrefined. Needs a `modeling` refine pass before
 it can be promoted. <Any verbatim extra context the user gave that didn't fit above.>
 ```
 
