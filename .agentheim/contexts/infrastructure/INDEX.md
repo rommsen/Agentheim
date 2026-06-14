@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 12
+- **Done:** 13
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **infrastructure-014** — Dashboard server GET /api/bridge — serve the bridge port+token to the sandboxed frontend (feature) — `todo/infrastructure-014-dashboard-bridge-discovery-endpoint.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -26,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-013** — Build the VS Code bridge extension — 127.0.0.1 listener that opens a seeded Claude terminal (feature) — `done/infrastructure-013-vscode-bridge-extension.md`
 - **infrastructure-012** — VS Code dashboard→terminal bridge — pin the transport contract (ADR-0018) (decision) — `done/infrastructure-012-vscode-bridge-contract.md`
 - **infrastructure-011** — Dashboard browser tab title reflects the discovered project's name (feature) — `done/infrastructure-011-dashboard-title-project-name.md`
 - **infrastructure-010** — $CLAUDE_PLUGIN_ROOT is empty at /dashboard runtime — 008's fix collapses to the broken project path (bug) — `done/infrastructure-010-dashboard-plugin-root-empty-foreign-project.md`
@@ -42,8 +44,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **infrastructure-013** — Build the VS Code bridge extension — 127.0.0.1 listener that opens a seeded Claude terminal (feature) — `backlog/infrastructure-013-vscode-bridge-extension.md`
-- **infrastructure-014** — Dashboard server GET /api/bridge — serve the bridge port+token to the sandboxed frontend (feature) — `backlog/infrastructure-014-dashboard-bridge-discovery-endpoint.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

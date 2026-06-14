@@ -1,0 +1,261 @@
+// Testable core of the Agentheim VS Code bridge (ADR-0018, diverging from
+// ADR-0002 only on the fixed-port + discovery clause).
+//
+// A `node:http` listener bound to 127.0.0.1 ONLY. On a token-bearing POST /run
+// it invokes an injected `launchTerminal(claudeCommand)` callback — the single
+// seam the editor owns (`vscode.window.createTerminal` lives in extension.js).
+// Everything contractual (loopback bind, fallback ladder, per-activation token,
+// bridge.json discovery file, body/CORS handling) lives here so it is unit-
+// testable without the editor.
+//
+// Stdlib only: node:http, node:crypto, node:fs, node:path. No runtime deps.
+
+const http = require('node:http');
+const crypto = require('node:crypto');
+const { mkdirSync, writeFileSync, rmSync, existsSync } = require('node:fs');
+const path = require('node:path');
+
+// The fixed port literal is arbitrary-but-fixed; the contract is the discovery
+// file, not the number. Bounded fallback ladder on EADDRINUSE.
+const PREFERRED_PORTS = [31425, 31426, 31427];
+
+// Carried on every request; the listener rejects any request lacking/mismatching it.
+const TOKEN_HEADER = 'X-Agentheim-Bridge-Token';
+const TOKEN_HEADER_LC = TOKEN_HEADER.toLowerCase();
+
+// bridge.json schema version (kept in the file so a future reader can branch).
+const BRIDGE_V = 1;
+
+const DASHBOARD_DIR = '.dashboard';
+const BRIDGE_NAME = 'bridge.json';
+
+/** Absolute path to the gitignored bridge discovery file for a project root. */
+function bridgePath(root) {
+  return path.join(root, '.agentheim', DASHBOARD_DIR, BRIDGE_NAME);
+}
+
+/** Per-activation random token: 32 hex chars (16 bytes) via node:crypto. */
+function generateToken() {
+  return crypto.randomBytes(16).toString('hex');
+}
+
+/**
+ * Bind a server to 127.0.0.1, walking the fallback ladder on EADDRINUSE.
+ * Resolves with the actually-bound port, rejects if the whole ladder is taken
+ * (or on any non-EADDRINUSE error).
+ */
+function listenWithLadder(server, ports) {
+  return new Promise((resolve, reject) => {
+    let i = 0;
+    const tryNext = () => {
+      if (i >= ports.length) {
+        reject(new Error(`All bridge ports busy: ${ports.join(', ')}`));
+        return;
+      }
+      const port = ports[i++];
+      const onError = (err) => {
+        if (err && err.code === 'EADDRINUSE') {
+          server.removeListener('error', onError);
+          tryNext();
+        } else {
+          reject(err);
+        }
+      };
+      server.once('error', onError);
+      server.listen(port, '127.0.0.1', () => {
+        server.removeListener('error', onError);
+        // Read back the actually-bound port (port 0 ⇒ OS-assigned ephemeral).
+        const bound = server.address();
+        resolve(bound && typeof bound === 'object' ? bound.port : port);
+      });
+    };
+    tryNext();
+  });
+}
+
+function applyCors(res, req) {
+  // Loopback-only bind is the real trust boundary; the token header is the
+  // shared secret. CORS here is purely to let the browser's preflight pass so
+  // the custom-header POST can fire at all (ADR-0018: preflight is load-bearing).
+  const origin = req.headers.origin || '*';
+  res.setHeader('access-control-allow-origin', origin);
+  res.setHeader('vary', 'Origin');
+  res.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
+  res.setHeader('access-control-allow-headers', `${TOKEN_HEADER}, Content-Type`);
+  res.setHeader('access-control-max-age', '600');
+}
+
+function send(res, status, payload) {
+  const body = payload === undefined ? '' : JSON.stringify(payload);
+  // Drain any unread request body before replying. Responding mid-upload makes
+  // the OS reset the connection (ECONNRESET on the client), so we let the
+  // inbound stream finish first when there is still data to come.
+  const req = res.req;
+  const finish = () => {
+    res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
+    res.end(body);
+  };
+  if (req && req.readable && !req.readableEnded) {
+    req.resume();
+    req.once('end', finish);
+    req.once('error', finish);
+  } else {
+    finish();
+  }
+}
+
+function readBody(req, limit = 64 * 1024) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on('data', (c) => {
+      size += c.length;
+      if (size > limit) {
+        reject(new Error('body too large'));
+        req.destroy();
+        return;
+      }
+      chunks.push(c);
+    });
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', reject);
+  });
+}
+
+/**
+ * Build the request handler. `token` gates every request; `launchTerminal` is
+ * the injected editor action invoked with the full `claude "<prompt>"` command.
+ */
+function makeHandler({ token, launchTerminal }) {
+  return async function handler(req, res) {
+    applyCors(res, req);
+
+    // Answer the browser preflight before any auth — preflights carry no
+    // custom headers, so gating them on the token would break the real POST.
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    // Shared-secret gate (timing-safe compare of equal-length buffers).
+    const presented = req.headers[TOKEN_HEADER_LC];
+    if (!presented || !tokensMatch(presented, token)) {
+      send(res, 401, { error: 'unauthorized' });
+      return;
+    }
+
+    if (req.method === 'GET' && req.url === '/health') {
+      send(res, 200, { ok: true, v: BRIDGE_V });
+      return;
+    }
+
+    if (req.method === 'POST' && req.url === '/run') {
+      let raw;
+      try {
+        raw = await readBody(req);
+      } catch {
+        send(res, 400, { error: 'bad body' });
+        return;
+      }
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        send(res, 400, { error: 'malformed json' });
+        return;
+      }
+      const prompt = typeof parsed?.prompt === 'string' ? parsed.prompt.trim() : '';
+      if (!prompt) {
+        send(res, 400, { error: 'empty prompt' });
+        return;
+      }
+      // Generic: launch whatever prompt is handed. Never inject a permission-
+      // bypass flag (ADR-0018). Embedded double-quotes are escaped so the
+      // shell command stays well-formed.
+      const command = `claude "${prompt.replace(/"/g, '\\"')}"`;
+      try {
+        launchTerminal(command);
+      } catch (err) {
+        send(res, 500, { error: 'launch failed', detail: String(err && err.message) });
+        return;
+      }
+      send(res, 202, { ok: true });
+      return;
+    }
+
+    send(res, 404, { error: 'not found' });
+  };
+}
+
+function tokensMatch(a, b) {
+  const ba = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+  if (ba.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ba, bb);
+}
+
+/** Write the discovery file (overwriting any stale one) for a live listener. */
+function writeBridgeFile(root, meta) {
+  const dir = path.join(root, '.agentheim', DASHBOARD_DIR);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(bridgePath(root), JSON.stringify(meta, null, 2));
+}
+
+/** Remove the discovery file so a dead host leaves nothing live to find. */
+function removeBridgeFile(root) {
+  const p = bridgePath(root);
+  if (existsSync(p)) rmSync(p, { force: true });
+}
+
+/**
+ * Start the bridge for a project `root`. Generates a fresh per-activation
+ * token, binds 127.0.0.1 along the fallback ladder, writes bridge.json, and
+ * returns a handle { port, token, address, server, close() }. `close()` shuts
+ * the listener AND removes the discovery file (deactivation contract).
+ *
+ * @param {{ root: string, launchTerminal: (cmd: string) => void, ports?: number[] }} opts
+ */
+async function startBridge({ root, launchTerminal, ports = PREFERRED_PORTS }) {
+  if (typeof launchTerminal !== 'function') {
+    throw new TypeError('startBridge requires a launchTerminal callback');
+  }
+  const token = generateToken();
+  const server = http.createServer(makeHandler({ token, launchTerminal }));
+  const port = await listenWithLadder(server, ports);
+
+  const meta = {
+    port,
+    token,
+    pid: process.pid,
+    startedAt: new Date().toISOString(),
+    v: BRIDGE_V,
+  };
+  writeBridgeFile(root, meta);
+
+  let closed = false;
+  return {
+    port,
+    token,
+    address: '127.0.0.1',
+    server,
+    close() {
+      if (closed) return;
+      closed = true;
+      try { server.close(); } catch { /* already closing */ }
+      removeBridgeFile(root);
+    },
+  };
+}
+
+module.exports = {
+  startBridge,
+  bridgePath,
+  generateToken,
+  makeHandler,
+  writeBridgeFile,
+  removeBridgeFile,
+  TOKEN_HEADER,
+  PREFERRED_PORTS,
+  BRIDGE_V,
+};

@@ -19,3 +19,9 @@ $RECYCLE.BIN/
 # esbuild + framework deps are BUILD-TIME only (ADR-0003); never committed.
 # The committed artifacts are dashboard/dist/, build.mjs, package.json (+ lock).
 dashboard/node_modules/
+
+### Agentheim VS Code bridge extension (infrastructure-013, ADR-0018)
+# @vscode/vsce is a PACKAGING-TIME-only dep; the runtime is stdlib + the vscode
+# host API. node_modules and built .vsix artifacts are never committed.
+vscode-extension/node_modules/
+vscode-extension/*.vsix

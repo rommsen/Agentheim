@@ -73,6 +73,27 @@ for an infrastructure BC.
 - **Runfile** — `.agentheim/.dashboard/runtime.json` = `{ pid, port, startedAt }`, the
   **sole** runtime artifact on disk. Basis for "open the URL" and "stop the runtime";
   gitignored. Relaunch over a live/stale runfile reuses-or-replaces rather than orphaning.
+- **Bridge** — a tiny **VS Code extension** (`vscode-extension/`, infra-owned, its own
+  toolchain) running a `127.0.0.1`-only `node:http` listener *inside the editor*. It is the
+  only path by which the dashboard — served into VS Code's sandboxed Simple Browser — can open
+  a **real, visible, interactive** terminal running `claude "<prompt>"` (`window.createTerminal`
+  + `show` + `sendText`). Fixed port **31425** with a bounded fallback ladder
+  `31425 → 31426 → 31427`. Surface: `POST /run { prompt }` (opens a seeded terminal → 202),
+  `GET /health` (→ 200), `OPTIONS` preflight (load-bearing — the custom-header JSON POST is
+  preflighted). Every request carries the `X-Agentheim-Bridge-Token` header; missing/mismatched
+  → 401, malformed/empty body → 400. The launch never hard-wires `--dangerously-skip-permissions`
+  or any permission-bypass flag. The trust boundary is loopback-only bind **plus** the
+  shared-secret token — single-user dev box only. The generic launcher carries *whatever* prompt
+  it is handed, so all board affordances share it. The inject-into-running-session path
+  (`POST /inject`) is deferred. (ADR-0018, infrastructure-013.)
+- **Bridge discovery file** — `.agentheim/.dashboard/bridge.json` =
+  `{ port, token, pid, startedAt, v }`, a **sibling of `runtime.json`** in the same gitignored
+  dir, written by a **separate process** (the VS Code extension host) on its own
+  activation/deactivation lifecycle. The per-activation token (32 hex via `node:crypto`) is
+  regenerated each activation and removed on deactivation, so a stale `bridge.json` from a dead
+  host carries a token no live listener accepts. The dashboard server *reads* it to find and
+  authenticate the live listener (infrastructure-014, separate task); the extension only *writes*
+  it. (ADR-0018.)
 - **Live-update transport** — a server→client push channel (`GET /api/events`, Server-Sent
   Events) backed by an `.agentheim/` **file-watcher**. When the project tree changes (a task
   moved by `work`/`modeling` in another terminal, or by the dashboard's own write), the server
@@ -183,6 +204,21 @@ Apply write request.
   the skill or command surface). Accepted residual risk: a checklist run from memory is the
   same failure class as the original drift, mitigated by binding the bump to the tag act; CI
   is the documented escalation path if drift recurs.
+
+- **ADR-0018 — VS Code dashboard→terminal bridge (fixed-port localhost extension).** Agentheim's
+  first deployable VS Code component (`vscode-extension/`): a `127.0.0.1`-only `node:http` listener
+  inside the editor that, on a token-bearing `POST /run`, opens a real interactive terminal seeded
+  with `claude "<prompt>"`. Binds fixed port **31425** with a `31425→31426→31427` fallback ladder;
+  records the bound port + a per-activation 32-hex token in `.agentheim/.dashboard/bridge.json`
+  (a separate process from the dashboard server's `runtime.json`), removed on deactivation. CORS
+  preflight is load-bearing; missing/bad token → 401, malformed body → 400; no permission-bypass
+  flag is ever wired in. **Diverges from ADR-0002 only on the port clause** (fixed + server-mediated
+  discovery vs ephemeral + runfile); every other ADR-0002 clause stands (stdlib-only, loopback bind,
+  in-root validation, walk-up discovery, gitignored `.agentheim/.dashboard/`). The contractual core
+  lives in `vscode-extension/src/bridge.js` (pure, unit-tested with the terminal-launch action
+  injected); `extension.js` is the only file touching the `vscode` API. `POST /inject` deferred.
+  Installed outside the marketplace via `vsce package` + `code --install-extension`
+  (see `vscode-extension/README.md`). (infrastructure-013, building on infrastructure-012.)
 
 ## Open questions
 

@@ -1,0 +1,7 @@
+# Keep the packaged .vsix lean: ship only the runtime (extension.js + src/),
+# the manifest, and the README. Tests and tooling stay out of the bundle.
+test/**
+**/*.test.mjs
+.vscode/**
+.gitignore
+node_modules/**
