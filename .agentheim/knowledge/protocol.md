@@ -5,6 +5,90 @@ Newest entries on top.
 
 ---
 
+## 2026-06-14 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (8552050)
+**Note:** todo emptied. infrastructure-012's blocked successors (013, 014, aw-020) remain in backlog — they must be promoted to todo via `modeling` before `work` picks them up. ADR renumber 0017→0018 carried through (see completion entry).
+
+---
+
+## 2026-06-14 -- Task verified and completed: infrastructure-012 - VS Code dashboard→terminal bridge transport contract
+
+**Type:** Work / Task completion
+**Task:** infrastructure-012 - VS Code dashboard→terminal bridge — pin the transport contract
+**Summary:** Pinned the bridge transport contract as ADR-0018 — fixed-port (`127.0.0.1:31425` + fallback ladder) localhost-listener VS Code extension over rejected alternatives, server-mediated discovery via extension-written `bridge.json` read by a new `GET /api/bridge`, per-activation `X-Agentheim-Bridge-Token`, fresh-session `POST /run` only (`POST /inject` deferred), and silent clipboard fallback on any probe failure. Diverges from ADR-0002's ephemeral port because the discovery reader is a filesystem-blind sandboxed Simple Browser frame.
+**Verification:** PASS (iteration 1)
+**Commit:** 8552050
+**Files changed:** 2 (ADR-0018 written; ADR-0002 cross-linked as transport precedent)
+**Tests added:** 0 (decision-only task)
+**ADRs written:** 0018-vscode-dashboard-terminal-bridge.md
+**Note:** Shipped as **ADR-0018**, not the task's stale ADR-0017 (0017 was claimed today by the dashboard read-only ADR; renumbering authorized by the user). Downstream 013 / 014 / aw-020 still text-reference "ADR-0017" — to be corrected to 0018 when those tasks are worked.
+
+---
+
+## 2026-06-14 -- Batch started: [infrastructure-012]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-012 - VS Code dashboard→terminal bridge — pin the transport contract
+**Parallel:** no (1 worker)
+**Note:** ADR number renumbered 0017→**0018** at dispatch — 0017 was taken today by the dashboard read-only ADR. Bridge contract ships as ADR-0018.
+
+---
+
+## 2026-06-14 -- Change / Architecture: Dashboard made read-only — skills are the sole owners of task lifecycle
+
+**Type:** Change / Architecture (maintainer, direct)
+**BC:** agentic-workflow
+**ADR:** ADR-0017 (accepted) supersedes ADR-0001 (→ superseded)
+**Summary:** Removed drag-and-drop from the dashboard board altogether and deleted the dashboard's
+only write path. Cards are no longer drag sources and columns are no longer drop targets; the
+board is now a *total* read-only projection of disk. Deleted `dashboard/app/promote.js` and
+`dashboard/move-api.mjs`, unmounted `POST /api/task/move` from `dashboard/server.mjs` (the server
+now exposes only reads + SSE + static), and removed the drag/notice state + handlers from
+`dashboard/app/board.js` (renamed `DragColumn`→`BoardColumn`, `DraggableCard`→`BoardCard`).
+Task-lifecycle transitions are owned entirely by the skills (`modeling` promotes, `work`
+claims/completes), which move files together with the readiness check, `depends_on`/gate guard,
+INDEX update, and protocol entry — eliminating the UI-Promote INDEX-drift hole (ADR-0007). The
+canonical mover `applyTaskMove` (`lib/task-lifecycle.mjs`) is kept for the skills but no longer
+called by the dashboard; its `ui` policy is retained as a now-unwired restricted move set.
+**Rationale:** No skill ever called `applyTaskMove` (workers move files by hand), so the "one
+shared mover" had exactly one caller — the dashboard — and a UI Promote skipped the INDEX/protocol
+side-effects skills own, leaving derived views stale. One owner of the lifecycle is clearer than
+two. (Follows directly from the out-of-sync evaluation: disk is the single source of truth, the
+board a projection; making it write-free makes the projection total.)
+**Tests:** deleted `promote.test.mjs` + `move-api.test.mjs`; rewrote the `server.test.mjs`
+write-route test to assert no write path exists. Dashboard 197/197, lib 15/15 green; `dist/`
+rebuilt from source.
+**Docs:** ADR-0017 written, ADR-0001 marked superseded; dashboard README, agentic-workflow README
++ INDEX updated to the read-only model.
+
+---
+
+## 2026-06-14 -- Modeling / Refined: infrastructure-012 - VS Code dashboard→terminal bridge
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo (split)
+**Summary:** Refined the bridge feature via the orchestrator→architect. Resolved the four
+open transport decisions: fixed port `127.0.0.1:31425` (+ `31426/27` fallback) over
+ephemeral (ADR-0002's pattern can't serve a sandboxed, filesystem-blind frontend);
+server-mediated discovery via an extension-written `.agentheim/.dashboard/bridge.json`
+read by a new dashboard `GET /api/bridge`; fresh-session `POST /run` only (inject deferred);
+silent clipboard fallback on any probe failure; per-activation token via
+`X-Agentheim-Bridge-Token`. Split the single feature into a `type: decision` task (012 →
+ADR-0017 contract, promoted to todo) plus two build features.
+**Split into:** infrastructure-012 (decision, → todo; output ADR-0017), infrastructure-013
+(build the VS Code extension, backlog), infrastructure-014 (dashboard `GET /api/bridge`
+endpoint, backlog). Added infrastructure-014 to agentic-workflow-020's depends_on.
+**ADRs written:** none yet — ADR-0017 is infrastructure-012's deliverable when worked.
+
+---
+
 ## 2026-06-14 09:41 -- Work session ended
 
 **Type:** Work / Session end

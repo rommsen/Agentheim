@@ -6,7 +6,7 @@ type: decision
 context: infrastructure
 created: 2026-06-14
 completed: 2026-06-14
-commit:
+commit: 8552050
 depends_on: []
 blocks: [infrastructure-013, infrastructure-014, agentic-workflow-020]
 tags: [dashboard, vscode, bridge, transport, decision]
