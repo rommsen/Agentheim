@@ -11,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveStatic, serveIndexHtml } from './static.mjs';
 import { handleEvents } from './events.mjs';
-import { handleTree, handleDoc } from './read-api.mjs';
+import { handleTree, handleDoc, handleBridge } from './read-api.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -72,6 +72,15 @@ export function createDashboardServer({ root, assetRoot = defaultAssetRoot(root)
     if (pathname === '/api/doc') {
       const requestUrl = new URL(req.url, 'http://localhost');
       handleDoc(req, res, root, requestUrl);
+      return;
+    }
+
+    // Server-mediated bridge discovery (infrastructure-014, ADR-0018). Reads
+    // .agentheim/.dashboard/bridge.json (written by the VS Code extension) via
+    // the same in-root validator and serves the { port, token, v } subset, or
+    // 200 { present: false } when absent/unreadable/malformed — never a 5xx.
+    if (pathname === '/api/bridge') {
+      handleBridge(req, res, root);
       return;
     }
 

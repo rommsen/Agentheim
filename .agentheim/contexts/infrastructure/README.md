@@ -92,8 +92,12 @@ for an infrastructure BC.
   activation/deactivation lifecycle. The per-activation token (32 hex via `node:crypto`) is
   regenerated each activation and removed on deactivation, so a stale `bridge.json` from a dead
   host carries a token no live listener accepts. The dashboard server *reads* it to find and
-  authenticate the live listener (infrastructure-014, separate task); the extension only *writes*
-  it. (ADR-0018.)
+  authenticate the live listener via the read endpoint **`GET /api/bridge`** (infrastructure-014):
+  present → `200 { port, token, v }` (the discovery subset only — `pid`/`startedAt` never leak);
+  absent, unreadable, or malformed → `200 { present: false }` (never a 5xx for normal absence), so
+  the sandboxed frontend degrades silently to clipboard. Read through ADR-0002's in-root path
+  validator; pure transport — it runs no `claude`. The extension only *writes* `bridge.json`.
+  (ADR-0018.)
 - **Live-update transport** — a server→client push channel (`GET /api/events`, Server-Sent
   Events) backed by an `.agentheim/` **file-watcher**. When the project tree changes (a task
   moved by `work`/`modeling` in another terminal, or by the dashboard's own write), the server

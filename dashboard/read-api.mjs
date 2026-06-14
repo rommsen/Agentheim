@@ -6,7 +6,8 @@
 // Both are PURE READS. Path safety reuses the aw-004 root guard (resolveInRoot:
 // path.resolve + startsWith(root)) so no request escapes the project.
 
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, statSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import { resolveInRoot } from './discovery.mjs';
 import { buildTree } from './tree.mjs';
 
@@ -58,4 +59,43 @@ export function handleDoc(req, res, root, requestUrl) {
     return;
   }
   createReadStream(target).pipe(res);
+}
+
+/**
+ * GET /api/bridge (infrastructure-014, ADR-0018) — server-mediated discovery of
+ * the VS Code bridge listener for the sandboxed (filesystem-blind) frontend.
+ *
+ * Reads `.agentheim/.dashboard/bridge.json` (written by the extension,
+ * infrastructure-013) through the same in-root path validator as /api/doc, and
+ * returns ONLY the discovery subset `{ port, token, v }` — never pid/startedAt.
+ *
+ * Pure transport: it carries the published contract, invents no rule, runs no
+ * `claude`. When the file is absent, unreadable, or malformed, it returns
+ * `200 { present: false }` so the frontend degrades silently to clipboard —
+ * NEVER a 5xx for normal absence.
+ */
+export function handleBridge(req, res, root) {
+  const absent = () => {
+    res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ present: false }));
+  };
+
+  let bridge;
+  try {
+    const target = resolveInRoot(root, path.join('.agentheim', '.dashboard', 'bridge.json'));
+    bridge = JSON.parse(readFileSync(target, 'utf8'));
+  } catch {
+    // Missing file, unreadable, or malformed JSON all collapse to absence.
+    absent();
+    return;
+  }
+
+  if (!bridge || typeof bridge !== 'object') {
+    absent();
+    return;
+  }
+
+  const { port, token, v } = bridge;
+  res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify({ port, token, v }));
 }
