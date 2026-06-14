@@ -91,8 +91,9 @@ separate BC, but today the whole tool lives in this one.
   card emits an *open-this-task* intent the slide-over (aw-007) consumes; the board never writes a
   lifecycle move. Lifecycle changes are owned entirely by the skills (`modeling` / `work`); the
   board stays **live** by subscribing to the SSE stream and re-fetching `/api/tree` on any change,
-  so a skill's on-disk move shows up within a frame (see *Live-update* below). To promote a task,
-  use `modeling` — backlog cards carry a *copy `/agentheim:modeling <id>`* affordance (aw-016) for
+  so a skill's on-disk move shows up within a frame (see *Live-update* below). To refine or promote a
+  task, use `modeling` — backlog cards carry a *Refine / Promote* launch pair (aw-022, replacing
+  aw-016's single Copy button) that seeds `/agentheim:modeling refine <id>` / `... promote <id>` for
   exactly this. See ADR-0009, ADR-0017.
 - **Column sort** — each board column has its own **independent** sort control (agentic-workflow-012),
   a board-only `<select>` rendered as a *sibling* of the styleguide `ColumnHeader` (the board-column
@@ -144,26 +145,38 @@ separate BC, but today the whole tool lives in this one.
   once the user toggles, that override is remembered across reloads. A malformed / stale-version / absent
   blob degrades to the **system default**, and the resolved theme is read once on mount so an SSE
   re-projection never resets it mid-session. See ADR-0015, ADR-0009, ADR-0003.
-- **Copy modeling command (backlog refine affordance)** -- a backlog ticket's next action is to
-  **refine** it by running `/agentheim:modeling <id>` in the Claude Code terminal (the fully-qualified
-  command, not the bare `/modeling` alias). The board surfaces this (agentic-workflow-016) as a one-click
-  copy-to-clipboard: each **backlog** card carries a small **Copy** button supplied *into* the styleguide
-  `TicketCard`'s `cornerAction` slot (design-system-006) -- the card's bottom-right meta slot where the
-  now-dropped `... pt` estimate chip used to sit -- writing exactly `/agentheim:modeling <id>`. Other
-  columns get no corner action. The slot is click-isolated by the styleguide,
-  so copying never opens the slide-over. The **add-ticket affordances are backlog-only**
+- **Backlog card launch pair (Refine / Promote)** -- a backlog ticket invites two real next actions:
+  **deepen** it or **mark it ready**. Each **backlog** card surfaces both (agentic-workflow-022,
+  replacing aw-016's single **Copy** button) as a **two-button launch group** supplied *into* the
+  styleguide `TicketCard`'s single `cornerAction` slot (design-system-006) -- the card's bottom-right
+  meta slot where the now-dropped `... pt` estimate chip used to sit. **Refine** (primary / emphasised)
+  seeds `/agentheim:modeling refine <id>` (the full Socratic refinement) and **Promote** (quiet /
+  de-emphasised) seeds `/agentheim:modeling promote <id>` (the readiness check + backlog → todo move);
+  the verbs are explicit on purpose so they read unambiguously to the `modeling` skill's REFINE /
+  PROMOTE routing. Promote only ever runs backlog → todo, so the group is **backlog-only** -- other
+  columns pass no `cornerAction`. Each button opens a **real, interactive Claude session** through the
+  VS Code **bridge** (ADR-0018), falling back **silently** to copying its own command to the clipboard
+  when the bridge is absent -- it reuses aw-020's `launchOrCopy` (`dashboard/app/bridge-launch.js`)
+  unchanged (see *Backlog launch buttons* below for the full bridge contract). The slot is
+  click-isolated by the styleguide, and each button also stops propagation defensively, so launching
+  never opens the slide-over. **`cornerAction` is now demonstrated carrying a consumer-composed
+  multi-control group, not just a single icon button** -- this stays *within* ds-006's render-prop
+  contract ("consumer owns what renders"; the styleguide keeps owning the slot's placement +
+  stop-propagation wrapper), so it is **unforked** consumption (ADR-0003), not an extension of the
+  primitive, and filed **no** design-system child task. (A matching one-liner is worth adding to the
+  design-system README; the worker may only edit this BC's README -- flagged for the orchestrator.)
+  The command **strings** are **pure** functions of the id -- `dashboard/app/modeling-command.js`
+  (`refineCommandFor`, `promoteCommandFor`, unit-tested under `node --test`; the old per-card
+  `modelingCommandFor` is retired with its sole caller, `MODELING_COMMAND` / `QUICK_CAPTURE_COMMAND`
+  stay for the column pair); a missing/non-string id degrades to the bare verb command (never
+  `[object Object]`, never a throw). The **add-ticket affordances are backlog-only**
   (agentic-workflow-018): the styleguide `EmptyColumn` empty-state **"Add ticket"** button and the
   `ColumnHeader` **`+`** are now **optional slots** keyed off an `onAdd` prop (default OFF, mirroring
   ds-006's `cornerAction`); todo / doing / done render the empty-state icon + "No tickets in
   &lt;status&gt;." copy and a header with **no `+`** -- the board is a projection of disk (ADR-0001),
-  you don't *add* tickets to those columns from here. The command **string** is a **pure** function of the id --
-  `dashboard/app/modeling-command.js` (`modelingCommandFor`, `MODELING_COMMAND`, unit-tested under
-  `node --test`); a missing/non-string id degrades to the bare command (never `[object Object]`, never a
-  throw). The clipboard write uses `navigator.clipboard.writeText` with a graceful, no-throw fallback --
-  a blocked/absent clipboard API simply skips the transient "Copied" feedback, it never crashes or
-  surfaces an error. This is a clipboard side-effect only: it adds **no** lifecycle write, the board stays
-  a projection of disk. "Copy into memory" here means the **system clipboard** (for Ctrl+V), not
-  Agentheim's `.agentheim/` memory. See ADR-0003, ADR-0009.
+  you don't *add* tickets to those columns from here. Launching a session is an **external
+  side-effect**, not a lifecycle write: the board stays a projection of disk. See ADR-0018, ADR-0003,
+  ADR-0009, ADR-0001.
 - **Backlog launch buttons (Quick Capture / Modeling)** -- the backlog column's former single
   add-ticket **`+`** is replaced (agentic-workflow-020) by **two** labelled launch buttons rendered
   as a board-composed sibling of the styleguide `ColumnHeader` (same precedent as the sort / group

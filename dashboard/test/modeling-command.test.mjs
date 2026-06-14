@@ -1,10 +1,18 @@
-// Tests for the dashboard board's pure, DOM-free modeling-command string builder
-// (agentic-workflow-016). A backlog ticket's next action is to REFINE it by running
-// `/agentheim:modeling <id>` in the Claude Code terminal; the board's copy
-// affordance writes that exact command to the clipboard. The string itself is a
-// pure function of the ticket id — no React, no DOM, no clipboard — so it is
-// unit-testable under `node --test`, mirroring board-sort.js / board-data.js. The
-// React wiring + the clipboard write in board.js is integration glue around it.
+// Tests for the dashboard board's pure, DOM-free modeling-command string builders.
+//
+// A backlog ticket invites two real actions: REFINE it (deepen via the full
+// Socratic session) or PROMOTE it (readiness check + backlog → todo). The board's
+// per-card affordance (agentic-workflow-022) seeds an interactive Claude session
+// with the matching command — `/agentheim:modeling refine <id>` or
+// `/agentheim:modeling promote <id>` — through the VS Code bridge, copying the same
+// string to the clipboard when the bridge is absent. The backlog COLUMN affordance
+// (aw-020) seeds the bare `/agentheim:modeling` (MODELING_COMMAND) and
+// `/agentheim:quick-capture` (QUICK_CAPTURE_COMMAND).
+//
+// The command strings are pure functions of the ticket id — no React, no DOM, no
+// clipboard — so they are unit-testable under `node --test`, mirroring
+// board-sort.js / board-data.js. The React wiring + the bridge launch / clipboard
+// write in board.js is integration glue around these builders.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,7 +20,8 @@ import assert from 'node:assert/strict';
 import {
   MODELING_COMMAND,
   QUICK_CAPTURE_COMMAND,
-  modelingCommandFor,
+  refineCommandFor,
+  promoteCommandFor,
 } from '../app/modeling-command.js';
 
 test('MODELING_COMMAND is the fully-qualified bare command (not the /modeling alias)', () => {
@@ -28,39 +37,79 @@ test('QUICK_CAPTURE_COMMAND is the fully-qualified quick-capture command (aw-019
   assert.equal(QUICK_CAPTURE_COMMAND, '/agentheim:quick-capture');
 });
 
-test('the two launch commands are distinct and both fully-qualified `/agentheim:` forms', () => {
+test('the two column launch commands are distinct and both fully-qualified `/agentheim:` forms', () => {
   assert.notEqual(QUICK_CAPTURE_COMMAND, MODELING_COMMAND);
   assert.match(QUICK_CAPTURE_COMMAND, /^\/agentheim:/);
   assert.match(MODELING_COMMAND, /^\/agentheim:/);
 });
 
-test('a ticket id yields the fully-qualified command with the id appended', () => {
+// agentic-workflow-022: the per-card Refine / Promote launch buttons. The verbs are
+// explicit (not bare-id implicit refine) so they read unambiguously to the
+// `modeling` skill's REFINE / PROMOTE routing and stay symmetric.
+
+test('refineCommandFor appends the explicit `refine <id>` verb+id to the fully-qualified command', () => {
   assert.equal(
-    modelingCommandFor('agentic-workflow-016'),
-    '/agentheim:modeling agentic-workflow-016',
+    refineCommandFor('agentic-workflow-022'),
+    '/agentheim:modeling refine agentic-workflow-022',
   );
 });
 
-test('the add-button (no id) yields the bare command with no trailing id or space', () => {
-  assert.equal(modelingCommandFor(), '/agentheim:modeling');
-  assert.equal(modelingCommandFor(undefined), '/agentheim:modeling');
-  assert.equal(modelingCommandFor(null), '/agentheim:modeling');
-  assert.equal(modelingCommandFor(''), '/agentheim:modeling');
+test('promoteCommandFor appends the explicit `promote <id>` verb+id to the fully-qualified command', () => {
+  assert.equal(
+    promoteCommandFor('agentic-workflow-022'),
+    '/agentheim:modeling promote agentic-workflow-022',
+  );
 });
 
-test('a non-string id degrades to the bare command — never "[object Object]", never a throw', () => {
-  assert.equal(modelingCommandFor(42), '/agentheim:modeling');
-  assert.equal(modelingCommandFor({}), '/agentheim:modeling');
-  assert.equal(modelingCommandFor([]), '/agentheim:modeling');
+test('refine and promote commands for the same id are distinct and carry their verb', () => {
+  const r = refineCommandFor('agentic-workflow-022');
+  const p = promoteCommandFor('agentic-workflow-022');
+  assert.notEqual(r, p);
+  assert.match(r, /^\/agentheim:modeling refine /);
+  assert.match(p, /^\/agentheim:modeling promote /);
+});
+
+// The id-degradation contract — identical to the old modelingCommandFor (aw-016):
+// a missing/empty/whitespace/non-string id must NOT produce a dangling command,
+// "[object Object]", or a throw. With an explicit verb the only safe degradation is
+// the bare verb command (`/agentheim:modeling refine`) — the skill then prompts for
+// a target rather than the board guessing.
+
+test('refineCommandFor with no id yields the verb command with no trailing id or space', () => {
+  assert.equal(refineCommandFor(), '/agentheim:modeling refine');
+  assert.equal(refineCommandFor(undefined), '/agentheim:modeling refine');
+  assert.equal(refineCommandFor(null), '/agentheim:modeling refine');
+  assert.equal(refineCommandFor(''), '/agentheim:modeling refine');
+});
+
+test('promoteCommandFor with no id yields the verb command with no trailing id or space', () => {
+  assert.equal(promoteCommandFor(), '/agentheim:modeling promote');
+  assert.equal(promoteCommandFor(undefined), '/agentheim:modeling promote');
+  assert.equal(promoteCommandFor(null), '/agentheim:modeling promote');
+  assert.equal(promoteCommandFor(''), '/agentheim:modeling promote');
+});
+
+test('a non-string id degrades to the bare verb command — never "[object Object]", never a throw', () => {
+  assert.equal(refineCommandFor(42), '/agentheim:modeling refine');
+  assert.equal(refineCommandFor({}), '/agentheim:modeling refine');
+  assert.equal(refineCommandFor([]), '/agentheim:modeling refine');
+  assert.equal(promoteCommandFor(42), '/agentheim:modeling promote');
+  assert.equal(promoteCommandFor({}), '/agentheim:modeling promote');
+  assert.equal(promoteCommandFor([]), '/agentheim:modeling promote');
 });
 
 test('a whitespace-padded id is trimmed before appending', () => {
   assert.equal(
-    modelingCommandFor('  agentic-workflow-016  '),
-    '/agentheim:modeling agentic-workflow-016',
+    refineCommandFor('  agentic-workflow-022  '),
+    '/agentheim:modeling refine agentic-workflow-022',
+  );
+  assert.equal(
+    promoteCommandFor('  agentic-workflow-022  '),
+    '/agentheim:modeling promote agentic-workflow-022',
   );
 });
 
-test('an all-whitespace id collapses to the bare command (treated as no id)', () => {
-  assert.equal(modelingCommandFor('   '), '/agentheim:modeling');
+test('an all-whitespace id collapses to the bare verb command (treated as no id)', () => {
+  assert.equal(refineCommandFor('   '), '/agentheim:modeling refine');
+  assert.equal(promoteCommandFor('   '), '/agentheim:modeling promote');
 });

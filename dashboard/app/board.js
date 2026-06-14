@@ -41,7 +41,7 @@ import { ThemeToggle } from "../../.agentheim/contexts/design-system/styleguide/
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { modelingCommandFor, MODELING_COMMAND, QUICK_CAPTURE_COMMAND } from "./modeling-command.js";
+import { refineCommandFor, promoteCommandFor, MODELING_COMMAND, QUICK_CAPTURE_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
@@ -190,72 +190,34 @@ function copyToClipboard(text) {
   return Promise.resolve(false);
 }
 
-// The backlog-only copy affordance, supplied INTO the styleguide TicketCard via
-// its `cornerAction` render-prop (design-system-006) — it lands in the meta row's
-// bottom-right, where the (now-dropped) estimate chip used to sit. The styleguide
-// card already wraps cornerAction in a propagation-stopping container, so this
-// button's click never bubbles to the card's own onClick (the slide-over open) —
-// no extra isolation needed here. The dashboard does NOT fork the card (ADR-0003);
-// it only provides the control. Clicking it copies `command` to the clipboard and
-// flashes a quiet, transient "Copied" label swap (consistent with the styleguide's
-// quiet, token-styled affordances).
-function CopyCommandButton({ command, title }) {
-  const [copied, setCopied] = useState(false);
-  const timer = useRef(null);
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-
-  const onClick = useCallback((e) => {
-    // The styleguide isolates the slot, but also stop here so a future change to
-    // that wrapper can't re-open the card from this button.
-    if (e && typeof e.stopPropagation === "function") e.stopPropagation();
-    copyToClipboard(command).then((ok) => {
-      if (!ok) return; // clipboard blocked/absent — stay quiet, never error.
-      setCopied(true);
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setCopied(false), 1100);
-    });
-  }, [command]);
-
-  return html`
-    <button
-      type="button"
-      className="focusable"
-      title=${title || `Copy ${command}`}
-      aria-label=${title || `Copy ${command}`}
-      onClick=${onClick}
-      style=${{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        fontFamily: "var(--font-ui)", fontSize: 10.5, fontWeight: 500,
-        color: copied ? "var(--st-done)" : "var(--fg-3)",
-        background: "transparent", border: "1px solid var(--hairline)",
-        borderRadius: "var(--radius-sm)", padding: "2px 7px", cursor: "pointer",
-        transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
-      }}
-      onMouseEnter=${(e) => { e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
-      onMouseLeave=${(e) => { e.currentTarget.style.borderColor = "var(--hairline)"; }}>
-      <${Icon} name="copy" size=${12} color=${copied ? "var(--st-done)" : "var(--fg-3)"} />
-      <span>${copied ? "Copied" : "Copy"}</span>
-    </button>`;
-}
-
-// A backlog LAUNCH button (agentic-workflow-020). Clicking it tries to open a
-// REAL, interactive Claude session seeded with `command` through the VS Code
-// bridge (ADR-0018); if the bridge is unavailable for ANY reason — not in VS
-// Code's Simple Browser, listener unreachable, timeout, CORS rejection — it
+// A backlog LAUNCH button (agentic-workflow-020, extended aw-022). Clicking it
+// tries to open a REAL, interactive Claude session seeded with `command` through
+// the VS Code bridge (ADR-0018); if the bridge is unavailable for ANY reason — not
+// in VS Code's Simple Browser, listener unreachable, timeout, CORS rejection — it
 // SILENTLY falls back to copying `command` to the clipboard (the aw-016 behavior),
 // flashing the same quiet "Copied" feedback. The whole try-bridge-then-copy
 // decision is the pure `launchOrCopy` (bridge-launch.js); this is thin glue that
 // supplies window.fetch + the no-throw copyToClipboard and renders the feedback.
 // The board stays a projection of disk (ADR-0001): launching is an external
 // side-effect, never a lifecycle write.
-function LaunchButton({ label, command, icon }) {
+//
+// `emphasis` (aw-022): "default" (the column pair's look) | "primary" (filled,
+// emphasised — the expected card default) | "quiet" (text-weight, de-emphasised —
+// the rarer/committing card action). All three stay within the styleguide's
+// quiet-by-default law: token-styled, no new hue (the flash is the existing
+// --st-done). When this button sits inside the styleguide card's cornerAction slot
+// (aw-022) the slot already stops propagation; `isolateClick` adds a defensive
+// stopPropagation here too so a future change to that wrapper can't re-open the
+// card from this button (mirrors CopyCommandButton's belt-and-suspenders).
+function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false }) {
   // feedback: "idle" | "launched" | "copied". A transient label/colour swap, same
   // quiet treatment as CopyCommandButton — never an error state (absence is normal).
   const [feedback, setFeedback] = useState("idle");
   const timer = useRef(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
-  const onClick = useCallback(() => {
+  const onClick = useCallback((e) => {
+    if (isolateClick && e && typeof e.stopPropagation === "function") e.stopPropagation();
     const fetchImpl = typeof window !== "undefined" && typeof window.fetch === "function"
       ? window.fetch.bind(window)
       : undefined;
@@ -269,10 +231,19 @@ function LaunchButton({ label, command, icon }) {
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => setFeedback("idle"), 1100);
     });
-  }, [command]);
+  }, [command, isolateClick]);
 
   const flashed = feedback !== "idle";
   const labelText = feedback === "launched" ? "Launched" : feedback === "copied" ? "Copied" : label;
+  const primary = emphasis === "primary";
+  const quiet = emphasis === "quiet";
+  // Idle treatment by emphasis (all token-styled, no new hue):
+  //   primary -> filled surface-2 + stronger hairline + fg-1 (draws the eye);
+  //   quiet   -> transparent, no border, fg-3 (recedes — text-weight);
+  //   default -> the column pair's bordered surface-1 chip.
+  const idleColor = primary ? "var(--fg-1)" : quiet ? "var(--fg-3)" : "var(--fg-2)";
+  const idleBg = primary ? "var(--surface-2)" : quiet ? "transparent" : "var(--surface-1)";
+  const idleBorder = quiet ? "1px solid transparent" : `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
   return html`
     <button
       type="button"
@@ -282,17 +253,18 @@ function LaunchButton({ label, command, icon }) {
       onClick=${onClick}
       style=${{
         display: "inline-flex", alignItems: "center", gap: 5,
-        fontFamily: "var(--font-ui)", fontSize: 11.5, fontWeight: 500,
-        color: flashed ? "var(--st-done)" : "var(--fg-2)",
-        background: "var(--surface-1)",
-        border: `1px solid ${flashed ? "var(--st-done)" : "var(--hairline)"}`,
+        fontFamily: "var(--font-ui)", fontSize: 11.5,
+        fontWeight: primary ? 600 : 500,
+        color: flashed ? "var(--st-done)" : idleColor,
+        background: flashed ? "var(--surface-1)" : idleBg,
+        border: flashed ? "1px solid var(--st-done)" : idleBorder,
         borderRadius: "var(--radius-sm)", padding: "4px 9px", cursor: "pointer",
         transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
       }}
-      onMouseEnter=${(e) => { if (!flashed) e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
-      onMouseLeave=${(e) => { if (!flashed) e.currentTarget.style.borderColor = "var(--hairline)"; }}>
+      onMouseEnter=${(e) => { if (!flashed && !quiet) e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+      onMouseLeave=${(e) => { if (!flashed && !quiet) e.currentTarget.style.borderColor = primary ? "var(--hairline-strong)" : "var(--hairline)"; }}>
       <${Icon} name=${icon} size=${12.5}
-        color=${flashed ? "var(--st-done)" : "var(--fg-3)"} />
+        color=${flashed ? "var(--st-done)" : (primary ? "var(--fg-2)" : "var(--fg-3)")} />
       <span>${labelText}</span>
     </button>`;
 }
@@ -317,6 +289,36 @@ function BacklogLaunchPair() {
     </div>`;
 }
 
+// The per-CARD backlog launch group (agentic-workflow-022). The single per-card
+// Copy affordance (aw-016) is REPLACED by TWO launch buttons composed INTO the
+// styleguide TicketCard's existing single `cornerAction` render-prop slot
+// (design-system-006): cornerAction's contract is "consumer owns what renders", so
+// the board hands it a two-button group rather than one icon button — consuming the
+// primitive UNFORKED (ADR-0003), not extending it. The styleguide keeps owning the
+// slot's placement + its propagation-stopping wrapper; the board owns the group's
+// internal layout and each button's launch behavior.
+//
+// A backlog card invites two real actions, so the pair is:
+//   - Refine  (PRIMARY, emphasised) -> `/agentheim:modeling refine <id>` — the full
+//     Socratic refinement; the expected default, since most backlog items need
+//     deepening before they're ready.
+//   - Promote (QUIET, de-emphasised) -> `/agentheim:modeling promote <id>` — the
+//     readiness check + backlog → todo move; the rarer, more committing action.
+// Each opens a real seeded terminal through the bridge, with the silent clipboard
+// fallback (reusing aw-020's LaunchButton/launchOrCopy unchanged). Promote only
+// ever runs backlog → todo, so this group belongs on backlog cards only.
+function BacklogCardLaunchPair({ id }) {
+  return html`
+    <div role="group" aria-label="Refine or promote this backlog item" style=${{
+      display: "inline-flex", alignItems: "center", gap: 6,
+    }}>
+      <${LaunchButton} label="Refine" command=${refineCommandFor(id)}
+        icon="compass" emphasis="primary" isolateClick=${true} />
+      <${LaunchButton} label="Promote" command=${promoteCommandFor(id)}
+        icon="arrow-right" emphasis="quiet" isolateClick=${true} />
+    </div>`;
+}
+
 // The board's per-BC section now COMPOSES the shared styleguide Collapsible
 // primitive (design-system-005), CONTROLLED: the board owns each (column, BC)
 // collapse state in its persisted view-state store (ADR-0015), so it supplies
@@ -334,16 +336,18 @@ function BacklogLaunchPair() {
 // One TicketCard. Factored out so the flat list and the grouped sections render
 // cards identically (same selection ring).
 function BoardCard({ ticket, status, selectedId, onOpen }) {
-  // Backlog cards carry a copy affordance in the styleguide card's bottom-right
-  // cornerAction slot (design-system-006): copy `/agentheim:modeling <id>`, the
-  // command the builder runs next to refine this unrefined ticket (aw-016). Other
-  // columns pass no cornerAction, so their cards render the slot empty (and, since
-  // ds-006, no dead estimate chip either). The slot is click-isolated by the
-  // styleguide, so copying never opens the slide-over.
+  // Backlog cards carry a Refine / Promote launch pair (aw-022) in the styleguide
+  // card's bottom-right cornerAction slot (design-system-006), replacing aw-016's
+  // single Copy affordance: Refine (primary) seeds `/agentheim:modeling refine
+  // <id>` and Promote (quiet) seeds `/agentheim:modeling promote <id>`, each
+  // opening a real seeded terminal through the bridge (clipboard fallback). The
+  // board hands the slot's consumer-owned render-prop a two-button GROUP — unforked
+  // consumption (ADR-0003), not an extension of the slot. Other columns pass no
+  // cornerAction, so their cards render the slot empty (and, since ds-006, no dead
+  // estimate chip either). The slot is click-isolated by the styleguide, so
+  // launching never opens the slide-over.
   const cornerAction = status === "backlog"
-    ? () => html`<${CopyCommandButton}
-        command=${modelingCommandFor(ticket.id)}
-        title=${`Copy ${modelingCommandFor(ticket.id)}`} />`
+    ? () => html`<${BacklogCardLaunchPair} id=${ticket.id} />`
     : undefined;
   return html`
     <${TicketCard} key=${ticket.id} ticket=${ticket} variant="rail"

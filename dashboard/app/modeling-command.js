@@ -1,21 +1,31 @@
 /* ============================================================
-   Agentheim — dashboard modeling-command string builder (agentic-workflow-016)
+   Agentheim — dashboard modeling-command string builders (agentic-workflow-016,
+   extended by aw-020 and aw-022)
 
-   A pure, framework-free builder for the ONE string the board's backlog
-   copy-affordance writes to the system clipboard: the Claude Code command the
-   builder runs next to REFINE an unrefined ticket. The board stays a projection
-   of disk (ADR-0001) — this adds no lifecycle write, only the clipboard
-   side-effect; the string itself is a pure function of the ticket id.
+   Pure, framework-free builders for the exact Claude Code command strings the
+   board's backlog affordances launch (VS Code bridge, ADR-0018) — and copy to the
+   clipboard on the bridge-absent fallback. The board stays a projection of disk
+   (ADR-0001) — these add no lifecycle write, only the launch/clipboard
+   side-effect; each string is a pure function of the ticket id.
 
-   No React, no htm, no DOM, no clipboard, so it is unit-testable under
+   No React, no htm, no DOM, no clipboard, so they are unit-testable under
    `node --test`, mirroring board-sort.js / board-data.js. The React wiring (the
-   cornerAction button + the ColumnHeader onAdd handler) and the navigator
-   .clipboard.writeText call live in board.js as integration glue around this.
+   cornerAction buttons + the column launch pair) and the window.fetch / clipboard
+   side-effects live in board.js / bridge-launch.js as integration glue around this.
 
    The command text is the FULLY-QUALIFIED `/agentheim:modeling` (confirmed with
-   the builder, aw-016), NOT the bare `/modeling` alias, so the paste resolves
-   regardless of the builder's alias setup. A backlog CARD copies it with the
-   card's id appended; the backlog column's add-ticket `+` copies it bare.
+   the builder, aw-016), NOT the bare `/modeling` alias, so the launch/paste
+   resolves regardless of the builder's alias setup.
+
+   - Backlog COLUMN affordance (aw-020): the bare `/agentheim:modeling`
+     (MODELING_COMMAND) and `/agentheim:quick-capture` (QUICK_CAPTURE_COMMAND).
+   - Backlog CARD affordance (aw-022): a per-card Refine / Promote pair — an
+     EXPLICIT-VERB command per the card's id: `refineCommandFor(id)` →
+     `/agentheim:modeling refine <id>` and `promoteCommandFor(id)` →
+     `/agentheim:modeling promote <id>`. The verbs are explicit on purpose
+     (builder decision, 2026-06-14): they read unambiguously to the `modeling`
+     skill's REFINE / PROMOTE routing and stay symmetric, rather than relying on a
+     bare-id implicit refine.
    ============================================================ */
 
 // The fully-qualified, bare modeling command — what the backlog add-ticket `+`
@@ -33,17 +43,41 @@ export const MODELING_COMMAND = '/agentheim:modeling';
 export const QUICK_CAPTURE_COMMAND = '/agentheim:quick-capture';
 
 /**
- * Build the modeling command to copy for a backlog affordance.
- * @param {string} [id] — the ticket id (card affordance) or omitted (add-button).
- * @returns {string} `"/agentheim:modeling <id>"` for a real id, else the bare
- *   `"/agentheim:modeling"`.
- *
- * Pure: no DOM, no I/O. A missing/empty/whitespace/non-string id degrades to the
- * bare command (the add-button shape) — never `"[object Object]"`, never a throw.
- * A real id is trimmed before appending so a stray-padded projection value can
- * never produce `"/agentheim:modeling  id "`.
+ * Trim an id-like value to a safe suffix, or '' for anything that is not a real
+ * id. Shared by the explicit-verb card builders so each degrades identically: a
+ * missing/empty/whitespace/non-string id yields '' (never `"[object Object]"`,
+ * never a throw). A real id is trimmed so a stray-padded projection value can
+ * never produce a doubled space.
  */
-export function modelingCommandFor(id) {
-  const trimmed = typeof id === 'string' ? id.trim() : '';
-  return trimmed ? `${MODELING_COMMAND} ${trimmed}` : MODELING_COMMAND;
+function safeId(id) {
+  return typeof id === 'string' ? id.trim() : '';
+}
+
+/**
+ * Build the per-card REFINE command — what the backlog card's Refine launch
+ * button seeds (aw-022). Refine runs the full Socratic refinement of the ticket.
+ * @param {string} [id] — the card's ticket id.
+ * @returns {string} `"/agentheim:modeling refine <id>"` for a real id, else the
+ *   bare verb command `"/agentheim:modeling refine"` (the skill then asks for a
+ *   target rather than the board guessing). Pure: no DOM, no I/O, never throws.
+ */
+export function refineCommandFor(id) {
+  const trimmed = safeId(id);
+  const base = `${MODELING_COMMAND} refine`;
+  return trimmed ? `${base} ${trimmed}` : base;
+}
+
+/**
+ * Build the per-card PROMOTE command — what the backlog card's Promote launch
+ * button seeds (aw-022). Promote runs the readiness check + the backlog → todo
+ * move (so it only ever appears on backlog cards).
+ * @param {string} [id] — the card's ticket id.
+ * @returns {string} `"/agentheim:modeling promote <id>"` for a real id, else the
+ *   bare verb command `"/agentheim:modeling promote"`. Pure: no DOM, no I/O,
+ *   never throws.
+ */
+export function promoteCommandFor(id) {
+  const trimmed = safeId(id);
+  const base = `${MODELING_COMMAND} promote`;
+  return trimmed ? `${base} ${trimmed}` : base;
 }
