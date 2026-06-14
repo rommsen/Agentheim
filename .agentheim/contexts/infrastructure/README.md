@@ -140,6 +140,14 @@ Apply write request.
   → `applyTaskMove`, and concurrency (optimistic precondition + refetch) is owned by
   `agentic-workflow` per ADR-0001 — the transport carries `from` so the precondition can run
   but invents no rule of its own.
+  - **Project-named tab title (infrastructure-011).** The served `dist/index.html` is the one
+    static asset not streamed verbatim: its `<title>` is rewritten server-side per request to
+    `<ProjectName> — Dashboard`, so a dashboard pointed at any discovered project names *that*
+    project (no flash of the baked default). `ProjectName` comes from the `# Vision: <Name>`
+    heading in the discovered project's `.agentheim/vision.md`, falling back to the root
+    folder basename. Pure resolution lives in `dashboard/project-name.mjs`; the transform
+    (`serveIndexHtml`) reuses the same in-root path resolver, so ADR-0002's traversal/validation
+    guarantees are unchanged. Still zero-dep, stdlib-only, no install step.
 
 - **ADR-0003 — Dashboard asset build (esbuild → committed `dist/`).** The dashboard UI ships
   as a **pre-bundled, committed `dashboard/dist/`** produced by an **esbuild** pipeline

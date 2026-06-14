@@ -51,7 +51,7 @@ test('GET /healthz returns 200 with ok status JSON', async () => {
   }
 });
 
-test('GET / streams the committed index.html', async () => {
+test('GET / serves the index document as HTML (title rewritten per infrastructure-011)', async () => {
   const { base, dist } = makeProjectWithDist();
   const server = createDashboardServer({ root: base, assetRoot: dist });
   try {
@@ -59,7 +59,57 @@ test('GET / streams the committed index.html', async () => {
     const res = await fetch(`http://127.0.0.1:${port}/`);
     assert.equal(res.status, 200);
     assert.match(res.headers.get('content-type'), /text\/html/);
-    assert.match(await res.text(), /dash/);
+    // The index <title> is now rewritten to name the discovered project
+    // (no vision.md here → the folder basename), not streamed verbatim.
+    assert.match(await res.text(), new RegExp(`<title>${path.basename(base)} — Dashboard</title>`));
+  } finally {
+    server.close();
+    rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('GET / injects the discovered project name into the served <title> (vision heading)', async () => {
+  const { base, dist } = makeProjectWithDist();
+  // Real index.html ships the baked default title; the runtime rewrites it.
+  writeFileSync(
+    path.join(dist, 'index.html'),
+    '<!doctype html><head><title>Agentheim — Dashboard</title></head>',
+  );
+  writeFileSync(path.join(base, '.agentheim', 'vision.md'), '# Vision: Books\n\n## Purpose\n');
+  const server = createDashboardServer({ root: base, assetRoot: dist });
+  try {
+    const { port } = await start(server);
+    const res = await fetch(`http://127.0.0.1:${port}/`);
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('content-type'), /text\/html/);
+    const html = await res.text();
+    assert.match(html, /<title>Books — Dashboard<\/title>/);
+    assert.equal(html.includes('Agentheim — Dashboard'), false);
+  } finally {
+    server.close();
+    rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('GET / falls back to the folder name when vision.md has no `# Vision:` heading', async () => {
+  const base = mkdtempSync(path.join(tmpdir(), 'aw004-fallback-'));
+  mkdirSync(path.join(base, '.agentheim'));
+  const dist = path.join(base, 'dashboard', 'dist');
+  mkdirSync(dist, { recursive: true });
+  writeFileSync(
+    path.join(dist, 'index.html'),
+    '<!doctype html><head><title>Agentheim — Dashboard</title></head>',
+  );
+  // vision.md present but with no `# Vision:` heading → folder basename wins.
+  writeFileSync(path.join(base, '.agentheim', 'vision.md'), '## Purpose only\n');
+  const folderName = path.basename(base);
+  const server = createDashboardServer({ root: base, assetRoot: dist });
+  try {
+    const { port } = await start(server);
+    const res = await fetch(`http://127.0.0.1:${port}/`);
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    assert.match(html, new RegExp(`<title>${folderName} — Dashboard</title>`));
   } finally {
     server.close();
     rmSync(base, { recursive: true, force: true });

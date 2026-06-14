@@ -5,6 +5,23 @@ Newest entries on top.
 
 ---
 
+## 2026-06-14 09:17 -- Batch started: [infrastructure-011]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-011 - Dashboard browser tab title reflects the discovered project's name
+**Parallel:** no (1 worker — sole ready task)
+
+---
+
+## 2026-06-14 -- Modeling / Captured: infrastructure-011 - Dashboard browser tab title reflects the discovered project's name
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo
+**Summary:** The dashboard's browser tab title is hard-coded to `Agentheim — Dashboard` (`build.mjs:60`, baked into `dist/`), so it lies about which project is on screen when pointed at a foreign project. Captured a task to make the `<title>` read `<ProjectName> — Dashboard` at runtime, where the name comes from the discovered project's `# Vision:` heading (builder-decided), falling back to the project folder name.
+
+---
+
 ## 2026-06-09 13:05 -- Styleguide gate re-confirmed (OPEN)
 
 **Type:** Gate / Re-approval

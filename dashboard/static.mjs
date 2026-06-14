@@ -4,9 +4,10 @@
 // exist under dist/ (produced later by infrastructure-002), with a graceful
 // response when dist/ is absent.
 
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, statSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { resolveInRoot } from './discovery.mjs';
+import { resolveProjectName, dashboardTitle, injectTitle } from './project-name.mjs';
 
 const CONTENT_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -68,5 +69,59 @@ export function serveStatic(req, res, assetRoot) {
 
   res.writeHead(200, { 'content-type': contentTypeFor(target) });
   createReadStream(target).pipe(res);
+  return true;
+}
+
+/**
+ * Serve dist/index.html with its <title> rewritten to name the discovered
+ * project (infrastructure-011). The committed index.html bakes a default title
+ * (ADR-0003); since project discovery resolves an arbitrary project root at
+ * runtime, the served document must name THAT project. This is a transform of
+ * the index response ONLY — every other asset still streams verbatim via
+ * serveStatic. Reuses the same in-root resolution as serveStatic, so the
+ * traversal/validation guarantees (ADR-0002) are unchanged; falls back to a
+ * plain stream if the transform cannot read the file.
+ *
+ * @param {object} req
+ * @param {object} res
+ * @param {string} assetRoot — committed dist/ directory.
+ * @param {string} root — discovered project root (.agentheim/ holder), absolute.
+ */
+export function serveIndexHtml(req, res, assetRoot, root) {
+  const target = resolveInRoot(assetRoot, 'index.html');
+
+  if (!existsSync(assetRoot)) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Dashboard assets not built yet (dist/ is absent). Run the asset build (infrastructure-002).');
+    return true;
+  }
+
+  if (!existsSync(target) || !statSync(target).isFile()) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return true;
+  }
+
+  let html;
+  try {
+    html = readFileSync(target, 'utf8');
+    html = injectTitle(html, dashboardTitle(resolveProjectName(root)));
+  } catch {
+    // Could not transform — stream the committed file unchanged rather than 500.
+    res.writeHead(200, { 'content-type': contentTypeFor(target) });
+    createReadStream(target).pipe(res);
+    return true;
+  }
+
+  const body = Buffer.from(html, 'utf8');
+  res.writeHead(200, {
+    'content-type': contentTypeFor(target),
+    'content-length': body.length,
+  });
+  if (req.method === 'HEAD') {
+    res.end();
+  } else {
+    res.end(body);
+  }
   return true;
 }

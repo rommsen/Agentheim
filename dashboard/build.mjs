@@ -57,6 +57,11 @@ function indexHtml() {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Default/template title. The runtime rewrites this per request to name the
+       discovered project as "ProjectName — Dashboard" (infrastructure-011,
+       static.mjs serveIndexHtml). The baked literal is only ever seen if that
+       server-side injection is bypassed; against the Agentheim repo itself it
+       already reads the right name. -->
   <title>Agentheim — Dashboard</title>
   <link rel="stylesheet" href="./colors_and_type.css" />
   <link rel="stylesheet" href="./agentheim.css" />

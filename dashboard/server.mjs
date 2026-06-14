@@ -8,7 +8,7 @@
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { serveStatic } from './static.mjs';
+import { serveStatic, serveIndexHtml } from './static.mjs';
 import { handleEvents } from './events.mjs';
 import { handleTree, handleDoc } from './read-api.mjs';
 import { handleMove } from './move-api.mjs';
@@ -88,6 +88,16 @@ export function createDashboardServer({ root, assetRoot = defaultAssetRoot(root)
     if (pathname === '/api/doc') {
       const requestUrl = new URL(req.url, 'http://localhost');
       handleDoc(req, res, root, requestUrl);
+      return;
+    }
+
+    // The index document is served with its <title> rewritten to name the
+    // discovered project (infrastructure-011) — server-side so there is no flash
+    // of the baked default. Only `/` and `/index.html` take this transform path;
+    // every other asset streams verbatim below. Traversal/validation is reused
+    // from the same in-root resolver.
+    if (pathname === '/' || pathname === '/index.html') {
+      serveIndexHtml(req, res, assetRoot, root);
       return;
     }
 
