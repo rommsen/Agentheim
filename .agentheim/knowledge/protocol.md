@@ -5,13 +5,25 @@ Newest entries on top.
 
 ---
 
+## 2026-06-14 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (e18e538) + this SHA-backfill entry
+**Note:** Single ready task agentic-workflow-020 — backlog Quick Capture / Modeling launch buttons over the VS Code bridge — passed verification first try (full dashboard suite 217 green). todo and doing now both empty; no new tasks promoted mid-run. The backlog BC now has nothing ready: aw-020 was the last open item, and its "open for refine" notes (per-card backlog copy gaining a launch path; exact button placement) were resolved as in-scope worker decisions. Left untouched (not this session's work): `.agentheim/knowledge/repo-review-2026-06-10.md`.
+
+---
+
 ## 2026-06-14 -- Task verified and completed: agentic-workflow-020 - Backlog two launch buttons (Quick Capture & Modeling)
 
 **Type:** Work / Task completion
 **Task:** agentic-workflow-020 - Backlog "Add ticket" becomes two launch buttons — Quick Capture & Modeling — that start a seeded Claude session
 **Summary:** The backlog add affordance is now two labelled launch buttons — Quick Capture (`/agentheim:quick-capture`) and Modeling (`/agentheim:modeling`) — each opening a real interactive Claude session through the VS Code bridge (ADR-0018), with a silent clipboard fallback whenever the bridge is unavailable.
 **Verification:** PASS (iteration 1)
-**Commit:** COMMIT_SHA_PLACEHOLDER
+**Commit:** e18e538
 **Files changed:** 7 (board.js, modeling-command.js + test, new bridge-launch.js + test, README, dist/app.js)
 **Tests added:** 12 (10 bridge-launch + 2 modeling-command; full dashboard suite 217 green)
 **ADRs written:** none (built against frozen ADR-0018)

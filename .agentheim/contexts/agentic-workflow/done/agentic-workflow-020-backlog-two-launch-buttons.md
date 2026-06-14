@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-14
 completed: 2026-06-14
-commit:
+commit: e18e538
 depends_on: [infrastructure-012, infrastructure-014, agentic-workflow-019, design-system-001]
 blocks: []
 tags: [dashboard, board, capture, modeling, launch]
