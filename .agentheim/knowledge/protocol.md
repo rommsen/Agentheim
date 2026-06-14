@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-14 16:30 -- Release shipped: v0.8.5
+
+**Type:** Release
+**Version:** 0.8.4 → 0.8.5 (patch — VS Code bridge: dashboard launches a seeded Claude terminal for Quick Capture & Modeling)
+**Manifest:** `.claude-plugin/plugin.json` bumped, committed `fda8108`
+**Pushed to main:** yes (`bd358f8..fda8108` on `origin/main`)
+**Tag:** `v0.8.5` (annotated) → `fda8108`, pushed to origin
+**GitHub Release:** deferred (gh unavailable — notes handed to builder)
+
+---
+
 ## 2026-06-14 -- Work session ended
 
 **Type:** Work / Session end
