@@ -4,7 +4,8 @@ import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { statusDashboard, browserCommand, openBrowser } from '../launch.mjs';
+import { statusDashboard } from '../launch.mjs';
+import * as launch from '../launch.mjs';
 import { writeRunfile } from '../runfile.mjs';
 
 function makeRoot() {
@@ -51,41 +52,10 @@ test('statusDashboard reports "none" and reaps a stale runfile (dead pid), never
   }
 });
 
-// ---- openBrowser cross-OS command selection ----
+// ---- auto-open is gone (agentic-workflow-032) ----
+// launch no longer opens a browser; the opener machinery was removed entirely.
 
-test('browserCommand chooses the right opener per platform', () => {
-  const url = 'http://127.0.0.1:8080/';
-  assert.deepEqual(browserCommand('win32', url), {
-    command: 'cmd',
-    args: ['/c', 'start', '', url],
-  });
-  assert.deepEqual(browserCommand('darwin', url), {
-    command: 'open',
-    args: [url],
-  });
-  assert.deepEqual(browserCommand('linux', url), {
-    command: 'xdg-open',
-    args: [url],
-  });
-});
-
-test('openBrowser spawns the selected opener detached and never throws', () => {
-  const calls = [];
-  const fakeSpawn = (command, args, opts) => {
-    calls.push({ command, args, opts });
-    return { unref() {} };
-  };
-  // should not throw even if the spawn fails
-  assert.doesNotThrow(() => openBrowser('http://127.0.0.1:9999/', { spawnFn: fakeSpawn, platform: 'linux' }));
-  assert.equal(calls.length, 1);
-  assert.equal(calls[0].command, 'xdg-open');
-  assert.deepEqual(calls[0].args, ['http://127.0.0.1:9999/']);
-  assert.equal(calls[0].opts.detached, true);
-});
-
-test('openBrowser swallows spawn errors (browser-open is best-effort)', () => {
-  const throwingSpawn = () => {
-    throw new Error('no display');
-  };
-  assert.doesNotThrow(() => openBrowser('http://127.0.0.1:9999/', { spawnFn: throwingSpawn, platform: 'linux' }));
+test('the browser-opener helpers are no longer exported (auto-open removed)', () => {
+  assert.equal(launch.openBrowser, undefined);
+  assert.equal(launch.browserCommand, undefined);
 });

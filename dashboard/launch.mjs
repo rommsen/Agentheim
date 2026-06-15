@@ -8,8 +8,9 @@
 //   node dashboard/launch.mjs status    # report running/not-running (read-only)
 //
 // `launch` spawns serve.mjs DETACHED so the terminal returns to a prompt; the
-// child binds 127.0.0.1 on an ephemeral port and writes the runfile itself,
-// then the default browser is auto-opened at the served URL.
+// child binds 127.0.0.1 on an ephemeral port and writes the runfile itself.
+// The launcher then prints the served URL — it does NOT open a browser; the
+// builder opens the printed URL themselves (agentic-workflow-032).
 
 import { spawn, execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
@@ -116,38 +117,6 @@ export function statusDashboard(root) {
   return { state: 'none' };
 }
 
-/**
- * Pick the OS-native browser opener for `url`. This is the one new OS-divergent
- * path (joining spawn/kill); it stays here so launch.mjs remains the single home
- * for cross-OS differences (ADR-0002).
- *   Windows: cmd /c start "" <url>   (the empty "" is start's title arg)
- *   macOS:   open <url>
- *   Linux:   xdg-open <url>
- */
-export function browserCommand(platform, url) {
-  if (platform === 'win32') return { command: 'cmd', args: ['/c', 'start', '', url] };
-  if (platform === 'darwin') return { command: 'open', args: [url] };
-  return { command: 'xdg-open', args: [url] };
-}
-
-/**
- * Best-effort auto-open of the default browser at `url`. Detached + unref so it
- * never holds the terminal, and any failure (no display, missing opener) is
- * swallowed — a failed browser-open must not fail the launch.
- * `opts.spawnFn` / `opts.platform` are injectable for tests.
- */
-export function openBrowser(url, opts = {}) {
-  const spawnFn = opts.spawnFn || spawn;
-  const platform = opts.platform || process.platform;
-  const { command, args } = browserCommand(platform, url);
-  try {
-    const child = spawnFn(command, args, { detached: true, stdio: 'ignore', windowsHide: true });
-    if (child && typeof child.unref === 'function') child.unref();
-  } catch {
-    /* best effort — a failed browser-open never fails the launch */
-  }
-}
-
 // ---- CLI ----
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 if (isMain) {
@@ -166,8 +135,6 @@ if (isMain) {
     const url = `http://127.0.0.1:${r.port}/`;
     const verb = r.action === 'reused' ? 'already running' : 'launched';
     console.log(`Dashboard ${verb} at ${url} (pid ${r.pid}).`);
-    openBrowser(url);
-    console.log('Opening it in your default browser…');
     console.log('Stop it with: /dashboard stop');
   }
 }

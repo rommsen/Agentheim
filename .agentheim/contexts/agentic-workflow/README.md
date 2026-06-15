@@ -400,11 +400,12 @@ non-task documents (BC READMEs, the vision, the context map, ADRs, research) ren
 markdown (aw-027), live-updating as skills move files on disk. It is **read-only** (ADR-0017): no write-back — task lifecycle is owned by the skills, and
 the board reflects their moves rather than making them. Invoked via the `/dashboard`
 slash command (agentic-workflow-011 — the documented slash-command exception above), with three
-verbs: bare `/dashboard` launches-or-reuses the detached server and **auto-opens** the default
-browser at `http://127.0.0.1:<port>/`; `/dashboard stop` terminates it and removes the runfile;
-`/dashboard status` reports running/not-running + port from the runfile only (never launches or
-stops). The command is a thin trigger over `dashboard/launch.mjs`; auto-open is the one new
-OS-divergent path (`cmd /c start` / `open` / `xdg-open`), confined to the launcher per ADR-0002.
+verbs: bare `/dashboard` launches-or-reuses the detached server and **prints** the served URL
+(`http://127.0.0.1:<port>/`) for the builder to open — it does not open a browser itself
+(agentic-workflow-032 removed the auto-open: starting the server and opening a tab are separate
+decisions); `/dashboard stop` terminates it and removes the runfile; `/dashboard status` reports
+running/not-running + port from the runfile only (never launches or stops). The command is a thin
+trigger over `dashboard/launch.mjs`.
 
 ## Relationships with other contexts
 

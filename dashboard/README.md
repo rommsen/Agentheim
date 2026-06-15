@@ -76,7 +76,7 @@ none. `serve.mjs` honours `AGENTHEIM_DASHBOARD_DIST` as a dev override; the expl
 ## Usage
 
 ```sh
-node dashboard/launch.mjs          # launch (detached) + auto-open browser; prints the URL
+node dashboard/launch.mjs          # launch (detached); prints the URL (open it yourself)
 node dashboard/launch.mjs stop     # stop: kill by pid, remove the runfile
 node dashboard/launch.mjs status   # report running/not-running + port (read-only, never launches)
 ```
@@ -115,12 +115,10 @@ launcher's CLI discovers the root via `discoverRoot(process.cwd())` (walk up fro
 `.agentheim/`), so launch/stop/status all find the foreign project and write the runfile under it
 regardless of where the script lives. The command must not `cd` or pass a project path.
 
-`launch` spawns the server **detached** so the terminal returns to a prompt, then **auto-opens**
-the default browser at the served URL — `cmd /c start "" <url>` (Windows), `open <url>` (macOS),
-`xdg-open <url>` (Linux). Browser-open is best-effort: a failure (no display, missing opener)
-never fails the launch. The auto-open path is the one new OS-divergent step and is confined to
-`launch.mjs` (`openBrowser` / `browserCommand`) per ADR-0002. The
-server binds `127.0.0.1` **only** on an **ephemeral** port, reads the OS-assigned
+`launch` spawns the server **detached** so the terminal returns to a prompt, then prints the
+served URL — it does **not** open a browser (agentic-workflow-032 removed the auto-open; starting
+the server and opening a tab are separate decisions). The builder opens the printed URL
+themselves. The server binds `127.0.0.1` **only** on an **ephemeral** port, reads the OS-assigned
 port back, and writes the sole runtime artifact:
 
 ```
@@ -158,8 +156,8 @@ taskkill /PID <pid> /F /T
 - `runfile.mjs` — runfile read/write/delete, pid-liveness probe, reuse-or-replace.
 - `serve.mjs` — the long-running entry spawned detached; binds, writes the runfile.
 - `launch.mjs` — the single cross-platform launcher (`launch` / `stop` / `status` CLI),
-  including `statusDashboard` (pure runfile read) and the OS-divergent `openBrowser` /
-  `browserCommand` auto-open helpers. Driven by `resolve-launcher.mjs`.
+  including `statusDashboard` (pure runfile read). Prints the served URL on launch but does not
+  open a browser (agentic-workflow-032). Driven by `resolve-launcher.mjs`.
 - `resolve-launcher.mjs` — env-independent launcher locator (infrastructure-010): derives the
   plugin cache from `os.homedir()`, picks the newest version by semver, fails loud, and spawns
   `launch.mjs` cwd-inherited. Exposes pure `cacheRoot` / `pickNewestVersion` / `resolveLauncher`
