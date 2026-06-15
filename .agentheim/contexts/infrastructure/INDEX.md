@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 16
+- **Done:** 17
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-017** — Re-package & version the bridge .vsix carrying the skip-permissions change (chore) — `done/infrastructure-017-repackage-bridge-vsix-with-skip-permissions.md`
 - **infrastructure-016** — Bridge extension honours the opt-in skip-permissions option on POST /run (feature) — `done/infrastructure-016-bridge-extension-honor-skip-permissions.md`
 - **infrastructure-015** — Amend ADR-0018 — permit an opt-in bridge permission-bypass (decision) — `done/infrastructure-015-amend-adr-0018-opt-in-permission-bypass.md`
 - **infrastructure-014** — Dashboard server GET /api/bridge — serve the bridge port+token to the sandboxed frontend (feature) — `done/infrastructure-014-dashboard-bridge-discovery-endpoint.md`
@@ -46,7 +47,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **infrastructure-017** — Re-package & version the bridge .vsix carrying the skip-permissions change (chore) — `backlog/infrastructure-017-repackage-bridge-vsix-with-skip-permissions.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

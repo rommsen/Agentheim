@@ -29,7 +29,7 @@ HTTP surface (every request requires the `X-Agentheim-Bridge-Token` header):
 
 | Method + path     | Behaviour |
 |-------------------|-----------|
-| `POST /run { prompt }` | Opens a `Claude` terminal, shows it, seeds `claude "<prompt>"`. → `202` |
+| `POST /run { prompt, skipPermissions? }` | Opens a `Claude` terminal, shows it, seeds `claude "<prompt>"`. The optional, off-by-default `skipPermissions` boolean seeds `claude --dangerously-skip-permissions "<prompt>"` **only** when set to the literal `true`; absent/`false`/malformed seeds `claude "<prompt>"`. → `202` |
 | `GET /health`     | Liveness probe for the frontend. → `200` |
 | `OPTIONS *`       | CORS preflight (load-bearing — the custom-header JSON POST is preflighted). → `204` |
 
@@ -38,9 +38,19 @@ Rejections: missing/mismatched token → `401`; malformed or empty body → `400
 ### Trust boundary
 
 Loopback-only bind **plus** the shared-secret token header. Acceptable for a
-single-user dev box; **not** for any networked or multi-user deployment. The
-launch never hard-wires `--dangerously-skip-permissions` or any other
-permission-bypass flag.
+single-user dev box; **not** for any networked or multi-user deployment.
+
+The launch carries the `--dangerously-skip-permissions` bypass **only** as an
+opt-in, off-by-default capability: a `POST /run` seeds the bypass flag only when
+the request body sets `skipPermissions` to the literal `true`. Absent, `false`,
+or malformed `skipPermissions` launches the normal prompt-gated
+`claude "<prompt>"` verbatim, exactly as before. The token guardrail is unchanged
+— a missing/mismatched token still returns `401` byte-identically whether or not
+`skipPermissions` is set, so the bypass widens what an *already-authenticated*
+request may do, never *who* is authenticated. The bypass is **bridge-launch-only**
+(`--dangerously-skip-permissions` is a startup-only flag, so the clipboard
+fallback cannot carry it), and any UI affordance that can fire a bypass launch
+must show a per-launch at-a-glance indicator (ADR-0018, agentic-workflow-021).
 
 ### Out of scope
 
@@ -66,8 +76,10 @@ npm test          # node --test --test-concurrency=1
 
 Covers: loopback bind on the fixed port, the fallback ladder, `bridge.json`
 write/overwrite/remove, token gating (401), body validation (400), `GET /health`,
-the `OPTIONS` preflight, and that `POST /run` launches `claude "<prompt>"` with no
-permission-bypass flag.
+the `OPTIONS` preflight, and that `POST /run` launches `claude "<prompt>"` by
+default — with the strict-`true` `skipPermissions` path (seeds
+`claude --dangerously-skip-permissions "<prompt>"`) and the
+absent/`false`/malformed default path (seeds `claude "<prompt>"`) both covered.
 
 ## Install (outside the marketplace)
 
@@ -77,8 +89,8 @@ locally.
 ```sh
 cd vscode-extension
 npm install                       # only to get @vscode/vsce (packaging tool)
-npx vsce package                  # produces agentheim-bridge-0.1.0.vsix
-code --install-extension agentheim-bridge-0.1.0.vsix
+npx vsce package                  # produces agentheim-bridge-0.2.0.vsix
+code --install-extension agentheim-bridge-0.2.0.vsix
 ```
 
 Then reload VS Code. On startup, with an Agentheim project open in the
