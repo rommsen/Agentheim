@@ -5,6 +5,149 @@ Newest entries on top.
 
 ---
 
+## 2026-06-15 -- Task verified and completed: infrastructure-016 - Bridge extension honours the opt-in skip-permissions option
+
+**Type:** Work / Task completion
+**Task:** infrastructure-016 - Bridge extension honours the opt-in skip-permissions option on POST /run
+**Summary:** The bridge's POST /run handler now honours `skipPermissions`: a strict-`true` identity check (`parsed?.skipPermissions === true`) seeds `claude --dangerously-skip-permissions "<prompt>"`, while absent/`false`/`null`/`"true"`/numeric all fail safe to the byte-identical pre-amendment `claude "<prompt>"`. Confined to the pure core `bridge.js`; `extension.js` (the only vscode-API file) untouched.
+**Verification:** PASS (iteration 1)
+**Commit:** f7348a2
+**Files changed:** 3 (bridge.js, bridge.test.mjs, package.json) + 1 new backlog item
+**Tests added:** 3 (skipPermissions:true bypass, 5-case strict-true matrix, byte-identical regression guard) — all green; 2 pre-existing fixed-port-contention tests fail environmentally (a live bridge host holds :31425/:31426), unrelated to this diff
+**ADRs written:** none (implements the frozen command construction in ADR-0018's 2026-06-14 amendment)
+**Note:** Worker spun off infrastructure-017 (backlog) to re-package & version the `.vsix` — out of scope for this pure-core change.
+
+---
+
+## 2026-06-15 -- Batch started: [infrastructure-016]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-016 - Bridge extension honours the opt-in skip-permissions option on POST /run
+**Parallel:** no (1 worker)
+
+---
+
+## 2026-06-14 15:35 -- Modeling / Promoted: infrastructure-016 - Bridge extension honours the opt-in skip-permissions option
+
+**Type:** Modeling / Promote
+**BC:** infrastructure
+**From → To:** backlog → todo
+**Summary:** Readiness confirmed — five concrete acceptance criteria, tightly bounded scope, and its sole dependency infrastructure-015 is done (commit 54c242a), so the `skipPermissions` contract field it was waiting on is now pinned. Open-for-refine notes (shell-escaping, .vsix re-packaging) are worker-resolvable implementation detail, not readiness blockers.
+
+---
+
+## 2026-06-14 15:24 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 1, re-dispatched: 1, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (b4a5e55 agentic-workflow-022, 54c242a infrastructure-015)
+**Note:** Parallel batch of 2 ready tasks across two BCs (no file conflict). agentic-workflow-022 (per-card Refine/Promote launch buttons) passed verification first try (dashboard suite 226 green). infrastructure-015 (ADR-0018 opt-in permission-bypass amendment) failed verification iteration 1 (README left self-contradictory on the reversed clause) and passed on iteration 2 after a targeted README reconcile. todo and doing now empty. Surfaced: (1) a design-system BC README one-liner is warranted (ds-006 `cornerAction` now carries a consumer-composed multi-control group) — a worker can't cross BC READMEs, so it's for the builder; (2) infrastructure-015 unblocks backlog items infrastructure-016 and agentic-workflow-021. Cleared a stale `.git/index.lock` (no live git process) during the run.
+
+---
+
+## 2026-06-14 15:24 -- Task verified and completed: infrastructure-015 - Amend ADR-0018 (opt-in permission-bypass)
+
+**Type:** Work / Task completion
+**Task:** infrastructure-015 - Amend ADR-0018 — permit an opt-in bridge permission-bypass
+**Summary:** ADR-0018 amended in place ("No permission-bypass" → "Permission-bypass — opt-in, off by default") with an optional strict-`true` `skipPermissions` boolean frozen on `POST /run`, guardrails (token unchanged, required per-launch indicator, residual-risk paragraph), clipboard-cannot-carry-it asymmetry accepted, and a "What stays frozen" list keeping infra-013/014 + aw-020 valid. Infra BC README reconciled.
+**Verification:** PASS (iteration 2)
+**Commit:** 54c242a
+**Files changed:** 2 (ADR-0018, infra README)
+**Tests added:** 0 (decision task)
+**ADRs written:** 0018-vscode-dashboard-terminal-bridge.md (in-place amendment)
+**Note:** Iteration 1 FAILED — the README's ADR-0018 summary bullet still asserted the reversed "no permission-bypass flag is ever wired in"; re-dispatched worker reconciled it. Unblocks infrastructure-016 and agentic-workflow-021 (both in backlog).
+
+---
+
+## 2026-06-14 15:24 -- Verification failed: infrastructure-015 - Amend ADR-0018 (opt-in permission-bypass)
+
+**Type:** Work / Verification failure
+**Task:** infrastructure-015 - Amend ADR-0018 — permit an opt-in bridge permission-bypass
+**Iteration:** 1 of 3
+**Reasons:** Infra BC README still self-contradictory — the ADR-0018 Decisions-section summary bullet (~line 222) still reads "no permission-bypass flag is ever wired in", directly contradicting the amended ADR recorded in the same README. The Bridge entry (~line 84) was correctly updated, but the summary bullet was left stale.
+**Iteration hint:** likely-fixable
+**Next:** re-dispatched worker (iteration 2)
+
+---
+
+## 2026-06-14 15:24 -- Task verified and completed: agentic-workflow-022 - Backlog cards get Refine & Promote launch buttons
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-022 - Backlog cards get Refine & Promote launch buttons, each seeded with the ticket id
+**Summary:** Backlog cards now carry a Refine (primary) / Promote (quiet) launch-button group in the styleguide TicketCard `cornerAction` slot, replacing aw-016's single Copy button; Refine seeds `/agentheim:modeling refine <id>` and Promote `/agentheim:modeling promote <id>`, each launching via the VS Code bridge with silent clipboard fallback, styleguide consumed unforked (ADR-0003).
+**Verification:** PASS (iteration 1)
+**Commit:** b4a5e55
+**Files changed:** 6 (modeling-command.js + test, board.js, new backlog-card-launch test, README, dist/app.js)
+**Tests added:** new backlog-card-launch suite + extended modeling-command (full dashboard suite 226 green)
+**ADRs written:** none (exercises ADR-0003/0009/0018; no new decision)
+**Note:** Verifier flagged that a matching one-line note in the design-system BC README is warranted (ds-006's `cornerAction` now demonstrated carrying a consumer-composed multi-control group) — a worker may not edit another BC's README; surfaced to builder.
+
+---
+
+## 2026-06-14 15:24 -- Batch started: [infrastructure-015, agentic-workflow-022]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-015 - Amend ADR-0018 (permit an opt-in bridge permission-bypass), agentic-workflow-022 - Backlog cards get Refine & Promote launch buttons
+**Parallel:** yes (2 workers)
+
+---
+
+## 2026-06-14 -- Modeling / Refined: agentic-workflow-022 - Backlog cards get Refine & Promote launch buttons
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Resolved the one open architectural question — two labelled actions on
+a card whose styleguide `cornerAction` slot (design-system-006) was built for one
+control. Decided to **reuse the existing slot**: `cornerAction` is a render-prop, so
+the board returns a two-button group from it; the styleguide is consumed unforked
+(ADR-0003) and is not modified. **No design-system child task; no new dependency.**
+Also fixed emphasis: **Refine primary, Promote de-emphasised**. Acceptance criteria
+tightened (slot composition, stop-propagation reuse, no-fork) and the prior "may need
+a child task / open placement" hedging removed.
+**Split into:** (none — reuse-the-slot decision avoided a split)
+**ADRs written:** (none — exercises ADR-0003 / ds-006 rather than superseding them; a one-line README note flagged instead)
+
+---
+
+## 2026-06-14 -- Modeling / Refined + Promoted: infrastructure-015 - Amend ADR-0018, permit an opt-in bridge permission-bypass
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo (promoted from backlog)
+**Summary:** Routed the decision to the architect via the orchestrator. Resolved all four open sub-questions: (1) **amend ADR-0018 in place** — it's still `proposed`, repo only supersedes `accepted` ADRs; (2) freeze an optional boolean **`skipPermissions`** on `POST /run` (intent-named over the task's flag-spelled `dangerouslySkipPermissions` — left as a builder veto), with **strict-`true`** activation so malformed input fails safe; (3) guardrails — token stays required/unchanged, a **per-launch at-a-glance indicator** is mandated, and an explicit residual-risk paragraph; (4) bypass is **bridge-launch-only** — the clipboard fallback can't carry a startup flag, closing the previously-open "clipboard appends the flag" question. Tightened acceptance criteria; promoted to todo (no deps, unambiguous). Surfaced two downstream scope gaps and folded them in: infrastructure-016 gains a strict-`true` regression guard; agentic-workflow-021 now explicitly owns the ADR-mandated per-launch indicator and records the accepted clipboard asymmetry.
+**Split into:** none
+**ADRs written:** none (the ADR-0018 amendment is the *output* of working 015, not written during refine)
+
+---
+
+## 2026-06-14 -- Modeling / Captured: agentic-workflow-022 - Backlog cards get Refine & Promote launch buttons
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Each backlog *card's* single Copy button (aw-016) becomes a Refine /
+Promote launch pair — the per-card sibling of aw-020's column launch pair. Each
+button seeds an interactive Claude terminal via the VS Code bridge with the
+ticket's id baked in (`/agentheim:modeling refine <id>` / `… promote <id>`), with
+the existing silent clipboard fallback. Filed straight to todo: all infra and the
+styleguide gate are done, so it's worker-ready. (Renumbered 021→022 — a concurrent
+session claimed 021 mid-capture.)
+
+---
+
+## 2026-06-14 -- Modeling / Captured: opt-in permission-bypass for the bridge launch buttons
+
+**Type:** Modeling / Capture
+**BC:** infrastructure + agentic-workflow
+**Filed to:** backlog
+**Summary:** Builder wants a persisted dashboard setting (off by default) that launches the Quick Capture & Modeling buttons with `--dangerously-skip-permissions`. This reverses ADR-0018's explicit "No permission-bypass" clause, so it was captured as three linked backlog items: **infrastructure-015** (decision — amend/supersede ADR-0018 to permit an opt-in bypass + freeze the `POST /run` contract field), **infrastructure-016** (feature — the bridge extension honours the option), and **agentic-workflow-021** (feature — the persisted toggle + threading the flag through the launch path, gated on design-system-001). Dependency chain: 015 → 016 → 021. The ADR conflict was surfaced to the builder, who chose to record the reversal as a decision task and to make the setting a persisted, default-off toggle.
+
+---
+
 ## 2026-06-14 16:30 -- Release shipped: v0.8.5
 
 **Type:** Release

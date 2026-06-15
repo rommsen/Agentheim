@@ -120,6 +120,80 @@ test('POST /run with a valid token launches claude "<prompt>" and returns 2xx', 
   }
 });
 
+test('POST /run { skipPermissions: true } seeds claude --dangerously-skip-permissions "<prompt>"', async () => {
+  const base = makeProject();
+  const launched = [];
+  const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+  try {
+    const res = await request(bridge.port, {
+      method: 'POST',
+      pathName: '/run',
+      headers: { [TOKEN_HEADER]: bridge.token },
+      body: JSON.stringify({ prompt: 'do the thing', skipPermissions: true }),
+    });
+    assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
+    assert.deepEqual(launched, ['claude --dangerously-skip-permissions "do the thing"']);
+  } finally {
+    cleanup(base, bridge);
+  }
+});
+
+test('only literal true activates bypass — false/"true"/null/absent all seed claude "<prompt>"', async () => {
+  // Strict identity check (skipPermissions === true): malformed input fails
+  // toward the prompt-gated default, never toward the bypass (ADR-0018).
+  const cases = [
+    { prompt: 'a', skipPermissions: false },
+    { prompt: 'b', skipPermissions: 'true' },
+    { prompt: 'c', skipPermissions: null },
+    { prompt: 'd', skipPermissions: 1 },
+    { prompt: 'e' }, // absent
+  ];
+  for (const payload of cases) {
+    const base = makeProject();
+    const launched = [];
+    const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+    try {
+      const res = await request(bridge.port, {
+        method: 'POST',
+        pathName: '/run',
+        headers: { [TOKEN_HEADER]: bridge.token },
+        body: JSON.stringify(payload),
+      });
+      assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
+      assert.deepEqual(
+        launched,
+        [`claude "${payload.prompt}"`],
+        `skipPermissions=${JSON.stringify(payload.skipPermissions)} must not enable bypass`
+      );
+      assert.ok(
+        !launched[0].includes('--dangerously-skip-permissions'),
+        `non-true skipPermissions must not inject the bypass flag`
+      );
+    } finally {
+      cleanup(base, bridge);
+    }
+  }
+});
+
+test('regression guard: POST /run without skipPermissions is byte-identical to the pre-amendment command', async () => {
+  const base = makeProject();
+  const launched = [];
+  const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+  try {
+    const res = await request(bridge.port, {
+      method: 'POST',
+      pathName: '/run',
+      headers: { [TOKEN_HEADER]: bridge.token },
+      body: JSON.stringify({ prompt: 'pre-amendment' }),
+    });
+    assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
+    assert.equal(launched.length, 1);
+    assert.equal(launched[0], 'claude "pre-amendment"');
+  } finally {
+    cleanup(base, bridge);
+  }
+});
+
 test('POST /run with a missing/mismatched token is rejected 401 and launches nothing', async () => {
   const base = makeProject();
   const launched = [];

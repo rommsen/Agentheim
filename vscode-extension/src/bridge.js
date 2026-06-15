@@ -124,7 +124,9 @@ function readBody(req, limit = 64 * 1024) {
 
 /**
  * Build the request handler. `token` gates every request; `launchTerminal` is
- * the injected editor action invoked with the full `claude "<prompt>"` command.
+ * the injected editor action invoked with the full `claude [--dangerously-skip-
+ * permissions] "<prompt>"` command (the flag opt-in via strict-`true`
+ * `skipPermissions`, ADR-0018).
  */
 function makeHandler({ token, launchTerminal }) {
   return async function handler(req, res) {
@@ -170,10 +172,17 @@ function makeHandler({ token, launchTerminal }) {
         send(res, 400, { error: 'empty prompt' });
         return;
       }
-      // Generic: launch whatever prompt is handed. Never inject a permission-
-      // bypass flag (ADR-0018). Embedded double-quotes are escaped so the
-      // shell command stays well-formed.
-      const command = `claude "${prompt.replace(/"/g, '\\"')}"`;
+      // Opt-in permission bypass (ADR-0018, amended 2026-06-14). The flag is
+      // injected ONLY on a strict-`true` identity check — field absent, `false`,
+      // `null`, the string "true", a number, or anything else falls through to
+      // the prompt-gated default `claude "<prompt>"`, so malformed input never
+      // silently enables the bypass. Embedded double-quotes are escaped so the
+      // shell command stays well-formed regardless of the flag.
+      const skip = parsed?.skipPermissions === true;
+      const quoted = `"${prompt.replace(/"/g, '\\"')}"`;
+      const command = skip
+        ? `claude --dangerously-skip-permissions ${quoted}`
+        : `claude ${quoted}`;
       try {
         launchTerminal(command);
       } catch (err) {
