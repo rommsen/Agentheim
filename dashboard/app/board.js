@@ -46,7 +46,7 @@ import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { loadSkipPermissions, saveSkipPermissions } from "./skip-permissions-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { refineCommandFor, promoteCommandFor, quickCaptureCommandFor, modelingCommandFor, WORK_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
+import { refineCommandFor, promoteCommandFor, quickCaptureCommandFor, modelingCommandFor, researchCommandFor, WORK_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
@@ -478,6 +478,8 @@ function BoardPromptBar({ skipPermissions = false }) {
           icon="plus" skipPermissions=${skipPermissions} onResult=${onResult} />
         <${LaunchButton} label="Modeling" command=${modelingCommandFor(prompt)}
           icon="compass" skipPermissions=${skipPermissions} onResult=${onResult} />
+        <${LaunchButton} label="Research" command=${researchCommandFor(prompt)}
+          icon="search" skipPermissions=${skipPermissions} onResult=${onResult} />
         ${/* TEMP (aw-025): replay-on-demand trigger for the celebration confetti, so the
              animation can be iterated on without authoring + launching a real session.
              It is throwaway scaffolding — delete this one contiguous block to remove it.

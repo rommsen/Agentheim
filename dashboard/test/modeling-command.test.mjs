@@ -22,10 +22,12 @@ import {
   QUICK_CAPTURE_COMMAND,
   WORK_COMMAND,
   STOP_DASHBOARD_COMMAND,
+  RESEARCH_COMMAND,
   refineCommandFor,
   promoteCommandFor,
   quickCaptureCommandFor,
   modelingCommandFor,
+  researchCommandFor,
 } from '../app/modeling-command.js';
 
 test('MODELING_COMMAND is the fully-qualified bare command (not the /modeling alias)', () => {
@@ -211,5 +213,62 @@ test('interior whitespace within the prompt is preserved (only the ends are trim
   assert.equal(
     modelingCommandFor('  refine   the   thing  '),
     '/agentheim:modeling refine   the   thing',
+  );
+});
+
+// agentic-workflow-036: the board prompt bar gains a THIRD authoring button —
+// Research — beside Quick Capture / Modeling. It seeds `/agentheim:research <prompt>`
+// from the live textarea, mirroring the aw-023 prompt-taking builders exactly: a
+// single space + the trimmed prompt when present, else the bare RESEARCH_COMMAND;
+// missing / non-string / whitespace-only degrades to bare, never "[object Object]",
+// never a doubled space, never a throw.
+
+test('RESEARCH_COMMAND is the fully-qualified bare research command', () => {
+  assert.equal(RESEARCH_COMMAND, '/agentheim:research');
+});
+
+test('RESEARCH_COMMAND is distinct from the other launch commands and fully-qualified', () => {
+  assert.notEqual(RESEARCH_COMMAND, MODELING_COMMAND);
+  assert.notEqual(RESEARCH_COMMAND, QUICK_CAPTURE_COMMAND);
+  assert.notEqual(RESEARCH_COMMAND, WORK_COMMAND);
+  assert.match(RESEARCH_COMMAND, /^\/agentheim:/);
+});
+
+test('researchCommandFor appends a single space + the trimmed prompt', () => {
+  assert.equal(
+    researchCommandFor('the bridge contract'),
+    '/agentheim:research the bridge contract',
+  );
+});
+
+test('researchCommandFor with an empty / missing prompt yields the bare command', () => {
+  assert.equal(researchCommandFor(), RESEARCH_COMMAND);
+  assert.equal(researchCommandFor(undefined), RESEARCH_COMMAND);
+  assert.equal(researchCommandFor(null), RESEARCH_COMMAND);
+  assert.equal(researchCommandFor(''), RESEARCH_COMMAND);
+});
+
+test('researchCommandFor collapses a whitespace-only prompt to the bare command (no doubled / trailing space)', () => {
+  assert.equal(researchCommandFor('   '), RESEARCH_COMMAND);
+  assert.equal(researchCommandFor('   \n\t '), RESEARCH_COMMAND);
+});
+
+test('researchCommandFor trims a whitespace-padded prompt before appending (single separating space)', () => {
+  assert.equal(
+    researchCommandFor('  what is the bridge  '),
+    '/agentheim:research what is the bridge',
+  );
+});
+
+test('researchCommandFor with a non-string prompt degrades to the bare command — never "[object Object]", never a throw', () => {
+  assert.equal(researchCommandFor(42), RESEARCH_COMMAND);
+  assert.equal(researchCommandFor({}), RESEARCH_COMMAND);
+  assert.equal(researchCommandFor([]), RESEARCH_COMMAND);
+});
+
+test('researchCommandFor preserves interior whitespace (only the ends are trimmed)', () => {
+  assert.equal(
+    researchCommandFor('  how   does   it   work  '),
+    '/agentheim:research how   does   it   work',
   );
 });

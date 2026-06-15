@@ -226,7 +226,7 @@ separate BC, but today the whole tool lives in this one.
   you don't *add* tickets to those columns from here. Launching a session is an **external
   side-effect**, not a lifecycle write: the board stays a projection of disk. See ADR-0018, ADR-0003,
   ADR-0009, ADR-0001.
-- **Board prompt bar (Quick Capture / Modeling)** -- the backlog column's former single
+- **Board prompt bar (Quick Capture / Modeling / Research)** -- the backlog column's former single
   add-ticket **`+`** first became **two** labelled launch buttons inside the backlog column
   (agentic-workflow-020), then those two buttons were **relocated** (agentic-workflow-023) out of the
   column into a **board-level prompt bar**: a multi-line **textarea** rendered on the **board view
@@ -269,8 +269,9 @@ separate BC, but today the whole tool lives in this one.
   text-input primitive; the board-control precedent -- the sort `<select>`, the group toggle -- keeps
   the styleguide consumed **unforked**, ADR-0003). The builder **authors a prompt once and hands it to
   whichever authoring skill they pick**: clicking **Quick Capture** seeds `/agentheim:quick-capture <prompt>`
-  (the fast idea-dump, renamed in aw-019) and **Modeling** seeds `/agentheim:modeling <prompt>` (the
-  full Socratic session), where `<prompt>` is the **trimmed** textarea contents joined to the command
+  (the fast idea-dump, renamed in aw-019), **Modeling** seeds `/agentheim:modeling <prompt>` (the
+  full Socratic session), and **Research** (aw-036, a third button beside the pair) seeds
+  `/agentheim:research <prompt>` (the research skill), where `<prompt>` is the **trimmed** textarea contents joined to the command
   by a single space. An **empty / whitespace-only** textarea falls back to the **bare** command
   (byte-identical to aw-020). On a **successful launch or landed clipboard copy** the textarea is
   **cleared** and a board-local **confetti** burst plays; a fully-silent action

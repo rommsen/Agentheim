@@ -98,6 +98,42 @@ test('a successful launch/copy clears the textarea and fires confetti; silent (n
   assert.match(bar[0], /confetti|celebrate|burst/i, 'a successful action must fire confetti');
 });
 
+// agentic-workflow-036: the prompt bar gains a THIRD authoring button — Research —
+// beside Quick Capture / Modeling. It seeds researchCommandFor(prompt) from the live
+// textarea, threads skipPermissions like the siblings, and shares the SAME onResult
+// (clear + confetti). It reuses LaunchButton/launchOrCopy unchanged — only the
+// command string is new.
+test('the prompt bar renders a Research button beside Quick Capture / Modeling', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  assert.ok(bar, 'BoardPromptBar component must exist');
+  assert.match(bar[0], /label="Research"/, 'prompt bar must render a Research button');
+});
+
+test('the Research button seeds researchCommandFor with the live textarea value', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  assert.match(
+    bar[0],
+    /command=\$\{researchCommandFor\(/,
+    'Research must seed researchCommandFor(prompt)',
+  );
+});
+
+test('the Research button threads skipPermissions and shares the prompt bar onResult', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  const research = bar[0].match(/label="Research"[\s\S]{0,260}?\/>/);
+  assert.ok(research, 'the Research button must be present');
+  assert.match(research[0], /skipPermissions=\$\{skipPermissions\}/, 'Research must carry skipPermissions');
+  assert.match(research[0], /onResult=\$\{onResult\}/, 'Research must share the prompt-bar onResult (clear + confetti)');
+});
+
+test('board.js imports researchCommandFor from modeling-command (only the command string is new)', () => {
+  assert.match(
+    boardSrc,
+    /import\s*\{[^}]*researchCommandFor[^}]*\}\s*from\s*"\.\/modeling-command\.js"/,
+    'board.js must import the researchCommandFor builder',
+  );
+});
+
 // agentic-workflow-026: the shell is relaid-out to the styleguide §05 left-rail
 // layout, and the Work launch MOVES OUT of the prompt bar into the main-column
 // topbar (BoardTopbar). aw-024's two-thirds/one-third split collapses back: the

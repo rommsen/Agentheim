@@ -42,6 +42,15 @@ export const MODELING_COMMAND = '/agentheim:modeling';
 // regardless of the builder's alias setup.
 export const QUICK_CAPTURE_COMMAND = '/agentheim:quick-capture';
 
+// The fully-qualified research command (agentic-workflow-036) — the board prompt
+// bar's third launch button (beside Quick Capture / Modeling) hands this exact
+// string to the bridge's POST /run (the extension wraps it as `claude "<prompt>"`,
+// ADR-0018) and copies the same on the bridge-absent fallback. Like the other two
+// authoring buttons it CONSUMES the typed prompt (researchCommandFor), so the bare
+// constant is the empty-prompt fallback only. Bare and fully-qualified for the same
+// reason MODELING_COMMAND is — it resolves regardless of the builder's alias setup.
+export const RESEARCH_COMMAND = '/agentheim:research';
+
 // The fully-qualified, bare WORK command (agentic-workflow-024) — what the board
 // prompt bar's right-side action column launches to kick off an EXECUTION run
 // against the ready backlog. Unlike Quick Capture / Modeling (authoring actions that
@@ -112,6 +121,21 @@ export function quickCaptureCommandFor(prompt) {
 export function modelingCommandFor(prompt) {
   const trimmed = safePrompt(prompt);
   return trimmed ? `${MODELING_COMMAND} ${trimmed}` : MODELING_COMMAND;
+}
+
+/**
+ * Build the RESEARCH command, optionally seeded with the board prompt-bar's typed
+ * prompt (aw-036). The third prompt-bar button hands the bridge this exact string;
+ * the clipboard fallback copies the same. Mirrors quickCaptureCommandFor /
+ * modelingCommandFor exactly.
+ * @param {string} [prompt] — the live textarea contents.
+ * @returns {string} `"/agentheim:research <prompt>"` for a real prompt (one
+ *   separating space, trimmed ends), else the bare `RESEARCH_COMMAND`. Pure: no
+ *   DOM, no I/O, never throws.
+ */
+export function researchCommandFor(prompt) {
+  const trimmed = safePrompt(prompt);
+  return trimmed ? `${RESEARCH_COMMAND} ${trimmed}` : RESEARCH_COMMAND;
 }
 
 /**
