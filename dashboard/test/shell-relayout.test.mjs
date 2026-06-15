@@ -7,8 +7,8 @@
 // NOT the styleguide AppRail (hardwired to the demo LIBRARY) — and fed the LIVE
 // treeToLibrary(tree) projection. The Board RailItem is the only nav item; the
 // always-visible Workspace tree IS the library. The theme + skip-permissions
-// toggles live in the main-column TOPBAR, left of the inverse Work launch
-// (aw-029 — a partial reversal of aw-026's rail-footer placement); the rail no
+// toggles live in the main-column TOPBAR, left of the theme-following Work launch
+// (aw-029 placement; aw-033 made the launch follow the scheme); the rail no
 // longer renders a toggle footer. No styleguide file is modified.
 //
 // The board's React glue has no DOM render harness in this project — the established
@@ -104,11 +104,12 @@ test('the topbar hosts the theme + skip-permissions toggles, in that order, LEFT
   assert.ok(skipAt < workAt, 'the skip-permissions toggle must render before (left of) the Work launch');
 });
 
-test('a main-column topbar renders the inverse Work launch and no Search box', () => {
+test('a main-column topbar renders the theme-following Work launch and no Search box', () => {
   const top = fn('BoardTopbar');
-  // The §05 inverse button look: background + border var(--fg-1), color var(--surface-0).
-  assert.match(top, /var\(--fg-1\)/, 'the topbar action must use the inverse fill (--fg-1)');
-  assert.match(top, /var\(--surface-0\)/, 'the inverse button text must be --surface-0');
+  // The Work launch FOLLOWS the active theme (aw-033): the primary emphasis
+  // (idleBg --surface-2, idleColor --fg-1) — NOT the inverse §05 treatment that
+  // reads as the opposite scheme. It must not be rendered with emphasis="inverse".
+  assert.doesNotMatch(top, /emphasis="inverse"/, 'the topbar Work launch must not use the inverse (opposite-theme) treatment');
   // No Search affordance (read-only dashboard, no search backend).
   assert.doesNotMatch(top, /Search/, 'no Search box may be rendered');
 });
@@ -119,7 +120,7 @@ test('the topbar Work button IS the Work launch: bare WORK_COMMAND, skipPermissi
   const work = top.match(/label="Work"[\s\S]{0,320}?\/>/);
   assert.ok(work, 'the Work button must be present in the topbar');
   assert.match(work[0], /command=\$\{WORK_COMMAND\}/, 'Work must seed the bare WORK_COMMAND');
-  assert.match(work[0], /emphasis="inverse"/, 'Work must use the §05 inverse emphasis');
+  assert.match(work[0], /emphasis="primary"/, 'Work must use the theme-following primary emphasis (aw-033)');
   assert.match(work[0], /skipPermissions=\$\{skipPermissions\}/, 'Work must thread skipPermissions (aw-021/ADR-0019)');
   assert.doesNotMatch(work[0], /onResult/, 'Work must NOT pass onResult — it never consumed a prompt');
 });

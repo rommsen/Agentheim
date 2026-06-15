@@ -86,8 +86,8 @@ separate BC, but today the whole tool lives in this one.
   board). The rail carries brand → a single **Board** `RailItem` → divider → "Workspace"
   label → the **live** library tree (`treeToLibrary`, the always-visible tree *is* the
   library). The **theme + skip-permissions toggles** sit in the **main-column topbar**,
-  left of the inverse **Work** launch (aw-029 — a partial reversal of aw-026's rail-footer
-  placement; the rail no longer has a toggle footer). A quiet **Stop dashboard** launch
+  left of the theme-following **Work** launch (aw-029 placement — a partial reversal of
+  aw-026's rail-footer; the rail no longer has a toggle footer). A quiet **Stop dashboard** launch
   (aw-028) sits at the **far left** of the same topbar (after the breadcrumb), set **apart**
   from the `[theme][skip-perms][Work]` cluster so it never reads as the Work primary — see
   *Stop dashboard from the UI* below. The old horizontal header
@@ -147,7 +147,7 @@ separate BC, but today the whole tool lives in this one.
   than throwing — a corrupt preference can never blank the board. See ADR-0015, ADR-0001.
 - **Persisted theme choice (light/dark toggle)** — the dashboard consumes the styleguide's "dark-first
   with a light toggle" theme switch **unforked** (ADR-0003): the `ThemeToggle` Dark/Light control (from
-  `styleguide/app/live.js`) lives in the **main-column topbar**, left of the inverse Work launch
+  `styleguide/app/live.js`) lives in the **main-column topbar**, left of the theme-following Work launch
   (relocated there in aw-029, after a brief stint in the aw-026 rail footer; originally in the
   retired horizontal header), feeding the existing `ThemeCtx.Provider` and a `data-theme` documentElement effect that animates
   the flip with the styleguide `theme-fade` transition (agentic-workflow-017). **Theme resolution +
@@ -239,10 +239,12 @@ separate BC, but today the whole tool lives in this one.
   layout (flex), the styleguide consumed **unforked** (ADR-0003).
 - **Shell layout (aw-026, styleguide §05)** -- the live shell is the styleguide "Components in context"
   full-height **left rail** beside a **main column**. The main column is a ~52px **topbar** (board
-  title / breadcrumb + a single **inverse** primary action) over the scrollable board. That inverse
-  button **is the Work launch**: a read-only launch of the bare `/agentheim:work` (`WORK_COMMAND`) via
-  `launchOrCopy` -- `emphasis="inverse"` (`background`/`border: var(--fg-1)`, `color: var(--surface-0)`,
-  a new `LaunchButton` variant), threading `skipPermissions` (aw-021 / ADR-0019), passing **no**
+  title / breadcrumb + a single **primary** action that **follows the active theme**) over the scrollable
+  board. That button **is the Work launch**: a read-only launch of the bare `/agentheim:work` (`WORK_COMMAND`) via
+  `launchOrCopy` -- `emphasis="primary"` (`idleBg: var(--surface-2)`, `idleColor: var(--fg-1)`,
+  `idleBorder: var(--hairline-strong)` — light fill+dark text in light mode, dark fill+light text in dark
+  mode; aw-033 switched it off the §05 `inverse` opposite-scheme treatment, which read as the wrong theme),
+  threading `skipPermissions` (aw-021 / ADR-0019), passing **no**
   `onResult`. **No Search box** is rendered (read-only dashboard, no search backend). The rail is composed
   from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo
   `AppRail`, and its tree is the **live** `treeToLibrary(/api/tree)` projection (re-fetched on every SSE

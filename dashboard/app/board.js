@@ -884,8 +884,10 @@ function StoppedOverlay() {
 
 // The main-column TOPBAR (agentic-workflow-026) — the styleguide §05 board topbar.
 // A ~52px strip over the scrollable board carrying a board title / breadcrumb and a
-// single primary action styled as the §05 inverse button. That button IS the WORK
-// launch (relocated here from the prompt bar, aw-024): a read-only launch of the
+// single primary action that FOLLOWS the active theme (aw-033 — the primary emphasis,
+// light fill+dark text in light mode and dark fill+light text in dark mode; it earlier
+// wore the §05 inverse/opposite-scheme treatment, which read as the wrong theme). That
+// button IS the WORK launch (relocated here from the prompt bar, aw-024): a read-only launch of the
 // bare /agentheim:work via launchOrCopy (WORK_COMMAND, ADR-0017/0018), threading
 // skipPermissions (aw-021) and passing NO onResult (Work never consumed a prompt).
 // NO Search box is rendered — the dashboard is read-only with no search backend.
@@ -943,7 +945,7 @@ function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissi
         ]} />
         <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
         <${LaunchButton} label="Work" command=${WORK_COMMAND}
-          icon="arrow-right" emphasis="inverse" skipPermissions=${skipPermissions} />
+          icon="arrow-right" emphasis="primary" skipPermissions=${skipPermissions} />
       </div>
     </div>`;
 }

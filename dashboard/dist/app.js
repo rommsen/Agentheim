@@ -444,7 +444,7 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{i=!1}},[e,n]),y`
         <${xf} value=${e} onChange=${t} options=${[{value:"dark",label:"Dark",icon:"moon"},{value:"light",label:"Light",icon:"sun"}]} />
         <${ov} armed=${n} onToggle=${r} />
         <${Ln} label="Work" command=${Pf}
-          icon="arrow-right" emphasis="inverse" skipPermissions=${n} />
+          icon="arrow-right" emphasis="primary" skipPermissions=${n} />
       </div>
     </div>`}function op(){let[e,t]=(0,_.useState)(()=>typeof window>"u"?"dark":Ef(window.localStorage,window.matchMedia));(0,_.useEffect)(()=>{document.documentElement.setAttribute("data-theme",e),document.documentElement.classList.add("theme-fade");let c=setTimeout(()=>document.documentElement.classList.remove("theme-fade"),320);return()=>clearTimeout(c)},[e]);let n=(0,_.useCallback)(c=>{t(c),typeof window<"u"&&Cf(window.localStorage,c)},[]),[r,o]=(0,_.useState)(()=>typeof window>"u"?!1:_f(window.localStorage)),i=(0,_.useCallback)(c=>{let p=c===!0;o(p),typeof window<"u"&&zf(window.localStorage,p)},[]),[l,s]=(0,_.useState)(null);(0,_.useEffect)(()=>{let c=!0;return fetch("/api/tree").then(p=>p.ok?p.json():null).then(p=>{c&&p&&p.project&&s(p.project.name)}).catch(()=>{}),()=>{c=!1}},[]);let[a,u]=(0,_.useState)(null),[f,m]=(0,_.useState)(null),h=(0,_.useCallback)(c=>{typeof window<"u"&&(window.__agentheimLastOpen=c),Xf(c)?(m(null),u(c)):(u(null),m(c))},[]),g=(0,_.useCallback)(()=>u(null),[]),k=(0,_.useCallback)(()=>m(null),[]),[w,R]=(0,_.useState)(!1),d=(0,_.useCallback)(()=>R(!0),[]);return y`
     <${na.Provider} value=${e}>
