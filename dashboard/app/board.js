@@ -11,8 +11,10 @@
 
    Clicking a card emits an "open this task" intent (onOpen(ticket))
    the slide-over (aw-007) consumes. The shell below (DashboardApp)
-   also mounts the library/navigation surface (aw-008) and the
-   board↔library toggle.
+   lays out the styleguide §05 left-rail chrome (aw-026): a full-height
+   ShellRail (brand → Board → the live Workspace tree → a footer with
+   the theme + skip-permissions toggles) beside a main column (a topbar
+   carrying the Work launch over this scrollable board).
 
    The board is READ-ONLY (ADR-0017): it never writes lifecycle
    state. The dashboard has no write path at all — skills (`modeling`
@@ -34,7 +36,7 @@ import { ColumnHeader, TicketCard } from "../../.agentheim/contexts/design-syste
 import { EmptyColumn } from "../../.agentheim/contexts/design-system/styleguide/app/empty.js";
 import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/icons.js";
 import { Glyph, ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
-import { RailItem } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
+import { RailItem, TreeGroup } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
 import { Collapsible } from "../../.agentheim/contexts/design-system/styleguide/app/collapsible.js";
 import { ThemeToggle } from "../../.agentheim/contexts/design-system/styleguide/app/live.js";
 
@@ -47,7 +49,7 @@ import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
 import { SlideOver } from "./slide-over.js";
-import { DashboardLibrary } from "./library.js";
+import { treeToLibrary } from "./library-data.js";
 import { createLiveUpdate } from "./live-update.js";
 
 /**
@@ -256,13 +258,19 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
   const labelText = feedback === "launched" ? "Launched" : feedback === "copied" ? "Copied" : label;
   const primary = emphasis === "primary";
   const quiet = emphasis === "quiet";
+  // `inverse` (aw-026): the §05 "New ticket" look — a FILLED inverse button
+  // (background + border var(--fg-1), text var(--surface-0)). It is the topbar's
+  // primary action (the Work launch); the styleguide section-05 BoardTopbar uses
+  // exactly this treatment. Consumed by emphasis, not forked from the styleguide.
+  const inverse = emphasis === "inverse";
   // Idle treatment by emphasis (all token-styled, no new hue):
+  //   inverse -> filled --fg-1 + --surface-0 text (the §05 topbar action);
   //   primary -> filled surface-2 + stronger hairline + fg-1 (draws the eye);
   //   quiet   -> transparent, no border, fg-3 (recedes — text-weight);
   //   default -> the column pair's bordered surface-1 chip.
-  const idleColor = primary ? "var(--fg-1)" : quiet ? "var(--fg-3)" : "var(--fg-2)";
-  const idleBg = primary ? "var(--surface-2)" : quiet ? "transparent" : "var(--surface-1)";
-  const idleBorder = quiet ? "1px solid transparent" : `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
+  const idleColor = inverse ? "var(--surface-0)" : primary ? "var(--fg-1)" : quiet ? "var(--fg-3)" : "var(--fg-2)";
+  const idleBg = inverse ? "var(--fg-1)" : primary ? "var(--surface-2)" : quiet ? "transparent" : "var(--surface-1)";
+  const idleBorder = inverse ? "1px solid var(--fg-1)" : quiet ? "1px solid transparent" : `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
   // ARMED per-launch indicator (aw-021, amended ADR-0018). When the toggle is on,
   // each launch button carries a danger-tinted border + a "skips permissions" dot
   // so THIS launch reads, at a glance, as a permission-bypassing one. The hue is
@@ -285,21 +293,21 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
       style=${{
         display: "inline-flex", alignItems: "center", gap: 5,
         fontFamily: "var(--font-ui)", fontSize: 11.5,
-        fontWeight: primary ? 600 : 500,
+        fontWeight: primary || inverse ? 600 : 500,
         color: flashed ? "var(--st-done)" : (armed ? "var(--obligation)" : idleColor),
         background: flashed ? "var(--surface-1)" : idleBg,
         border: flashed ? "1px solid var(--st-done)" : (armed ? "1px solid var(--obligation)" : idleBorder),
         borderRadius: "var(--radius-sm)", padding: "4px 9px", cursor: "pointer",
         transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
       }}
-      onMouseEnter=${(e) => { if (!flashed && !armed && !quiet) e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
-      onMouseLeave=${(e) => { if (!flashed && !armed && !quiet) e.currentTarget.style.borderColor = primary ? "var(--hairline-strong)" : "var(--hairline)"; }}>
+      onMouseEnter=${(e) => { if (!flashed && !armed && !quiet && !inverse) e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+      onMouseLeave=${(e) => { if (!flashed && !armed && !quiet && !inverse) e.currentTarget.style.borderColor = primary ? "var(--hairline-strong)" : "var(--hairline)"; }}>
       ${armed
         ? html`<span aria-hidden="true" title="This launch skips permissions" style=${{
             width: 6, height: 6, borderRadius: 99, background: "var(--obligation)", flexShrink: 0,
           }} />`
         : html`<${Icon} name=${icon} size=${12.5}
-            color=${flashed ? "var(--st-done)" : (primary ? "var(--fg-2)" : "var(--fg-3)")} />`}
+            color=${flashed ? "var(--st-done)" : (inverse ? "var(--surface-0)" : primary ? "var(--fg-2)" : "var(--fg-3)")} />`}
       <span>${labelText}</span>
     </button>`;
 }
@@ -395,6 +403,11 @@ function BoardConfetti({ fireKey }) {
 //
 // `skipPermissions` (aw-021 preserved): threaded through to both relocated buttons
 // so an armed launch from the prompt bar still posts `skipPermissions: true`.
+//
+// aw-026: the right-side Work button (aw-024) was REMOVED from the prompt bar and
+// relocated to the main-column topbar (BoardTopbar) — one Work entry point. The
+// aw-024 two-thirds/one-third split collapses back: the prompt bar is now just a
+// full-width textarea above the Quick Capture / Modeling pair.
 function BoardPromptBar({ skipPermissions = false }) {
   const [prompt, setPrompt] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
@@ -414,36 +427,23 @@ function BoardPromptBar({ skipPermissions = false }) {
       display: "flex", flexDirection: "column", gap: 10,
       padding: "0 4px 20px",
     }}>
-      <div style=${{
-        display: "flex", flexDirection: "row", alignItems: "stretch", gap: 10,
-        flexWrap: "wrap",
-      }}>
-        <textarea
-          className="focusable"
-          aria-label="Prompt for the launched session"
-          placeholder="Type a prompt, then choose how to file it — Quick Capture or Modeling…"
-          rows=${2}
-          value=${prompt}
-          onChange=${(e) => setPrompt(e.target.value)}
-          style=${{
-            flex: 2, flexBasis: 0, minWidth: 220,
-            resize: "vertical", minHeight: 52,
-            fontFamily: "var(--font-ui)", fontSize: 13, lineHeight: 1.5,
-            color: "var(--fg-1)", background: "var(--surface-1)",
-            border: "1px solid var(--hairline)", borderRadius: "var(--radius-md)",
-            padding: "10px 12px",
-            transition: "border-color var(--duration-fast) var(--ease-base)",
-          }}
-          onFocus=${(e) => { e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
-          onBlur=${(e) => { e.currentTarget.style.borderColor = "var(--hairline)"; }} />
-        <div role="group" aria-label="Run the ready backlog" style=${{
-          flex: 1, flexBasis: 0, minWidth: 120,
-          display: "flex", flexDirection: "column", alignItems: "stretch", gap: 8,
-        }}>
-          <${LaunchButton} label="Work" command=${WORK_COMMAND}
-            icon="arrow-right" emphasis="primary" skipPermissions=${skipPermissions} />
-        </div>
-      </div>
+      <textarea
+        className="focusable"
+        aria-label="Prompt for the launched session"
+        placeholder="Type a prompt, then choose how to file it — Quick Capture or Modeling…"
+        rows=${2}
+        value=${prompt}
+        onChange=${(e) => setPrompt(e.target.value)}
+        style=${{
+          resize: "vertical", minHeight: 52,
+          fontFamily: "var(--font-ui)", fontSize: 13, lineHeight: 1.5,
+          color: "var(--fg-1)", background: "var(--surface-1)",
+          border: "1px solid var(--hairline)", borderRadius: "var(--radius-md)",
+          padding: "10px 12px",
+          transition: "border-color var(--duration-fast) var(--ease-base)",
+        }}
+        onFocus=${(e) => { e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+        onBlur=${(e) => { e.currentTarget.style.borderColor = "var(--hairline)"; }} />
       <div role="group" aria-label="Start a session seeded with the prompt above" style=${{
         position: "relative",
         display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
@@ -735,54 +735,136 @@ function SkipPermissionsToggle({ armed, onToggle }) {
     </button>`;
 }
 
-// The shell's surface switch — Board (aw-006) vs Library (aw-008). Built from the
-// approved styleguide RailItem (ADR-0003), the same primary-nav pattern the
-// styleguide demo uses for exactly this toggle. No new pattern.
-function ShellRail({ view, onView, projectName, theme, setTheme, skipPermissions, setSkipPermissions }) {
+// The full-height LEFT RAIL (agentic-workflow-026). It replaces aw-008's horizontal
+// top header with the styleguide §05 "Components in context" layout: a vertical,
+// full-height nav composed from styleguide PRIMITIVES (Glyph / RailItem / TreeGroup
+// / TreeItem) — consumed UNFORKED (ADR-0003), NOT the styleguide AppRail (which is
+// hardwired to the demo LIBRARY constant). Top-to-bottom:
+//   brand (Glyph + "Agentheim" + live projectName)
+//   → a single Board RailItem (the only nav item — the always-visible tree below IS
+//     the library, so there is NO separate Library RailItem; ADR-0011)
+//   → divider → "Workspace" label
+//   → the LIVE library tree, fed by treeToLibrary(/api/tree) (never the demo data)
+//   → a footer holding the theme toggle + the skip-permissions armed toggle
+//     (relocated out of the retired horizontal header; the footer gives the
+//     skip-permissions danger treatment a stable home, ADR-0019).
+//
+// The rail is a discovery surface, so it stays LIVE the same way the board does: it
+// fetches /api/tree on mount and re-fetches on every SSE tree-changed frame /
+// reconnect (useLiveTree), re-projecting via treeToLibrary. Read-only throughout
+// (ADR-0017): clicking a non-task row still emits the open-intent the universal
+// slide-over consumes (re-routing non-task docs into the main pane is aw-027).
+function ShellRail({ projectName, theme, setTheme, skipPermissions, setSkipPermissions, selectedId, onOpen }) {
+  const [groups, setGroups] = useState([]);
+
+  // Re-project the rail tree from /api/tree (the non-task half, treeToLibrary). A
+  // failed fetch leaves the tree empty rather than crashing the rail — the board's
+  // own error state already reports an unreachable server.
+  const loadTree = useCallback(() => {
+    let alive = true;
+    fetch("/api/tree")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((tree) => { if (alive) setGroups(tree ? treeToLibrary(tree) : []); })
+      .catch(() => { if (alive) setGroups([]); });
+    return () => { alive = false; };
+  }, []);
+  useEffect(() => loadTree(), [loadTree]);
+  useLiveTree(loadTree);
+
   return html`
-    <header style=${{
-      display: "flex", alignItems: "center", gap: 14,
-      padding: "0 4px 22px",
+    <nav style=${{
+      width: 248, flexShrink: 0, alignSelf: "stretch", boxSizing: "border-box",
+      background: "var(--surface-0)", borderRight: "1px solid var(--hairline)",
+      display: "flex", flexDirection: "column",
     }}>
-      <div style=${{ display: "flex", alignItems: "center", gap: 9 }}>
+      <!-- Brand -->
+      <div style=${{ display: "flex", alignItems: "center", gap: 9, padding: "16px 16px 14px" }}>
         <${Glyph} size=${22} />
         <span style=${{
-          display: "flex", alignItems: "baseline", gap: 7,
+          display: "flex", alignItems: "baseline", gap: 7, minWidth: 0,
           fontFamily: "var(--font-ui)", letterSpacing: "-0.01em",
         }}>
           <span style=${{ fontSize: 15, fontWeight: 600, color: "var(--fg-1)" }}>Agentheim</span>
           ${projectName ? html`
             <span aria-hidden="true" style=${{ color: "var(--fg-4)", fontSize: 13 }}>·</span>
-            <span style=${{ fontSize: 13.5, fontWeight: 500, color: "var(--fg-3)" }}>${projectName}</span>` : null}
+            <span style=${{
+              fontSize: 13.5, fontWeight: 500, color: "var(--fg-3)",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>${projectName}</span>` : null}
         </span>
       </div>
-      <span style=${{ width: 1, height: 18, background: "var(--hairline-strong)" }} />
-      <div style=${{ display: "flex", alignItems: "center", gap: 4 }}>
-        <div style=${{ width: 116 }}>
-          <${RailItem} icon="square-kanban" label="Board"
-            active=${view === "board"} onClick=${() => onView("board")} />
-        </div>
-        <div style=${{ width: 116 }}>
-          <${RailItem} icon="library" label="Library"
-            active=${view === "library"} onClick=${() => onView("library")} />
-        </div>
+
+      <!-- Primary nav: the single Board item (the tree below IS the library) -->
+      <div style=${{ padding: "4px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
+        <${RailItem} icon="square-kanban" label="Board" active=${true} onClick=${() => {}} />
       </div>
+
+      <div style=${{ height: 1, background: "var(--hairline)", margin: "12px 16px" }} />
+
+      <!-- Live file tree (the library) -->
+      <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "0 8px 16px" }}>
+        <div style=${{
+          padding: "0 8px 8px", fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 600,
+          letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--fg-3)",
+        }}>Workspace</div>
+        ${groups.map((g) => html`
+          <${TreeGroup} key=${g.group} group=${g.group} items=${g.items}
+            selectedId=${selectedId} onOpen=${onOpen}
+            defaultOpen=${g.group !== "Research"} />`)}
+      </div>
+
+      <!-- Footer: theme toggle + skip-permissions armed toggle -->
+      <div style=${{
+        padding: "12px 14px", borderTop: "1px solid var(--hairline)",
+        display: "flex", flexDirection: "column", gap: 9,
+      }}>
+        <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
+        <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
+          { value: "dark", label: "Dark", icon: "moon" },
+          { value: "light", label: "Light", icon: "sun" },
+        ]} />
+      </div>
+    </nav>`;
+}
+
+// The main-column TOPBAR (agentic-workflow-026) — the styleguide §05 board topbar.
+// A ~52px strip over the scrollable board carrying a board title / breadcrumb and a
+// single primary action styled as the §05 inverse button. That button IS the WORK
+// launch (relocated here from the prompt bar, aw-024): a read-only launch of the
+// bare /agentheim:work via launchOrCopy (WORK_COMMAND, ADR-0017/0018), threading
+// skipPermissions (aw-021) and passing NO onResult (Work never consumed a prompt).
+// NO Search box is rendered — the dashboard is read-only with no search backend.
+function BoardTopbar({ skipPermissions = false }) {
+  return html`
+    <div style=${{
+      display: "flex", alignItems: "center", gap: 12,
+      padding: "0 18px", minHeight: 52, flexShrink: 0,
+      borderBottom: "1px solid var(--hairline)", background: "var(--surface-0)",
+    }}>
+      <span style=${{ fontFamily: "var(--font-ui)", fontSize: 14, fontWeight: 600, color: "var(--fg-1)" }}>
+        Board
+      </span>
+      <span style=${{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
+        agentheim / tickets
+      </span>
       <div style=${{ flex: 1 }} />
-      <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
-      <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
-        { value: "dark", label: "Dark", icon: "moon" },
-        { value: "light", label: "Light", icon: "sun" },
-      ]} />
-    </header>`;
+      <${LaunchButton} label="Work" command=${WORK_COMMAND}
+        icon="arrow-right" emphasis="inverse" skipPermissions=${skipPermissions} />
+    </div>`;
 }
 
 /**
- * The dashboard application shell. Minimal and composable: it owns the theme,
- * the page chrome, the board↔library surface toggle, and mounts whichever
- * surface is active. Both surfaces (board aw-006, library aw-008) emit the SAME
- * open-intent shape; the shell routes it into ONE universal slide-over
- * (SlideOver, aw-007), which fetches /api/doc and renders the markdown
- * client-side. Esc / scrim close by clearing the intent.
+ * The dashboard application shell. Minimal and composable: it owns the theme + the
+ * skip-permissions arm state, and lays out the styleguide §05 "Components in
+ * context" chrome — a full-height left RAIL (ShellRail) beside a MAIN COLUMN (a
+ * topbar over the scrollable board), all in one bordered, elevated frame (aw-026).
+ *
+ * The rail's always-visible Workspace tree IS the library (aw-008's full-pane
+ * library surface + the board↔library toggle are retired). Both the rail's tree
+ * rows and the board's cards emit the SAME open-intent shape; the shell routes it
+ * into ONE universal slide-over (SlideOver, aw-007), which fetches /api/doc and
+ * renders the markdown client-side. Esc / scrim close by clearing the intent.
+ * (Re-routing non-task docs into the main pane is the follow-on aw-027.)
  */
 export function DashboardApp() {
   // Theme is owned here and fed to the ThemeCtx.Provider + the data-theme effect.
@@ -828,10 +910,6 @@ export function DashboardApp() {
     if (typeof window !== "undefined") saveSkipPermissions(window.localStorage, armed);
   }, []);
 
-  // Which surface is shown — the task board or the non-task library/discovery.
-  const [view, setView] = useState("board"); // board | library
-
-  // Project name for the header (aw-015) — disambiguates WHICH project's
   // .agentheim is being viewed (Agentheim is installed across many repos). It
   // rides the existing /api/tree projection (project.name, parsed server-side
   // from vision.md's `# Vision:` heading). The vision name is static within a
@@ -858,14 +936,24 @@ export function DashboardApp() {
 
   return html`
     <${ThemeCtx.Provider} value=${theme}>
-      <main style=${{ maxWidth: 1160, margin: "0 auto", padding: "28px 28px 56px" }}>
-        <${ShellRail} view=${view} onView=${setView} projectName=${projectName}
+      <div style=${{
+        display: "flex", flexDirection: "row",
+        minHeight: "100vh", background: "var(--surface-0)",
+      }}>
+        <${ShellRail} projectName=${projectName}
           theme=${theme} setTheme=${onThemeChange}
-          skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange} />
-        ${view === "library"
-          ? html`<${DashboardLibrary} onOpen=${onOpen} />`
-          : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
-      </main>
+          skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange}
+          selectedId=${openIntent ? openIntent.id : null} onOpen=${onOpen} />
+        <div style=${{
+          flex: 1, minWidth: 0, display: "flex", flexDirection: "column",
+          background: "var(--surface-0)",
+        }}>
+          <${BoardTopbar} skipPermissions=${skipPermissions} />
+          <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "22px 24px 40px" }}>
+            <${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />
+          </div>
+        </div>
+      </div>
       <${SlideOver} intent=${openIntent} onClose=${onClose} />
     </${ThemeCtx.Provider}>`;
 }

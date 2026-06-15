@@ -98,56 +98,37 @@ test('a successful launch/copy clears the textarea and fires confetti; silent (n
   assert.match(bar[0], /confetti|celebrate|burst/i, 'a successful action must fire confetti');
 });
 
-// agentic-workflow-024: the prompt bar is re-laid-out into a left/right split — the
-// textarea narrows to ~two-thirds (left) and a right-side action column (~one third)
-// holds a single Work button. Quick Capture / Modeling stay in their row beneath the
-// textarea, unchanged. Work launches the BARE /agentheim:work (WORK_COMMAND),
-// ignores the prompt, threads skipPermissions, and does NOT clear/confetti.
-test('the prompt bar wraps the textarea + a right-side action column in a horizontal split (aw-024)', () => {
+// agentic-workflow-026: the shell is relaid-out to the styleguide §05 left-rail
+// layout, and the Work launch MOVES OUT of the prompt bar into the main-column
+// topbar (BoardTopbar). aw-024's two-thirds/one-third split collapses back: the
+// prompt bar keeps ONLY its textarea + the Quick Capture / Modeling pair. The Work
+// button (WORK_COMMAND, threaded skipPermissions, no onResult) now lives on the
+// topbar — see shell-relayout.test.mjs for its new home.
+test('the prompt bar no longer renders a Work button (relocated to the topbar in aw-026)', () => {
   const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
   assert.ok(bar, 'BoardPromptBar component must exist');
-  // A horizontal flex split sits above the Quick Capture / Modeling row.
-  assert.match(
-    bar[0],
-    /flexDirection:\s*"row"|flexDirection:\s*'row'|flex:\s*2|flexBasis/,
-    'the textarea and action column must share a horizontal split',
-  );
-});
-
-test('the textarea is no longer full-width (it shares the bar with the action column)', () => {
-  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
-  const textarea = bar[0].match(/<textarea[\s\S]*?\/>/);
-  assert.ok(textarea, 'the prompt bar must still render a textarea');
-  // The textarea takes ~two-thirds via flex, not a hard width:100%.
   assert.doesNotMatch(
-    textarea[0],
-    /width:\s*"100%"/,
-    'the textarea must no longer be width:100% — it shares the split with the action column',
+    bar[0],
+    /label="Work"/,
+    'the prompt bar must NOT render a Work button — it moved to the main-column topbar (aw-026)',
   );
 });
 
-test('the right-side action column holds a single Work button seeding the bare WORK_COMMAND (aw-024)', () => {
+test('the prompt bar no longer carries the aw-024 two-thirds/one-third action column', () => {
   const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
-  assert.match(bar[0], /label="Work"/, 'prompt bar must render a Work button');
-  const work = bar[0].match(/label="Work"[\s\S]{0,260}?\/>/);
-  assert.ok(work, 'Work button must be present');
-  // Work seeds the bare constant, NOT a prompt-taking builder.
-  assert.match(work[0], /command=\$\{WORK_COMMAND\}/, 'Work must seed the bare WORK_COMMAND');
+  // The split collapses back: no right-side action column / flex:2 textarea split.
+  assert.doesNotMatch(
+    bar[0],
+    /Run the ready backlog/,
+    'the right-side Work action column must be removed',
+  );
 });
 
-test('Work threads skipPermissions but does NOT pass onResult (no clear / no confetti) (aw-024)', () => {
-  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
-  const work = bar[0].match(/label="Work"[\s\S]{0,260}?\/>/);
-  assert.ok(work, 'Work button must be present');
-  assert.match(work[0], /skipPermissions=\$\{skipPermissions\}/, 'Work must carry skipPermissions (aw-021/ADR-0019)');
-  assert.doesNotMatch(work[0], /onResult/, 'Work must NOT pass onResult — it never consumed the prompt');
-});
-
-test('board.js imports WORK_COMMAND from modeling-command (aw-024)', () => {
+test('board.js still imports WORK_COMMAND from modeling-command (now used by the topbar)', () => {
   assert.match(
     boardSrc,
     /import\s*\{[^}]*WORK_COMMAND[^}]*\}\s*from\s*"\.\/modeling-command\.js"/,
-    'board.js must import the WORK_COMMAND constant',
+    'board.js must import the WORK_COMMAND constant (the topbar Work launch reuses it)',
   );
 });
 

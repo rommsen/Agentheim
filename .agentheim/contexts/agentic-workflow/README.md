@@ -80,8 +80,14 @@ separate BC, but today the whole tool lives in this one.
   (ADR-0003). esbuild bundles this app (not the styleguide canvas) into the committed
   `dashboard/dist/` the static handler serves; the canvas remains the separate buildless
   review surface. The three view tasks — **board** (agentic-workflow-006), **slide-over** (aw-007),
-  and **library/navigation** (aw-008) — all built, compose into this one app shell, with a
-  board↔library toggle in the shell built from the styleguide `RailItem`. See ADR-0009.
+  and **library/navigation** (aw-008) — all built, compose into this one app shell. As of
+  **aw-026** the shell is the styleguide §05 "Components in context" layout: a full-height
+  **left rail** (`ShellRail`) beside a **main column** (a ~52px topbar over the scrollable
+  board). The rail carries brand → a single **Board** `RailItem` → divider → "Workspace"
+  label → the **live** library tree (`treeToLibrary`, the always-visible tree *is* the
+  library) → a footer with the theme + skip-permissions toggles. The old horizontal header
+  and the board↔library toggle are retired (the separate full-pane library surface is
+  formally removed in aw-027). See ADR-0009 / ADR-0011.
 - **Board view** — the dashboard's home view (agentic-workflow-006): a **flat** Kanban of the
   four lifecycle columns (`backlog`/`todo`/`doing`/`done`) with tasks from **all** bounded
   contexts pooled into those columns — no swimlanes; each card carries its BC via the styleguide
@@ -135,9 +141,9 @@ separate BC, but today the whole tool lives in this one.
   every SSE frame. A stale-version / malformed / absent blob degrades to "every column defaults" rather
   than throwing — a corrupt preference can never blank the board. See ADR-0015, ADR-0001.
 - **Persisted theme choice (light/dark toggle)** — the dashboard consumes the styleguide's "dark-first
-  with a light toggle" theme switch **unforked** (ADR-0003): the `Segmented` Dark/Light control (from
-  `styleguide/app/live.js`) sits in the `ShellRail` header next to the project name and the board↔library
-  switch, feeding the existing `ThemeCtx.Provider` and a `data-theme` documentElement effect that animates
+  with a light toggle" theme switch **unforked** (ADR-0003): the `ThemeToggle` Dark/Light control (from
+  `styleguide/app/live.js`) lives in the **rail footer** (relocated there from the retired horizontal
+  header in aw-026), feeding the existing `ThemeCtx.Provider` and a `data-theme` documentElement effect that animates
   the flip with the styleguide `theme-fade` transition (agentic-workflow-017). **Theme resolution +
   persistence** is a sibling presentation concern to the board view-state: a **separate** versioned
   `localStorage` store (`dashboard/app/theme-state.js`, key `agentheim.dashboard.theme`) with the same
@@ -145,11 +151,13 @@ separate BC, but today the whole tool lives in this one.
   once the user toggles, that override is remembered across reloads. A malformed / stale-version / absent
   blob degrades to the **system default**, and the resolved theme is read once on mount so an SSE
   re-projection never resets it mid-session. See ADR-0015, ADR-0009, ADR-0003.
-- **Persisted skip-permissions armed toggle** — a shell-header control (agentic-workflow-021), **off
+- **Persisted skip-permissions armed toggle** — a **rail-footer** control (agentic-workflow-021;
+  relocated from the retired horizontal header in aw-026), **off
   by default**, that when **armed** makes **every** bridge launch request a skip-permissions session:
   `launchOrCopy` threads an optional `skipPermissions` flag through its one shared seam, so all
   bridge launches — the prompt-bar Quick Capture / Modeling pair (aw-020, relocated to the board
-  prompt bar in aw-023), the prompt-bar **Work** button (aw-024) **and** the per-card Refine / Promote
+  prompt bar in aw-023), the **topbar Work** button (aw-024's prompt-bar Work button, relocated to
+  the main-column topbar in aw-026) **and** the per-card Refine / Promote
   pair (aw-022) — POST
   `{ prompt, skipPermissions: true }`, and the bridge (infrastructure-016)
   seeds `claude --dangerously-skip-permissions "<prompt>"`. When **off** the field is **omitted, never
@@ -161,8 +169,8 @@ separate BC, but today the whole tool lives in this one.
   / non-boolean / no backend / throwing backend) resolves to **OFF**, never a throw, never on. It is
   presentation view-state only — never a disk lifecycle write — so the dashboard stays read-only over
   `.agentheim/` (ADR-0017 / ADR-0001) and the armed choice survives every SSE re-projection untouched.
-  The control lives in the `ShellRail` header next to the theme toggle (the aw-017 persisted-control
-  precedent), **not** a settings panel (there is one setting today), and carries an **armed / danger**
+  The control lives in the **rail footer** next to the theme toggle (the aw-017 persisted-control
+  precedent; relocated there in aw-026), **not** a settings panel (there is one setting today), and carries an **armed / danger**
   treatment so it never reads as a neutral preference. Per the **amended ADR-0018** mandate, when armed
   **each** of the four launch buttons also shows an at-a-glance per-launch "skips permissions" cue
   (an `--obligation`-tinted border + indicator dot) reflecting the **armed toggle state, not a live
@@ -209,21 +217,27 @@ separate BC, but today the whole tool lives in this one.
   you don't *add* tickets to those columns from here. Launching a session is an **external
   side-effect**, not a lifecycle write: the board stays a projection of disk. See ADR-0018, ADR-0003,
   ADR-0009, ADR-0001.
-- **Board prompt bar (Quick Capture / Modeling / Work)** -- the backlog column's former single
+- **Board prompt bar (Quick Capture / Modeling)** -- the backlog column's former single
   add-ticket **`+`** first became **two** labelled launch buttons inside the backlog column
   (agentic-workflow-020), then those two buttons were **relocated** (agentic-workflow-023) out of the
   column into a **board-level prompt bar**: a multi-line **textarea** rendered on the **board view
-  only**, between the shell header and the board columns (above the `Board` count strip), with the two
-  buttons beneath it. In **agentic-workflow-024** the bar was re-laid-out into a **left/right split**: the
-  textarea narrows to **~two-thirds** width (left) and a **right-side action column** (~one third) holds a
-  single **Work** button. Work is an *execution* action -- it seeds the **bare** `/agentheim:work`
-  (`WORK_COMMAND`, a plain constant: Work **ignores the textarea** and always launches the bare command)
-  and runs the ready backlog, so it earns its own spot **beside** the field rather than below it with the
-  prompt-seeded authoring pair. It threads `skipPermissions` like the others (aw-021 / ADR-0019) but
-  passes **no** `onResult` -- Work never consumed the prompt, so it does **not** clear the textarea or fire
-  confetti. The Quick Capture / Modeling pair stays in its row **beneath** the textarea, unchanged. The
-  split and the action column are board-local, token-matched layout (flex), the styleguide consumed
-  **unforked** (ADR-0003) -- same posture as the textarea and confetti before it.
+  only**, above the `Board` count strip, with the two buttons beneath it. In **agentic-workflow-024** the
+  bar briefly carried a right-side **Work** button in a two-thirds/one-third split; **aw-026 removes it**
+  -- the Work launch moves to the **main-column topbar** (see *Shell layout* below), so the prompt bar
+  collapses back to a **full-width textarea** above the unchanged Quick Capture / Modeling pair. There is
+  now **one** Work entry point. `WORK_COMMAND` and the `launchOrCopy` / `LaunchButton` wiring are reused
+  unchanged -- only the button's *home* changed. The textarea + buttons are board-local, token-matched
+  layout (flex), the styleguide consumed **unforked** (ADR-0003).
+- **Shell layout (aw-026, styleguide §05)** -- the live shell is the styleguide "Components in context"
+  full-height **left rail** beside a **main column**. The main column is a ~52px **topbar** (board
+  title / breadcrumb + a single **inverse** primary action) over the scrollable board. That inverse
+  button **is the Work launch**: a read-only launch of the bare `/agentheim:work` (`WORK_COMMAND`) via
+  `launchOrCopy` -- `emphasis="inverse"` (`background`/`border: var(--fg-1)`, `color: var(--surface-0)`,
+  a new `LaunchButton` variant), threading `skipPermissions` (aw-021 / ADR-0019), passing **no**
+  `onResult`. **No Search box** is rendered (read-only dashboard, no search backend). The rail is composed
+  from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo
+  `AppRail`, and its tree is the **live** `treeToLibrary(/api/tree)` projection (re-fetched on every SSE
+  frame, ADR-0011). See ADR-0009, ADR-0003, ADR-0017, ADR-0018.
   The textarea is a board-local, token-matched control (the styleguide has no
   text-input primitive; the board-control precedent -- the sort `<select>`, the group toggle -- keeps
   the styleguide consumed **unforked**, ADR-0003). The builder **authors a prompt once and hands it to
@@ -295,10 +309,11 @@ separate BC, but today the whole tool lives in this one.
   exactly one home. A pure, unit-tested transform (`dashboard/app/library-data.js` → `treeToLibrary`)
   pools the locations into fixed, legible groups — Product / Bounded contexts / Decisions / Research —
   rendered through the approved styleguide `TreeGroup`/`TreeItem` (imported as-is, never forked —
-  ADR-0003) in `dashboard/app/library.js`. Selecting any row emits the *same* open-intent shape the
-  board emits (`{ type, title, path }`), routed into the one universal slide-over (aw-007). A
-  board↔library toggle in the shell (built from the styleguide `RailItem`) switches surfaces. See
-  ADR-0011, ADR-0009.
+  ADR-0003). Selecting any row emits the *same* open-intent shape the
+  board emits (`{ type, title, path }`), routed into the one universal slide-over (aw-007). As of
+  **aw-026** this tree is **always visible in the left rail** (it *is* the library — the separate
+  board↔library toggle and the full-pane library surface are retired; the standalone
+  `dashboard/app/library.js` view is formally removed in aw-027). See ADR-0011, ADR-0009.
 - **Task transition** — a lifecycle move of a task between folders (`backlog→todo` Promote,
   `todo→doing` Claim, `doing→done` Complete), never a raw file operation: it is a command on the
   **Task** aggregate, enforcing *status matches folder*. Owned by the skills (`modeling` / `work`),
