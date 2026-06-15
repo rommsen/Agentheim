@@ -207,6 +207,72 @@ test('the aw-025 temp button bumps the existing confettiKey and does nothing els
 // remount, with colors resolved at fire time off the four status-palette bases.
 // Trigger wiring (confettiKey / setConfettiKey / onResult) is UNCHANGED — only the
 // implementation behind BoardConfetti swapped.
+// agentic-workflow-038: the prompt-bar field becomes a SINGLE-LOGICAL-LINE
+// auto-growing control. It is still a <textarea> (so the confetti rect/aim path
+// aw-035/aw-037 reads the same element), but constrained: text wraps with no
+// horizontal scroll, the field auto-grows in height up to a max then scrolls
+// vertically, Enter is swallowed (no newline, no launch), and the value can never
+// contain a newline char (multi-line paste collapses to one line). The builders
+// (Quick Capture / Modeling / Research) keep reading the same prompt value. These
+// guards lock that wiring without a DOM render harness.
+test('the prompt-bar field renders single-line (no wrap, no horizontal scroll) and auto-grows in height', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  assert.ok(bar, 'BoardPromptBar component must exist');
+  // Soft-wrap stays on so long text wraps to multiple VISUAL lines without a
+  // horizontal scrollbar — the textarea must NOT be wrap="off" / nowrap.
+  assert.doesNotMatch(bar[0], /wrap="off"/, 'the field must keep soft-wrap (no wrap="off") so text wraps instead of scrolling sideways');
+  // No horizontal scroll: overflowX hidden. Vertical scroll only after the cap.
+  assert.match(bar[0], /overflowX:\s*"hidden"/, 'the field must hide horizontal overflow (no horizontal scrollbar)');
+  assert.match(bar[0], /overflowY:\s*"auto"/, 'the field must scroll vertically once it hits its max height');
+  // Auto-grow wiring: the field measures its own scrollHeight (reset to auto then
+  // grow to fit) capped at a max, so it grows with wrapped content.
+  assert.match(bar[0], /scrollHeight/, 'the field must auto-grow by reading its scrollHeight');
+  assert.match(bar[0], /maxHeight/, 'the field must cap its growth at a max height');
+});
+
+test('Enter is swallowed in the prompt field: no newline inserted and no launch fired (Shift+Enter likewise)', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  // The field carries an onKeyDown that preventDefault()s the Enter key so the
+  // keystroke inserts no newline and (the bar having no submit-on-Enter) triggers
+  // no launch. The guard does not branch on shiftKey — both Enter and Shift+Enter
+  // are swallowed.
+  assert.match(bar[0], /onKeyDown=/, 'the field must intercept keydown to swallow Enter');
+  assert.match(bar[0], /key\s*===\s*"Enter"/, 'the keydown handler must match the Enter key');
+  assert.match(bar[0], /preventDefault\(\)/, 'Enter must be prevented (no newline, no launch)');
+  assert.doesNotMatch(bar[0], /shiftKey/, 'Shift+Enter must NOT be a special case — every Enter is swallowed');
+});
+
+test("the field value never holds a newline: input is sanitized (newlines collapse to a space)", () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  // onChange routes through a sanitizer that strips newlines (\r\n / \n / \r) to a
+  // single space BEFORE setPrompt, so a multi-line PASTE collapses to one line and
+  // the stored value can never contain a newline char.
+  assert.match(bar[0], /sanitizePromptLine\(/, 'onChange must sanitize input through sanitizePromptLine before storing it');
+  // The pure sanitizer replaces any run of newline chars with a single space.
+  assert.match(
+    boardSrc,
+    /function sanitizePromptLine[\s\S]*?replace\([^)]*\\[rn][\s\S]*?\)/,
+    'sanitizePromptLine must replace newline characters with a space',
+  );
+});
+
+test('the sanitized single-line value is what the builders read (Quick Capture / Modeling / Research)', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  // The builders still read the same prompt state the field writes (now sanitized),
+  // so the seeded-command contract (aw-023/aw-036) and the empty/whitespace bare
+  // fallback are unchanged — only the value can no longer carry a newline.
+  assert.match(bar[0], /command=\$\{quickCaptureCommandFor\(prompt\)/, 'Quick Capture reads the same prompt state');
+  assert.match(bar[0], /command=\$\{modelingCommandFor\(prompt\)/, 'Modeling reads the same prompt state');
+  assert.match(bar[0], /command=\$\{researchCommandFor\(prompt\)/, 'Research reads the same prompt state');
+  // The change handler the field is wired to feeds setPrompt the SANITIZED value,
+  // so the stored prompt (read by the builders) can never carry a newline.
+  assert.match(
+    bar[0],
+    /setPrompt\(sanitizePromptLine\(/,
+    'the change handler must feed setPrompt the sanitized (newline-free) value',
+  );
+});
+
 test('confetti honours prefers-reduced-motion: the canvas-confetti call is never invoked under reduce (ADR-0014)', () => {
   // BoardConfetti reads the matchMedia reduce flag and the fire path is guarded by
   // it — under reduce the canvas-confetti call (fireConfetti / confetti()) is never

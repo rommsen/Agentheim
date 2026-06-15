@@ -229,14 +229,23 @@ separate BC, but today the whole tool lives in this one.
 - **Board prompt bar (Quick Capture / Modeling / Research)** -- the backlog column's former single
   add-ticket **`+`** first became **two** labelled launch buttons inside the backlog column
   (agentic-workflow-020), then those two buttons were **relocated** (agentic-workflow-023) out of the
-  column into a **board-level prompt bar**: a multi-line **textarea** rendered on the **board view
+  column into a **board-level prompt bar**: a prompt **field** rendered on the **board view
   only**, above the `Board` count strip, with the two buttons beneath it. In **agentic-workflow-024** the
   bar briefly carried a right-side **Work** button in a two-thirds/one-third split; **aw-026 removes it**
   -- the Work launch moves to the **main-column topbar** (see *Shell layout* below), so the prompt bar
-  collapses back to a **full-width textarea** above the unchanged Quick Capture / Modeling pair. There is
+  collapses back to a **full-width field** above the unchanged Quick Capture / Modeling pair. There is
   now **one** Work entry point. `WORK_COMMAND` and the `launchOrCopy` / `LaunchButton` wiring are reused
-  unchanged -- only the button's *home* changed. The textarea + buttons are board-local, token-matched
+  unchanged -- only the button's *home* changed. The field + buttons are board-local, token-matched
   layout (flex), the styleguide consumed **unforked** (ADR-0003).
+  **The field is a single-logical-line, auto-growing control (aw-038):** still a `<textarea>` element
+  (so the confetti rect/aim path aw-035/aw-037 reads the same element), but constrained to author **one
+  line of text** -- it soft-wraps with **no horizontal scrollbar** (`overflowX: hidden`), **auto-grows**
+  in height to fit the wrapped content (`autoGrowField` measures `scrollHeight`) up to a max then
+  **scrolls vertically**. **Enter is swallowed** (`onKeyDown` `preventDefault` -- no newline, no launch;
+  Shift+Enter is no special case), and every change runs through the pure **`sanitizePromptLine`** so the
+  stored value can **never hold a newline** -- a multi-line **paste collapses to one line**. The launch
+  builders read this sanitized value, so the seeded-command contract and the empty/whitespace bare
+  fallback are unchanged.
 - **Shell layout (aw-026, styleguide §05)** -- the live shell is the styleguide "Components in context"
   full-height **left rail** beside a **main column**. The main column is a ~52px **topbar** (board
   title / breadcrumb + a single **primary** action that **follows the active theme**) over the scrollable

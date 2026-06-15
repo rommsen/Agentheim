@@ -405,18 +405,29 @@ function BoardConfetti({ fireKey, originRef }) {
   return null;
 }
 
-// The board-level PROMPT BAR (agentic-workflow-023). aw-020's bare Quick Capture /
-// Modeling buttons are RELOCATED out of the backlog column to sit beneath a
-// board-level multi-line textarea, rendered on the board view only (between the
-// shell header and the columns). The builder authors a prompt once and hands it to
-// whichever skill they pick: clicking a button seeds the matching command WITH the
+// The board-level PROMPT BAR (agentic-workflow-023, field reshaped aw-038). aw-020's
+// bare Quick Capture / Modeling buttons are RELOCATED out of the backlog column to
+// sit beneath a board-level prompt field, rendered on the board view only (between
+// the shell header and the columns). The builder authors a prompt once and hands it
+// to whichever skill they pick: clicking a button seeds the matching command WITH the
 // typed prompt appended (quickCaptureCommandFor / modelingCommandFor) — or the bare
-// command when the textarea is empty (byte-identical to aw-020). On a successful
-// launch (bridge) or landed clipboard copy, the textarea is CLEARED and a confetti
+// command when the field is empty (byte-identical to aw-020). On a successful
+// launch (bridge) or landed clipboard copy, the field is CLEARED and a confetti
 // burst plays; a fully-silent action (clipboard blocked too) clears nothing and
 // fires no confetti.
 //
-// The textarea is a board-local, token-matched control: the styleguide has no
+// THE FIELD IS A SINGLE-LOGICAL-LINE, AUTO-GROWING CONTROL (aw-038). It is still a
+// <textarea> (so the confetti rect/aim path aw-035/aw-037 reads the same element),
+// but constrained to author ONE line of text: it soft-wraps with NO horizontal
+// scrollbar (overflowX hidden), AUTO-GROWS in height to fit the wrapped content
+// (autoGrowField measures scrollHeight) up to PROMPT_FIELD_MAX_PX then scrolls
+// vertically (overflowY auto). Enter is SWALLOWED (onKeyDown preventDefault — no
+// newline, no launch; Shift+Enter is no special case), and every change is run
+// through sanitizePromptLine so the stored value can NEVER hold a newline — a
+// multi-line PASTE collapses to one line. The builders read this sanitized value, so
+// the seeded-command contract and the empty/whitespace bare fallback are unchanged.
+//
+// The field is a board-local, token-matched control: the styleguide has no
 // text-input primitive, and the board-control precedent (the sort <select>, the
 // group toggle) keeps the styleguide consumed UNFORKED (ADR-0003) — this is a
 // native control beside the primitives, flagged as a design-system follow-up (a
@@ -429,21 +440,73 @@ function BoardConfetti({ fireKey, originRef }) {
 // aw-026: the right-side Work button (aw-024) was REMOVED from the prompt bar and
 // relocated to the main-column topbar (BoardTopbar) — one Work entry point. The
 // aw-024 two-thirds/one-third split collapses back: the prompt bar is now just a
-// full-width textarea above the Quick Capture / Modeling pair.
+// full-width auto-growing single-line field above the Quick Capture / Modeling pair.
+// Collapse a prompt string to a SINGLE LOGICAL LINE (agentic-workflow-038). Any
+// run of newline characters (\r\n / \n / \r, in any mix) becomes a single space,
+// so the prompt-bar value can NEVER hold a newline regardless of how it arrived —
+// a multi-line PASTE collapses to one line, the same as an Enter keystroke being
+// swallowed. Pure + total: a non-string degrades to "" (mirrors the builders'
+// trim-then-bare contract; an empty value still yields the bare command). It does
+// NOT trim — the builders own trimming (aw-023/aw-036) — it only kills newlines, so
+// the visible text keeps its spaces while the value stays single-line.
+function sanitizePromptLine(value) {
+  if (typeof value !== "string") return "";
+  return value.replace(/[\r\n]+/g, " ");
+}
+
+// Grow a <textarea> to fit its wrapped content up to a max, then let it scroll
+// (agentic-workflow-038). Reset height to "auto" first so it can SHRINK back as
+// text is deleted, then set it to scrollHeight clamped at maxPx. The field renders
+// a single logical line that wraps to multiple visual lines (overflowX hidden, no
+// horizontal scrollbar); once the wrapped content exceeds maxPx the field scrolls
+// vertically (overflowY auto) instead of growing without bound. No-throw / no-op
+// when the element is absent (defensive — never break typing).
+function autoGrowField(el, maxPx) {
+  if (!el || typeof el.style === "undefined") return;
+  el.style.height = "auto";
+  const next = Math.min(el.scrollHeight, maxPx);
+  el.style.height = `${next}px`;
+}
+
+// The prompt-bar field's growth band (agentic-workflow-038): it starts at one line
+// of height and grows to fit wrapped content up to PROMPT_FIELD_MAX_PX, after which
+// it scrolls vertically.
+const PROMPT_FIELD_MIN_PX = 40;
+const PROMPT_FIELD_MAX_PX = 168;
+
 function BoardPromptBar({ skipPermissions = false }) {
   const [prompt, setPrompt] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
   // The celebration burst originates at the textarea's center (aw-035): hold a ref
-  // so BoardConfetti can read its live on-screen rect at fire time.
+  // so BoardConfetti can read its live on-screen rect at fire time. The same ref
+  // drives the single-line auto-grow (aw-038) — the field measures its own
+  // scrollHeight to grow/shrink to fit.
   const textareaRef = useRef(null);
 
   // Fire only on a successful launch / landed copy (aw-023). A fully-silent action
-  // (clipboard blocked too) leaves the textarea and plays no confetti.
+  // (clipboard blocked too) leaves the textarea and plays no confetti. The field is
+  // re-measured after the clear so it shrinks back to one line (aw-038).
   const onResult = useCallback((res) => {
     const succeeded = res && (res.via === "bridge" || res.copied === true);
     if (!succeeded) return;
     setPrompt("");
+    autoGrowField(textareaRef.current, PROMPT_FIELD_MAX_PX);
     setConfettiKey((k) => k + 1);
+  }, []);
+
+  // Single-line input: sanitize newlines OUT of every change (a multi-line paste
+  // collapses to one line), store the result, then re-measure for auto-grow.
+  const onPromptChange = useCallback((e) => {
+    setPrompt(sanitizePromptLine(e.target.value));
+    autoGrowField(e.currentTarget, PROMPT_FIELD_MAX_PX);
+  }, []);
+
+  // Swallow Enter (aw-038): the field authors ONE logical line, so Enter (and
+  // Shift+Enter — no special case) must insert no newline and trigger no launch.
+  // preventDefault stops the newline; the bar has no submit-on-Enter, so nothing
+  // launches.
+  const onPromptKeyDown = useCallback((e) => {
+    if (e.key === "Enter") e.preventDefault();
   }, []);
 
   return html`
@@ -457,11 +520,13 @@ function BoardPromptBar({ skipPermissions = false }) {
         className="focusable"
         aria-label="Prompt for the launched session"
         placeholder="Type a prompt, then choose how to file it — Quick Capture or Modeling…"
-        rows=${2}
+        rows=${1}
         value=${prompt}
-        onChange=${(e) => setPrompt(e.target.value)}
+        onChange=${onPromptChange}
+        onKeyDown=${onPromptKeyDown}
         style=${{
-          resize: "vertical", minHeight: 52,
+          resize: "none", minHeight: PROMPT_FIELD_MIN_PX, maxHeight: PROMPT_FIELD_MAX_PX,
+          overflowX: "hidden", overflowY: "auto",
           fontFamily: "var(--font-ui)", fontSize: 13, lineHeight: 1.5,
           color: "var(--fg-1)", background: "var(--surface-1)",
           border: "1px solid var(--hairline)", borderRadius: "var(--radius-md)",
