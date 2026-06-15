@@ -49,7 +49,9 @@ import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
 import { SlideOver } from "./slide-over.js";
+import { MainPaneReader } from "./main-pane-reader.js";
 import { treeToLibrary } from "./library-data.js";
+import { isTaskIntent } from "./intent-route.js";
 import { createLiveUpdate } from "./live-update.js";
 
 /**
@@ -752,9 +754,12 @@ function SkipPermissionsToggle({ armed, onToggle }) {
 // The rail is a discovery surface, so it stays LIVE the same way the board does: it
 // fetches /api/tree on mount and re-fetches on every SSE tree-changed frame /
 // reconnect (useLiveTree), re-projecting via treeToLibrary. Read-only throughout
-// (ADR-0017): clicking a non-task row still emits the open-intent the universal
-// slide-over consumes (re-routing non-task docs into the main pane is aw-027).
-function ShellRail({ projectName, theme, setTheme, skipPermissions, setSkipPermissions, selectedId, onOpen }) {
+// (ADR-0017): clicking a non-task row emits the open-intent the shell routes — a
+// non-task document now opens in the MAIN PANE (aw-027), so the rail's selected
+// edge follows the selected DOCUMENT (`selectedId`, fed from selectedDoc), and the
+// Board RailItem returns the main pane to the board (onSelectBoard) and is `active`
+// exactly when no document is selected.
+function ShellRail({ projectName, theme, setTheme, skipPermissions, setSkipPermissions, selectedId, onOpen, onSelectBoard }) {
   const [groups, setGroups] = useState([]);
 
   // Re-project the rail tree from /api/tree (the non-task half, treeToLibrary). A
@@ -796,7 +801,9 @@ function ShellRail({ projectName, theme, setTheme, skipPermissions, setSkipPermi
 
       <!-- Primary nav: the single Board item (the tree below IS the library) -->
       <div style=${{ padding: "4px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
-        <${RailItem} icon="square-kanban" label="Board" active=${true} onClick=${() => {}} />
+        <${RailItem} icon="square-kanban" label="Board"
+          active=${!selectedId}
+          onClick=${() => onSelectBoard && onSelectBoard()} />
       </div>
 
       <div style=${{ height: 1, background: "var(--hairline)", margin: "12px 16px" }} />
@@ -861,10 +868,19 @@ function BoardTopbar({ skipPermissions = false }) {
  *
  * The rail's always-visible Workspace tree IS the library (aw-008's full-pane
  * library surface + the board↔library toggle are retired). Both the rail's tree
- * rows and the board's cards emit the SAME open-intent shape; the shell routes it
- * into ONE universal slide-over (SlideOver, aw-007), which fetches /api/doc and
- * renders the markdown client-side. Esc / scrim close by clearing the intent.
- * (Re-routing non-task docs into the main pane is the follow-on aw-027.)
+ * rows and the board's cards emit the SAME open-intent shape; the shell ROUTES it
+ * on artifact KIND (aw-027, pure intent-route.isTaskIntent):
+ *   - a board TASK intent (carries a lifecycle `status`) opens in the right-hand
+ *     SlideOver (aw-007) — a transient detail panel beside the board, unchanged;
+ *   - a non-task DOCUMENT intent (a rail row — vision, context map, BC README,
+ *     ADR, research) opens in the MAIN PANE (MainPaneReader), where there is room
+ *     to read. Both render targets share ONE /api/doc fetch mechanism (docUrl).
+ * The shell holds TWO selection states: `openIntent` (task → SlideOver; drives the
+ * board card ring) and `selectedDoc` (non-task doc → main pane; drives the rail
+ * row's selected edge). The main pane shows EITHER the selected document OR the
+ * board (the default); the Board RailItem returns it to the board by clearing
+ * `selectedDoc`, and is `active` exactly when `selectedDoc` is null. The dashboard
+ * stays read-only (ADR-0017): opening a doc performs no write.
  */
 export function DashboardApp() {
   // Theme is owned here and fed to the ThemeCtx.Provider + the data-theme effect.
@@ -924,15 +940,31 @@ export function DashboardApp() {
     return () => { alive = false; };
   }, []);
 
-  // The clicked task/artifact, or null when the slide-over is closed. Either
-  // surface emits the open-intent on click; the slide-over consumes it, fetches
-  // the doc, and renders it.
+  // TWO open-intent sinks, split on artifact KIND (aw-027, pure isTaskIntent):
+  //   - openIntent  — the clicked TASK, or null when the slide-over is closed. It
+  //     drives the board card selection ring (DashboardBoard tracks its own ring
+  //     off the click; the SlideOver consumes this).
+  //   - selectedDoc — the selected non-task DOCUMENT, or null when the main pane
+  //     shows the board (the default). It drives the rail row's selected edge and
+  //     the MainPaneReader.
+  // A board card emits a task intent → SlideOver; a rail row emits a doc intent →
+  // main pane. The two are mutually exclusive: opening one clears the other so the
+  // selection ring and the rail edge never both show.
   const [openIntent, setOpenIntent] = useState(null);
+  const [selectedDoc, setSelectedDoc] = useState(null);
   const onOpen = useCallback((item) => {
-    setOpenIntent(item);
     if (typeof window !== "undefined") window.__agentheimLastOpen = item;
+    if (isTaskIntent(item)) {
+      setSelectedDoc(null);   // a task takes the slide-over; clear any open doc.
+      setOpenIntent(item);
+    } else {
+      setOpenIntent(null);    // a doc takes the main pane; close any open slide-over.
+      setSelectedDoc(item);
+    }
   }, []);
   const onClose = useCallback(() => setOpenIntent(null), []);
+  // The Board RailItem returns the main pane to the board: clear the selected doc.
+  const onSelectBoard = useCallback(() => setSelectedDoc(null), []);
 
   return html`
     <${ThemeCtx.Provider} value=${theme}>
@@ -943,14 +975,17 @@ export function DashboardApp() {
         <${ShellRail} projectName=${projectName}
           theme=${theme} setTheme=${onThemeChange}
           skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange}
-          selectedId=${openIntent ? openIntent.id : null} onOpen=${onOpen} />
+          selectedId=${selectedDoc ? selectedDoc.id : null}
+          onOpen=${onOpen} onSelectBoard=${onSelectBoard} />
         <div style=${{
           flex: 1, minWidth: 0, display: "flex", flexDirection: "column",
           background: "var(--surface-0)",
         }}>
           <${BoardTopbar} skipPermissions=${skipPermissions} />
           <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "22px 24px 40px" }}>
-            <${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />
+            ${selectedDoc
+              ? html`<${MainPaneReader} doc=${selectedDoc} />`
+              : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
           </div>
         </div>
       </div>

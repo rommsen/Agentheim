@@ -1,10 +1,11 @@
 # ADR-0010 — The dashboard slide-over feeds the styleguide Drawer a *doc-shaped* item
 
-- Status: Accepted
+- Status: Accepted, reshaped by ADR-0021 (2026-06-15)
 - Date: 2026-06-06
 - Context (BC): agentic-workflow
 - Supersedes: —
-- Related: ADR-0003 (styleguide single source), ADR-0009 (dashboard app shell), agentic-workflow-007
+- Reshaped by: ADR-0021 — the slide-over is now TASK-ONLY; non-task documents render in the main pane (the "ONE identical code path for tasks and non-task artifacts" below no longer holds — see Update). The doc-shaped `item` and `intentToDrawerItem`/`docUrl` mechanism described here remain in force for the task path, and the same `docUrl` fetch is reused by the main-pane reader.
+- Related: ADR-0003 (styleguide single source), ADR-0009 (dashboard app shell), ADR-0021 (open-intent split), agentic-workflow-007
 
 ## Context
 
@@ -60,3 +61,15 @@ the only difference is which `path` gets fetched (acceptance criterion 3).
   (a doc item that *opts in* to ticket meta), not a fork in the consumer.
 - The mapper is the seam aw-008 (navigation) reuses unchanged to open non-task
   artifacts.
+
+## Update (ADR-0021, 2026-06-15)
+
+The "ONE identical code path for tasks and non-task artifacts" (Decision, last
+paragraph) was reshaped by ADR-0021 / aw-027. After aw-026 retired the full-pane
+library surface, non-task documents now render in the **main content pane** through a
+`MainPaneReader` (the styleguide `Markdown` primitive consumed directly), and the
+slide-over described here is **task-only**. The split is keyed on the same `status`
+discriminator this ADR relies on (`resolveType`: `status` present → task). The
+doc-shaped `item` mapping and the `docUrl` fetch remain in force for the task path,
+and the main-pane reader reuses the same `docUrl`/`/api/doc` fetch — one fetch
+mechanism, two render targets.

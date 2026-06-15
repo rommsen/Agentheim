@@ -290,18 +290,31 @@ separate BC, but today the whole tool lives in this one.
   which move files on disk together with the readiness check, `depends_on`/gate guard, INDEX
   update, and protocol entry; the board reflects those moves via the live-update stream. See
   ADR-0017, ADR-0007.
-- **Slide-over** — the dashboard's universal right-hand detail panel (agentic-workflow-007):
-  one Notion-style drawer that opens for *any* artifact — a board task or a non-task artifact
-  (BC README, vision, context-map, research, ADR). It consumes the board's *open-this-task*
-  intent (and, later, aw-008 navigation's), fetches the body via `GET /api/doc?path=`, and
-  renders the markdown **client-side** (no server-side rendering) through the approved
-  styleguide `Drawer` + `Markdown` — imported as-is from the committed dist, never forked
-  (ADR-0003). Tasks and non-task artifacts render through one identical path; the only
-  difference is which `path` is fetched. The slide-over hands the `Drawer` a *doc-shaped* item
+- **Slide-over** — the dashboard's right-hand detail panel (agentic-workflow-007): a
+  Notion-style drawer for a board **task**. As of **aw-027** it is **task-only** — the
+  open-intent now SPLITS on artifact kind (see *Open-intent routing*), so non-task documents
+  render in the main pane, not here. It consumes the board's *open-this-task* intent, fetches
+  the body via `GET /api/doc?path=`, and renders the markdown **client-side** (no SSR) through
+  the approved styleguide `Drawer` + `Markdown` — imported as-is from the committed dist, never
+  forked (ADR-0003). The slide-over hands the `Drawer` a *doc-shaped* item
   (`{ type, meta: <real path>, body }`) so the real in-root path is shown and the fetched
-  markdown rendered uniformly (ADR-0010). Lives in `dashboard/app/slide-over.js` over the pure,
-  unit-tested `dashboard/app/slide-over-data.js`. Esc and scrim-click close it. See ADR-0010,
-  ADR-0009.
+  markdown rendered (ADR-0010, reshaped by ADR-0021). Lives in `dashboard/app/slide-over.js`
+  over the pure, unit-tested `dashboard/app/slide-over-data.js`. Esc and scrim-click close it.
+  See ADR-0010, ADR-0021, ADR-0009.
+- **Main-pane reader** — the dashboard's reading surface for a non-task **document**
+  (agentic-workflow-027): vision, context map, BC README, ADR, research. Selecting a rail row
+  opens its document in the **main content area** (where the board otherwise sits), not the
+  slide-over. It reuses the one `/api/doc` fetch (`docUrl`) and renders the markdown
+  client-side through the styleguide `Markdown` primitive, consumed unforked (ADR-0003). Lives
+  in `dashboard/app/main-pane-reader.js`. The main pane shows EITHER the selected document OR
+  the board (the default); the rail's **Board** item returns it to the board. See ADR-0021.
+- **Open-intent routing** — the shell (`DashboardApp`) routes every clicked artifact on
+  artifact KIND via the pure `dashboard/app/intent-route.js` → `isTaskIntent`
+  (agentic-workflow-027): an intent carrying a lifecycle `status` is a **task** → slide-over; an
+  intent carrying a content `type` and no `status` is a **non-task document** → main pane. No
+  new intent field is needed — the discriminator falls out of the data the board and the rail
+  already emit. The shell holds two mutually-exclusive selection states: `openIntent` (task →
+  slide-over) and `selectedDoc` (doc → main pane). See ADR-0021.
 - **Library / navigation** — the dashboard's discovery surface (agentic-workflow-008): makes the
   *non-task* knowledge base browsable — vision, context map, every BC README, ADRs, research —
   drawn from the **artifact-location half** of the same tree projection the board uses (`tree.locations`
@@ -309,11 +322,13 @@ separate BC, but today the whole tool lives in this one.
   exactly one home. A pure, unit-tested transform (`dashboard/app/library-data.js` → `treeToLibrary`)
   pools the locations into fixed, legible groups — Product / Bounded contexts / Decisions / Research —
   rendered through the approved styleguide `TreeGroup`/`TreeItem` (imported as-is, never forked —
-  ADR-0003). Selecting any row emits the *same* open-intent shape the
-  board emits (`{ type, title, path }`), routed into the one universal slide-over (aw-007). As of
-  **aw-026** this tree is **always visible in the left rail** (it *is* the library — the separate
-  board↔library toggle and the full-pane library surface are retired; the standalone
-  `dashboard/app/library.js` view is formally removed in aw-027). See ADR-0011, ADR-0009.
+  ADR-0003). Selecting any row emits the open-intent shape `{ type, title, path }`, which the
+  shell routes to the **main-pane reader** (aw-027 — non-task documents) rather than the
+  slide-over. As of **aw-026** this tree is **always visible in the left rail** (it *is* the
+  library — the separate board↔library toggle and the full-pane library surface are retired;
+  the standalone `dashboard/app/library.js` view is removed in aw-027). The pure
+  `treeToLibrary` transform is unchanged and now feeds the rail tree. See ADR-0011, ADR-0021,
+  ADR-0009.
 - **Task transition** — a lifecycle move of a task between folders (`backlog→todo` Promote,
   `todo→doing` Claim, `doing→done` Complete), never a raw file operation: it is a command on the
   **Task** aggregate, enforcing *status matches folder*. Owned by the skills (`modeling` / `work`),
@@ -355,9 +370,9 @@ Intents entering the context. Brainstorm · Quick Capture · Refine · Promote �
 Dashboard.
 
 **Dashboard** launches the local web UI over the project's `.agentheim/` folder — a flat Kanban
-board of every BC's tasks, a universal slide-over that renders any artifact (tasks, BC READMEs,
-the vision, the context map, ADRs, research) as markdown, live-updating as skills move files on
-disk. It is **read-only** (ADR-0017): no write-back — task lifecycle is owned by the skills, and
+board of every BC's tasks, a task-only slide-over for board cards, and a main-pane reader for
+non-task documents (BC READMEs, the vision, the context map, ADRs, research) rendered as
+markdown (aw-027), live-updating as skills move files on disk. It is **read-only** (ADR-0017): no write-back — task lifecycle is owned by the skills, and
 the board reflects their moves rather than making them. Invoked via the `/dashboard`
 slash command (agentic-workflow-011 — the documented slash-command exception above), with three
 verbs: bare `/dashboard` launches-or-reuses the detached server and **auto-opens** the default

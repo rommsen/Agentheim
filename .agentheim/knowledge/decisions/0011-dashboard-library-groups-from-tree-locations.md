@@ -1,10 +1,11 @@
 # ADR-0011 — The dashboard library/navigation surface is the non-task half of the tree projection, grouped client-side
 
-- Status: Accepted
+- Status: Accepted, §5 reshaped by ADR-0019/aw-026 + ADR-0021/aw-027
 - Date: 2026-06-06
 - Context (BC): agentic-workflow
 - Supersedes: —
-- Related: ADR-0002 (tree projection / read-first), ADR-0003 (styleguide single source), ADR-0009 (dashboard app shell), ADR-0010 (slide-over doc-shaped item), agentic-workflow-005 (/api/tree), agentic-workflow-008
+- Reshaped by: ADR-0021 — §5's `board↔library` toggle and single `view` state are RETIRED (aw-026 relocated the tree into the left rail; aw-027 removed the full-pane `DashboardLibrary` surface). The `treeToLibrary` transform (§1–§4) is unchanged and now feeds the rail tree; selecting a row opens the document in the MAIN PANE, not the slide-over (see Update).
+- Related: ADR-0002 (tree projection / read-first), ADR-0003 (styleguide single source), ADR-0009 (dashboard app shell), ADR-0010 (slide-over doc-shaped item), ADR-0021 (open-intent split), agentic-workflow-005 (/api/tree), agentic-workflow-008, agentic-workflow-026, agentic-workflow-027
 
 ## Context
 
@@ -66,3 +67,16 @@ surfaced in the library (only README per BC). That is intentional scope-trimming
 (README is the BC's front door); surfacing concepts/indexes is a follow-up if it earns its
 place. Group order and labels are hard-coded in the consumer — fine while the artifact kinds
 are a small closed set, revisit if they grow.
+
+## Update (aw-026 + ADR-0021/aw-027, 2026-06-15)
+
+Point 5 ("the board↔library toggle lives in the shell ... the shell holds one `view`
+state and one `openIntent` state") is **retired**. aw-026 relocated the
+`treeToLibrary` projection permanently into the left rail (the always-visible
+Workspace tree IS the library) and removed the toggle; aw-027 (ADR-0021) removed the
+dead full-pane `DashboardLibrary` module entirely. Points 1–4 are unchanged: the
+library is still the non-task half of the tree projection, grouped client-side, items
+still shaped as `{ id, type, title, path }`. What changed is the render target —
+selecting a rail row now opens the document in the **main content pane** (a
+`MainPaneReader`), not the slide-over; the shell holds a `selectedDoc` state for the
+main pane and `openIntent` for the task-only slide-over (ADR-0021).
