@@ -77,7 +77,7 @@ export function MainPaneReader({ doc, fetchDoc = defaultFetchDoc }) {
   // carries the typography), constrained to a comfortable measure. Consumed
   // unforked (ADR-0003) — same primitive the slide-over reaches through the Drawer.
   return html`
-    <article style=${{ maxWidth: 760 }}>
+    <article style=${{ maxWidth: 760, margin: "0 auto" }}>
       <div style=${{
         display: "flex", alignItems: "center", gap: 10, padding: "0 0 14px",
         fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--fg-3)",

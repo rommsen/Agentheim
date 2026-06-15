@@ -356,8 +356,11 @@ separate BC, but today the whole tool lives in this one.
   opens its document in the **main content area** (where the board otherwise sits), not the
   slide-over. It reuses the one `/api/doc` fetch (`docUrl`) and renders the markdown
   client-side through the styleguide `Markdown` primitive, consumed unforked (ADR-0003). Lives
-  in `dashboard/app/main-pane-reader.js`. The main pane shows EITHER the selected document OR
-  the board (the default); the rail's **Board** item returns it to the board. See ADR-0021.
+  in `dashboard/app/main-pane-reader.js`. The reading column keeps a comfortable measure
+  (`maxWidth: 760`) and is centered **horizontally** in the content area (`margin: 0 auto`,
+  agentic-workflow-040) — block centering, not center-aligned text. The main pane shows EITHER
+  the selected document OR the board (the default); the rail's **Board** item returns it to the
+  board. See ADR-0021.
 - **Open-intent routing** — the shell (`DashboardApp`) routes every clicked artifact on
   artifact KIND via the pure `dashboard/app/intent-route.js` → `isTaskIntent`
   (agentic-workflow-027): an intent carrying a lifecycle `status` is a **task** → slide-over; an

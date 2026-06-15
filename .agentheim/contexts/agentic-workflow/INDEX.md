@@ -11,15 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 2
-- **Todo:** 2
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 37
+- **Done:** 38
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
 - **agentic-workflow-041** — Armed skip-permissions per-launch cue becomes a red icon, not a separate dot (feature) — `todo/agentic-workflow-041-armed-cue-red-icon-not-dot.md`
-- **agentic-workflow-040** — Main-pane document reader centers its reading column in the content area (bug) — `todo/agentic-workflow-040-main-pane-reader-center-content-column.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-040** — Main-pane document reader centers its reading column in the content area (bug) — `done/agentic-workflow-040-main-pane-reader-center-content-column.md`
 - **agentic-workflow-038** — Board prompt bar — single-line auto-growing input replaces the multi-line textarea (feature) — `done/agentic-workflow-038-board-prompt-bar-single-line-autogrow-input.md`
 - **agentic-workflow-037** — Confetti launches from the page center and shoots up toward the prompt-bar textarea (feature) — `done/agentic-workflow-037-confetti-from-page-center-up-toward-textarea.md`
 - **agentic-workflow-036** — Board prompt bar — Research launch button next to Quick Capture / Modeling (feature) — `done/agentic-workflow-036-board-prompt-bar-research-button.md`

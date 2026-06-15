@@ -42,6 +42,19 @@ test('a main-pane document reader exists and renders through the styleguide Mark
   assert.match(readerSrc, /source=/, 'the reader must pass markdown into Markdown via the `source` prop');
 });
 
+test('the reader column is horizontally centered as a block while preserving the maxWidth measure (aw-040)', () => {
+  // The reading column is the `<article>` wrapper holding the path header + Markdown.
+  // It must keep its comfortable measure AND be centered (margin: 0 auto) — block
+  // centering only, NOT center-aligned paragraph text, NOT vertical centering.
+  const article = readerSrc.match(/<article style=\$\{\{([^}]*)\}\}>/);
+  assert.ok(article, 'the reading column <article> wrapper must exist');
+  const articleStyle = article[1];
+  assert.match(articleStyle, /maxWidth:\s*760/, 'the maxWidth measure must be preserved');
+  assert.match(articleStyle, /margin:\s*["']0 auto["']/, 'the article must center horizontally via margin: "0 auto"');
+  // Guard against accidental center-aligned text or vertical centering creep.
+  assert.doesNotMatch(articleStyle, /textAlign:\s*["']center["']/, 'paragraph text must NOT be center-aligned');
+});
+
 test('the reader reuses the existing /api/doc fetch mechanism (docUrl) — one fetch mechanism', () => {
   assert.match(readerSrc, /docUrl/, 'the reader must build the URL via slide-over-data.docUrl');
   assert.match(readerSrc, /\/api\/doc|docUrl/, 'the reader must fetch /api/doc');
