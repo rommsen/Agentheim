@@ -243,3 +243,69 @@ ever be a *fast-path*; correctness never depends on it.
   dashboard). It **cannot** observe a real Claude Code `/dashboard` invocation against an installed
   plugin — and the cross-shell `node -e` quoting can only be fully confirmed there. The
   installed-plugin run remains a **post-release maintainer confirmation step**.
+
+## Addendum — deterministic port for a stable origin (2026-06-15, infrastructure-018)
+
+> Reverses **one clause** of the "Launch mechanism" decision above: the preference for an
+> **ephemeral `:0`** port and its restatement under "Alternatives considered" (the "Fixed
+> default port with EADDRINUSE fallback" bullet). The dashboard now binds a **deterministic,
+> project-root-derived port** so the browser origin is stable across relaunches. Every other
+> clause — `127.0.0.1`-only binding, detached launch + runfile + explicit stop, walk-up
+> discovery, in-root path validation, the `applyTaskMove` write seam — **still stands**. Not a
+> new ADR number; it is part of this transport decision.
+
+### Context
+
+When ADR-0002 chose ephemeral `:0`, the rationale was "simpler and collision-free, and no
+reason to want a stable origin." That premise has since been **invalidated** by three
+origin-keyed persistence features that did not exist in 2026-06-05:
+
+- the dashboard **theme** (`theme-state.js`, agentic-workflow-017),
+- the **board view-state** (`board-view-state.js`, ADR-0015), and
+- the persisted **skip-permissions armed toggle** (`skip-permissions-state.js`,
+  agentic-workflow-021).
+
+All three persist to browser `localStorage`, which is **keyed by origin**. The launcher binds
+`server.listen(0, ...)` (`serve.mjs`), so every relaunch onto a fresh OS-assigned port produces
+a *new* `127.0.0.1:<port>` origin and **orphans all three stores**. The user noticed it through
+skip-permissions because that store has real consequence; theme and board view-state were losing
+state silently for the same reason. There is now a **strong reason to want a stable origin** —
+the exact reason ADR-0002 recorded as absent.
+
+The reuse path already preserves the origin when a server is *live*: `launchDashboard` →
+`inspectExisting` returns `action:'reused'` at the same port (`launch.mjs`). The orphaning
+happens **only** when the previous server is dead and a fresh `:0` bind lands somewhere new.
+
+### Decision
+
+Bind a **deterministic port derived from the absolute project root path**: hash the resolved
+root and fold it into the non-privileged window **41000–42023** (`port = 41000 + (hash(root) mod
+1024)`), so the *same project* binds the *same port* (hence the same origin) on every relaunch,
+and *different Agentheim projects* on one machine derive *different* ports (no cross-project
+collision — which a single fixed literal could not guarantee). The window is clear of the
+privileged range, the OS ephemeral range (49152+), ADR-0018's bridge band (31425–31427), and
+common dev ports. The derivation is a pure function of the root; it is the contract.
+
+On `EADDRINUSE`, fall back along a **bounded ladder of 8** that wraps within the same window
+(`port = 41000 + ((hash(root) mod 1024) + step) mod 1024`, `step = 0..7`), binding the first free
+port — **mirroring ADR-0018's `31425 → 31426 → 31427` shape** (longer ladder for the wider
+derivation surface) so the two local transports share one collision idiom. The bound port is
+always written to `runtime.json`, exactly as the ephemeral port was, so "open the URL" and
+"stop it" are unaffected.
+
+A **genuine third-party collision** (the derived port and its whole ladder held by unrelated
+processes) is the same bounded-collision trade-off ADR-0018 already accepts; it is rare. Making
+that case *self-heal* — retrying the launcher-visible **last-good port** from `runtime.json`
+before deriving (a discovery option the sandboxed-frame bridge lacks) — is a deliberate
+follow-up (**infrastructure-019**), not part of this clause; the launcher's reuse path and
+`inspectExisting` are unchanged here.
+
+### Consequences
+
+- The three origin-keyed stores (theme, board view-state, skip-permissions) survive stop+relaunch
+  with **no new endpoint and no client change** — the fix is purely in the bind.
+- The dashboard and the bridge (ADR-0018) now share one fixed-port-with-bounded-ladder idiom.
+- ADR-0002's original "collision-free" virtue of `:0` is traded for origin stability — the right
+  trade now that origin-keyed state exists. Real collisions become a rare edge (handled cleanly
+  by the ladder; self-heal across launches is the infrastructure-019 follow-up) rather than an
+  impossibility.

@@ -161,8 +161,11 @@ Apply write request.
 ## Decisions
 
 - **ADR-0002 — Dashboard runtime / transport.** Node-stdlib localhost HTTP server (no deps,
-  no install); single detached `launch.mjs` bound to `127.0.0.1` on an ephemeral port
-  recorded in `runtime.json`; explicit `stop` path; project discovery by walking up for
+  no install); single detached `launch.mjs` bound to `127.0.0.1` on a **deterministic,
+  project-root-derived port** in window 41000–42023 (per the 2026-06-15 addendum,
+  infrastructure-018 — reversed the original ephemeral `:0`), with a bounded fallback ladder
+  of 8 on `EADDRINUSE`, the bound port recorded in `runtime.json`; explicit `stop` path;
+  project discovery by walking up for
   `.agentheim/`; write endpoint delegates to `applyTaskMove`. This settles the former
   *transport/meaning seam* and *concurrency* open questions: the seam is `POST /api/task/move`
   → `applyTaskMove`, and concurrency (optimistic precondition + refetch) is owned by
@@ -222,9 +225,11 @@ Apply write request.
   **optional, off-by-default `skipPermissions` boolean** (amended): only literal `true` seeds
   `claude --dangerously-skip-permissions "<prompt>"`; absent/false/malformed seeds `claude "<prompt>"`
   verbatim, and the bypass is bridge-launch-only (the clipboard fallback cannot carry the startup
-  flag) with a required per-launch indicator. **Diverges from ADR-0002 only on the port clause** (fixed + server-mediated
-  discovery vs ephemeral + runfile); every other ADR-0002 clause stands (stdlib-only, loopback bind,
-  in-root validation, walk-up discovery, gitignored `.agentheim/.dashboard/`). The contractual core
+  flag) with a required per-launch indicator. **Shares ADR-0002's bounded-ladder collision idiom** but on a different port clause
+  (a *fixed literal* `31425` start + server-mediated discovery, because the bridge's reader is a
+  filesystem-blind sandboxed frame; the dashboard derives a *root-based* port + runfile discovery —
+  see the ADR-0002 infrastructure-018 addendum); every other ADR-0002 clause stands (stdlib-only,
+  loopback bind, in-root validation, walk-up discovery, gitignored `.agentheim/.dashboard/`). The contractual core
   lives in `vscode-extension/src/bridge.js` (pure, unit-tested with the terminal-launch action
   injected); `extension.js` is the only file touching the `vscode` API. `POST /inject` deferred.
   Installed outside the marketplace via `vsce package` + `code --install-extension`
