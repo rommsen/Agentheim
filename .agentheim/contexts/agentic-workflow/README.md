@@ -238,8 +238,8 @@ separate BC, but today the whole tool lives in this one.
   now **one** Work entry point. `WORK_COMMAND` and the `launchOrCopy` / `LaunchButton` wiring are reused
   unchanged -- only the button's *home* changed. The field + buttons are board-local, token-matched
   layout (flex), the styleguide consumed **unforked** (ADR-0003).
-  **The field is a single-logical-line, auto-growing control (aw-038):** still a `<textarea>` element
-  (so the confetti rect/aim path aw-035/aw-037 reads the same element), but constrained to author **one
+  **The field is a single-logical-line, auto-growing control (aw-038):** a `<textarea>` element whose
+  ref drives the auto-grow measurement, constrained to author **one
   line of text** -- it soft-wraps with **no horizontal scrollbar** (`overflowX: hidden`), **auto-grows**
   in height to fit the wrapped content (`autoGrowField` measures `scrollHeight`) up to a max then
   **scrolls vertically**. **Enter is swallowed** (`onKeyDown` `preventDefault` -- no newline, no launch;
@@ -288,14 +288,17 @@ separate BC, but today the whole tool lives in this one.
   (clipboard blocked too) clears nothing and plays nothing. The burst is rendered by **canvas-confetti**
   (aw-034 swapped out the original hand-rolled CSS-keyframe burst -- it is the dashboard's first
   **bundled** frontend runtime dependency, `import`ed in `board.js` and folded into `dist/app.js` by
-  esbuild, **no CDN**). It fires canvas-confetti's default **full-viewport** `confetti()` from the
-  **page center** `{x:0.5,y:0.5}`, aimed **up at the center of the prompt-bar textarea** so the burst
-  **converges on** the prompt bar (aw-037 inverted aw-035's textarea-out reading). The aim angle is
-  computed at **fire time** from the textarea's live `getBoundingClientRect()` and the live viewport
-  (aw-037's pure `confettiLaunchToRect(rect, viewport)` helper, `confetti-launch.js`), replacing
-  aw-034's hardcoded `{x:0.18,y:0.92}` / `angle:75` so a scrolled or resized board still aims at
-  the textarea's current on-screen position -- board-**owned** and not a styleguide motion primitive (ADR-0020 amended:
-  "board-local" means ownership, not pixel footprint). The confetti honours
+  esbuild, **no CDN**). It is canvas-confetti's canonical **"realistic look"** preset (aw-042):
+  a **layered multi-fire burst of five overlaid `confetti()` shots** (a shared `count: 200` with
+  per-shot `particleRatio` / `spread` / `startVelocity` / `decay` / `scalar`), all fired from a
+  **centered origin** `{x:0.5, y:0.7}` with **no angle aim** -- a symmetric upward spray from the
+  center of the screen, retiring aw-037's single textarea-aimed burst (the `getBoundingClientRect`
+  read, the aim helper and the textarea-ref-to-confetti plumbing are gone; the textarea ref now serves
+  aw-038's auto-grow only). The five-shot profile lives in the pure `confettiFireSequence`
+  (`confetti-launch.js`); `fireConfetti` walks it, issuing one `confetti()` call per shot with
+  `particleCount = Math.floor(count * particleRatio)` -- board-**owned** and not a styleguide motion
+  primitive (ADR-0020 amended: "board-local" means ownership, not pixel footprint; origin / tuning is
+  the open aw-025 replay-loop dial). The confetti honours
   `prefers-reduced-motion` (ADR-0014's strip-to-plain contract -- the `matchMedia` guard means
   `confetti()` is never invoked under reduce, so it renders nothing) and draws its colors from the four
   **status-palette bases** (`--st-done` / `--st-todo` / `--st-doing` / `--st-backlog`), **resolved at

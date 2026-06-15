@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
+- **Backlog:** 3
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 39
+- **Done:** 40
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-042** — Confetti uses canvas-confetti's realistic multi-fire preset, centered on screen (feature) — `done/agentic-workflow-042-confetti-realistic-multi-fire-centered.md`
 - **agentic-workflow-041** — Armed skip-permissions per-launch cue becomes a red icon, not a separate dot (feature) — `done/agentic-workflow-041-armed-cue-red-icon-not-dot.md`
 - **agentic-workflow-040** — Main-pane document reader centers its reading column in the content area (bug) — `done/agentic-workflow-040-main-pane-reader-center-content-column.md`
 - **agentic-workflow-038** — Board prompt bar — single-line auto-growing input replaces the multi-line textarea (feature) — `done/agentic-workflow-038-board-prompt-bar-single-line-autogrow-input.md`
@@ -71,6 +72,7 @@ research touching this BC, and concept synthesis pages.
 <!-- backlog-list:start -->
 - **agentic-workflow-031** — Next-steps overview when work is done — `backlog/agentic-workflow-031-next-steps-overview-when-work-done.md`
 - **agentic-workflow-039** — Slide-over "Open in full screen" renders the task in the main content pane (feature) — `backlog/agentic-workflow-039-slide-over-open-in-full-screen-main-pane.md`
+- **agentic-workflow-043** — Slide-over hides task frontmatter behind a collapsible, structured "Front matter" section (feature) — `backlog/agentic-workflow-043-frontmatter-collapsible-structured-section.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

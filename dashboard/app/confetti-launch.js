@@ -1,32 +1,50 @@
-// Celebration launch geometry (agentic-workflow-035, inverted by aw-037).
+// Celebration fire-sequence parameters (agentic-workflow-035 → aw-037 → aw-042).
 //
-// aw-034's BoardConfetti fired canvas-confetti from a HARDCODED origin
-// {x:0.18,y:0.92} at a fixed angle 75 — an arbitrary lower-left corner. aw-035
-// made the burst read as an explosion OUT OF the prompt bar (origin =
-// textarea-center, aim = viewport-center). aw-037 INVERTS that reading so the
-// confetti CONVERGES ON the prompt bar: it originates at the PAGE CENTER and
-// shoots UPWARD toward the prompt-bar textarea's center.
+// aw-034 fired ONE canvas-confetti burst from a hardcoded origin. aw-035/aw-037
+// turned it into a single AIMED burst (origin = page center, angle derived from the
+// prompt-bar textarea's live rect) so the particles converged on the prompt bar.
+// aw-042 RETIRES that aim entirely: the celebration is now canvas-confetti's
+// canonical "realistic look" demo — a LAYERED MULTI-FIRE burst of five overlaid
+// shots with different spreads, velocities, decays and scalars — fired from a
+// CENTERED origin with NO angle. There is no longer any textarea geometry, so the
+// old confettiLaunchToRect(rect, viewport) aim helper is gone.
 //
-// confettiLaunchToRect is a PURE function — geometry only (rect + viewport in,
-// canvas-confetti {origin, angle} out), mirroring confetti-palette.js's
-// pure-module pattern so it can be unit-tested without a DOM. The LIVE read
-// (textarea.getBoundingClientRect() + window.innerWidth/innerHeight) and the
-// confetti() call stay in board.js, fed in at FIRE TIME.
+// confettiFireSequence is a PURE function — parameters only (no DOM, no confetti()
+// call), mirroring confetti-palette.js's pure-module pattern so the five-shot
+// profile can be unit-tested without a browser. It returns:
 //
-//   origin = the PAGE CENTER, pinned to canvas-confetti viewport coords {0.5,0.5}.
-//   angle  = the launch direction toward the TARGET rect center, where the rect
-//            center is normalized to viewport coords (0..1, top-left):
-//            tx = (left + width/2)/vw, ty = (top + height/2)/vh.
-//            canvas-confetti's angle is math-style (90° = straight up, CCW), and
-//            screen-y grows downward, so the vertical component is INVERTED:
-//            angle = atan2( -(ty - 0.5), (tx - 0.5) ) in degrees.
-//            (Textarea above page center ⇒ ty < 0.5 ⇒ aim points up.)
-export function confettiLaunchToRect(rect, viewport) {
-  const origin = { x: 0.5, y: 0.5 };
-  const tx = (rect.left + rect.width / 2) / viewport.width;
-  const ty = (rect.top + rect.height / 2) / viewport.height;
-  const dx = tx - 0.5;
-  const dy = -(ty - 0.5); // invert screen-y → math-y (90° = up)
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-  return { origin, angle };
+//   {
+//     count,                       // the shared particle budget (200, the demo)
+//     defaults: { origin },        // shared per-shot defaults (the centered origin)
+//     shots: [ { particleRatio, ...opts }, … ]   // the five overlaid fire() shots
+//   }
+//
+// board.js's fireConfetti walks `shots`, computes each shot's particleCount as
+// Math.floor(count * particleRatio), spreads `defaults` + the resolved palette under
+// each shot's opts, and issues one confetti() call per shot.
+//
+// CENTERED origin (aw-042): origin.x = 0.5 (horizontal center of the screen) and the
+// demo's origin.y = 0.7 (the bursts rise from just below center — the demo's
+// signature look). There is NO angle: the realistic preset is a symmetric upward
+// spray, not a directional shot. The exact y is the open aw-025 replay-loop dial.
+//
+// The five shots are the canvas-confetti "realistic look" demo verbatim, adapted to
+// this module's shape:
+//   fire(0.25, { spread: 26, startVelocity: 55 });
+//   fire(0.2,  { spread: 60 });
+//   fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+//   fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+//   fire(0.1,  { spread: 120, startVelocity: 45 });
+export function confettiFireSequence() {
+  return {
+    count: 200,
+    defaults: { origin: { x: 0.5, y: 0.7 } },
+    shots: [
+      { particleRatio: 0.25, spread: 26, startVelocity: 55 },
+      { particleRatio: 0.2, spread: 60 },
+      { particleRatio: 0.35, spread: 100, decay: 0.91, scalar: 0.8 },
+      { particleRatio: 0.1, spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 },
+      { particleRatio: 0.1, spread: 120, startVelocity: 45 },
+    ],
+  };
 }

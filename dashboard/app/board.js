@@ -54,7 +54,7 @@ import { SlideOver } from "./slide-over.js";
 import { MainPaneReader } from "./main-pane-reader.js";
 import { treeToLibrary } from "./library-data.js";
 import { resolveConfettiColors } from "./confetti-palette.js";
-import { confettiLaunchToRect } from "./confetti-launch.js";
+import { confettiFireSequence } from "./confetti-launch.js";
 import { isTaskIntent } from "./intent-route.js";
 import { createLiveUpdate } from "./live-update.js";
 
@@ -340,69 +340,62 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
 // the committed dist/app.js (no CDN; the board runs offline on 127.0.0.1).
 //
 // canvas-confetti's default global confetti() paints a fixed FULL-VIEWPORT canvas
-// (pointer-events: none, above content, auto-cleared). aw-037 INVERTS aw-035 so the
-// burst CONVERGES ON the prompt bar: it originates at the PAGE CENTER {0.5,0.5} and
-// shoots UPWARD toward the prompt-bar textarea's center. The aim angle is computed
-// at FIRE TIME from the textarea's live getBoundingClientRect()
-// + window.innerWidth/innerHeight (confettiLaunchToRect, confetti-launch.js), so
-// a scrolled / resized board still aims at the textarea's current on-screen
-// position — replacing aw-034's hardcoded origin {x:0.18,y:0.92} + fixed angle 75.
+// (pointer-events: none, above content, auto-cleared). aw-042 retires aw-037's single
+// AIMED burst: the celebration is now canvas-confetti's canonical "realistic look"
+// demo — a LAYERED MULTI-FIRE burst of FIVE overlaid shots (different spreads,
+// velocities, decays and scalars) — fired from a CENTERED origin (origin.x = 0.5, the
+// demo's origin.y = 0.7) with NO angle aim. The realistic preset is a symmetric
+// upward spray, so aw-037's textarea-aim geometry (the live-rect read, the aim
+// helper and the textarea-ref-to-confetti plumbing) is GONE. The five-shot profile
+// lives in the pure confettiFireSequence (confetti-launch.js); this walks it and
+// issues one confetti() call per shot, each shot's particleCount =
+// Math.floor(count * particleRatio). The exact y is the open aw-025 replay-loop dial.
 // It stays a board-OWNED, board-local transient ACK (ADR-0020): the board injects
-// the call, it is consumed within the BC, and it is NOT promoted to a design-system
-// motion primitive — "board-local" was always about ownership, not pixel footprint.
+// the calls, they are consumed within the BC, and they are NOT promoted to a
+// design-system motion primitive — "board-local" was always about ownership.
 //
 // Colors are resolved at FIRE TIME (resolveConfettiColors, confetti-palette.js) off
 // the document root — the four status bases (--st-done/--st-todo/--st-doing/
 // --st-backlog), so the burst tracks the active light/dark theme and stays a true
-// projection of the styleguide tokens (ADR-0003). Never the reserved selection
-// accent --accent-ochre-soft (ADR-0016) nor the --obligation skip-permissions hue
+// projection of the styleguide tokens (ADR-0003). Each of the five shots draws from
+// the SAME resolved color set. Never the reserved selection accent
+// --accent-ochre-soft (ADR-0016) nor the --obligation skip-permissions hue
 // (aw-021) — both excluded by construction (neither is a status base).
-function fireConfetti(textareaEl) {
+function fireConfetti() {
   if (typeof document === "undefined" || typeof confetti !== "function") return;
   const colors = resolveConfettiColors(getComputedStyle(document.documentElement));
-  // Read the textarea's LIVE on-screen rect at fire time and derive a page-center
-  // origin {0.5,0.5} aimed UP at the textarea center. If the ref is missing
-  // (defensive — never break the celebration), fall back to aw-034's constants.
-  const fallback = { origin: { x: 0.18, y: 0.92 }, angle: 75 };
-  const launch = (textareaEl && typeof textareaEl.getBoundingClientRect === "function"
-    && typeof window !== "undefined")
-    ? confettiLaunchToRect(
-        textareaEl.getBoundingClientRect(),
-        { width: window.innerWidth, height: window.innerHeight },
-      )
-    : fallback;
-  // Lively defaults; the exact tuning (particleCount/spread/startVelocity/gravity/
-  // scalar) is iterated via the aw-025 replay button — aw-037 changes only the
-  // origin + aim, not the spread profile.
-  confetti({
-    particleCount: 120,
-    spread: 75,
-    startVelocity: 48,
-    gravity: 0.9,
-    scalar: 0.9,
-    ticks: 220,
-    origin: launch.origin,
-    angle: launch.angle,
-    ...(colors.length ? { colors } : {}),
-  });
+  const { count, defaults, shots } = confettiFireSequence();
+  // One confetti() call per overlaid shot, all sharing the centered origin defaults
+  // and the same resolved palette. Each shot's particle budget is its ratio of the
+  // shared count (the canvas-confetti "realistic look" fire() helper, inlined).
+  for (const { particleRatio, ...opts } of shots) {
+    confetti({
+      ...defaults,
+      ...opts,
+      particleCount: Math.floor(count * particleRatio),
+      ...(colors.length ? { colors } : {}),
+    });
+  }
 }
 
 // A board-local confetti burst (agentic-workflow-023, reimplemented aw-034) marking
 // the prompt bar's clearance after a successful launch/copy. It is keyed by a
 // monotonic `fireKey` from the parent: each successful action bumps the key,
-// remounting a fresh BoardConfetti that fires once on mount. The `originRef` is the
-// prompt-bar textarea's DOM ref — read at FIRE TIME inside the effect so the burst
-// originates from the textarea's current on-screen center (aw-035). Under
+// remounting a fresh BoardConfetti that fires once on mount. aw-042 fires the
+// celebration from a CENTERED origin (no textarea aim), so the aw-035/aw-037
+// textarea ref it once read is gone — BoardConfetti takes no DOM ref. Under
 // `prefers-reduced-motion: reduce` it renders NOTHING and never invokes confetti()
-// — the clearance stays a quiet, motionless ACK (ADR-0014 strip-to-plain).
-function BoardConfetti({ fireKey, originRef }) {
+// — the matchMedia guard wraps the WHOLE five-shot sequence, so none of the shots
+// fire (ADR-0014 strip-to-plain).
+function BoardConfetti({ fireKey }) {
   const reduce = typeof window !== "undefined" && typeof window.matchMedia === "function"
     && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   useEffect(() => {
-    // The matchMedia guard wraps the canvas-confetti call: under reduce it is never
-    // invoked (ADR-0014), and a falsy fireKey (initial mount) fires nothing.
+    // The matchMedia guard wraps the canvas-confetti calls: under reduce none of the
+    // five shots are invoked (ADR-0014), and a falsy fireKey (initial mount) fires
+    // nothing.
     if (reduce || !fireKey) return;
-    fireConfetti(originRef && originRef.current);
+    fireConfetti();
   }, [fireKey, reduce]);
   // canvas-confetti owns its own full-viewport canvas; BoardConfetti renders no DOM.
   return null;
@@ -419,9 +412,8 @@ function BoardConfetti({ fireKey, originRef }) {
 // burst plays; a fully-silent action (clipboard blocked too) clears nothing and
 // fires no confetti.
 //
-// THE FIELD IS A SINGLE-LOGICAL-LINE, AUTO-GROWING CONTROL (aw-038). It is still a
-// <textarea> (so the confetti rect/aim path aw-035/aw-037 reads the same element),
-// but constrained to author ONE line of text: it soft-wraps with NO horizontal
+// THE FIELD IS A SINGLE-LOGICAL-LINE, AUTO-GROWING CONTROL (aw-038). It is a
+// <textarea> constrained to author ONE line of text: it soft-wraps with NO horizontal
 // scrollbar (overflowX hidden), AUTO-GROWS in height to fit the wrapped content
 // (autoGrowField measures scrollHeight) up to PROMPT_FIELD_MAX_PX then scrolls
 // vertically (overflowY auto). Enter is SWALLOWED (onKeyDown preventDefault — no
@@ -480,10 +472,10 @@ const PROMPT_FIELD_MAX_PX = 168;
 function BoardPromptBar({ skipPermissions = false }) {
   const [prompt, setPrompt] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
-  // The celebration burst originates at the textarea's center (aw-035): hold a ref
-  // so BoardConfetti can read its live on-screen rect at fire time. The same ref
-  // drives the single-line auto-grow (aw-038) — the field measures its own
-  // scrollHeight to grow/shrink to fit.
+  // The single-line auto-grow (aw-038) holds a ref to the textarea so the field can
+  // measure its own scrollHeight to grow/shrink to fit. (Before aw-042 this ref ALSO
+  // fed the confetti origin/aim; the celebration now fires from a centered origin
+  // with no textarea geometry, so the ref serves auto-grow only.)
   const textareaRef = useRef(null);
 
   // Fire only on a successful launch / landed copy (aw-023). A fully-silent action
@@ -567,7 +559,7 @@ function BoardPromptBar({ skipPermissions = false }) {
             padding: "7px 10px", cursor: "pointer",
           }}>🎉 Replay celebration</button>
         ${/* END TEMP (aw-025) */ ""}
-        <${BoardConfetti} fireKey=${confettiKey} originRef=${textareaRef} />
+        <${BoardConfetti} fireKey=${confettiKey} />
       </div>
     </section>`;
 }

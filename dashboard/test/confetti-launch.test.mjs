@@ -1,77 +1,51 @@
-// Unit guard for the celebration launch geometry (agentic-workflow-035,
-// inverted by aw-037).
+// Unit guard for the celebration fire-sequence parameters (agentic-workflow-042).
 //
-// aw-034 fired the canvas-confetti burst from a HARDCODED origin {x:0.18,y:0.92}
-// at a fixed angle 75. aw-035 made the burst read as an explosion OUT OF the
-// prompt-bar textarea (origin = textarea-center, aim = viewport-center).
-// aw-037 INVERTS that: confettiLaunchToRect pins the origin to the PAGE CENTER
-// {0.5,0.5} and derives the launch angle as the vector page-center → TARGET rect
-// center (the textarea), so a textarea ABOVE page center makes the burst shoot
-// UPWARD into the prompt bar. canvas-confetti's angle is math-style (90° = up),
-// so screen-y is inverted in the atan2. This is a PURE function (rect + viewport
-// in, geometry out) mirroring confetti-palette.js — the live getBoundingClientRect
-// read and the confetti() call stay in board.js.
+// aw-037 fired a single AIMED burst (origin = page center, angle derived from the
+// prompt-bar textarea's live rect). aw-042 retires the aim entirely: the
+// celebration is canvas-confetti's "realistic look" demo — a LAYERED MULTI-FIRE
+// burst of five overlaid shots — fired from a CENTERED origin with NO angle.
+// confettiFireSequence is the PURE source of that profile (no DOM, no confetti()
+// call), mirroring confetti-palette.js so the five-shot demo can be locked without a
+// browser. board.js walks the returned `shots` and issues one confetti() call per
+// shot, spreading `defaults` (the centered origin) + the resolved palette under each.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { confettiLaunchToRect } from '../app/confetti-launch.js';
+import { confettiFireSequence } from '../app/confetti-launch.js';
 
-// A 1000x1000 viewport keeps the normalization arithmetic obvious.
-const VIEWPORT = { width: 1000, height: 1000 };
-
-test('origin is always pinned to the page center {0.5,0.5}, regardless of the rect', () => {
-  // A 200-wide, 100-tall rect at (300,100): wherever the target sits, the burst
-  // starts from the middle of the page.
-  const { origin } = confettiLaunchToRect(
-    { left: 300, top: 100, width: 200, height: 100 },
-    VIEWPORT,
-  );
-  assert.deepEqual(origin, { x: 0.5, y: 0.5 });
+test('the fire sequence is the demo budget of 200 particles', () => {
+  const { count } = confettiFireSequence();
+  assert.equal(count, 200);
 });
 
-test('a textarea centered above page center aims straight up (90°)', () => {
-  // Center at x=0.5, y=0.1: directly above the page center → straight up.
-  const { angle } = confettiLaunchToRect(
-    { left: 450, top: 50, width: 100, height: 100 },
-    VIEWPORT,
-  );
-  assert.equal(Math.round(angle), 90);
+test('the burst fires from a CENTERED origin (x: 0.5, y: 0.7) with NO angle aim', () => {
+  const { defaults } = confettiFireSequence();
+  assert.deepEqual(defaults.origin, { x: 0.5, y: 0.7 });
+  // aw-042 drops aw-037's textarea-aim geometry: no angle anywhere in the defaults.
+  assert.ok(!('angle' in defaults), 'the centered preset must carry no angle aim');
 });
 
-test('a textarea above and right of page center aims up-and-right (first quadrant)', () => {
-  // Center at (0.82, 0.1): above and right of {0.5,0.5} → up and to the right.
-  const { angle } = confettiLaunchToRect(
-    { left: 770, top: 50, width: 100, height: 100 },
-    VIEWPORT,
-  );
-  assert.ok(angle > 0 && angle < 90, `expected first-quadrant aim, got ${angle}`);
+test('the sequence is exactly the five overlaid shots from the canvas-confetti demo', () => {
+  const { shots } = confettiFireSequence();
+  assert.equal(shots.length, 5, 'the realistic look is a five-shot layered burst');
+  assert.deepEqual(shots, [
+    { particleRatio: 0.25, spread: 26, startVelocity: 55 },
+    { particleRatio: 0.2, spread: 60 },
+    { particleRatio: 0.35, spread: 100, decay: 0.91, scalar: 0.8 },
+    { particleRatio: 0.1, spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 },
+    { particleRatio: 0.1, spread: 120, startVelocity: 45 },
+  ]);
 });
 
-test('a textarea above and left of page center aims up-and-left (second quadrant)', () => {
-  // Center at (0.18, 0.1): above and left of center → up and to the left.
-  const { angle } = confettiLaunchToRect(
-    { left: 130, top: 50, width: 100, height: 100 },
-    VIEWPORT,
-  );
-  assert.ok(angle > 90 && angle < 180, `expected second-quadrant aim, got ${angle}`);
+test('no shot carries an angle (the realistic preset is a symmetric upward spray)', () => {
+  const { shots } = confettiFireSequence();
+  for (const shot of shots) {
+    assert.ok(!('angle' in shot), `shot ${JSON.stringify(shot)} must carry no angle`);
+  }
 });
 
-test('the angle is the atan2 of the page-center→target vector (screen-y inverted)', () => {
-  // Target center (0.18, 0.1). dx = 0.18-0.5 = -0.32; dy(math) = -(0.1-0.5) = 0.4.
-  const { angle } = confettiLaunchToRect(
-    { left: 130, top: 50, width: 100, height: 100 },
-    VIEWPORT,
-  );
-  const expected = Math.atan2(0.4, -0.32) * 180 / Math.PI;
-  assert.ok(Math.abs(angle - expected) < 1e-9, `got ${angle}, expected ${expected}`);
-});
-
-test('a target below page center aims downward (negative math-y)', () => {
-  // Center at x=0.5, y=0.9: below the page center → straight down (-90°). Confirms
-  // the inversion is correct for the degenerate below-center case.
-  const { angle } = confettiLaunchToRect(
-    { left: 450, top: 850, width: 100, height: 100 },
-    VIEWPORT,
-  );
-  assert.equal(Math.round(angle), -90);
+test('Math.floor(count * particleRatio) yields the demo per-shot particle counts', () => {
+  const { count, shots } = confettiFireSequence();
+  const counts = shots.map((s) => Math.floor(count * s.particleRatio));
+  assert.deepEqual(counts, [50, 40, 70, 20, 20]);
 });

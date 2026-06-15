@@ -310,56 +310,42 @@ test('the celebration is rendered by canvas-confetti, not the old CSS keyframes 
   assert.doesNotMatch(boardSrc, /ensureConfettiStyle/, 'ensureConfettiStyle (the keyframe injector) is gone');
 });
 
-test('the burst fires from canvas-confetti default global, with a dynamic origin computed at fire time (aw-035)', () => {
+// agentic-workflow-042: the celebration is canvas-confetti's "realistic look" demo —
+// a LAYERED MULTI-FIRE burst of FIVE overlaid shots, fired from a CENTERED origin
+// (origin.x = 0.5, the demo's origin.y = 0.7) with NO angle aim. aw-037's single
+// AIMED burst, the confettiLaunchToRect aim helper, the getBoundingClientRect read
+// and the originRef plumbing are all GONE. The five-shot profile lives in the pure
+// confettiFireSequence; fireConfetti walks it and issues one confetti() call per
+// shot, each shot's particleCount = Math.floor(count * particleRatio).
+test('the burst fires the five-shot layered sequence from canvas-confetti default global, centered, with no aim (aw-042)', () => {
   const fire = boardSrc.match(/function fireConfetti[\s\S]*?\n}/);
   assert.ok(fire, 'a fireConfetti helper must drive the canvas-confetti call');
   // Default global confetti() (full-viewport canvas), not confetti.create(...).
   assert.match(fire[0], /\bconfetti\(\{/, 'must call the default global confetti({...})');
   assert.doesNotMatch(fire[0], /confetti\.create/, 'must use the default global, not a scoped confetti.create canvas');
-  // aw-035: the origin/angle are no longer the hardcoded {x:0.18,y:0.92}/75 on the
-  // fire path — they come from the launch geometry computed at fire time.
-  assert.match(
-    fire[0],
-    /origin:\s*launch\.origin/,
-    'the confetti() call must use the dynamically-computed origin (launch.origin), not a hardcoded literal',
-  );
-  assert.match(
-    fire[0],
-    /angle:\s*launch\.angle/,
-    'the confetti() call must use the dynamically-computed aim (launch.angle), not a fixed angle',
-  );
-  assert.doesNotMatch(fire[0], /x:\s*0\.5\s*,\s*y:\s*0\.5/, 'must not fire from the stock {x:0.5,y:0.5} centre');
+  // The five-shot profile comes from the pure confettiFireSequence, walked one
+  // confetti() call per shot with Math.floor(count * particleRatio).
+  assert.match(fire[0], /confettiFireSequence\(/, 'fireConfetti must source the five-shot profile from confettiFireSequence');
+  assert.match(fire[0], /Math\.floor\(\s*count\s*\*\s*particleRatio\s*\)/, "each shot's particleCount must be Math.floor(count * particleRatio)");
+  // aw-037's textarea-aim geometry is removed: no aimed origin/angle, no live rect.
+  assert.doesNotMatch(fire[0], /launch\.origin/, "aw-037's aimed launch.origin must be gone");
+  assert.doesNotMatch(fire[0], /launch\.angle/, "aw-037's aimed launch.angle must be gone");
+  assert.doesNotMatch(fire[0], /getBoundingClientRect/, 'no orphan getBoundingClientRect read may remain on the fire path');
+  assert.doesNotMatch(fire[0], /\bangle\b/, 'the centered realistic preset carries no angle aim');
 });
 
-test('aim is derived from the textarea live rect at FIRE TIME, fired UP from the page center toward the textarea (aw-037)', () => {
-  // board.js imports the pure launch-geometry helper.
+test("the aw-037 confettiLaunchToRect aim helper and originRef plumbing are removed (aw-042)", () => {
+  // board.js imports the pure fire-sequence module, NOT the retired aim helper.
   assert.match(
     boardSrc,
-    /import\s*\{[^}]*confettiLaunchToRect[^}]*\}\s*from\s*["']\.\/confetti-launch\.js["']/,
-    'board.js must import confettiLaunchToRect from the launch-geometry module',
+    /import\s*\{[^}]*confettiFireSequence[^}]*\}\s*from\s*["']\.\/confetti-launch\.js["']/,
+    'board.js must import confettiFireSequence from the fire-sequence module',
   );
-  const fire = boardSrc.match(/function fireConfetti[\s\S]*?\n}/);
-  // The live on-screen rect is read at fire time (getBoundingClientRect + window
-  // innerWidth/innerHeight), so a scrolled/resized board still fires correctly.
-  assert.match(
-    fire[0],
-    /getBoundingClientRect\(\)/,
-    'origin must be read from the textarea live rect at fire time (getBoundingClientRect)',
-  );
-  assert.match(
-    fire[0],
-    /window\.innerWidth/,
-    'the rect must be normalized against the live viewport (window.innerWidth/innerHeight)',
-  );
-  assert.match(
-    fire[0],
-    /confettiLaunchToRect\(/,
-    'fireConfetti must delegate the origin/angle geometry to confettiLaunchToRect',
-  );
-  // The prompt-bar textarea ref is plumbed down to BoardConfetti so the fire path
-  // can read it.
-  assert.match(boardSrc, /originRef=\$\{textareaRef\}/, 'the textarea ref must be passed to BoardConfetti as originRef');
-  assert.match(boardSrc, /ref=\$\{textareaRef\}/, 'the textarea must carry the ref BoardConfetti reads at fire time');
+  assert.doesNotMatch(boardSrc, /confettiLaunchToRect/, 'the retired aim helper must no longer be imported or used');
+  // The originRef prop is no longer threaded into BoardConfetti.
+  assert.doesNotMatch(boardSrc, /originRef/, 'the originRef plumbing into BoardConfetti must be gone');
+  // The textarea KEEPS its ref — aw-038's auto-grow still measures it.
+  assert.match(boardSrc, /ref=\$\{textareaRef\}/, 'the textarea must keep its ref for the aw-038 auto-grow');
 });
 
 test('colors are resolved at fire time off the four status bases (theme-aware), not a static var() list', () => {
