@@ -21,6 +21,7 @@ import {
   MODELING_COMMAND,
   QUICK_CAPTURE_COMMAND,
   WORK_COMMAND,
+  STOP_DASHBOARD_COMMAND,
   refineCommandFor,
   promoteCommandFor,
   quickCaptureCommandFor,
@@ -58,6 +59,23 @@ test('WORK_COMMAND is distinct from the authoring commands and fully-qualified',
   assert.notEqual(WORK_COMMAND, MODELING_COMMAND);
   assert.notEqual(WORK_COMMAND, QUICK_CAPTURE_COMMAND);
   assert.match(WORK_COMMAND, /^\/agentheim:/);
+});
+
+// agentic-workflow-028: the main-column topbar gains a quiet Stop dashboard button
+// (set apart from the [theme][skip-perms][Work] cluster). Clicking it reuses the
+// existing bridge launch path to run `/agentheim:dashboard stop` — the spawned
+// session invokes `/dashboard stop` → stopDashboard(root) (no new server endpoint,
+// ADR-0017 read-only preserved). Stop ignores the prompt-bar textarea, so this is a
+// bare CONSTANT (no `*CommandFor(prompt)` builder), mirroring WORK_COMMAND (aw-024).
+test('STOP_DASHBOARD_COMMAND is the fully-qualified bare dashboard-stop command', () => {
+  assert.equal(STOP_DASHBOARD_COMMAND, '/agentheim:dashboard stop');
+});
+
+test('STOP_DASHBOARD_COMMAND is distinct from the other launch commands and fully-qualified', () => {
+  assert.notEqual(STOP_DASHBOARD_COMMAND, WORK_COMMAND);
+  assert.notEqual(STOP_DASHBOARD_COMMAND, MODELING_COMMAND);
+  assert.notEqual(STOP_DASHBOARD_COMMAND, QUICK_CAPTURE_COMMAND);
+  assert.match(STOP_DASHBOARD_COMMAND, /^\/agentheim:/);
 });
 
 // agentic-workflow-022: the per-card Refine / Promote launch buttons. The verbs are

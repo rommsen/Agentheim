@@ -87,7 +87,10 @@ separate BC, but today the whole tool lives in this one.
   label → the **live** library tree (`treeToLibrary`, the always-visible tree *is* the
   library). The **theme + skip-permissions toggles** sit in the **main-column topbar**,
   left of the inverse **Work** launch (aw-029 — a partial reversal of aw-026's rail-footer
-  placement; the rail no longer has a toggle footer). The old horizontal header
+  placement; the rail no longer has a toggle footer). A quiet **Stop dashboard** launch
+  (aw-028) sits at the **far left** of the same topbar (after the breadcrumb), set **apart**
+  from the `[theme][skip-perms][Work]` cluster so it never reads as the Work primary — see
+  *Stop dashboard from the UI* below. The old horizontal header
   and the board↔library toggle are retired (the separate full-pane library surface is
   formally removed in aw-027). See ADR-0009 / ADR-0011.
 - **Board view** — the dashboard's home view (agentic-workflow-006): a **flat** Kanban of the
@@ -241,6 +244,22 @@ separate BC, but today the whole tool lives in this one.
   from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo
   `AppRail`, and its tree is the **live** `treeToLibrary(/api/tree)` projection (re-fetched on every SSE
   frame, ADR-0011). See ADR-0009, ADR-0003, ADR-0017, ADR-0018.
+- **Stop dashboard from the UI (aw-028)** -- a quiet `LaunchButton` (`emphasis="quiet"`) at the
+  **far left** of the main-column topbar, set **apart** from the `[theme][skip-perms][Work]` cluster
+  so it never reads or fat-fingers as the Work primary. It **reuses the existing bridge launch path
+  unchanged** (`launchOrCopy`, no new server endpoint) to run the bare `STOP_DASHBOARD_COMMAND`
+  (`/agentheim:dashboard stop`, a plain constant in `modeling-command.js`, mirroring `WORK_COMMAND`).
+  The spawned session runs `/dashboard stop` -> `stopDashboard(root)` (aw-011), so the server is
+  **never asked to stop itself** -- `server.mjs` stays purely read-only (ADR-0017; the seam decision
+  was bridge-reuse over a self-stop endpoint). **No confirmation step** (a single click stops). It does
+  **not** thread `skipPermissions`, so it never wears the armed/danger `--obligation` per-launch cue
+  (aw-021/ADR-0019 is a non-goal for a stop). The outcome is driven off `launchOrCopy`'s discriminated
+  return: `res.via === "bridge"` flips a shell-level "stopped" state, rendering a board-local,
+  token-matched full-pane **"Dashboard stopped -- safe to close this tab"** overlay (`StoppedOverlay`)
+  over the main content area (optimistic on dispatch; the SSE stream dropping corroborates it). A
+  `res.via === "clipboard"` fallback stopped nothing, so it shows **no** overlay -- just the existing
+  quiet "Copied" flash. The overlay is composed from tokens, **not** the `Drawer` side panel (there is
+  no full-screen modal primitive; ADR-0003 unforked). See ADR-0017, ADR-0018, ADR-0001, ADR-0003.
   The textarea is a board-local, token-matched control (the styleguide has no
   text-input primitive; the board-control precedent -- the sort `<select>`, the group toggle -- keeps
   the styleguide consumed **unforked**, ADR-0003). The builder **authors a prompt once and hands it to

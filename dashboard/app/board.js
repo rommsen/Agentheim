@@ -44,7 +44,7 @@ import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { loadSkipPermissions, saveSkipPermissions } from "./skip-permissions-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { refineCommandFor, promoteCommandFor, quickCaptureCommandFor, modelingCommandFor, WORK_COMMAND } from "./modeling-command.js";
+import { refineCommandFor, promoteCommandFor, quickCaptureCommandFor, modelingCommandFor, WORK_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
@@ -841,6 +841,36 @@ function ShellRail({ projectName, selectedId, onOpen, onSelectBoard }) {
     </nav>`;
 }
 
+// The post-stop "Dashboard stopped" overlay (agentic-workflow-028). A board-local,
+// token-matched full-pane cover over the MAIN CONTENT AREA (absolutely filling the
+// relatively-positioned content wrapper) — NOT a styleguide primitive: there is no
+// full-screen modal in the styleguide and the Drawer is a side panel, so this is
+// composed from existing tokens (ADR-0003, consumed unforked). It is the honest end
+// state: the page is now talking to a server that is shutting down, so the board below
+// is covered and the only message is that it is safe to close the tab. Rendered ONLY on
+// a bridge dispatch (the clipboard fallback stopped nothing and never mounts this).
+function StoppedOverlay() {
+  return html`
+    <div
+      role="status"
+      aria-live="polite"
+      style=${{
+        position: "absolute", inset: 0, zIndex: 5,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        gap: 14, padding: 32, textAlign: "center",
+        background: "var(--surface-0)",
+      }}>
+      <${Icon} name="x" size=${30} color="var(--fg-3)" />
+      <div style=${{ fontFamily: "var(--font-ui)", fontSize: 16, fontWeight: 600, color: "var(--fg-1)" }}>
+        Dashboard stopped — safe to close this tab
+      </div>
+      <div style=${{ fontFamily: "var(--font-ui)", fontSize: 12.5, color: "var(--fg-3)", maxWidth: 360, lineHeight: 1.5 }}>
+        The dashboard server is shutting down. Reopen it any time with
+        <span style=${{ fontFamily: "var(--font-mono)", color: "var(--fg-2)" }}> /dashboard</span> from a session.
+      </div>
+    </div>`;
+}
+
 // The main-column TOPBAR (agentic-workflow-026) — the styleguide §05 board topbar.
 // A ~52px strip over the scrollable board carrying a board title / breadcrumb and a
 // single primary action styled as the §05 inverse button. That button IS the WORK
@@ -857,7 +887,27 @@ function ShellRail({ projectName, selectedId, onOpen, onSelectBoard }) {
 // danger (--obligation) treatment, off-by-default persistence, and threading of
 // skipPermissions through every launch (aw-021 / ADR-0019). This is the only
 // home for the two toggles — the rail footer that held them (aw-026) is retired.
-function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissions }) {
+//
+// A QUIET "Stop dashboard" launch (aw-028) sits at the FAR LEFT, after the breadcrumb
+// and BEFORE the flex spacer — set APART from the right-side [theme][skip-perms][Work]
+// cluster so it never reads or fat-fingers as the Work primary. It reuses the same
+// launchOrCopy seam to run STOP_DASHBOARD_COMMAND (`/agentheim:dashboard stop`); the
+// spawned session runs `/dashboard stop` → stopDashboard(root) (aw-011), so the server
+// is never asked to stop itself (ADR-0017 read-only). NO confirmation step (a single
+// click stops, matching the directness of `/dashboard stop`). It deliberately does NOT
+// thread skipPermissions — a stop is not a risky work launch, so it never wears the
+// armed/danger --obligation per-launch cue (aw-021/ADR-0019 is a non-goal here). Its
+// onResult flips the shell-level "stopped" overlay ONLY on a bridge dispatch
+// (`res.via === "bridge"`); a clipboard fallback stopped nothing, so it shows no overlay
+// and just lets LaunchButton flash the existing quiet "Copied" feedback.
+function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissions, onStopped }) {
+  const onStopResult = useCallback((res) => {
+    // Optimistic on dispatch: `res.via === "bridge"` means POST /run landed (the
+    // terminal opened to run `/dashboard stop`), so the page is now talking to a
+    // server that is shutting down — the overlay is the honest end state. A clipboard
+    // fallback stopped nothing (the command was only copied), so we show no overlay.
+    if (res && res.via === "bridge" && typeof onStopped === "function") onStopped();
+  }, [onStopped]);
   return html`
     <div style=${{
       display: "flex", alignItems: "center", gap: 12,
@@ -870,6 +920,9 @@ function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissi
       <span style=${{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
         agentheim / tickets
       </span>
+      <!-- Stop dashboard — quiet, far-left, set APART from the right-side cluster (aw-028). -->
+      <${LaunchButton} label="Stop dashboard" command=${STOP_DASHBOARD_COMMAND}
+        icon="x" emphasis="quiet" onResult=${onStopResult} />
       <div style=${{ flex: 1 }} />
       <!-- Session-level controls, left → right: theme, skip-permissions, Work (aw-029) -->
       <div style=${{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -990,6 +1043,19 @@ export function DashboardApp() {
   // The Board RailItem returns the main pane to the board: clear the selected doc.
   const onSelectBoard = useCallback(() => setSelectedDoc(null), []);
 
+  // The shell-level "stopped" state (aw-028). The topbar's quiet Stop dashboard launch
+  // calls onStopped ONLY when launchOrCopy returned `via: "bridge"` — i.e. POST /run
+  // dispatched the `/agentheim:dashboard stop` session, so the server this page talks to
+  // is shutting down. We then render a full-pane "Dashboard stopped — safe to close this
+  // tab" overlay over the main content area. It is OPTIMISTIC on dispatch (the spawned
+  // session still has to run `/dashboard stop`); the SSE stream dropping a moment later
+  // (live-update already tracks connection state) naturally corroborates it. A clipboard
+  // fallback stopped nothing, so it never reaches here — no overlay, just the button's
+  // own quiet "Copied" flash. The overlay is board-local and token-matched (ADR-0003);
+  // there is no full-screen modal primitive and the Drawer is a side panel, not used here.
+  const [stopped, setStopped] = useState(false);
+  const onStopped = useCallback(() => setStopped(true), []);
+
   return html`
     <${ThemeCtx.Provider} value=${theme}>
       <div style=${{
@@ -1005,11 +1071,15 @@ export function DashboardApp() {
         }}>
           <${BoardTopbar}
             theme=${theme} setTheme=${onThemeChange}
-            skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange} />
-          <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "22px 24px 40px" }}>
-            ${selectedDoc
-              ? html`<${MainPaneReader} doc=${selectedDoc} />`
-              : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
+            skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange}
+            onStopped=${onStopped} />
+          <div style=${{ flex: 1, minHeight: 0, position: "relative", display: "flex", flexDirection: "column" }}>
+            <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "22px 24px 40px" }}>
+              ${selectedDoc
+                ? html`<${MainPaneReader} doc=${selectedDoc} />`
+                : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
+            </div>
+            ${stopped ? html`<${StoppedOverlay} />` : null}
           </div>
         </div>
       </div>
