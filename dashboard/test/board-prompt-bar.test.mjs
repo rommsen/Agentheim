@@ -132,6 +132,38 @@ test('board.js still imports WORK_COMMAND from modeling-command (now used by the
   );
 });
 
+// agentic-workflow-025: a TEMPORARY replay-on-demand trigger for the celebration
+// confetti, confined to one clearly-commented block in BoardPromptBar. It reuses the
+// existing confettiKey state UNCHANGED — a second, unconditional caller of
+// setConfettiKey((k)=>k+1) — and must NOT launch, hit the bridge, copy, clear the
+// textarea, or write lifecycle state. These guards lock that wiring (and the single
+// removable block) without a DOM harness.
+test('a temporary aw-025 block adds a confetti-replay button to the prompt-bar button row', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  assert.ok(bar, 'BoardPromptBar component must exist');
+  // The temp control lives in a single clearly-commented fenced block.
+  const block = bar[0].match(/TEMP \(aw-025\)[\s\S]*?END TEMP \(aw-025\)/);
+  assert.ok(block, 'the temp button must be a single TEMP (aw-025) … END TEMP (aw-025) block');
+  // It renders a button inside the prompt-bar button row.
+  assert.match(block[0], /<button/, 'the temp block must render a <button>');
+});
+
+test('the aw-025 temp button bumps the existing confettiKey and does nothing else', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  const block = bar[0].match(/TEMP \(aw-025\)[\s\S]*?END TEMP \(aw-025\)/);
+  assert.ok(block, 'the temp block must exist');
+  // Reuses the existing remount trigger unchanged.
+  assert.match(
+    block[0],
+    /setConfettiKey\(\(k\)\s*=>\s*k\s*\+\s*1\)/,
+    'the temp button must bump confettiKey via the existing setConfettiKey((k) => k + 1)',
+  );
+  // No launch / bridge / clipboard / textarea-clear inside the temp block.
+  assert.doesNotMatch(block[0], /launchOrCopy|LaunchButton|command=/, 'the temp button must not launch or hit the bridge');
+  assert.doesNotMatch(block[0], /clipboard/i, 'the temp button must not copy to the clipboard');
+  assert.doesNotMatch(block[0], /setPrompt\(/, 'the temp button must not clear/touch the textarea');
+});
+
 test('confetti honours prefers-reduced-motion and avoids the reserved selection accent (ADR-0014 / ADR-0016)', () => {
   // The confetti is board-local (the styleguide has no celebration motion). It must
   // be strippable under reduced motion and must NOT use the reserved selection
