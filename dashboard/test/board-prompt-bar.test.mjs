@@ -265,12 +265,12 @@ test('the burst fires from canvas-confetti default global, with a dynamic origin
   assert.doesNotMatch(fire[0], /x:\s*0\.5\s*,\s*y:\s*0\.5/, 'must not fire from the stock {x:0.5,y:0.5} centre');
 });
 
-test('origin + aim are derived from the textarea live rect at FIRE TIME, aimed at the viewport center (aw-035)', () => {
+test('aim is derived from the textarea live rect at FIRE TIME, fired UP from the page center toward the textarea (aw-037)', () => {
   // board.js imports the pure launch-geometry helper.
   assert.match(
     boardSrc,
-    /import\s*\{[^}]*confettiLaunchFromRect[^}]*\}\s*from\s*["']\.\/confetti-launch\.js["']/,
-    'board.js must import confettiLaunchFromRect from the launch-geometry module',
+    /import\s*\{[^}]*confettiLaunchToRect[^}]*\}\s*from\s*["']\.\/confetti-launch\.js["']/,
+    'board.js must import confettiLaunchToRect from the launch-geometry module',
   );
   const fire = boardSrc.match(/function fireConfetti[\s\S]*?\n}/);
   // The live on-screen rect is read at fire time (getBoundingClientRect + window
@@ -287,8 +287,8 @@ test('origin + aim are derived from the textarea live rect at FIRE TIME, aimed a
   );
   assert.match(
     fire[0],
-    /confettiLaunchFromRect\(/,
-    'fireConfetti must delegate the origin/angle geometry to confettiLaunchFromRect',
+    /confettiLaunchToRect\(/,
+    'fireConfetti must delegate the origin/angle geometry to confettiLaunchToRect',
   );
   // The prompt-bar textarea ref is plumbed down to BoardConfetti so the fire path
   // can read it.

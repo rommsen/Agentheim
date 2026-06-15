@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
-- **Todo:** 0
+- **Backlog:** 2
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 20
+- **Done:** 36
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-038** — Board prompt bar — single-line auto-growing input replaces the multi-line textarea (feature) — `todo/agentic-workflow-038-board-prompt-bar-single-line-autogrow-input.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -26,6 +27,22 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-037** — Confetti launches from the page center and shoots up toward the prompt-bar textarea (feature) — `done/agentic-workflow-037-confetti-from-page-center-up-toward-textarea.md`
+- **agentic-workflow-036** — Board prompt bar — Research launch button next to Quick Capture / Modeling (feature) — `done/agentic-workflow-036-board-prompt-bar-research-button.md`
+- **agentic-workflow-035** — Confetti bursts from the prompt-bar textarea center, aimed at the viewport center (feature) — `done/agentic-workflow-035-confetti-burst-from-textarea-center-aim-viewport.md`
+- **agentic-workflow-034** — Fire the celebration with canvas-confetti instead of the CSS-keyframe burst (feature) — `done/agentic-workflow-034-celebration-canvas-confetti.md`
+- **agentic-workflow-033** — Work button follows the active theme instead of the inverse light/dark treatment (bug) — `done/agentic-workflow-033-work-button-follows-theme.md`
+- **agentic-workflow-032** — Dashboard launch no longer auto-opens the browser (chore) — `done/agentic-workflow-032-dashboard-launch-no-auto-open.md`
+- **agentic-workflow-030** — Board buttons — hover shadow + background highlight; armed launch cue keeps only the dot (no red border/text) (feature) — `done/agentic-workflow-030-board-buttons-hover-drop-skip-permissions-cue.md`
+- **agentic-workflow-028** — Add a button to stop the dashboard from the dashboard (feature) — `done/agentic-workflow-028-board-stop-dashboard-button.md`
+- **agentic-workflow-029** — Move the theme + skip-permissions toggles to the topbar, left of the Work button (feature) — `done/agentic-workflow-029-topbar-theme-skip-permissions-toggles.md`
+- **agentic-workflow-025** — Add a temporary board button that fires the celebration animation (feature) — `done/agentic-workflow-025-board-celebration-animation-test-button.md`
+- **agentic-workflow-027** — Non-task documents render in the main content pane; the slide-over becomes task-only (decision) — `done/agentic-workflow-027-non-task-docs-render-in-main-pane.md`
+- **agentic-workflow-026** — Rewrite the dashboard shell to the styleguide's left-rail layout (Components in context) (refactor) — `done/agentic-workflow-026-dashboard-left-rail-shell-relayout.md`
+- **agentic-workflow-024** — Board prompt bar — textarea to two-thirds width, Work launch button on the right (feature) — `done/agentic-workflow-024-board-prompt-bar-work-button.md`
+- **agentic-workflow-023** — Board prompt bar — type a prompt, Quick Capture / Modeling launch seeded with it (feature) — `done/agentic-workflow-023-board-prompt-bar-launch-buttons.md`
+- **agentic-workflow-021** — Dashboard armed-launch setting — all bridge launches skip permissions when armed (feature) — `done/agentic-workflow-021-dashboard-skip-permissions-setting.md`
+- **agentic-workflow-022** — Backlog cards get Refine & Promote launch buttons, each seeded with the ticket id — `done/agentic-workflow-022-backlog-card-refine-promote-launch-buttons.md`
 - **agentic-workflow-020** — Backlog "Add ticket" becomes two launch buttons — Quick Capture & Modeling — that start a seeded Claude session — `done/agentic-workflow-020-backlog-two-launch-buttons.md`
 - **agentic-workflow-019** — Rename the `capture` skill to `quick-capture` — `done/agentic-workflow-019-rename-capture-skill-quick-capture.md`
 - **agentic-workflow-018** — Remove the non-functional "Add ticket" affordances from non-backlog columns — `done/agentic-workflow-018-remove-dead-add-ticket-affordances.md`
@@ -50,11 +67,16 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **agentic-workflow-031** — Next-steps overview when work is done — `backlog/agentic-workflow-031-next-steps-overview-when-work-done.md`
+- **agentic-workflow-039** — Slide-over "Open in full screen" renders the task in the main content pane (feature) — `backlog/agentic-workflow-039-slide-over-open-in-full-screen-main-pane.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0021** — The dashboard open-intent splits on artifact kind: tasks → slide-over, non-task documents → main pane (accepted; reshapes ADR-0010 & ADR-0011 §5) — `../../knowledge/decisions/0021-open-intent-split-task-slide-over-doc-main-pane.md`
+- **ADR-0020** — Board prompt-bar confetti is a board-local transient ACK, not a styleguide motion primitive (accepted) — `../../knowledge/decisions/0020-board-confetti-board-local-transient-ack.md`
+- **ADR-0019** — Armed skip-permissions launch reuses the existing `--obligation` token as its danger hue, unforked (accepted) — `../../knowledge/decisions/0019-dashboard-armed-launch-danger-token.md`
 - **ADR-0001** — Dashboard write-semantics — Promote-only UI moves, one shared mover, optimistic concurrency (superseded by ADR-0017) — `../../knowledge/decisions/0001-dashboard-write-semantics.md`
 - **ADR-0017** — Dashboard is read-only; skills are the sole owners of task lifecycle (accepted) — `../../knowledge/decisions/0017-dashboard-read-only-skills-own-lifecycle.md`
 - **ADR-0004** — Detached dashboard server uses a neutral cwd and AGENTHEIM_ROOT, not the project dir (proposed) — `../../knowledge/decisions/0004-dashboard-detached-process-cwd.md`

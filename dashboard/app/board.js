@@ -54,7 +54,7 @@ import { SlideOver } from "./slide-over.js";
 import { MainPaneReader } from "./main-pane-reader.js";
 import { treeToLibrary } from "./library-data.js";
 import { resolveConfettiColors } from "./confetti-palette.js";
-import { confettiLaunchFromRect } from "./confetti-launch.js";
+import { confettiLaunchToRect } from "./confetti-launch.js";
 import { isTaskIntent } from "./intent-route.js";
 import { createLiveUpdate } from "./live-update.js";
 
@@ -337,12 +337,12 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
 // the committed dist/app.js (no CDN; the board runs offline on 127.0.0.1).
 //
 // canvas-confetti's default global confetti() paints a fixed FULL-VIEWPORT canvas
-// (pointer-events: none, above content, auto-cleared). aw-035 makes the burst read
-// as an explosion OUT OF the prompt bar: it originates at the prompt-bar textarea's
-// CENTER and shoots toward the CENTER of the viewport. Both the origin and the aim
-// angle are computed at FIRE TIME from the textarea's live getBoundingClientRect()
-// + window.innerWidth/innerHeight (confettiLaunchFromRect, confetti-launch.js), so
-// a scrolled / resized board still fires from the textarea's current on-screen
+// (pointer-events: none, above content, auto-cleared). aw-037 INVERTS aw-035 so the
+// burst CONVERGES ON the prompt bar: it originates at the PAGE CENTER {0.5,0.5} and
+// shoots UPWARD toward the prompt-bar textarea's center. The aim angle is computed
+// at FIRE TIME from the textarea's live getBoundingClientRect()
+// + window.innerWidth/innerHeight (confettiLaunchToRect, confetti-launch.js), so
+// a scrolled / resized board still aims at the textarea's current on-screen
 // position — replacing aw-034's hardcoded origin {x:0.18,y:0.92} + fixed angle 75.
 // It stays a board-OWNED, board-local transient ACK (ADR-0020): the board injects
 // the call, it is consumed within the BC, and it is NOT promoted to a design-system
@@ -357,19 +357,19 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
 function fireConfetti(textareaEl) {
   if (typeof document === "undefined" || typeof confetti !== "function") return;
   const colors = resolveConfettiColors(getComputedStyle(document.documentElement));
-  // Read the textarea's LIVE on-screen rect at fire time and derive a textarea-
-  // center origin aimed at the viewport center {0.5,0.5}. If the ref is missing
+  // Read the textarea's LIVE on-screen rect at fire time and derive a page-center
+  // origin {0.5,0.5} aimed UP at the textarea center. If the ref is missing
   // (defensive — never break the celebration), fall back to aw-034's constants.
   const fallback = { origin: { x: 0.18, y: 0.92 }, angle: 75 };
   const launch = (textareaEl && typeof textareaEl.getBoundingClientRect === "function"
     && typeof window !== "undefined")
-    ? confettiLaunchFromRect(
+    ? confettiLaunchToRect(
         textareaEl.getBoundingClientRect(),
         { width: window.innerWidth, height: window.innerHeight },
       )
     : fallback;
   // Lively defaults; the exact tuning (particleCount/spread/startVelocity/gravity/
-  // scalar) is iterated via the aw-025 replay button — aw-035 changes only the
+  // scalar) is iterated via the aw-025 replay button — aw-037 changes only the
   // origin + aim, not the spread profile.
   confetti({
     particleCount: 120,
