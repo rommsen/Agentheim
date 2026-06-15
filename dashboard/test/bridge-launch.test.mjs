@@ -98,6 +98,78 @@ test('the POST /run carries the token header and the {prompt} JSON body (ADR-001
   assert.deepEqual(JSON.parse(runCall.opts.body), { prompt: PROMPT });
 });
 
+// ---- skipPermissions option threading (agentic-workflow-021) -----------------
+//
+// The armed toggle (skip-permissions-state.js) is threaded through this ONE seam.
+// When `skipPermissions: true`, the POST /run body carries `skipPermissions: true`
+// so the bridge (infrastructure-016) seeds `claude --dangerously-skip-permissions`.
+// When OFF, the field is OMITTED (never sent `false`) so the body is byte-identical
+// to today and matches the contract's strict-`true` activation (amended ADR-0018).
+
+test('skipPermissions:true -> POST /run body includes skipPermissions:true', async () => {
+  let runCall = null;
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31430, token: 't', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', (url, opts) => { runCall = { url, opts }; return jsonResponse(202, { ok: true }); }],
+  ]);
+
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy: makeCopy(), skipPermissions: true });
+
+  assert.equal(result.via, 'bridge');
+  assert.deepEqual(JSON.parse(runCall.opts.body), { prompt: PROMPT, skipPermissions: true });
+});
+
+test('skipPermissions OFF (false/absent) -> body OMITS the field, never sends false', async () => {
+  // absent
+  let absentCall = null;
+  const fAbsent = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31431, token: 't', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', (url, opts) => { absentCall = { url, opts }; return jsonResponse(202, { ok: true }); }],
+  ]);
+  await launchOrCopy({ prompt: PROMPT, fetchImpl: fAbsent, copy: makeCopy() });
+  const absentBody = JSON.parse(absentCall.opts.body);
+  assert.deepEqual(absentBody, { prompt: PROMPT });
+  assert.equal('skipPermissions' in absentBody, false, 'field must be OMITTED, not sent');
+
+  // explicit false
+  let falseCall = null;
+  const fFalse = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31432, token: 't', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', (url, opts) => { falseCall = { url, opts }; return jsonResponse(202, { ok: true }); }],
+  ]);
+  await launchOrCopy({ prompt: PROMPT, fetchImpl: fFalse, copy: makeCopy(), skipPermissions: false });
+  const falseBody = JSON.parse(falseCall.opts.body);
+  assert.deepEqual(falseBody, { prompt: PROMPT });
+  assert.equal('skipPermissions' in falseBody, false, 'OFF must OMIT, never serialize skipPermissions:false');
+});
+
+test('a truthy-but-not-true skipPermissions does NOT arm (strict-true only)', async () => {
+  let runCall = null;
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31433, token: 't', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', (url, opts) => { runCall = { url, opts }; return jsonResponse(202, { ok: true }); }],
+  ]);
+  await launchOrCopy({ prompt: PROMPT, fetchImpl, copy: makeCopy(), skipPermissions: 1 });
+  assert.equal('skipPermissions' in JSON.parse(runCall.opts.body), false);
+});
+
+test('the clipboard fallback NEVER carries the bypass — it copies only the prompt', async () => {
+  // Bridge absent: even with skipPermissions armed, the clipboard copy is the bare
+  // prompt (a slash command pasted into a RUNNING session; the bypass is startup-
+  // only). The bridge-present/absent asymmetry is accepted (amended ADR-0018).
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { present: false })],
+  ]);
+  const copy = makeCopy();
+  const result = await launchOrCopy({ prompt: PROMPT, fetchImpl, copy, skipPermissions: true });
+  assert.equal(result.via, 'clipboard');
+  assert.deepEqual(copy.copied, [PROMPT]); // exactly the prompt, no bypass marker.
+});
+
 test('the health probe carries the token header and targets the advertised port', async () => {
   let healthCall = null;
   const fetchImpl = makeFetch([

@@ -111,20 +111,28 @@ async function probeHealth(fetchImpl, { port, token }, timeoutMs) {
 }
 
 /**
- * Launch the seeded session via `POST /run { prompt }` (token header). The custom
- * header makes this a CORS-preflighted request — the extension answers the
- * preflight (ADR-0018); a CORS rejection here just throws and we fall back.
+ * Launch the seeded session via `POST /run` (token header). The body is
+ * `{ prompt }`, plus `skipPermissions: true` ONLY when strictly armed — when OFF
+ * the field is OMITTED (never sent `false`), so the OFF body is byte-identical to
+ * today and matches the contract's strict-`true` activation (amended ADR-0018;
+ * honoured by the bridge in infrastructure-016, which seeds
+ * `claude --dangerously-skip-permissions "<prompt>"` only on strict-`true`).
+ * The custom header makes this a CORS-preflighted request — the extension answers
+ * the preflight (ADR-0018); a CORS rejection here just throws and we fall back.
  * @returns {Promise<boolean>} Never throws.
  */
-async function runOnBridge(fetchImpl, { port, token, prompt }) {
+async function runOnBridge(fetchImpl, { port, token, prompt, skipPermissions }) {
   try {
+    // Strict-`true` only: a truthy-but-not-true value must never arm the bypass,
+    // and OFF must OMIT the field rather than serialize `false`.
+    const body = skipPermissions === true ? { prompt, skipPermissions: true } : { prompt };
     const res = await fetchImpl(`http://127.0.0.1:${port}/run`, {
       method: "POST",
       headers: {
         [BRIDGE_TOKEN_HEADER]: token,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify(body),
     });
     return !!(res && res.ok);
   } catch {
@@ -150,24 +158,33 @@ async function runOnBridge(fetchImpl, { port, token, prompt }) {
  *   writer (board.js supplies aw-016's copyToClipboard). Resolves to whether the
  *   write landed; a false just means no "copied" feedback flashes.
  * @param {number} [args.healthTimeoutMs] — liveness-probe budget (default ~800 ms).
+ * @param {boolean} [args.skipPermissions] — the armed toggle (aw-021). When strict
+ *   `true`, the POST /run body carries `skipPermissions: true` and the bridge
+ *   seeds `claude --dangerously-skip-permissions "<prompt>"`; OFF/absent OMITS the
+ *   field (never sends `false`). It affects ONLY the bridge POST — the clipboard
+ *   fallback can NEVER carry the bypass (it copies a slash command to paste into a
+ *   RUNNING session; `--dangerously-skip-permissions` is startup-only), so the
+ *   bridge-present/absent asymmetry is accepted (amended ADR-0018), not a defect.
  * @returns {Promise<{via:'bridge'}|{via:'clipboard', copied:boolean}>} which path
  *   handled it; for the clipboard path, whether the copy itself landed.
  */
-export async function launchOrCopy({ prompt, fetchImpl, copy, healthTimeoutMs = DEFAULT_HEALTH_TIMEOUT_MS }) {
+export async function launchOrCopy({ prompt, fetchImpl, copy, healthTimeoutMs = DEFAULT_HEALTH_TIMEOUT_MS, skipPermissions }) {
   // Try the bridge only when we actually have a fetch to reach it with.
   if (typeof fetchImpl === "function") {
     const bridge = await discoverBridge(fetchImpl);
     if (bridge) {
       const live = await probeHealth(fetchImpl, bridge, healthTimeoutMs);
       if (live) {
-        const launched = await runOnBridge(fetchImpl, { ...bridge, prompt });
+        const launched = await runOnBridge(fetchImpl, { ...bridge, prompt, skipPermissions });
         if (launched) return { via: "bridge" };
       }
     }
   }
 
-  // Fallback: copy the command to the clipboard (aw-016 behavior). The copy is
-  // itself no-throw; a false result just means no "copied" feedback should flash.
+  // Fallback: copy the command to the clipboard (aw-016 behavior). The bypass is
+  // deliberately NOT carried here — the clipboard text is the bare prompt (a slash
+  // command for a running session; the bypass is startup-only). The copy is itself
+  // no-throw; a false result just means no "copied" feedback should flash.
   let copied = false;
   try {
     copied = await copy(prompt);

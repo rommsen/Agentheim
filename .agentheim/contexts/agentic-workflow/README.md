@@ -145,6 +145,36 @@ separate BC, but today the whole tool lives in this one.
   once the user toggles, that override is remembered across reloads. A malformed / stale-version / absent
   blob degrades to the **system default**, and the resolved theme is read once on mount so an SSE
   re-projection never resets it mid-session. See ADR-0015, ADR-0009, ADR-0003.
+- **Persisted skip-permissions armed toggle** — a shell-header control (agentic-workflow-021), **off
+  by default**, that when **armed** makes **every** bridge launch request a skip-permissions session:
+  `launchOrCopy` threads an optional `skipPermissions` flag through its one shared seam, so all four
+  bridge launches — the column Quick Capture / Modeling pair (aw-020) **and** the per-card Refine /
+  Promote pair (aw-022) — POST `{ prompt, skipPermissions: true }`, and the bridge (infrastructure-016)
+  seeds `claude --dangerously-skip-permissions "<prompt>"`. When **off** the field is **omitted, never
+  sent `false`**, so the OFF path is byte-identical to today and matches the contract's strict-`true`
+  activation (amended ADR-0018). The bypass is **never silently on**: the armed choice is a **separate**
+  versioned `localStorage` store (`dashboard/app/skip-permissions-state.js`, key
+  `agentheim.dashboard.skipPermissions`, default OFF) — a sibling of `theme-state.js` (aw-017) and the
+  board view-state (aw-014 / ADR-0015) — whose every degraded path (malformed / stale-version / absent
+  / non-boolean / no backend / throwing backend) resolves to **OFF**, never a throw, never on. It is
+  presentation view-state only — never a disk lifecycle write — so the dashboard stays read-only over
+  `.agentheim/` (ADR-0017 / ADR-0001) and the armed choice survives every SSE re-projection untouched.
+  The control lives in the `ShellRail` header next to the theme toggle (the aw-017 persisted-control
+  precedent), **not** a settings panel (there is one setting today), and carries an **armed / danger**
+  treatment so it never reads as a neutral preference. Per the **amended ADR-0018** mandate, when armed
+  **each** of the four launch buttons also shows an at-a-glance per-launch "skips permissions" cue
+  (an `--obligation`-tinted border + indicator dot) reflecting the **armed toggle state, not a live
+  bridge probe** — it never probes `/api/bridge` on render (that would break the silent-absence
+  contract and add a probe to every paint). The **clipboard fallback never carries the bypass** (it
+  copies a slash command to paste into a *running* session; `--dangerously-skip-permissions` is
+  startup-only), so the indicator signals armed **intent**; the bridge-present/absent asymmetry is
+  **accepted** (amended ADR-0018), not a defect. The armed/danger hue is the **existing** styleguide
+  `--obligation` token family, consumed **unforked** (ADR-0003) — deliberately **not** the reserved
+  selection accent `--accent-ochre-soft` (ADR-0016), and **no** new design-system child task (refinement
+  decision); repurposing a money-named token for a generic danger cue is flagged for the design-system
+  README to reconcile later (ADR-0019). The store and the `launchOrCopy` flag-threading are covered by
+  **pure** unit tests under `node --test` (both armed states + the omit-not-false body shape). See
+  ADR-0019, ADR-0018, ADR-0016, ADR-0003, ADR-0015, ADR-0017, ADR-0001.
 - **Backlog card launch pair (Refine / Promote)** -- a backlog ticket invites two real next actions:
   **deepen** it or **mark it ready**. Each **backlog** card surfaces both (agentic-workflow-022,
   replacing aw-016's single **Copy** button) as a **two-button launch group** supplied *into* the

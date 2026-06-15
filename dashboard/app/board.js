@@ -40,6 +40,7 @@ import { ThemeToggle } from "../../.agentheim/contexts/design-system/styleguide/
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
+import { loadSkipPermissions, saveSkipPermissions } from "./skip-permissions-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
 import { refineCommandFor, promoteCommandFor, MODELING_COMMAND, QUICK_CAPTURE_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
@@ -209,7 +210,15 @@ function copyToClipboard(text) {
 // (aw-022) the slot already stops propagation; `isolateClick` adds a defensive
 // stopPropagation here too so a future change to that wrapper can't re-open the
 // card from this button (mirrors CopyCommandButton's belt-and-suspenders).
-function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false }) {
+// `skipPermissions` (aw-021): when ARMED (true), each launch threads
+// `skipPermissions: true` into launchOrCopy so the bridge seeds
+// `claude --dangerously-skip-permissions`. When armed, the button ALSO carries an
+// at-a-glance per-launch DANGER indicator (a "skips permissions" cue) so the
+// conscious moment is each launch, not the one-time arm (amended ADR-0018). The
+// indicator reflects the armed TOGGLE state, not a live bridge probe — it never
+// probes /api/bridge on render (that would break the silent-absence contract and
+// add a probe to every paint); it signals armed INTENT.
+function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false, skipPermissions = false }) {
   // feedback: "idle" | "launched" | "copied". A transient label/colour swap, same
   // quiet treatment as CopyCommandButton — never an error state (absence is normal).
   const [feedback, setFeedback] = useState("idle");
@@ -221,7 +230,7 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
     const fetchImpl = typeof window !== "undefined" && typeof window.fetch === "function"
       ? window.fetch.bind(window)
       : undefined;
-    launchOrCopy({ prompt: command, fetchImpl, copy: copyToClipboard }).then((res) => {
+    launchOrCopy({ prompt: command, fetchImpl, copy: copyToClipboard, skipPermissions: skipPermissions === true }).then((res) => {
       // Bridge launched -> a real terminal opened (flash "Launched"). Bridge absent
       // -> the command was copied (flash "Copied" only if the copy actually landed,
       // matching CopyCommandButton's quiet contract). Either way: never an error.
@@ -231,7 +240,7 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => setFeedback("idle"), 1100);
     });
-  }, [command, isolateClick]);
+  }, [command, isolateClick, skipPermissions]);
 
   const flashed = feedback !== "idle";
   const labelText = feedback === "launched" ? "Launched" : feedback === "copied" ? "Copied" : label;
@@ -244,27 +253,43 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
   const idleColor = primary ? "var(--fg-1)" : quiet ? "var(--fg-3)" : "var(--fg-2)";
   const idleBg = primary ? "var(--surface-2)" : quiet ? "transparent" : "var(--surface-1)";
   const idleBorder = quiet ? "1px solid transparent" : `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
+  // ARMED per-launch indicator (aw-021, amended ADR-0018). When the toggle is on,
+  // each launch button carries a danger-tinted border + a "skips permissions" dot
+  // so THIS launch reads, at a glance, as a permission-bypassing one. The hue is
+  // the EXISTING --obligation token (the styleguide's negative/red family) —
+  // consumed unforked (ADR-0003), and deliberately NOT the reserved selection
+  // accent --accent-ochre-soft (ADR-0016). The cue reflects the armed toggle, not
+  // a live bridge probe. The flash (launched/copied) still wins so feedback reads.
+  const armed = skipPermissions === true && !flashed;
   return html`
     <button
       type="button"
       className="focusable"
-      title=${`${label} — launch ${command} (copies to clipboard if the bridge is unavailable)`}
-      aria-label=${`${label} — launch ${command}`}
+      title=${armed
+        ? `${label} — launch ${command} with --dangerously-skip-permissions (armed; copies to clipboard if the bridge is unavailable — the clipboard copy does NOT skip permissions)`
+        : `${label} — launch ${command} (copies to clipboard if the bridge is unavailable)`}
+      aria-label=${armed
+        ? `${label} — launch ${command} (skips permissions)`
+        : `${label} — launch ${command}`}
       onClick=${onClick}
       style=${{
         display: "inline-flex", alignItems: "center", gap: 5,
         fontFamily: "var(--font-ui)", fontSize: 11.5,
         fontWeight: primary ? 600 : 500,
-        color: flashed ? "var(--st-done)" : idleColor,
+        color: flashed ? "var(--st-done)" : (armed ? "var(--obligation)" : idleColor),
         background: flashed ? "var(--surface-1)" : idleBg,
-        border: flashed ? "1px solid var(--st-done)" : idleBorder,
+        border: flashed ? "1px solid var(--st-done)" : (armed ? "1px solid var(--obligation)" : idleBorder),
         borderRadius: "var(--radius-sm)", padding: "4px 9px", cursor: "pointer",
         transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
       }}
-      onMouseEnter=${(e) => { if (!flashed && !quiet) e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
-      onMouseLeave=${(e) => { if (!flashed && !quiet) e.currentTarget.style.borderColor = primary ? "var(--hairline-strong)" : "var(--hairline)"; }}>
-      <${Icon} name=${icon} size=${12.5}
-        color=${flashed ? "var(--st-done)" : (primary ? "var(--fg-2)" : "var(--fg-3)")} />
+      onMouseEnter=${(e) => { if (!flashed && !armed && !quiet) e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+      onMouseLeave=${(e) => { if (!flashed && !armed && !quiet) e.currentTarget.style.borderColor = primary ? "var(--hairline-strong)" : "var(--hairline)"; }}>
+      ${armed
+        ? html`<span aria-hidden="true" title="This launch skips permissions" style=${{
+            width: 6, height: 6, borderRadius: 99, background: "var(--obligation)", flexShrink: 0,
+          }} />`
+        : html`<${Icon} name=${icon} size=${12.5}
+            color=${flashed ? "var(--st-done)" : (primary ? "var(--fg-2)" : "var(--fg-3)")} />`}
       <span>${labelText}</span>
     </button>`;
 }
@@ -278,14 +303,14 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
 // ColumnGroupToggle): the styleguide kanban.js / empty.js stay consumed UNFORKED
 // (ADR-0003); these are native, token-styled board controls beside the primitive,
 // not a fork of it. Backlog-only — todo/doing/done carry no add affordance (aw-018).
-function BacklogLaunchPair() {
+function BacklogLaunchPair({ skipPermissions = false }) {
   return html`
     <div role="group" aria-label="Start a new backlog entry" style=${{
       display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
       padding: "0 4px 12px", marginTop: -4,
     }}>
-      <${LaunchButton} label="Quick Capture" command=${QUICK_CAPTURE_COMMAND} icon="plus" />
-      <${LaunchButton} label="Modeling" command=${MODELING_COMMAND} icon="compass" />
+      <${LaunchButton} label="Quick Capture" command=${QUICK_CAPTURE_COMMAND} icon="plus" skipPermissions=${skipPermissions} />
+      <${LaunchButton} label="Modeling" command=${MODELING_COMMAND} icon="compass" skipPermissions=${skipPermissions} />
     </div>`;
 }
 
@@ -307,15 +332,15 @@ function BacklogLaunchPair() {
 // Each opens a real seeded terminal through the bridge, with the silent clipboard
 // fallback (reusing aw-020's LaunchButton/launchOrCopy unchanged). Promote only
 // ever runs backlog → todo, so this group belongs on backlog cards only.
-function BacklogCardLaunchPair({ id }) {
+function BacklogCardLaunchPair({ id, skipPermissions = false }) {
   return html`
     <div role="group" aria-label="Refine or promote this backlog item" style=${{
       display: "inline-flex", alignItems: "center", gap: 6,
     }}>
       <${LaunchButton} label="Refine" command=${refineCommandFor(id)}
-        icon="compass" emphasis="primary" isolateClick=${true} />
+        icon="compass" emphasis="primary" isolateClick=${true} skipPermissions=${skipPermissions} />
       <${LaunchButton} label="Promote" command=${promoteCommandFor(id)}
-        icon="arrow-right" emphasis="quiet" isolateClick=${true} />
+        icon="arrow-right" emphasis="quiet" isolateClick=${true} skipPermissions=${skipPermissions} />
     </div>`;
 }
 
@@ -335,7 +360,7 @@ function BacklogCardLaunchPair({ id }) {
 // (the board sorts before passing it in).
 // One TicketCard. Factored out so the flat list and the grouped sections render
 // cards identically (same selection ring).
-function BoardCard({ ticket, status, selectedId, onOpen }) {
+function BoardCard({ ticket, status, selectedId, onOpen, skipPermissions = false }) {
   // Backlog cards carry a Refine / Promote launch pair (aw-022) in the styleguide
   // card's bottom-right cornerAction slot (design-system-006), replacing aw-016's
   // single Copy affordance: Refine (primary) seeds `/agentheim:modeling refine
@@ -347,7 +372,7 @@ function BoardCard({ ticket, status, selectedId, onOpen }) {
   // estimate chip either). The slot is click-isolated by the styleguide, so
   // launching never opens the slide-over.
   const cornerAction = status === "backlog"
-    ? () => html`<${BacklogCardLaunchPair} id=${ticket.id} />`
+    ? () => html`<${BacklogCardLaunchPair} id=${ticket.id} skipPermissions=${skipPermissions} />`
     : undefined;
   return html`
     <${TicketCard} key=${ticket.id} ticket=${ticket} variant="rail"
@@ -358,7 +383,7 @@ function BoardCard({ ticket, status, selectedId, onOpen }) {
 function BoardColumn({
   status, tickets, sort, onSortChange, grouped, onGroupToggle,
   collapsed, onToggleSection,
-  selectedId, onOpen,
+  selectedId, onOpen, skipPermissions = false,
 }) {
   // Pipeline: tickets arrive ALREADY sorted (the board sorts before passing them
   // in); group them into sections here (board-group.groupTickets, pure). A flat
@@ -367,7 +392,7 @@ function BoardColumn({
 
   const renderCard = (t) => html`
     <${BoardCard} key=${t.id} ticket=${t} status=${status}
-      selectedId=${selectedId} onOpen=${onOpen} />`;
+      selectedId=${selectedId} onOpen=${onOpen} skipPermissions=${skipPermissions} />`;
 
   return html`
     <div style=${{
@@ -375,7 +400,7 @@ function BoardColumn({
       borderRadius: "var(--radius-md)",
     }}>
       <${ColumnHeader} status=${status} count=${tickets.length} />
-      ${status === "backlog" && html`<${BacklogLaunchPair} />`}
+      ${status === "backlog" && html`<${BacklogLaunchPair} skipPermissions=${skipPermissions} />`}
       <${ColumnControls} status=${status} sort=${sort} onSortChange=${onSortChange}
         grouped=${grouped} onGroupToggle=${onGroupToggle} />
       ${tickets.length === 0
@@ -410,7 +435,7 @@ function BoardColumn({
  * @param {(ticket: object) => void} [onOpen] — open-intent sink (aw-007 wires it).
  * @param {string} [treeUrl] — overridable for tests / alternate mounts.
  */
-export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
+export function DashboardBoard({ onOpen, treeUrl = "/api/tree", skipPermissions = false }) {
   const [columns, setColumns] = useState(EMPTY_COLUMNS);
   const [phase, setPhase] = useState("loading"); // loading | ready | error
   const [selectedId, setSelectedId] = useState(null);
@@ -520,17 +545,57 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree" }) {
                 sort=${view[status].sort} onSortChange=${(v) => setColumnSort(status, v)}
                 grouped=${view[status].grouped} onGroupToggle=${(g) => setColumnGrouped(status, g)}
                 collapsed=${view[status].collapsed} onToggleSection=${(bc) => toggleSection(status, bc)}
-                selectedId=${selectedId} onOpen=${handleOpen} />`)}
+                selectedId=${selectedId} onOpen=${handleOpen} skipPermissions=${skipPermissions} />`)}
           </div>
         </div>
       </div>
     </div>`;
 }
 
+// The shell-header SKIP-PERMISSIONS armed toggle (aw-021). It lives in the
+// ShellRail header next to the theme toggle (the aw-017 persisted-control
+// precedent) — NOT a settings panel, since there is one setting today. It carries
+// an ARMED / DANGER visual treatment so it never reads as a neutral preference:
+// when on, it is filled with the existing --obligation token (the styleguide's
+// negative/red family), consumed UNFORKED (ADR-0003) — deliberately NOT the
+// reserved selection accent --accent-ochre-soft (ADR-0016). Off, it is a quiet,
+// recessed control. Toggling it flips the persisted store (skip-permissions-state.js)
+// in DashboardApp, which threads the armed flag into every launchOrCopy.
+function SkipPermissionsToggle({ armed, onToggle }) {
+  return html`
+    <button
+      type="button"
+      className="focusable"
+      role="switch"
+      aria-checked=${armed}
+      aria-label="Arm skip-permissions for bridge launches"
+      title=${armed
+        ? "Skip-permissions ARMED — every bridge launch starts claude --dangerously-skip-permissions. Click to disarm."
+        : "Skip-permissions off — bridge launches prompt for permissions normally. Click to arm (launches will skip permission prompts)."}
+      onClick=${() => onToggle(!armed)}
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        fontFamily: "var(--font-ui)", fontSize: 11.5, fontWeight: armed ? 600 : 500,
+        color: armed ? "var(--obligation)" : "var(--fg-3)",
+        background: armed ? "var(--obligation-soft)" : "transparent",
+        border: `1px solid ${armed ? "var(--obligation)" : "var(--hairline)"}`,
+        borderRadius: "var(--radius-sm)", padding: "4px 9px", cursor: "pointer",
+        transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base)",
+      }}>
+      <span aria-hidden="true" style=${{
+        width: 7, height: 7, borderRadius: 99,
+        background: armed ? "var(--obligation)" : "transparent",
+        border: `1.5px solid ${armed ? "var(--obligation)" : "var(--fg-4)"}`,
+        flexShrink: 0,
+      }} />
+      <span>${armed ? "Skips permissions" : "Skip permissions"}</span>
+    </button>`;
+}
+
 // The shell's surface switch — Board (aw-006) vs Library (aw-008). Built from the
 // approved styleguide RailItem (ADR-0003), the same primary-nav pattern the
 // styleguide demo uses for exactly this toggle. No new pattern.
-function ShellRail({ view, onView, projectName, theme, setTheme }) {
+function ShellRail({ view, onView, projectName, theme, setTheme, skipPermissions, setSkipPermissions }) {
   return html`
     <header style=${{
       display: "flex", alignItems: "center", gap: 14,
@@ -560,6 +625,7 @@ function ShellRail({ view, onView, projectName, theme, setTheme }) {
         </div>
       </div>
       <div style=${{ flex: 1 }} />
+      <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
       <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
         { value: "dark", label: "Dark", icon: "moon" },
         { value: "light", label: "Light", icon: "sun" },
@@ -602,6 +668,23 @@ export function DashboardApp() {
     if (typeof window !== "undefined") saveTheme(window.localStorage, next);
   }, []);
 
+  // The SKIP-PERMISSIONS armed toggle (aw-021), owned here and threaded down to
+  // every launch button so each bridge launch posts `skipPermissions: true` when
+  // armed (else omits it). DEFAULT OFF, and a malformed/stale/absent persisted
+  // blob degrades to OFF (the bypass is never silently on — skip-permissions-state.js).
+  // The lazy initializer keeps it a one-time read on mount, so an SSE re-projection
+  // never resets the armed choice. It is presentation view-state only — never a
+  // disk lifecycle write — so the dashboard stays read-only over .agentheim/.
+  const [skipPermissions, setSkipPermissions] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return loadSkipPermissions(window.localStorage);
+  });
+  const onSkipPermissionsChange = useCallback((next) => {
+    const armed = next === true;
+    setSkipPermissions(armed);
+    if (typeof window !== "undefined") saveSkipPermissions(window.localStorage, armed);
+  }, []);
+
   // Which surface is shown — the task board or the non-task library/discovery.
   const [view, setView] = useState("board"); // board | library
 
@@ -634,10 +717,11 @@ export function DashboardApp() {
     <${ThemeCtx.Provider} value=${theme}>
       <main style=${{ maxWidth: 1160, margin: "0 auto", padding: "28px 28px 56px" }}>
         <${ShellRail} view=${view} onView=${setView} projectName=${projectName}
-          theme=${theme} setTheme=${onThemeChange} />
+          theme=${theme} setTheme=${onThemeChange}
+          skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange} />
         ${view === "library"
           ? html`<${DashboardLibrary} onOpen=${onOpen} />`
-          : html`<${DashboardBoard} onOpen=${onOpen} />`}
+          : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
       </main>
       <${SlideOver} intent=${openIntent} onClose=${onClose} />
     </${ThemeCtx.Provider}>`;
