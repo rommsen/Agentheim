@@ -73,9 +73,8 @@ export function TicketCard({ ticket, variant = "rail", selected = false, onClick
     padding: variant === "rail" ? "13px 14px 13px 16px" : "12px 14px 13px",
     cursor: "pointer",
     overflow: "hidden",
-    transition: "border-color var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base), transform var(--duration-fast) var(--ease-base)",
-    boxShadow: isHover ? "var(--shadow-sm)" : "none",
-    transform: isHover ? "translateY(-1px)" : "translateY(0)",
+    transition: "border-color var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)",
+    boxShadow: isHover ? "var(--shadow-md)" : "none",
     borderColor: selected ? "var(--accent-ochre)" : (isHover ? "var(--hairline-strong)" : "var(--hairline)"),
   };
   if (selected) base.boxShadow = "0 0 0 1px var(--accent-ochre), var(--shadow-sm)";

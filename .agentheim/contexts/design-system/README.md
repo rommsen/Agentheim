@@ -86,7 +86,12 @@ requires vendoring the matching subset. See ADR-0008.
 
 Motion is **quiet and mostly transition-only**: short, event-triggered eases
 (`--duration-fast` / `--duration-base`, `--ease-base`) on hover, theme flip, and
-the drawer. As of `design-system-004` the language admits **one ambient
+the drawer. The `TicketCard` hover reads as a **raise, not a jump**
+(`design-system-008`): hover deepens the shadow one step on the scale
+(`--shadow-sm` → `--shadow-md`, `styles/agentheim.css`) and applies **no
+`transform`/`translateY` offset**, so the card's content stays put rather than
+nudging upward. The `selected` state's shadow (accent ring + `--shadow-sm`) is
+unchanged. As of `design-system-004` the language admits **one ambient
 (looping) cue**: a doing-status ticket card's ochre rail **breathes** — a calm,
 low-amplitude pulse — so the doing column reads as *actively worked* at a glance.
 This is the system's first `@keyframes` and its first loop token,

@@ -61,3 +61,46 @@ test('activating the corner action stops propagation so it never opens the card'
   // in a propagation-stopping container.
   assert.match(kanbanSrc, /stopPropagation\(\)/, 'corner action must stop click propagation');
 });
+
+// Hover treatment (design-system-008): hover should read as a *raised* card —
+// a stronger shadow with NO vertical content lift. The card no longer translates
+// on hover, so text stays put rather than jumping.
+//
+// The base style object lines between `const base = {` and the closing `};` carry
+// the hover branch; we read those directly (no DOM under `node --test`).
+const baseStyleSrc = (() => {
+  const start = kanbanSrc.indexOf('const base = {');
+  assert.notEqual(start, -1, 'TicketCard must define a base style object');
+  const end = kanbanSrc.indexOf('};', start);
+  assert.notEqual(end, -1, 'base style object must be closed');
+  return kanbanSrc.slice(start, end);
+})();
+
+test('hover box-shadow is the stronger --shadow-md, not --shadow-sm', () => {
+  const boxShadowLine = baseStyleSrc
+    .split('\n')
+    .find((line) => /boxShadow:\s*isHover/.test(line));
+  assert.ok(boxShadowLine, 'the base style must set boxShadow on the hover branch');
+  assert.match(boxShadowLine, /var\(--shadow-md\)/, 'hover must raise to --shadow-md');
+  assert.doesNotMatch(boxShadowLine, /--shadow-sm/, 'hover must no longer use --shadow-sm');
+});
+
+test('hover applies no transform / translateY — content does not move upward', () => {
+  assert.doesNotMatch(baseStyleSrc, /transform:/, 'the base hover style must not set any transform');
+  assert.doesNotMatch(baseStyleSrc, /translateY/, 'the hover must not translate the card');
+  // The transition should no longer animate `transform` once the offset is gone.
+  const transitionLine = baseStyleSrc
+    .split('\n')
+    .find((line) => /transition:/.test(line));
+  assert.ok(transitionLine, 'the base style must declare a transition');
+  assert.doesNotMatch(transitionLine, /\btransform\b/, 'the transition must drop the transform segment');
+});
+
+test('the selected-state shadow is unchanged (accent ring + --shadow-sm)', () => {
+  // Selected keeps its original treatment; only the plain-hover shadow changed.
+  assert.match(
+    kanbanSrc,
+    /if \(selected\) base\.boxShadow = "0 0 0 1px var\(--accent-ochre\), var\(--shadow-sm\)";/,
+    'selected box-shadow must remain the accent ring plus --shadow-sm',
+  );
+});
