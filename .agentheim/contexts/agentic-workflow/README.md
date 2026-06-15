@@ -148,8 +148,9 @@ separate BC, but today the whole tool lives in this one.
 - **Persisted skip-permissions armed toggle** — a shell-header control (agentic-workflow-021), **off
   by default**, that when **armed** makes **every** bridge launch request a skip-permissions session:
   `launchOrCopy` threads an optional `skipPermissions` flag through its one shared seam, so all four
-  bridge launches — the column Quick Capture / Modeling pair (aw-020) **and** the per-card Refine /
-  Promote pair (aw-022) — POST `{ prompt, skipPermissions: true }`, and the bridge (infrastructure-016)
+  bridge launches — the prompt-bar Quick Capture / Modeling pair (aw-020, relocated to the board
+  prompt bar in aw-023) **and** the per-card Refine / Promote pair (aw-022) — POST
+  `{ prompt, skipPermissions: true }`, and the bridge (infrastructure-016)
   seeds `claude --dangerously-skip-permissions "<prompt>"`. When **off** the field is **omitted, never
   sent `false`**, so the OFF path is byte-identical to today and matches the contract's strict-`true`
   activation (amended ADR-0018). The bypass is **never silently on**: the armed choice is a **separate**
@@ -207,12 +208,26 @@ separate BC, but today the whole tool lives in this one.
   you don't *add* tickets to those columns from here. Launching a session is an **external
   side-effect**, not a lifecycle write: the board stays a projection of disk. See ADR-0018, ADR-0003,
   ADR-0009, ADR-0001.
-- **Backlog launch buttons (Quick Capture / Modeling)** -- the backlog column's former single
-  add-ticket **`+`** is replaced (agentic-workflow-020) by **two** labelled launch buttons rendered
-  as a board-composed sibling of the styleguide `ColumnHeader` (same precedent as the sort / group
-  controls; the styleguide stays consumed **unforked**, ADR-0003): **Quick Capture** seeds
-  `/agentheim:quick-capture` (the fast idea-dump, renamed in aw-019) and **Modeling** seeds
-  `/agentheim:modeling` (the full Socratic session). Each opens a **real, interactive Claude session**
+- **Board prompt bar (Quick Capture / Modeling)** -- the backlog column's former single
+  add-ticket **`+`** first became **two** labelled launch buttons inside the backlog column
+  (agentic-workflow-020), then those two buttons were **relocated** (agentic-workflow-023) out of the
+  column into a **board-level prompt bar**: a multi-line **textarea** rendered on the **board view
+  only**, between the shell header and the board columns (above the `Board` count strip), with the two
+  buttons beneath it. The textarea is a board-local, token-matched control (the styleguide has no
+  text-input primitive; the board-control precedent -- the sort `<select>`, the group toggle -- keeps
+  the styleguide consumed **unforked**, ADR-0003). The builder **authors a prompt once and hands it to
+  whichever skill they pick**: clicking **Quick Capture** seeds `/agentheim:quick-capture <prompt>`
+  (the fast idea-dump, renamed in aw-019) and **Modeling** seeds `/agentheim:modeling <prompt>` (the
+  full Socratic session), where `<prompt>` is the **trimmed** textarea contents joined to the command
+  by a single space. An **empty / whitespace-only** textarea falls back to the **bare** command
+  (byte-identical to aw-020). On a **successful launch or landed clipboard copy** the textarea is
+  **cleared** and a board-local **confetti** burst plays over the buttons; a fully-silent action
+  (clipboard blocked too) clears nothing and plays nothing. The confetti honours
+  `prefers-reduced-motion` (ADR-0014's strip-to-plain contract -- it renders nothing under reduce) and
+  draws only from existing **status-palette** tokens, never the reserved selection accent
+  `--accent-ochre-soft` (ADR-0016) nor the `--obligation` skip-permissions danger hue (aw-021). The
+  per-card Refine / Promote pair (aw-022) stays **id-seeded** and does **not** pick up the prompt.
+  Each button opens a **real, interactive Claude session**
   through the VS Code **bridge** (ADR-0018): the frontend discovers the listener via the dashboard's
   own `GET /api/bridge` (port + per-activation token, never hardcoded -- infrastructure-014), confirms
   it is live with a token-bearing `GET /health` (~800 ms timeout), then `POST /run { prompt }` with the
@@ -225,7 +240,10 @@ separate BC, but today the whole tool lives in this one.
   function of an injected `fetch` + `copy` -- `dashboard/app/bridge-launch.js` (`launchOrCopy`,
   `BRIDGE_TOKEN_HEADER`, unit-tested under `node --test`); it never throws or rejects. The exact
   launched/copied command **strings** come from `dashboard/app/modeling-command.js`
-  (`QUICK_CAPTURE_COMMAND`, `MODELING_COMMAND`) -- one source of truth for both paths. Launching a
+  (the bare `QUICK_CAPTURE_COMMAND` / `MODELING_COMMAND` constants, plus the prompt-taking
+  `quickCaptureCommandFor(prompt)` / `modelingCommandFor(prompt)` builders that append a single space +
+  the trimmed prompt or degrade to the bare command -- aw-023) -- one source of truth for both paths.
+  Launching a
   session is an **external side-effect** (like the clipboard copy), **not** a lifecycle write: the board
   stays a projection of disk (ADR-0001). See ADR-0018, ADR-0003, ADR-0001, ADR-0009.
 - **Live-update (SSE consumer)** — the board keeps itself current (agentic-workflow-009) by

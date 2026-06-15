@@ -42,7 +42,7 @@ import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { loadSkipPermissions, saveSkipPermissions } from "./skip-permissions-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { refineCommandFor, promoteCommandFor, MODELING_COMMAND, QUICK_CAPTURE_COMMAND } from "./modeling-command.js";
+import { refineCommandFor, promoteCommandFor, quickCaptureCommandFor, modelingCommandFor } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
@@ -218,7 +218,14 @@ function copyToClipboard(text) {
 // indicator reflects the armed TOGGLE state, not a live bridge probe — it never
 // probes /api/bridge on render (that would break the silent-absence contract and
 // add a probe to every paint); it signals armed INTENT.
-function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false, skipPermissions = false }) {
+// `onResult` (aw-023): an optional callback invoked with the `launchOrCopy`
+// resolution ({ via: "bridge" } | { via: "clipboard", copied }) AFTER the button's
+// own quiet flash is scheduled. The board prompt bar uses it to clear its textarea
+// and fire confetti only on a successful launch/landed-copy; a fully-silent action
+// (clipboard blocked too) passes { via: "clipboard", copied: false } so the caller
+// can stay silent. Default no-op keeps every existing caller (column pair, per-card
+// pair) unchanged.
+function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false, skipPermissions = false, onResult }) {
   // feedback: "idle" | "launched" | "copied". A transient label/colour swap, same
   // quiet treatment as CopyCommandButton — never an error state (absence is normal).
   const [feedback, setFeedback] = useState("idle");
@@ -234,13 +241,16 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
       // Bridge launched -> a real terminal opened (flash "Launched"). Bridge absent
       // -> the command was copied (flash "Copied" only if the copy actually landed,
       // matching CopyCommandButton's quiet contract). Either way: never an error.
+      // Hand the raw result to any onResult listener first (aw-023's prompt bar
+      // clears + celebrates off it) — the button's own flash is unchanged.
+      if (typeof onResult === "function") onResult(res);
       if (res.via === "bridge") setFeedback("launched");
       else if (res.copied) setFeedback("copied");
       else return; // clipboard blocked too — stay silent.
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => setFeedback("idle"), 1100);
     });
-  }, [command, isolateClick, skipPermissions]);
+  }, [command, isolateClick, skipPermissions, onResult]);
 
   const flashed = feedback !== "idle";
   const labelText = feedback === "launched" ? "Launched" : feedback === "copied" ? "Copied" : label;
@@ -294,24 +304,144 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
     </button>`;
 }
 
-// The backlog add affordance (agentic-workflow-020): the single "Add ticket" `+`
-// is REPLACED by TWO labelled launch buttons — Quick Capture (the fast idea-dump,
-// `/agentheim:quick-capture`, aw-019) and Modeling (the full Socratic session,
-// `/agentheim:modeling`). Each starts a seeded Claude session through the bridge,
-// with the clipboard fallback. Rendered as a board-composed sibling of the
-// styleguide ColumnHeader (the same precedent as ColumnSortControl /
-// ColumnGroupToggle): the styleguide kanban.js / empty.js stay consumed UNFORKED
-// (ADR-0003); these are native, token-styled board controls beside the primitive,
-// not a fork of it. Backlog-only — todo/doing/done carry no add affordance (aw-018).
-function BacklogLaunchPair({ skipPermissions = false }) {
+// The confetti CSS injected ONCE (idempotent, board-local). The styleguide owns no
+// celebration motion (ADR-0014 admits ambient motion as a status SIGNAL — confetti
+// is a transient ACK, not a status, so it stays board-local rather than forking the
+// styleguide; flagged as a design-system follow-up). The keyframes drift each piece
+// up-and-out while fading. Honours `prefers-reduced-motion` per ADR-0014's
+// strip-to-plain contract: under reduce the pieces never animate (and the bar mounts
+// none — see BoardConfetti's matchMedia guard), so the clearance is silent. The
+// piece colours draw from existing STATUS tokens (--st-done/-todo/-backlog) — never
+// the reserved selection accent --accent-ochre-soft (ADR-0016) nor the --obligation
+// danger hue (aw-021's reserved skip-permissions cue).
+const CONFETTI_STYLE_ID = "agentheim-board-confetti-style";
+function ensureConfettiStyle() {
+  if (typeof document === "undefined") return;
+  if (document.getElementById(CONFETTI_STYLE_ID)) return;
+  const el = document.createElement("style");
+  el.id = CONFETTI_STYLE_ID;
+  el.textContent = `
+    @keyframes agentheim-confetti-rise {
+      0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      12%  { opacity: 1; }
+      100% { transform: translate(var(--cf-dx, 0), var(--cf-dy, -34px)) rotate(var(--cf-rot, 180deg)); opacity: 0; }
+    }
+    .agentheim-confetti-piece {
+      position: absolute; top: 50%; left: 50%;
+      width: 6px; height: 6px; border-radius: 1.5px;
+      will-change: transform, opacity;
+      animation: agentheim-confetti-rise var(--cf-dur, 900ms) var(--ease-base, cubic-bezier(.4,0,.2,1)) forwards;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .agentheim-confetti-piece { animation: none; opacity: 0; }
+    }`;
+  document.head.appendChild(el);
+}
+
+// A board-local confetti burst (agentic-workflow-023) marking the prompt bar's
+// clearance after a successful launch/copy. It is keyed by a monotonic `fireKey`
+// from the parent: each successful action bumps the key, remounting a fresh burst.
+// Under `prefers-reduced-motion: reduce` it renders NOTHING (the CSS also suppresses
+// the animation — belt and suspenders), so the clearance stays a quiet, motionless
+// ACK (ADR-0014). The pieces draw only from existing status-palette tokens; never
+// the reserved selection accent (ADR-0016) or the --obligation danger hue (aw-021).
+const CONFETTI_TOKENS = ["var(--st-done)", "var(--st-todo)", "var(--st-backlog)", "var(--fg-3)"];
+function BoardConfetti({ fireKey }) {
+  const reduce = typeof window !== "undefined" && typeof window.matchMedia === "function"
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  useEffect(() => { if (!reduce) ensureConfettiStyle(); }, [reduce]);
+  if (!fireKey || reduce) return null;
+  // A small deterministic-ish spread, recomputed per fire. Pure presentation.
+  const pieces = Array.from({ length: 14 }, (_, i) => {
+    const angle = (i / 14) * Math.PI * 2;
+    const dist = 26 + (i % 5) * 7;
+    return {
+      dx: `${Math.round(Math.cos(angle) * dist)}px`,
+      dy: `${Math.round(-Math.abs(Math.sin(angle)) * dist - 14)}px`,
+      rot: `${(i % 2 ? 1 : -1) * (140 + (i % 4) * 60)}deg`,
+      dur: `${820 + (i % 5) * 90}ms`,
+      color: CONFETTI_TOKENS[i % CONFETTI_TOKENS.length],
+    };
+  });
   return html`
-    <div role="group" aria-label="Start a new backlog entry" style=${{
-      display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
-      padding: "0 4px 12px", marginTop: -4,
+    <div key=${fireKey} aria-hidden="true" style=${{
+      position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none",
     }}>
-      <${LaunchButton} label="Quick Capture" command=${QUICK_CAPTURE_COMMAND} icon="plus" skipPermissions=${skipPermissions} />
-      <${LaunchButton} label="Modeling" command=${MODELING_COMMAND} icon="compass" skipPermissions=${skipPermissions} />
+      ${pieces.map((p, i) => html`
+        <span key=${i} className="agentheim-confetti-piece" style=${{
+          background: p.color,
+          "--cf-dx": p.dx, "--cf-dy": p.dy, "--cf-rot": p.rot, "--cf-dur": p.dur,
+        }} />`)}
     </div>`;
+}
+
+// The board-level PROMPT BAR (agentic-workflow-023). aw-020's bare Quick Capture /
+// Modeling buttons are RELOCATED out of the backlog column to sit beneath a
+// board-level multi-line textarea, rendered on the board view only (between the
+// shell header and the columns). The builder authors a prompt once and hands it to
+// whichever skill they pick: clicking a button seeds the matching command WITH the
+// typed prompt appended (quickCaptureCommandFor / modelingCommandFor) — or the bare
+// command when the textarea is empty (byte-identical to aw-020). On a successful
+// launch (bridge) or landed clipboard copy, the textarea is CLEARED and a confetti
+// burst plays; a fully-silent action (clipboard blocked too) clears nothing and
+// fires no confetti.
+//
+// The textarea is a board-local, token-matched control: the styleguide has no
+// text-input primitive, and the board-control precedent (the sort <select>, the
+// group toggle) keeps the styleguide consumed UNFORKED (ADR-0003) — this is a
+// native control beside the primitives, flagged as a design-system follow-up (a
+// shared TextArea/prompt-input). The board stays a projection of disk (ADR-0001):
+// launching is an external side-effect, never a lifecycle write.
+//
+// `skipPermissions` (aw-021 preserved): threaded through to both relocated buttons
+// so an armed launch from the prompt bar still posts `skipPermissions: true`.
+function BoardPromptBar({ skipPermissions = false }) {
+  const [prompt, setPrompt] = useState("");
+  const [confettiKey, setConfettiKey] = useState(0);
+
+  // Fire only on a successful launch / landed copy (aw-023). A fully-silent action
+  // (clipboard blocked too) leaves the textarea and plays no confetti.
+  const onResult = useCallback((res) => {
+    const succeeded = res && (res.via === "bridge" || res.copied === true);
+    if (!succeeded) return;
+    setPrompt("");
+    setConfettiKey((k) => k + 1);
+  }, []);
+
+  return html`
+    <section aria-label="Author a prompt, then launch a capture or modeling session" style=${{
+      position: "relative",
+      display: "flex", flexDirection: "column", gap: 10,
+      padding: "0 4px 20px",
+    }}>
+      <textarea
+        className="focusable"
+        aria-label="Prompt for the launched session"
+        placeholder="Type a prompt, then choose how to file it — Quick Capture or Modeling…"
+        rows=${2}
+        value=${prompt}
+        onChange=${(e) => setPrompt(e.target.value)}
+        style=${{
+          width: "100%", resize: "vertical", minHeight: 52,
+          fontFamily: "var(--font-ui)", fontSize: 13, lineHeight: 1.5,
+          color: "var(--fg-1)", background: "var(--surface-1)",
+          border: "1px solid var(--hairline)", borderRadius: "var(--radius-md)",
+          padding: "10px 12px",
+          transition: "border-color var(--duration-fast) var(--ease-base)",
+        }}
+        onFocus=${(e) => { e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+        onBlur=${(e) => { e.currentTarget.style.borderColor = "var(--hairline)"; }} />
+      <div role="group" aria-label="Start a session seeded with the prompt above" style=${{
+        position: "relative",
+        display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+      }}>
+        <${LaunchButton} label="Quick Capture" command=${quickCaptureCommandFor(prompt)}
+          icon="plus" skipPermissions=${skipPermissions} onResult=${onResult} />
+        <${LaunchButton} label="Modeling" command=${modelingCommandFor(prompt)}
+          icon="compass" skipPermissions=${skipPermissions} onResult=${onResult} />
+        <${BoardConfetti} fireKey=${confettiKey} />
+      </div>
+    </section>`;
 }
 
 // The per-CARD backlog launch group (agentic-workflow-022). The single per-card
@@ -400,7 +530,6 @@ function BoardColumn({
       borderRadius: "var(--radius-md)",
     }}>
       <${ColumnHeader} status=${status} count=${tickets.length} />
-      ${status === "backlog" && html`<${BacklogLaunchPair} skipPermissions=${skipPermissions} />`}
       <${ColumnControls} status=${status} sort=${sort} onSortChange=${onSortChange}
         grouped=${grouped} onGroupToggle=${onGroupToggle} />
       ${tickets.length === 0
@@ -535,6 +664,7 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree", skipPermissions 
 
   return html`
     <div>
+      <${BoardPromptBar} skipPermissions=${skipPermissions} />
       <${BoardHeader} count=${total} />
       <div className="scroll-quiet" style=${{ overflowX: "auto", paddingBottom: 8 }}>
         <div style=${{ minWidth: 880 }}>

@@ -53,10 +53,17 @@ test('the retired per-card Copy affordance (aw-016) is gone', () => {
     /function CopyCommandButton\b/,
     'CopyCommandButton must be removed (replaced by the launch pair)',
   );
+  // The per-CARD pair must NOT seed cards with the bare modelingCommandFor — the
+  // card path is the explicit-verb refine/promote builders. (aw-023 reintroduced
+  // modelingCommandFor with NEW prompt semantics for the board PROMPT BAR's
+  // relocated column button, so we no longer assert the symbol is absent
+  // wholesale; we assert the per-card pair never seeds with it.)
+  const cardPair = boardSrc.match(/function BacklogCardLaunchPair[\s\S]*?\n}/);
+  assert.ok(cardPair, 'BacklogCardLaunchPair not found');
   assert.doesNotMatch(
-    boardSrc,
+    cardPair[0],
     /modelingCommandFor\b/,
-    'the per-card modelingCommandFor caller must be gone (replaced by refine/promote builders)',
+    'the per-card pair must seed with refine/promote builders, not modelingCommandFor',
   );
 });
 

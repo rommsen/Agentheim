@@ -22,6 +22,8 @@ import {
   QUICK_CAPTURE_COMMAND,
   refineCommandFor,
   promoteCommandFor,
+  quickCaptureCommandFor,
+  modelingCommandFor,
 } from '../app/modeling-command.js';
 
 test('MODELING_COMMAND is the fully-qualified bare command (not the /modeling alias)', () => {
@@ -112,4 +114,69 @@ test('a whitespace-padded id is trimmed before appending', () => {
 test('an all-whitespace id collapses to the bare verb command (treated as no id)', () => {
   assert.equal(refineCommandFor('   '), '/agentheim:modeling refine');
   assert.equal(promoteCommandFor('   '), '/agentheim:modeling promote');
+});
+
+// agentic-workflow-023: the board-level prompt bar. The relocated column buttons
+// now seed the matching command WITH the typed prompt appended — a single space +
+// the trimmed textarea contents — or the bare command when the textarea is empty.
+// These prompt-taking builders mirror the aw-022 refine/promote shape and reuse the
+// same degrade-on-empty contract: a missing / non-string / whitespace-only prompt
+// returns the bare command (byte-identical to aw-020), never "[object Object]",
+// never a doubled space, never a throw.
+
+test('quickCaptureCommandFor appends a single space + the trimmed prompt', () => {
+  assert.equal(
+    quickCaptureCommandFor('a fast idea'),
+    '/agentheim:quick-capture a fast idea',
+  );
+});
+
+test('modelingCommandFor appends a single space + the trimmed prompt', () => {
+  assert.equal(
+    modelingCommandFor('model the billing context'),
+    '/agentheim:modeling model the billing context',
+  );
+});
+
+test('an empty / missing prompt yields the bare command (byte-identical to aw-020)', () => {
+  assert.equal(quickCaptureCommandFor(), QUICK_CAPTURE_COMMAND);
+  assert.equal(quickCaptureCommandFor(undefined), QUICK_CAPTURE_COMMAND);
+  assert.equal(quickCaptureCommandFor(null), QUICK_CAPTURE_COMMAND);
+  assert.equal(quickCaptureCommandFor(''), QUICK_CAPTURE_COMMAND);
+  assert.equal(modelingCommandFor(), MODELING_COMMAND);
+  assert.equal(modelingCommandFor(undefined), MODELING_COMMAND);
+  assert.equal(modelingCommandFor(null), MODELING_COMMAND);
+  assert.equal(modelingCommandFor(''), MODELING_COMMAND);
+});
+
+test('a whitespace-only prompt collapses to the bare command (no doubled / trailing space)', () => {
+  assert.equal(quickCaptureCommandFor('   '), QUICK_CAPTURE_COMMAND);
+  assert.equal(modelingCommandFor('   \n\t '), MODELING_COMMAND);
+});
+
+test('a whitespace-padded prompt is trimmed before appending (single separating space)', () => {
+  assert.equal(
+    quickCaptureCommandFor('  an idea  '),
+    '/agentheim:quick-capture an idea',
+  );
+  assert.equal(
+    modelingCommandFor('\t the domain \n'),
+    '/agentheim:modeling the domain',
+  );
+});
+
+test('a non-string prompt degrades to the bare command — never "[object Object]", never a throw', () => {
+  assert.equal(quickCaptureCommandFor(42), QUICK_CAPTURE_COMMAND);
+  assert.equal(quickCaptureCommandFor({}), QUICK_CAPTURE_COMMAND);
+  assert.equal(quickCaptureCommandFor([]), QUICK_CAPTURE_COMMAND);
+  assert.equal(modelingCommandFor(42), MODELING_COMMAND);
+  assert.equal(modelingCommandFor({}), MODELING_COMMAND);
+  assert.equal(modelingCommandFor([]), MODELING_COMMAND);
+});
+
+test('interior whitespace within the prompt is preserved (only the ends are trimmed)', () => {
+  assert.equal(
+    modelingCommandFor('  refine   the   thing  '),
+    '/agentheim:modeling refine   the   thing',
+  );
 });

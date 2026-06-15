@@ -54,6 +54,46 @@ function safeId(id) {
 }
 
 /**
+ * Trim a prompt-like value to a safe, non-empty string, or '' for anything that is
+ * not real prompt text. Shared by the board prompt-bar builders (aw-023) so each
+ * degrades identically: a missing / empty / whitespace-only / non-string prompt
+ * yields '' (never `"[object Object]"`, never a throw). Only the ENDS are trimmed —
+ * interior whitespace in the typed prompt is preserved verbatim.
+ */
+function safePrompt(prompt) {
+  return typeof prompt === 'string' ? prompt.trim() : '';
+}
+
+/**
+ * Build the QUICK CAPTURE command, optionally seeded with the board prompt-bar's
+ * typed prompt (aw-023). The relocated column button hands the bridge this exact
+ * string (the extension wraps it as `claude "<prompt>"`, ADR-0018) and copies it on
+ * the bridge-absent fallback.
+ * @param {string} [prompt] — the live textarea contents.
+ * @returns {string} `"/agentheim:quick-capture <prompt>"` for a real prompt (one
+ *   separating space, trimmed ends), else the bare `QUICK_CAPTURE_COMMAND`
+ *   (byte-identical to aw-020). Pure: no DOM, no I/O, never throws.
+ */
+export function quickCaptureCommandFor(prompt) {
+  const trimmed = safePrompt(prompt);
+  return trimmed ? `${QUICK_CAPTURE_COMMAND} ${trimmed}` : QUICK_CAPTURE_COMMAND;
+}
+
+/**
+ * Build the MODELING command, optionally seeded with the board prompt-bar's typed
+ * prompt (aw-023). The relocated column button hands the bridge this exact string;
+ * the clipboard fallback copies the same.
+ * @param {string} [prompt] — the live textarea contents.
+ * @returns {string} `"/agentheim:modeling <prompt>"` for a real prompt (one
+ *   separating space, trimmed ends), else the bare `MODELING_COMMAND`
+ *   (byte-identical to aw-020). Pure: no DOM, no I/O, never throws.
+ */
+export function modelingCommandFor(prompt) {
+  const trimmed = safePrompt(prompt);
+  return trimmed ? `${MODELING_COMMAND} ${trimmed}` : MODELING_COMMAND;
+}
+
+/**
  * Build the per-card REFINE command — what the backlog card's Refine launch
  * button seeds (aw-022). Refine runs the full Socratic refinement of the ticket.
  * @param {string} [id] — the card's ticket id.
