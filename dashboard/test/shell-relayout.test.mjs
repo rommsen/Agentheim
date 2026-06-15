@@ -7,8 +7,9 @@
 // NOT the styleguide AppRail (hardwired to the demo LIBRARY) — and fed the LIVE
 // treeToLibrary(tree) projection. The Board RailItem is the only nav item; the
 // always-visible Workspace tree IS the library. The theme + skip-permissions
-// toggles move into the rail FOOTER. The main-column topbar carries the inverse
-// Work launch (relocated out of the prompt bar). No styleguide file is modified.
+// toggles live in the main-column TOPBAR, left of the inverse Work launch
+// (aw-029 — a partial reversal of aw-026's rail-footer placement); the rail no
+// longer renders a toggle footer. No styleguide file is modified.
 //
 // The board's React glue has no DOM render harness in this project — the established
 // idiom (aw-016/020/022/023/024) is source-reading static guards plus pure-module
@@ -84,10 +85,23 @@ test('the rail carries a Workspace label above the tree', () => {
   assert.match(rail, /Workspace/, 'the rail must label the tree section "Workspace"');
 });
 
-test('the rail FOOTER holds the theme toggle and the skip-permissions armed toggle', () => {
+test('the rail no longer renders the theme or skip-permissions toggle (aw-029)', () => {
   const rail = fn('ShellRail');
-  assert.match(rail, /<\$\{ThemeToggle\}/, 'the rail must host the theme toggle');
-  assert.match(rail, /<\$\{SkipPermissionsToggle\}/, 'the rail must host the skip-permissions toggle');
+  assert.doesNotMatch(rail, /<\$\{ThemeToggle\}/, 'the toggles moved to the topbar — the rail must not host the theme toggle');
+  assert.doesNotMatch(rail, /<\$\{SkipPermissionsToggle\}/, 'the toggles moved to the topbar — the rail must not host the skip-permissions toggle');
+});
+
+test('the topbar hosts the theme + skip-permissions toggles, in that order, LEFT of the Work launch (aw-029)', () => {
+  const top = fn('BoardTopbar');
+  assert.match(top, /<\$\{ThemeToggle\}/, 'the topbar must host the theme toggle');
+  assert.match(top, /<\$\{SkipPermissionsToggle\}/, 'the topbar must host the skip-permissions toggle');
+  // Left-to-right order in the top-right cluster: theme, skip-permissions, Work.
+  const themeAt = top.indexOf('${ThemeToggle}');
+  const skipAt = top.indexOf('${SkipPermissionsToggle}');
+  const workAt = top.indexOf('label="Work"');
+  assert.ok(themeAt > -1 && skipAt > -1 && workAt > -1, 'all three controls must render in the topbar');
+  assert.ok(themeAt < skipAt, 'the theme toggle must render before the skip-permissions toggle');
+  assert.ok(skipAt < workAt, 'the skip-permissions toggle must render before (left of) the Work launch');
 });
 
 test('a main-column topbar renders the inverse Work launch and no Search box', () => {

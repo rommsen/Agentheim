@@ -85,7 +85,9 @@ separate BC, but today the whole tool lives in this one.
   **left rail** (`ShellRail`) beside a **main column** (a ~52px topbar over the scrollable
   board). The rail carries brand → a single **Board** `RailItem` → divider → "Workspace"
   label → the **live** library tree (`treeToLibrary`, the always-visible tree *is* the
-  library) → a footer with the theme + skip-permissions toggles. The old horizontal header
+  library). The **theme + skip-permissions toggles** sit in the **main-column topbar**,
+  left of the inverse **Work** launch (aw-029 — a partial reversal of aw-026's rail-footer
+  placement; the rail no longer has a toggle footer). The old horizontal header
   and the board↔library toggle are retired (the separate full-pane library surface is
   formally removed in aw-027). See ADR-0009 / ADR-0011.
 - **Board view** — the dashboard's home view (agentic-workflow-006): a **flat** Kanban of the
@@ -142,8 +144,9 @@ separate BC, but today the whole tool lives in this one.
   than throwing — a corrupt preference can never blank the board. See ADR-0015, ADR-0001.
 - **Persisted theme choice (light/dark toggle)** — the dashboard consumes the styleguide's "dark-first
   with a light toggle" theme switch **unforked** (ADR-0003): the `ThemeToggle` Dark/Light control (from
-  `styleguide/app/live.js`) lives in the **rail footer** (relocated there from the retired horizontal
-  header in aw-026), feeding the existing `ThemeCtx.Provider` and a `data-theme` documentElement effect that animates
+  `styleguide/app/live.js`) lives in the **main-column topbar**, left of the inverse Work launch
+  (relocated there in aw-029, after a brief stint in the aw-026 rail footer; originally in the
+  retired horizontal header), feeding the existing `ThemeCtx.Provider` and a `data-theme` documentElement effect that animates
   the flip with the styleguide `theme-fade` transition (agentic-workflow-017). **Theme resolution +
   persistence** is a sibling presentation concern to the board view-state: a **separate** versioned
   `localStorage` store (`dashboard/app/theme-state.js`, key `agentheim.dashboard.theme`) with the same
@@ -151,8 +154,8 @@ separate BC, but today the whole tool lives in this one.
   once the user toggles, that override is remembered across reloads. A malformed / stale-version / absent
   blob degrades to the **system default**, and the resolved theme is read once on mount so an SSE
   re-projection never resets it mid-session. See ADR-0015, ADR-0009, ADR-0003.
-- **Persisted skip-permissions armed toggle** — a **rail-footer** control (agentic-workflow-021;
-  relocated from the retired horizontal header in aw-026), **off
+- **Persisted skip-permissions armed toggle** — a **main-column topbar** control (agentic-workflow-021;
+  relocated to the topbar in aw-029, after a brief stint in the aw-026 rail footer), **off
   by default**, that when **armed** makes **every** bridge launch request a skip-permissions session:
   `launchOrCopy` threads an optional `skipPermissions` flag through its one shared seam, so all
   bridge launches — the prompt-bar Quick Capture / Modeling pair (aw-020, relocated to the board
@@ -169,8 +172,8 @@ separate BC, but today the whole tool lives in this one.
   / non-boolean / no backend / throwing backend) resolves to **OFF**, never a throw, never on. It is
   presentation view-state only — never a disk lifecycle write — so the dashboard stays read-only over
   `.agentheim/` (ADR-0017 / ADR-0001) and the armed choice survives every SSE re-projection untouched.
-  The control lives in the **rail footer** next to the theme toggle (the aw-017 persisted-control
-  precedent; relocated there in aw-026), **not** a settings panel (there is one setting today), and carries an **armed / danger**
+  The control lives in the **main-column topbar** next to the theme toggle and left of the Work launch
+  (the aw-017 persisted-control precedent; relocated to the topbar in aw-029), **not** a settings panel (there is one setting today), and carries an **armed / danger**
   treatment so it never reads as a neutral preference. Per the **amended ADR-0018** mandate, when armed
   **each** of the four launch buttons also shows an at-a-glance per-launch "skips permissions" cue
   (an `--obligation`-tinted border + indicator dot) reflecting the **armed toggle state, not a live

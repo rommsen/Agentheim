@@ -778,7 +778,7 @@ function SkipPermissionsToggle({ armed, onToggle }) {
 // edge follows the selected DOCUMENT (`selectedId`, fed from selectedDoc), and the
 // Board RailItem returns the main pane to the board (onSelectBoard) and is `active`
 // exactly when no document is selected.
-function ShellRail({ projectName, theme, setTheme, skipPermissions, setSkipPermissions, selectedId, onOpen, onSelectBoard }) {
+function ShellRail({ projectName, selectedId, onOpen, onSelectBoard }) {
   const [groups, setGroups] = useState([]);
 
   // Re-project the rail tree from /api/tree (the non-task half, treeToLibrary). A
@@ -838,18 +838,6 @@ function ShellRail({ projectName, theme, setTheme, skipPermissions, setSkipPermi
             selectedId=${selectedId} onOpen=${onOpen}
             defaultOpen=${g.group !== "Research"} />`)}
       </div>
-
-      <!-- Footer: theme toggle + skip-permissions armed toggle -->
-      <div style=${{
-        padding: "12px 14px", borderTop: "1px solid var(--hairline)",
-        display: "flex", flexDirection: "column", gap: 9,
-      }}>
-        <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
-        <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
-          { value: "dark", label: "Dark", icon: "moon" },
-          { value: "light", label: "Light", icon: "sun" },
-        ]} />
-      </div>
     </nav>`;
 }
 
@@ -860,7 +848,16 @@ function ShellRail({ projectName, theme, setTheme, skipPermissions, setSkipPermi
 // bare /agentheim:work via launchOrCopy (WORK_COMMAND, ADR-0017/0018), threading
 // skipPermissions (aw-021) and passing NO onResult (Work never consumed a prompt).
 // NO Search box is rendered — the dashboard is read-only with no search backend.
-function BoardTopbar({ skipPermissions = false }) {
+//
+// The top-right cluster groups the session-level controls (aw-029): the theme
+// toggle and the skip-permissions armed toggle, LEFT of the Work launch — read,
+// left → right: [ theme ][ skip-permissions ][ Work ]. Both controls are consumed
+// from the styleguide unforked (ADR-0003): the theme toggle keeps its persisted
+// light/dark behaviour (aw-017) and the skip-permissions toggle keeps its armed /
+// danger (--obligation) treatment, off-by-default persistence, and threading of
+// skipPermissions through every launch (aw-021 / ADR-0019). This is the only
+// home for the two toggles — the rail footer that held them (aw-026) is retired.
+function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissions }) {
   return html`
     <div style=${{
       display: "flex", alignItems: "center", gap: 12,
@@ -874,8 +871,16 @@ function BoardTopbar({ skipPermissions = false }) {
         agentheim / tickets
       </span>
       <div style=${{ flex: 1 }} />
-      <${LaunchButton} label="Work" command=${WORK_COMMAND}
-        icon="arrow-right" emphasis="inverse" skipPermissions=${skipPermissions} />
+      <!-- Session-level controls, left → right: theme, skip-permissions, Work (aw-029) -->
+      <div style=${{ display: "flex", alignItems: "center", gap: 9 }}>
+        <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
+          { value: "dark", label: "Dark", icon: "moon" },
+          { value: "light", label: "Light", icon: "sun" },
+        ]} />
+        <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
+        <${LaunchButton} label="Work" command=${WORK_COMMAND}
+          icon="arrow-right" emphasis="inverse" skipPermissions=${skipPermissions} />
+      </div>
     </div>`;
 }
 
@@ -992,15 +997,15 @@ export function DashboardApp() {
         minHeight: "100vh", background: "var(--surface-0)",
       }}>
         <${ShellRail} projectName=${projectName}
-          theme=${theme} setTheme=${onThemeChange}
-          skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange}
           selectedId=${selectedDoc ? selectedDoc.id : null}
           onOpen=${onOpen} onSelectBoard=${onSelectBoard} />
         <div style=${{
           flex: 1, minWidth: 0, display: "flex", flexDirection: "column",
           background: "var(--surface-0)",
         }}>
-          <${BoardTopbar} skipPermissions=${skipPermissions} />
+          <${BoardTopbar}
+            theme=${theme} setTheme=${onThemeChange}
+            skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange} />
           <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "22px 24px 40px" }}>
             ${selectedDoc
               ? html`<${MainPaneReader} doc=${selectedDoc} />`
