@@ -4,7 +4,7 @@ title: Dashboard armed-launch danger treatment reuses the existing --obligation 
 scope: agentic-workflow
 status: accepted
 date: 2026-06-15
-related_tasks: [agentic-workflow-021, agentic-workflow-030]
+related_tasks: [agentic-workflow-021, agentic-workflow-030, agentic-workflow-041]
 related_adrs: [ADR-0018, ADR-0016, ADR-0003, ADR-0015, ADR-0017]
 ---
 
@@ -46,7 +46,9 @@ family**, consumed **unforked** (ADR-0003):
 - each launch button, when armed, borders + labels in `--obligation` and shows an
   `--obligation` indicator dot (replacing its idle icon) — the per-launch cue.
   **(Narrowed by aw-030 — see Amendment below: the border + label tint is dropped;
-  the dot alone survives as the per-launch cue.)**
+  the dot alone survives as the per-launch cue. Narrowed again by aw-041 — see the
+  second Amendment: the separate dot is dropped too; the always-rendered icon,
+  tinted `--obligation` when armed, becomes the per-launch cue.)**
 
 No new colour token is minted, no styleguide source is edited, and the **reserved
 selection accent is deliberately not touched** (ADR-0016 honoured). The transient
@@ -75,6 +77,30 @@ affordance firing a permission-bypass launch show an at-a-glance *per-launch* cu
 toggle treatment) is unchanged; only the second bullet's "border + label" is reduced
 to "dot only." No new token, no styleguide edit, reserved selection accent still
 untouched (ADR-0016 honoured).
+
+## Amendment — 2026-06-15 (agentic-workflow-041): per-launch cue narrowed to the red icon, no dot
+
+The Builder found the separate indicator **dot** the wrong shape for the signal: the
+button already has an icon, and a second glyph appearing *in place of* it (the
+`armed ? dot : icon` swap) reads as a glyph swap rather than a state. aw-041
+**narrows the per-launch cue one step further** — from "dot only" (aw-030) down to
+"the icon, tinted":
+
+- The **separate `--obligation` dot element is removed**, along with the
+  `armed ? dot : icon` ternary that rendered it instead of the icon. The launch
+  button's **icon is now ALWAYS rendered**, armed or not.
+- When armed, the **icon is tinted `--obligation`** (red); when unarmed, the icon
+  keeps its normal idle/hover color (identical to before). Only the icon's *color*
+  moves — no glyph appears or disappears.
+- The armed button's **border + label color stay normal** in both states (aw-030's
+  "no button-wide red" rule still holds). The armed `aria-label` / `title`
+  "skips permissions" wording is retained, now on the red-icon state.
+- The **arming toggle keeps the full `--obligation` treatment** unchanged — still the
+  single control wearing the full danger hue.
+
+This is a **narrowing, not a reversal**. The amended ADR-0018 per-launch-cue mandate
+**still holds**: the red icon satisfies it. No new token, no styleguide edit, reserved
+selection accent still untouched (ADR-0016 honoured).
 
 ## Consequences
 

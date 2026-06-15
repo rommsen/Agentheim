@@ -277,17 +277,20 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
   const idleColor = inverse ? "var(--surface-0)" : primary ? "var(--fg-1)" : quiet ? "var(--fg-3)" : "var(--fg-2)";
   const idleBg = inverse ? "var(--fg-1)" : primary ? "var(--surface-2)" : quiet ? "transparent" : "var(--surface-1)";
   const idleBorder = inverse ? "1px solid var(--fg-1)" : quiet ? "1px solid transparent" : `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
-  // ARMED per-launch indicator (aw-021, narrowed by aw-030; amended ADR-0019).
-  // When the toggle is on, each launch button carries ONLY a small "skips
-  // permissions" dot — the at-a-glance per-launch cue mandated by amended
-  // ADR-0018. aw-030 toned the cue DOWN from the original button-wide red
-  // (--obligation border + label) to the dot alone: the armed button body is now
-  // IDENTICAL to an unarmed one. The dot still uses the EXISTING --obligation
-  // token (the styleguide's negative/red family) — consumed unforked (ADR-0003),
-  // and deliberately NOT the reserved selection accent --accent-ochre-soft
-  // (ADR-0016). The cue reflects the armed toggle, not a live bridge probe; the
-  // flash (launched/copied) still wins so feedback reads. The SkipPermissionsToggle
-  // remains the single control wearing the full --obligation danger treatment.
+  // ARMED per-launch indicator (aw-021, narrowed by aw-030, narrowed again by
+  // aw-041; amended ADR-0019). When the toggle is on, each launch button signals
+  // "skips permissions" by tinting its EXISTING icon --obligation (red) — the
+  // at-a-glance per-launch cue mandated by amended ADR-0018. aw-030 first toned
+  // the cue DOWN from the original button-wide red (--obligation border + label)
+  // to a separate dot; aw-041 drops the dot entirely (no glyph swap) and moves the
+  // signal onto the icon's COLOR. The icon is now ALWAYS rendered; only its hue
+  // changes when armed. The armed button body (border + label color) stays
+  // IDENTICAL to an unarmed one. The tint uses the EXISTING --obligation token
+  // (the styleguide's negative/red family) — consumed unforked (ADR-0003), and
+  // deliberately NOT the reserved selection accent --accent-ochre-soft (ADR-0016).
+  // The flash (launched/copied) still wins so feedback reads (armed clears while
+  // flashed). The SkipPermissionsToggle remains the single control wearing the
+  // full --obligation danger treatment.
   const armed = skipPermissions === true && !flashed;
   return html`
     <button
@@ -319,12 +322,12 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
             The :focus affordance is the focusable class, untouched. */ ""}
       onMouseEnter=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "var(--shadow-md)"; e.currentTarget.style.background = "var(--surface-2)"; } }}
       onMouseLeave=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.background = inverse ? "var(--fg-1)" : idleBg; } }}>
-      ${armed
-        ? html`<span aria-hidden="true" title="This launch skips permissions" style=${{
-            width: 6, height: 6, borderRadius: 99, background: "var(--obligation)", flexShrink: 0,
-          }} />`
-        : html`<${Icon} name=${icon} size=${12.5}
-            color=${flashed ? "var(--st-done)" : (inverse ? "var(--surface-0)" : primary ? "var(--fg-2)" : "var(--fg-3)")} />`}
+      <${Icon} name=${icon} size=${12.5}
+        color=${flashed
+          ? "var(--st-done)"
+          : armed
+            ? "var(--obligation)"
+            : (inverse ? "var(--surface-0)" : primary ? "var(--fg-2)" : "var(--fg-3)")} />
       <span>${labelText}</span>
     </button>`;
 }

@@ -1,5 +1,5 @@
-// Static guards for the board's LaunchButton hover + toned-down armed cue
-// (agentic-workflow-030).
+// Static guards for the board's LaunchButton hover + armed-icon cue
+// (agentic-workflow-030, narrowed further by agentic-workflow-041).
 //
 // Two changes locked here, both board-local in board.js's LaunchButton:
 //   1. HOVER (all non-flashed buttons): hover now raises the button with a stronger
@@ -7,11 +7,12 @@
 //      AND a background highlight. The content must NOT move (no translateY/transform).
 //      This replaces the old border-only onMouseEnter/onMouseLeave handlers; the
 //      :focus/focusable affordance stays intact.
-//   2. ARMED cue narrowed to the DOT alone (amends ADR-0019): when skip-permissions is
-//      armed, a launch button no longer carries the --obligation border or the
-//      --obligation label color — its body is identical to an unarmed button. The
-//      --obligation indicator DOT remains (the at-a-glance per-launch "skips
-//      permissions" cue mandated by amended ADR-0018 — a narrowing, not a reversal).
+//   2. ARMED cue narrowed to the RED ICON (amends ADR-0019, aw-041): the separate
+//      indicator DOT is GONE — the icon is ALWAYS rendered. When skip-permissions is
+//      armed, the icon is tinted --obligation (the at-a-glance per-launch "skips
+//      permissions" cue mandated by amended ADR-0018 — a narrowing of aw-030's
+//      dot-only treatment, not a reversal). The button body (border + label color)
+//      is identical to an unarmed button in both states.
 //
 // The launch PAYLOAD is unchanged (armed → skipPermissions:true, unarmed omits it);
 // that contract is unit-tested in bridge-launch.test.mjs. The SkipPermissionsToggle
@@ -93,18 +94,42 @@ test('armed LaunchButton no longer paints the button-wide --obligation label col
   );
 });
 
-test('armed LaunchButton STILL renders the --obligation indicator dot (per-launch cue kept)', () => {
+test('armed LaunchButton no longer renders a separate indicator dot element (aw-041)', () => {
   const lb = fn('LaunchButton');
-  // The dot is the surviving per-launch cue: an --obligation-filled span shown when armed.
-  assert.match(
+  // The dot was a tiny --obligation-filled square span (width/height + borderRadius 99);
+  // it is removed entirely — no --obligation-backgrounded element survives.
+  assert.doesNotMatch(
     lb,
-    /armed[\s\S]*?background:\s*"var\(--obligation\)"/,
-    'the armed branch must still render the --obligation-filled indicator dot',
+    /background:\s*"var\(--obligation\)"/,
+    'the separate --obligation-filled indicator dot must be gone (icon-tint replaces it — aw-041)',
   );
-  assert.match(
+  assert.doesNotMatch(
     lb,
     /This launch skips permissions/,
-    'the indicator dot must keep its "skips permissions" wording',
+    'the standalone dot span and its title must be removed (aw-041)',
+  );
+});
+
+test('LaunchButton ALWAYS renders the icon — no armed/unarmed swap (aw-041)', () => {
+  const lb = fn('LaunchButton');
+  // The Icon is rendered unconditionally now (not gated behind an `armed` ternary).
+  assert.match(lb, /<\$\{Icon\}/, 'LaunchButton must render the Icon component');
+  assert.doesNotMatch(
+    lb,
+    /armed[\s\S]*?\?[\s\S]*?<span[\s\S]*?:[\s\S]*?<\$\{Icon\}/,
+    'the icon must NOT be rendered only in the non-armed branch of an `armed ? dot : icon` ternary',
+  );
+});
+
+test('armed LaunchButton tints the ICON with --obligation; unarmed icon keeps its normal color (aw-041)', () => {
+  const lb = fn('LaunchButton');
+  // Find the Icon element and assert its color prop branches on armed -> --obligation.
+  const iconEl = lb.match(/<\$\{Icon\}[\s\S]*?\/>/);
+  assert.ok(iconEl, 'LaunchButton must have an Icon element');
+  assert.match(
+    iconEl[0],
+    /armed[\s\S]*?var\(--obligation\)/,
+    'the icon color must be tinted --obligation when armed',
   );
 });
 

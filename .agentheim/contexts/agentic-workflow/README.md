@@ -179,9 +179,10 @@ separate BC, but today the whole tool lives in this one.
   (the aw-017 persisted-control precedent; relocated to the topbar in aw-029), **not** a settings panel (there is one setting today), and carries an **armed / danger**
   treatment so it never reads as a neutral preference. Per the **amended ADR-0018** mandate, when armed
   **each** of the four launch buttons also shows an at-a-glance per-launch "skips permissions" cue —
-  a small `--obligation`-filled **indicator dot** (narrowed by **aw-030 / amended ADR-0019** from the
-  original `--obligation` border + label tint down to the dot alone, so the **toggle** is the single
-  control wearing the full danger hue; the dot still satisfies the amended ADR-0018 per-launch mandate)
+  the button's **icon tinted with `--obligation`** (narrowed by **aw-030 then aw-041 / amended ADR-0019**
+  from the original `--obligation` border + label tint, down to a separate dot, down to just the
+  always-rendered icon tinted red, so the **toggle** is the single control wearing the full danger hue;
+  the red icon still satisfies the amended ADR-0018 per-launch mandate)
   reflecting the **armed toggle state, not a live
   bridge probe** — it never probes `/api/bridge` on render (that would break the silent-absence
   contract and add a probe to every paint). The **clipboard fallback never carries the bypass** (it
