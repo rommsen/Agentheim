@@ -4,7 +4,7 @@ title: Dashboard armed-launch danger treatment reuses the existing --obligation 
 scope: agentic-workflow
 status: accepted
 date: 2026-06-15
-related_tasks: [agentic-workflow-021]
+related_tasks: [agentic-workflow-021, agentic-workflow-030]
 related_adrs: [ADR-0018, ADR-0016, ADR-0003, ADR-0015, ADR-0017]
 ---
 
@@ -45,11 +45,36 @@ family**, consumed **unforked** (ADR-0003):
   borders/labels in `--obligation`;
 - each launch button, when armed, borders + labels in `--obligation` and shows an
   `--obligation` indicator dot (replacing its idle icon) — the per-launch cue.
+  **(Narrowed by aw-030 — see Amendment below: the border + label tint is dropped;
+  the dot alone survives as the per-launch cue.)**
 
 No new colour token is minted, no styleguide source is edited, and the **reserved
 selection accent is deliberately not touched** (ADR-0016 honoured). The transient
 launch/copy feedback flash still uses `--st-done` and wins over the armed
 treatment, so feedback always reads.
+
+## Amendment — 2026-06-15 (agentic-workflow-030): per-launch cue narrowed to the dot alone
+
+The Builder found the button-wide red over-painted the board: with the toggle armed,
+all four launch buttons turned `--obligation` (border + label) at once, drowning out
+the single control that should own the danger signal — the arming toggle. aw-030
+**narrows the per-launch cue**:
+
+- A launch button, when armed, **no longer carries** the `--obligation` border or the
+  `--obligation` label color. Its body is now **identical to an unarmed button** (the
+  normal idle/hover label color + border).
+- The **`--obligation` indicator dot stays** — it remains the at-a-glance per-launch
+  "this launch skips permissions" flag (with its "skips permissions" `aria-label` /
+  `title` wording intact).
+- The **arming toggle keeps the full `--obligation` treatment** unchanged — it is now
+  the single control wearing the danger hue.
+
+This is a **narrowing, not a reversal**. The amended ADR-0018 mandate — that any
+affordance firing a permission-bypass launch show an at-a-glance *per-launch* cue —
+**still holds**: the dot satisfies it. The original Decision's first bullet (the
+toggle treatment) is unchanged; only the second bullet's "border + label" is reduced
+to "dot only." No new token, no styleguide edit, reserved selection accent still
+untouched (ADR-0016 honoured).
 
 ## Consequences
 
