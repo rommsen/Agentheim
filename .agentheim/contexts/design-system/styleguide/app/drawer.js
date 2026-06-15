@@ -10,10 +10,10 @@ import { TypePill, StatusChip, Markdown } from "./primitives.js";
 import { CONTENT_TYPES } from "./data.js";
 
 // ---- Ghost icon button ----
-export function IconButton({ name, title, onClick, size = 16 }) {
+export function IconButton({ name, title, onClick, size = 16, "aria-label": ariaLabel }) {
   const [hover, setHover] = useState(false);
   return html`
-    <button className="focusable" title=${title} onClick=${onClick}
+    <button className="focusable" title=${title} aria-label=${ariaLabel || title} onClick=${onClick}
       onMouseEnter=${() => setHover(true)} onMouseLeave=${() => setHover(false)}
       style=${{
         display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -47,7 +47,7 @@ export function describeItem(item) {
 }
 
 // ---- Drawer header: minimal ----
-export function HeaderMinimal({ info, onClose }) {
+export function HeaderMinimal({ info, onClose, onOpenFullScreen }) {
   return html`
     <div style=${{
       display: "flex", alignItems: "center", gap: 12,
@@ -57,15 +57,14 @@ export function HeaderMinimal({ info, onClose }) {
       <${TypePill} type=${info.type} />
       <span style=${{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--fg-3)" }}>${info.path}</span>
       <div style=${{ flex: 1 }} />
-      <${IconButton} name="copy" title="Copy path" />
-      <${IconButton} name="square-arrow-out-up-right" title="Open in editor" />
-      <div style=${{ width: 1, height: 18, background: "var(--hairline)", margin: "0 2px" }} />
+      ${onOpenFullScreen && html`<${IconButton} name="square-arrow-out-up-right" title="Open in full screen" aria-label="Open in full screen" onClick=${onOpenFullScreen} />`}
+      ${onOpenFullScreen && html`<div style=${{ width: 1, height: 18, background: "var(--hairline)", margin: "0 2px" }} />`}
       <${IconButton} name="x" title="Close" onClick=${onClose} size=${17} />
     </div>`;
 }
 
 // ---- Drawer header: contextual (tinted band + meta) ----
-export function HeaderContextual({ info, onClose }) {
+export function HeaderContextual({ info, onClose, onOpenFullScreen }) {
   const t = CONTENT_TYPES[info.type];
   return html`
     <div style=${{
@@ -76,8 +75,7 @@ export function HeaderContextual({ info, onClose }) {
         <${TypePill} type=${info.type} />
         ${info.kind === "ticket" && html`<${StatusChip} status=${info.status} />`}
         <div style=${{ flex: 1 }} />
-        <${IconButton} name="copy" title="Copy path" />
-        <${IconButton} name="square-arrow-out-up-right" title="Open in editor" />
+        ${onOpenFullScreen && html`<${IconButton} name="square-arrow-out-up-right" title="Open in full screen" aria-label="Open in full screen" onClick=${onOpenFullScreen} />`}
         <${IconButton} name="x" title="Close" onClick=${onClose} size=${17} />
       </div>
       <div style=${{ display: "flex", alignItems: "center", gap: 10, marginTop: 11, paddingLeft: 1 }}>
@@ -96,7 +94,7 @@ export function HeaderContextual({ info, onClose }) {
 }
 
 // ---- Drawer ----
-export function Drawer({ item, headerVariant = "minimal", onClose, contained = true }) {
+export function Drawer({ item, headerVariant = "minimal", onClose, onOpenFullScreen, contained = true }) {
   const [render, setRender] = useState(!!item);
   const [shown, setShown] = useState(false);
   const [cur, setCur] = useState(item);
@@ -148,8 +146,8 @@ export function Drawer({ item, headerVariant = "minimal", onClose, contained = t
         willChange: "transform",
       }}>
         ${headerVariant === "contextual"
-          ? html`<${HeaderContextual} info=${info} onClose=${onClose} />`
-          : html`<${HeaderMinimal} info=${info} onClose=${onClose} />`}
+          ? html`<${HeaderContextual} info=${info} onClose=${onClose} onOpenFullScreen=${onOpenFullScreen} />`
+          : html`<${HeaderMinimal} info=${info} onClose=${onClose} onOpenFullScreen=${onOpenFullScreen} />`}
 
         <!-- Scrollable body -->
         <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "30px 40px 56px" }}>

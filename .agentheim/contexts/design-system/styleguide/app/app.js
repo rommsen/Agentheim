@@ -191,11 +191,11 @@ function DrawerSection() {
     <${GuideSection} index="07" title="Slide-over drawer"
       desc="A document opens in a panel that animates in from the right over 180ms, dimming the board behind it — the same surface for a ticket's description and for any library document. Two header directions: a slim minimal bar, or a contextual band tinted in the content type's color with status and path metadata.">
       <div style=${{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
-        <${HeaderFrame} label="Direction A — Minimal" note="Type pill, file path, and quiet actions. The prose H1 below carries the title.">
-          <${HeaderMinimal} info=${describeItem(SAMPLE_DOC)} onClose=${() => {}} />
+        <${HeaderFrame} label="Direction A — Minimal" note="Type pill, file path, and a quiet Open-in-full-screen action. The prose H1 below carries the title.">
+          <${HeaderMinimal} info=${describeItem(SAMPLE_DOC)} onClose=${() => {}} onOpenFullScreen=${() => {}} />
         </${HeaderFrame}>
         <${HeaderFrame} label="Direction B — Contextual" note="Tinted by content type, with status and path metadata for tickets. Stronger sense of place.">
-          <${HeaderContextual} info=${describeItem(SAMPLE_TICKET)} onClose=${() => {}} />
+          <${HeaderContextual} info=${describeItem(SAMPLE_TICKET)} onClose=${() => {}} onOpenFullScreen=${() => {}} />
         </${HeaderFrame}>
       </div>
       <div style=${{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 24 }}>

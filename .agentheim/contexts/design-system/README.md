@@ -214,6 +214,41 @@ changed.
 > artifact (ADR-0003) and was **rebuilt** (`node build.mjs`) to pick up the new
 > control + swatch tokens.
 
+### Drawer header — Copy dropped; an optional Open-in-full-screen action (design-system-009)
+
+The slide-over `Drawer` header (`app/drawer.js`, both `HeaderMinimal` and
+`HeaderContextual`) lost its two dead, `onClick`-less buttons' worth of clutter:
+
+- **Copy button removed.** The `IconButton name="copy" title="Copy path"` is gone
+  from both headers — no replacement. (The `copy` glyph stays in `icons.js`; it is
+  still used by the canvas copy-command button.)
+- **Open-in-editor → optional Open-in-full-screen action.** The
+  `square-arrow-out-up-right` button is relabelled **"Open in full screen"** (title
+  + `aria-label`) and wired to an **optional `onOpenFullScreen` callback** the
+  consumer supplies — a single bare `onOpenFullScreen()` prop on `Drawer`, threaded
+  to BOTH headers. **Absent callback → the button is not rendered** (the ds-006
+  `cornerAction` absent-slot precedent: the styleguide owns look/placement, the
+  consumer owns behavior). In `HeaderMinimal` the vertical hairline divider before
+  Close is guarded by the same callback, so it never dangles when the action is absent.
+
+The Drawer's existing behavior (open/close animation, Esc + scrim-click close,
+markdown body) is unchanged. The canvas (`styleguide/index.html` section 07)
+supplies an `onOpenFullScreen` handler on both header demos so the action renders
+visibly. The downstream consumer that wires `onOpenFullScreen` to render the task in
+the dashboard main pane is `agentic-workflow-039` (not yet shipped — until then the
+live slide-over passes no callback, so the action is correctly absent there).
+
+> **Gate re-review reopened by the Drawer-header change (`design-system-009`).** The
+> slide-over header (visible on every Drawer surface) dropped the Copy button and
+> gained the Open-in-full-screen action; this is a visible styleguide change and
+> reopens the design-system gate per the `design-system-005` / `007` precedent.
+> Re-review with the builder against the canvas (`styleguide/index.html` → section 07
+> header demos) **before** the agentic-workflow wiring (`agentic-workflow-039`) ships.
+
+> Live-board note: same as Motion — the served dashboard `dist/` is a derived
+> artifact (ADR-0003) and was **rebuilt** (`node build.mjs`) to fold the unforked
+> Drawer change into `dashboard/dist/app.js`.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.
