@@ -71,8 +71,16 @@ for an infrastructure BC.
   write endpoint `POST /api/task/move` **delegates to `applyTaskMove`** (owned by
   `agentic-workflow`, ADR-0001/agentic-workflow-003) and never moves a file itself.
 - **Runfile** — `.agentheim/.dashboard/runtime.json` = `{ pid, port, startedAt }`, the
-  **sole** runtime artifact on disk. Basis for "open the URL" and "stop the runtime";
-  gitignored. Relaunch over a live/stale runfile reuses-or-replaces rather than orphaning.
+  **sole live-runtime** artifact on disk ("present ⇒ a live runtime, gated by pid"). Basis for
+  "open the URL" and "stop the runtime"; gitignored. Relaunch over a live/stale runfile
+  reuses-or-replaces rather than orphaning.
+- **Last-good-port marker** — `.agentheim/.dashboard/last-port.json` = `{ port }`, a separate
+  sibling of `runtime.json` in the same gitignored dir (infrastructure-019, ADR-0002 addendum).
+  A **pure memory** of the last successfully-bound port, written at bind time so it survives both
+  a crash and a clean stop; it does **not** imply a live runtime (that stays `runtime.json`'s job,
+  pid-gated). The child's bind path reads it to make the origin **sticky**: bind order is
+  **last-good → derived → ladder** (a corrupt/out-of-window marker is ignored, falling back to
+  derivation), so an intermittent collision can't flap the `127.0.0.1:<port>` origin.
 - **Bridge** — a tiny **VS Code extension** (`vscode-extension/`, infra-owned, its own
   toolchain) running a `127.0.0.1`-only `node:http` listener *inside the editor*. It is the
   only path by which the dashboard — served into VS Code's sandboxed Simple Browser — can open
@@ -164,7 +172,10 @@ Apply write request.
   no install); single detached `launch.mjs` bound to `127.0.0.1` on a **deterministic,
   project-root-derived port** in window 41000–42023 (per the 2026-06-15 addendum,
   infrastructure-018 — reversed the original ephemeral `:0`), with a bounded fallback ladder
-  of 8 on `EADDRINUSE`, the bound port recorded in `runtime.json`; explicit `stop` path;
+  of 8 on `EADDRINUSE`. The selection order is **last-good → derived → ladder** (2026-06-15
+  addendum, infrastructure-019 — refined "derived-first, always" to last-good-first so the
+  origin sticks through an intermittent collision; the last-good port lives in the separate
+  `last-port.json` marker). The bound port is recorded in `runtime.json`; explicit `stop` path;
   project discovery by walking up for
   `.agentheim/`; write endpoint delegates to `applyTaskMove`. This settles the former
   *transport/meaning seam* and *concurrency* open questions: the seam is `POST /api/task/move`

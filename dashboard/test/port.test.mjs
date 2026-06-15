@@ -8,6 +8,7 @@ import {
   LADDER_LENGTH,
   derivePort,
   portLadder,
+  bindSequence,
   listenOnLadder,
 } from '../port.mjs';
 
@@ -100,6 +101,119 @@ test('portLadder steps are the derived base plus 0..7 modulo the window', () => 
     const expected = PORT_WINDOW_START + (((base - PORT_WINDOW_START) + step) % PORT_WINDOW_SIZE);
     assert.equal(ladder[step], expected);
   }
+});
+
+// ── bindSequence: last-good → derived → ladder (infrastructure-019) ──────────
+
+test('bindSequence with no last-good port is exactly the derived ladder', () => {
+  const root = '/home/dev/agentheim';
+  assert.deepEqual(bindSequence(root, null), portLadder(root));
+  assert.deepEqual(bindSequence(root, undefined), portLadder(root));
+});
+
+// A last-good port that is in-window but NOT on the derived ladder for `root`.
+function lastGoodOffLadder(root) {
+  const ladder = portLadder(root);
+  for (let p = PORT_WINDOW_START; p < PORT_WINDOW_START + PORT_WINDOW_SIZE; p++) {
+    if (!ladder.includes(p)) return p;
+  }
+  throw new Error('window smaller than the ladder — impossible');
+}
+
+test('bindSequence prepends a free last-good port ahead of the derived ladder', () => {
+  const root = '/home/dev/agentheim';
+  const lastGood = lastGoodOffLadder(root);
+  const seq = bindSequence(root, lastGood);
+  assert.equal(seq[0], lastGood, 'last-good is tried first');
+  assert.deepEqual(seq.slice(1), portLadder(root), 'derived ladder follows unchanged');
+});
+
+test('bindSequence de-duplicates when last-good == derived (no duplicate attempt)', () => {
+  const root = '/home/dev/agentheim';
+  const derived = derivePort(root);
+  const seq = bindSequence(root, derived);
+  assert.deepEqual(seq, portLadder(root), 'no duplicate of the derived port');
+});
+
+test('bindSequence drops a last-good that already sits on a ladder rung (no duplicate)', () => {
+  const root = '/home/dev/agentheim';
+  const ladder = portLadder(root);
+  const onRung = ladder[3];
+  const seq = bindSequence(root, onRung);
+  // onRung is already in the ladder; it must not be tried twice.
+  const occurrences = seq.filter((p) => p === onRung).length;
+  assert.equal(occurrences, 1, 'last-good already on the ladder appears once');
+  assert.deepEqual(seq, ladder, 'sequence is just the ladder when last-good is already a rung');
+});
+
+test('bindSequence ignores an out-of-window last-good (below the window)', () => {
+  const root = '/home/dev/agentheim';
+  assert.deepEqual(bindSequence(root, PORT_WINDOW_START - 1), portLadder(root));
+});
+
+test('bindSequence ignores an out-of-window last-good (above the window)', () => {
+  const root = '/home/dev/agentheim';
+  const aboveWindow = PORT_WINDOW_START + PORT_WINDOW_SIZE; // first port past the window
+  assert.deepEqual(bindSequence(root, aboveWindow), portLadder(root));
+});
+
+test('bindSequence ignores a non-integer / garbage last-good', () => {
+  const root = '/home/dev/agentheim';
+  for (const bad of ['41500', 41500.5, NaN, {}, true]) {
+    assert.deepEqual(bindSequence(root, bad), portLadder(root), `${String(bad)} should be ignored`);
+  }
+});
+
+test('listenOnLadder prefers a free last-good port over the derived port', async () => {
+  const root = '/home/dev/agentheim';
+  const lastGood = lastGoodOffLadder(root);
+  const attempts = [];
+  const bound = await listenOnLadder(root, async (port) => { attempts.push(port); }, lastGood);
+  assert.equal(bound, lastGood, 'last-good binds when free');
+  assert.deepEqual(attempts, [lastGood], 'only the last-good port is tried');
+});
+
+test('listenOnLadder falls back to the derived port when last-good is taken but derived free', async () => {
+  const root = '/home/dev/agentheim';
+  const derived = derivePort(root);
+  const lastGood = lastGoodOffLadder(root);
+  const attempts = [];
+  const bound = await listenOnLadder(root, async (port) => {
+    attempts.push(port);
+    if (port === lastGood) throw eaddrinuse();
+  }, lastGood);
+  assert.equal(bound, derived, 'derived binds when last-good is busy');
+  assert.deepEqual(attempts, [lastGood, derived]);
+});
+
+test('listenOnLadder reaches the ladder when both last-good and derived are taken', async () => {
+  const root = '/home/dev/agentheim';
+  const ladder = portLadder(root); // ladder[0] === derived
+  const lastGood = lastGoodOffLadder(root);
+  const busy = new Set([lastGood, ladder[0], ladder[1]]);
+  const attempts = [];
+  const bound = await listenOnLadder(root, async (port) => {
+    attempts.push(port);
+    if (busy.has(port)) throw eaddrinuse();
+  }, lastGood);
+  assert.equal(bound, ladder[2], 'first free rung past the busy ones binds');
+  assert.deepEqual(attempts, [lastGood, ladder[0], ladder[1], ladder[2]]);
+});
+
+test('listenOnLadder with an absent last-good behaves exactly like infra-018 (derived first)', async () => {
+  const root = '/home/dev/agentheim';
+  const attempts = [];
+  const bound = await listenOnLadder(root, async (port) => { attempts.push(port); }, null);
+  assert.equal(bound, derivePort(root));
+  assert.deepEqual(attempts, [derivePort(root)], 'derived tried first, ladder untouched');
+});
+
+test('listenOnLadder ignores an out-of-window last-good and binds the derived port', async () => {
+  const root = '/home/dev/agentheim';
+  const attempts = [];
+  const bound = await listenOnLadder(root, async (port) => { attempts.push(port); }, 80);
+  assert.equal(bound, derivePort(root), 'foreign/out-of-window marker is ignored');
+  assert.deepEqual(attempts, [derivePort(root)]);
 });
 
 test('listenOnLadder binds the derived port directly and does NOT consult the ladder when it is free', async () => {

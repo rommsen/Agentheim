@@ -10,7 +10,7 @@
 
 import { discoverRoot } from './discovery.mjs';
 import { createDashboardServer, defaultAssetRoot } from './server.mjs';
-import { writeRunfile } from './runfile.mjs';
+import { writeRunfile, readLastPort, writeLastPort } from './runfile.mjs';
 import { listenOnLadder } from './port.mjs';
 
 const root = process.env.AGENTHEIM_ROOT
@@ -47,8 +47,16 @@ function tryListen(port) {
 }
 
 try {
-  const port = await listenOnLadder(root, tryListen);
+  // Sticky origin (infrastructure-019): prefer the last successfully-bound port
+  // so a transient collision can't flap the origin launch-to-launch. Absent /
+  // out-of-window / busy ⇒ falls back to the derived port then the ladder. A
+  // corrupt/foreign marker is ignored by bindSequence's in-window guard.
+  const lastGood = readLastPort(root);
+  const port = await listenOnLadder(root, tryListen, lastGood);
   writeRunfile(root, { pid: process.pid, port, startedAt: new Date().toISOString() });
+  // Remember this origin so the next launch sticks to it. Written at bind time
+  // (not coupled to stale-reap) so it survives both a crash and a clean stop.
+  writeLastPort(root, port);
   // When attached (parent kept a pipe), announce the URL; harmless when detached.
   process.stdout.write(`Dashboard listening at http://127.0.0.1:${port}/\n`);
 } catch (err) {

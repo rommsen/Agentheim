@@ -13,7 +13,7 @@ research touching this BC, and concept synthesis pages.
 - **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 17
+- **Done:** 19
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,8 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-019** — Dashboard origin sticks to its last-good port so an intermittent collision can't flap it (feature) — `done/infrastructure-019-dashboard-origin-sticky-last-good-port.md`
+- **infrastructure-018** — Dashboard binds a deterministic project-root port so the origin survives relaunch (decision) — `done/infrastructure-018-dashboard-deterministic-port-stable-origin.md`
 - **infrastructure-017** — Re-package & version the bridge .vsix carrying the skip-permissions change (chore) — `done/infrastructure-017-repackage-bridge-vsix-with-skip-permissions.md`
 - **infrastructure-016** — Bridge extension honours the opt-in skip-permissions option on POST /run (feature) — `done/infrastructure-016-bridge-extension-honor-skip-permissions.md`
 - **infrastructure-015** — Amend ADR-0018 — permit an opt-in bridge permission-bypass (decision) — `done/infrastructure-015-amend-adr-0018-opt-in-permission-bypass.md`

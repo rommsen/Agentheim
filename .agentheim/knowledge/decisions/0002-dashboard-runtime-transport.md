@@ -4,7 +4,7 @@ title: Dashboard runtime — Node-stdlib localhost transport with detached launc
 scope: infrastructure
 status: proposed
 date: 2026-06-05
-related_tasks: [infrastructure-001, agentic-workflow-001, agentic-workflow-002, agentic-workflow-003, infrastructure-010]
+related_tasks: [infrastructure-001, agentic-workflow-001, agentic-workflow-002, agentic-workflow-003, infrastructure-010, infrastructure-018, infrastructure-019]
 related_adrs: [ADR-0006, ADR-0018]
 superseded_in_part_by: [ADR-0006]
 ---
@@ -309,3 +309,59 @@ follow-up (**infrastructure-019**), not part of this clause; the launcher's reus
   trade now that origin-keyed state exists. Real collisions become a rare edge (handled cleanly
   by the ladder; self-heal across launches is the infrastructure-019 follow-up) rather than an
   impossibility.
+
+## Addendum — sticky last-good port (2026-06-15, infrastructure-019)
+
+> Refines the **port-selection order** of the infrastructure-018 addendum directly above: from
+> "**derived-first, always**" to "**last-good-first**". The dashboard now prefers the port it last
+> successfully bound, falling back to the derived port and then the ladder. Reverses no clause of
+> the base decision — `127.0.0.1`-only binding, detached launch + runfile + explicit stop, walk-up
+> discovery, in-root path validation, the `applyTaskMove` write seam all **still stand**. Not a new
+> ADR number; it is part of this transport decision.
+
+### Context
+
+infrastructure-018 always tries the **derived port first**, which already snaps the origin back to
+the derived port when a collision *clears*. The case it leaves open is **flapping**: when a
+third-party process holds the derived port **intermittently**, the origin bounces launch-to-launch
+between the derived port (when free) and a ladder rung (when taken). Each bounce is a different
+`127.0.0.1:<port>` origin and therefore a different (often empty) set of the origin-keyed
+`localStorage` stores (theme, board view-state, skip-permissions) — the builder's settings appear
+to reset intermittently. "Derived-first, always" cannot be sticky by construction.
+
+The infrastructure-018 addendum framed the follow-up as retrying the launcher-visible last-good
+port **from `runtime.json`**. Refinement **superseded** that framing: coupling the port memory to
+`runtime.json` would muddy its "present ⇒ a live runtime, gated by pid" contract, and reap-time
+preservation would have needed writes in both `inspectExisting` and `stopDashboard`.
+
+### Decision
+
+Persist the last successfully-bound port in a **separate marker**,
+`.agentheim/.dashboard/last-port.json` = `{ port }` — a sibling of `runtime.json` in the same
+gitignored dir (mirroring how `bridge.json` sits beside it, ADR-0018). It is a **pure memory** that
+outlives the server: written **at successful-bind time** in the child (`serve.mjs`), right where it
+writes `runtime.json`, so it survives **both** a crash and a clean `/dashboard stop`. `runtime.json`
+keeps its exact meaning — `inspectExisting` / `stopDashboard` are **unchanged** and never learn
+about the port; the marker is read only by the child's bind path.
+
+The child forms the bind order **last-good → derived → ladder** (pure, stdlib-unit-tested
+`bindSequence` in `port.mjs`, consumed by `listenOnLadder`). A last-good port **outside** the
+41000–42023 window, or a malformed/unreadable marker, is **ignored** — the bind falls back to
+derivation, never an out-of-band bind, never a crash. A last-good equal to the derived port (or
+already on a ladder rung) produces **no duplicate attempt**. The deterministic derivation from
+infrastructure-018 remains the fallback for the first launch (no marker) or an unusable one.
+
+This changes the observable contract to **last-good-first**: once the dashboard binds a port, that
+port is preferred on every subsequent launch, so the origin no longer flaps under an intermittent
+collision.
+
+### Consequences
+
+- The origin is **sticky**: an intermittent third-party collision can no longer flap the origin,
+  so the three origin-keyed stores stay put across relaunches — the gap infrastructure-018 left.
+- **Accepted tradeoff:** once the origin moves off the derived port (a collision-driven move), the
+  pre-collision `localStorage` store is **orphaned permanently**. Cross-origin store migration was
+  considered and rejected as out of scope.
+- The derived port becomes only the **first-ever seed**, no longer the always-preferred port. The
+  snap-back-to-derived behavior of infrastructure-018 is deliberately **dropped** in favor of
+  stickiness; the two are opposite behaviors and stickiness was chosen for origin stability.

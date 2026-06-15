@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -11,6 +11,9 @@ import {
   deleteRunfile,
   isPidAlive,
   inspectExisting,
+  lastPortPath,
+  writeLastPort,
+  readLastPort,
 } from '../runfile.mjs';
 
 function makeRoot() {
@@ -99,6 +102,76 @@ test('inspectExisting reports "stale" and clears the runfile when the pid is dea
     assert.equal(r.state, 'stale');
     // stale runfile is reaped so a relaunch never orphans / never reuses a dead port
     assert.ok(!existsSync(runfilePath(root)));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── last-port marker (infrastructure-019): a memory of the last good origin ──
+
+test('lastPortPath lives beside runtime.json in .agentheim/.dashboard/last-port.json', () => {
+  const root = makeRoot();
+  try {
+    assert.equal(
+      lastPortPath(root),
+      path.join(root, '.agentheim', '.dashboard', 'last-port.json')
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('writeLastPort then readLastPort round-trips the port', () => {
+  const root = makeRoot();
+  try {
+    writeLastPort(root, 41500);
+    assert.equal(readLastPort(root), 41500);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('readLastPort returns null when no marker exists (first launch)', () => {
+  const root = makeRoot();
+  try {
+    assert.equal(readLastPort(root), null);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('readLastPort returns null on a malformed / non-JSON marker (never crashes)', () => {
+  const root = makeRoot();
+  try {
+    mkdirSync(path.join(root, '.agentheim', '.dashboard'), { recursive: true });
+    writeFileSync(lastPortPath(root), 'not json at all {');
+    assert.equal(readLastPort(root), null);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('readLastPort returns null when the marker has no integer port field', () => {
+  const root = makeRoot();
+  try {
+    mkdirSync(path.join(root, '.agentheim', '.dashboard'), { recursive: true });
+    writeFileSync(lastPortPath(root), JSON.stringify({ port: 'forty-one-thousand' }));
+    assert.equal(readLastPort(root), null);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('the last-port marker is independent of the runfile: reaping the runfile leaves it intact', () => {
+  const root = makeRoot();
+  try {
+    writeRunfile(root, { pid: 2147483600, port: 41500, startedAt: 'x' });
+    writeLastPort(root, 41500);
+    // A dead pid reaps the runfile (runtime.json's contract), but the marker —
+    // a pure memory of the origin — must survive so the next launch sticks.
+    inspectExisting(root);
+    assert.ok(!existsSync(runfilePath(root)), 'runfile reaped');
+    assert.equal(readLastPort(root), 41500, 'marker survives reaping');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

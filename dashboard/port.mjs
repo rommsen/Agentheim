@@ -52,19 +52,51 @@ export function portLadder(root) {
 }
 
 /**
- * Walk the bounded ladder for `root`, attempting `tryListen(port)` at each
- * rung. `tryListen` must resolve once bound, or reject with an Error whose
+ * True iff `port` is a valid integer inside the derivation window. A last-good
+ * marker outside the window (corrupt, foreign, or from a different scheme) is
+ * defensively ignored so it can never produce an out-of-band bind.
+ */
+function inWindow(port) {
+  return (
+    Number.isInteger(port) &&
+    port >= PORT_WINDOW_START &&
+    port < PORT_WINDOW_START + PORT_WINDOW_SIZE
+  );
+}
+
+/**
+ * The de-duplicated bind order for `root`: an optional last-good port FIRST
+ * (origin stickiness, infrastructure-019), then the deterministic ladder
+ * (infrastructure-018). The last-good port is dropped when it is unusable
+ * (not an in-window integer) or already present in the ladder (so
+ * last-good == derived, or last-good on a rung, never doubles an attempt).
+ */
+export function bindSequence(root, lastGood) {
+  const ladder = portLadder(root);
+  if (inWindow(lastGood) && !ladder.includes(lastGood)) {
+    return [lastGood, ...ladder];
+  }
+  return ladder;
+}
+
+/**
+ * Walk the bind sequence for `root`, attempting `tryListen(port)` at each rung.
+ * `tryListen` must resolve once bound, or reject with an Error whose
  * `code === 'EADDRINUSE'` so the walk advances to the next rung. Any other
  * rejection is fatal (re-thrown immediately — not a collision). When the WHOLE
- * ladder is busy, rejects with a clear error rather than crashing or leaking a
+ * sequence is busy, rejects with a clear error rather than crashing or leaking a
  * process. Resolves with the port that bound.
  *
- * The deterministic port is tried FIRST; when it is free the ladder is never
- * consulted (tryListen is called exactly once).
+ * `lastGood` (optional, infrastructure-019) is the previously-bound port: when
+ * present, in-window, and free it binds FIRST so the origin sticks across
+ * relaunches. Absent / out-of-window / busy ⇒ the deterministic derived port is
+ * tried next, then the ladder — preserving infra-018's behavior. When the
+ * preferred port is free the sequence is never walked past it (tryListen is
+ * called exactly once).
  */
-export async function listenOnLadder(root, tryListen) {
-  const ladder = portLadder(root);
-  for (const port of ladder) {
+export async function listenOnLadder(root, tryListen, lastGood) {
+  const sequence = bindSequence(root, lastGood);
+  for (const port of sequence) {
     try {
       await tryListen(port);
       return port;
@@ -74,8 +106,8 @@ export async function listenOnLadder(root, tryListen) {
     }
   }
   const err = new Error(
-    `Dashboard could not bind: all ${LADDER_LENGTH} ports in the deterministic ` +
-      `ladder [${ladder.join(', ')}] are in use.`,
+    `Dashboard could not bind: all ${sequence.length} ports in the bind ` +
+      `sequence [${sequence.join(', ')}] are in use.`,
   );
   err.code = 'EADDRINUSE_LADDER_EXHAUSTED';
   throw err;

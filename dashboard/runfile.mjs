@@ -7,6 +7,7 @@ import path from 'node:path';
 
 const DASHBOARD_DIR = '.dashboard';
 const RUNFILE_NAME = 'runtime.json';
+const LAST_PORT_NAME = 'last-port.json';
 
 /** Absolute path to the runfile for a project root. */
 export function runfilePath(root) {
@@ -40,6 +41,46 @@ export function readRunfile(root) {
 export function deleteRunfile(root) {
   const p = runfilePath(root);
   if (existsSync(p)) rmSync(p, { force: true });
+}
+
+// ── last-good port marker (infrastructure-019) ───────────────────────────────
+//
+// `.agentheim/.dashboard/last-port.json` = { port } is a SEPARATE sibling of
+// runtime.json: a pure memory of the last successfully-bound port that OUTLIVES
+// the server (written at bind time, untouched by stop/reap). Keeping it apart
+// preserves runtime.json's contract ("present ⇒ a live runtime, gated by pid")
+// — inspectExisting / stopDashboard never learn about it. The child's bind path
+// reads it to make the origin sticky across relaunches (last-good → derived →
+// ladder). Mirrors how bridge.json sits beside runtime.json (ADR-0018).
+
+/** Absolute path to the last-good-port marker for a project root. */
+export function lastPortPath(root) {
+  return path.join(root, '.agentheim', DASHBOARD_DIR, LAST_PORT_NAME);
+}
+
+/** Record the last successfully-bound port as the sticky-origin memory. */
+export function writeLastPort(root, port) {
+  const dir = dashboardDir(root);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(lastPortPath(root), JSON.stringify({ port }, null, 2));
+}
+
+/**
+ * Read the last-good port, or null when the marker is absent (first launch),
+ * unreadable, malformed, or lacks an integer `port`. Range-checking against the
+ * derivation window is the bind path's job (port.mjs `bindSequence`); here we
+ * only guarantee a clean integer-or-null so a corrupt marker never crashes the
+ * launch.
+ */
+export function readLastPort(root) {
+  const p = lastPortPath(root);
+  if (!existsSync(p)) return null;
+  try {
+    const parsed = JSON.parse(readFileSync(p, 'utf8'));
+    return Number.isInteger(parsed.port) ? parsed.port : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
