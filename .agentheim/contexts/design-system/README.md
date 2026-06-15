@@ -90,8 +90,12 @@ the drawer. The `TicketCard` hover reads as a **raise, not a jump**
 (`design-system-008`): hover deepens the shadow one step on the scale
 (`--shadow-sm` → `--shadow-md`, `styles/agentheim.css`) and applies **no
 `transform`/`translateY` offset**, so the card's content stays put rather than
-nudging upward. The `selected` state's shadow (accent ring + `--shadow-sm`) is
-unchanged. As of `design-system-004` the language admits **one ambient
+nudging upward. As of `design-system-010` the `TicketCard` carries **no visual
+selected cue at all** — the former ochre border + 1px accent ring were removed, so
+a selected card looks identical to an unselected one. The `selected` prop is now
+purely semantic (it still drives `aria-pressed`); this completes ADR-0016's
+direction (ordinary selection is never signalled by the reserved accent) for the
+card — the last place that still used the ochre ring. As of `design-system-004` the language admits **one ambient
 (looping) cue**: a doing-status ticket card's ochre rail **breathes** — a calm,
 low-amplitude pulse — so the doing column reads as *actively worked* at a glance.
 This is the system's first `@keyframes` and its first loop token,

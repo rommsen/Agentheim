@@ -91,12 +91,12 @@ Please report this to https://github.com/markedjs/marked.`,t){let o="<p>An error
           onMouseLeave=${o=>{o.currentTarget.style.background="transparent",o.currentTarget.style.color="var(--fg-3)"}}>
           <${W} name="plus" size=${15} />
         </button>`}
-    </div>`}function Yf({ticket:e,variant:t="rail",selected:n=!1,onClick:r,forceHover:o=!1,cornerAction:i}){let[l,a]=(0,Qf.useState)(!1),s=Kt[e.status],u=l||o,f={position:"relative",background:"var(--surface-1)",border:"1px solid var(--hairline)",borderRadius:"var(--radius-md)",padding:t==="rail"?"13px 14px 13px 16px":"12px 14px 13px",cursor:"pointer",overflow:"hidden",transition:"border-color var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)",boxShadow:u?"var(--shadow-md)":"none",borderColor:n?"var(--accent-ochre)":u?"var(--hairline-strong)":"var(--hairline)"};return n&&(f.boxShadow="0 0 0 1px var(--accent-ochre), var(--shadow-sm)"),k`
+    </div>`}function Yf({ticket:e,variant:t="rail",selected:n=!1,onClick:r,forceHover:o=!1,cornerAction:i}){let[l,a]=(0,Qf.useState)(!1),s=Kt[e.status],u=l||o;return k`
     <div className="focusable" tabIndex=${0} role="button" aria-pressed=${n}
       onClick=${r}
       onKeyDown=${g=>{(g.key==="Enter"||g.key===" ")&&(g.preventDefault(),r&&r())}}
       onMouseEnter=${()=>a(!0)} onMouseLeave=${()=>a(!1)}
-      style=${f}>
+      style=${{position:"relative",background:"var(--surface-1)",border:"1px solid var(--hairline)",borderRadius:"var(--radius-md)",padding:t==="rail"?"13px 14px 13px 16px":"12px 14px 13px",cursor:"pointer",overflow:"hidden",transition:"border-color var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)",boxShadow:u?"var(--shadow-md)":"none",borderColor:u?"var(--hairline-strong)":"var(--hairline)"}}>
 
       ${t==="rail"&&k`
         <span className=${Wf(e.status)} style=${{position:"absolute",left:0,top:0,bottom:0,width:3,background:s.color,opacity:.9}} />`}

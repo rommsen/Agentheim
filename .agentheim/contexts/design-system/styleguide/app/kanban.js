@@ -75,9 +75,12 @@ export function TicketCard({ ticket, variant = "rail", selected = false, onClick
     overflow: "hidden",
     transition: "border-color var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)",
     boxShadow: isHover ? "var(--shadow-md)" : "none",
-    borderColor: selected ? "var(--accent-ochre)" : (isHover ? "var(--hairline-strong)" : "var(--hairline)"),
+    borderColor: isHover ? "var(--hairline-strong)" : "var(--hairline)",
   };
-  if (selected) base.boxShadow = "0 0 0 1px var(--accent-ochre), var(--shadow-sm)";
+  // ADR-0016 / design-system-010: ordinary selection is never signalled by the
+  // reserved accent. The card carries NO visual selection cue — `selected` is
+  // purely semantic (aria-pressed below), so a selected card looks identical to
+  // an unselected one.
 
   return html`
     <div className="focusable" tabIndex=${0} role="button" aria-pressed=${selected}

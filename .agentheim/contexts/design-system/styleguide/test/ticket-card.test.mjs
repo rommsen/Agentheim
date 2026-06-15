@@ -96,11 +96,24 @@ test('hover applies no transform / translateY — content does not move upward',
   assert.doesNotMatch(transitionLine, /\btransform\b/, 'the transition must drop the transform segment');
 });
 
-test('the selected-state shadow is unchanged (accent ring + --shadow-sm)', () => {
-  // Selected keeps its original treatment; only the plain-hover shadow changed.
-  assert.match(
+test('the selected state carries no ochre / accent ring (selected looks identical to unselected)', () => {
+  // ADR-0016: ordinary selection is never signalled by the reserved accent.
+  // design-system-010 removed the TicketCard's ochre border + 1px accent ring;
+  // the `selected` prop is now purely semantic (aria-pressed), with no visual cue.
+  const base = baseStyleSrc;
+
+  // no `if (selected)` shadow override anywhere in the source
+  assert.doesNotMatch(
     kanbanSrc,
-    /if \(selected\) base\.boxShadow = "0 0 0 1px var\(--accent-ochre\), var\(--shadow-sm\)";/,
-    'selected box-shadow must remain the accent ring plus --shadow-sm',
+    /if \(selected\)\s*base\.boxShadow/,
+    'selected must not set its own box-shadow (no accent ring)',
   );
+  // the borderColor must not branch on `selected`
+  const borderLine = base
+    .split('\n')
+    .find((line) => /borderColor:/.test(line));
+  assert.ok(borderLine, 'the base style must set borderColor');
+  assert.doesNotMatch(borderLine, /selected/, 'borderColor must not branch on `selected`');
+  // accent-reservation: no ochre / accent cue tied to selection in the base style
+  assert.doesNotMatch(base, /accent|ochre/, 'the selected cue must not use the reserved accent / ochre');
 });

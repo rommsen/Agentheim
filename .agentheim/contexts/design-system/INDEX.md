@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 9
+- **Done:** 10
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **design-system-010** — TicketCard — drop the ochre selected-state ring (no replacement cue) (refactor) — `todo/design-system-010-ticket-card-drop-ochre-selected-ring.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **design-system-010** — TicketCard — drop the ochre selected-state ring (no replacement cue) (refactor) — `done/design-system-010-ticket-card-drop-ochre-selected-ring.md`
 - **design-system-009** — Drawer header — drop the Copy button, rename "Open in editor" → "Open in full screen", expose a callback (feature) — `done/design-system-009-drawer-header-open-in-full-screen.md`
 - **design-system-008** — TicketCard hover — stronger shadow, no upward content lift (refactor) — `done/design-system-008-ticket-card-hover-no-lift.md`
 - **design-system-007** — Theme toggle buttons swatch their own theme (Dark = dark bg, Light = light bg) — `done/design-system-007-theme-toggle-swatch-buttons.md`
