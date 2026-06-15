@@ -273,11 +273,19 @@ separate BC, but today the whole tool lives in this one.
   full Socratic session), where `<prompt>` is the **trimmed** textarea contents joined to the command
   by a single space. An **empty / whitespace-only** textarea falls back to the **bare** command
   (byte-identical to aw-020). On a **successful launch or landed clipboard copy** the textarea is
-  **cleared** and a board-local **confetti** burst plays over the buttons; a fully-silent action
-  (clipboard blocked too) clears nothing and plays nothing. The confetti honours
-  `prefers-reduced-motion` (ADR-0014's strip-to-plain contract -- it renders nothing under reduce) and
-  draws only from existing **status-palette** tokens, never the reserved selection accent
-  `--accent-ochre-soft` (ADR-0016) nor the `--obligation` skip-permissions danger hue (aw-021). The
+  **cleared** and a board-local **confetti** burst plays; a fully-silent action
+  (clipboard blocked too) clears nothing and plays nothing. The burst is rendered by **canvas-confetti**
+  (aw-034 swapped out the original hand-rolled CSS-keyframe burst -- it is the dashboard's first
+  **bundled** frontend runtime dependency, `import`ed in `board.js` and folded into `dist/app.js` by
+  esbuild, **no CDN**). It fires canvas-confetti's default **full-viewport** `confetti()` from an origin
+  near the prompt-bar buttons -- board-**owned** and not a styleguide motion primitive (ADR-0020 amended:
+  "board-local" means ownership, not pixel footprint). The confetti honours
+  `prefers-reduced-motion` (ADR-0014's strip-to-plain contract -- the `matchMedia` guard means
+  `confetti()` is never invoked under reduce, so it renders nothing) and draws its colors from the four
+  **status-palette bases** (`--st-done` / `--st-todo` / `--st-doing` / `--st-backlog`), **resolved at
+  fire time** via `getComputedStyle` so the burst tracks the active light/dark theme; never the reserved
+  selection accent `--accent-ochre-soft` (ADR-0016) nor the `--obligation` skip-permissions danger hue
+  (aw-021). The
   per-card Refine / Promote pair (aw-022) stays **id-seeded** and does **not** pick up the prompt.
   Each button opens a **real, interactive Claude session**
   through the VS Code **bridge** (ADR-0018): the frontend discovers the listener via the dashboard's

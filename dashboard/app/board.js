@@ -31,6 +31,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 // Styleguide single source (ADR-0003): import the approved Kanban components
 // across the BC boundary. They are CONSUMED, never copied — the design-system
 // styleguide remains the one source of UI truth, the dashboard is a consumer.
+import confetti from "canvas-confetti";
+
 import { html } from "../../.agentheim/contexts/design-system/styleguide/app/html.js";
 import { ColumnHeader, TicketCard } from "../../.agentheim/contexts/design-system/styleguide/app/kanban.js";
 import { EmptyColumn } from "../../.agentheim/contexts/design-system/styleguide/app/empty.js";
@@ -51,6 +53,7 @@ import { loadViewState, saveViewState, defaultColumnState } from "./board-view-s
 import { SlideOver } from "./slide-over.js";
 import { MainPaneReader } from "./main-pane-reader.js";
 import { treeToLibrary } from "./library-data.js";
+import { resolveConfettiColors } from "./confetti-palette.js";
 import { isTaskIntent } from "./intent-route.js";
 import { createLiveUpdate } from "./live-update.js";
 
@@ -325,75 +328,63 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
     </button>`;
 }
 
-// The confetti CSS injected ONCE (idempotent, board-local). The styleguide owns no
-// celebration motion (ADR-0014 admits ambient motion as a status SIGNAL — confetti
-// is a transient ACK, not a status, so it stays board-local rather than forking the
-// styleguide; flagged as a design-system follow-up). The keyframes drift each piece
-// up-and-out while fading. Honours `prefers-reduced-motion` per ADR-0014's
-// strip-to-plain contract: under reduce the pieces never animate (and the bar mounts
-// none — see BoardConfetti's matchMedia guard), so the clearance is silent. The
-// piece colours draw from existing STATUS tokens (--st-done/-todo/-backlog) — never
-// the reserved selection accent --accent-ochre-soft (ADR-0016) nor the --obligation
-// danger hue (aw-021's reserved skip-permissions cue).
-const CONFETTI_STYLE_ID = "agentheim-board-confetti-style";
-function ensureConfettiStyle() {
-  if (typeof document === "undefined") return;
-  if (document.getElementById(CONFETTI_STYLE_ID)) return;
-  const el = document.createElement("style");
-  el.id = CONFETTI_STYLE_ID;
-  el.textContent = `
-    @keyframes agentheim-confetti-rise {
-      0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-      12%  { opacity: 1; }
-      100% { transform: translate(var(--cf-dx, 0), var(--cf-dy, -34px)) rotate(var(--cf-rot, 180deg)); opacity: 0; }
-    }
-    .agentheim-confetti-piece {
-      position: absolute; top: 50%; left: 50%;
-      width: 6px; height: 6px; border-radius: 1.5px;
-      will-change: transform, opacity;
-      animation: agentheim-confetti-rise var(--cf-dur, 900ms) var(--ease-base, cubic-bezier(.4,0,.2,1)) forwards;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .agentheim-confetti-piece { animation: none; opacity: 0; }
-    }`;
-  document.head.appendChild(el);
+// Fire the celebration burst via canvas-confetti (agentic-workflow-034, amends
+// ADR-0020). The hand-rolled CSS-keyframe burst (the injected style rule + the
+// DOM-span pieces) is GONE; canvas-confetti gives the real
+// particle physics the builder wanted ("way better"). It is the dashboard's first
+// BUNDLED frontend runtime dependency — `import`ed above so esbuild folds it into
+// the committed dist/app.js (no CDN; the board runs offline on 127.0.0.1).
+//
+// canvas-confetti's default global confetti() paints a fixed FULL-VIEWPORT canvas
+// (pointer-events: none, above content, auto-cleared). We fire from an origin near
+// the prompt-bar buttons (lower-left of the viewport) so particles rain across the
+// page — a deliberate full-window step up from the old contained-over-the-buttons
+// footprint. It stays a board-OWNED, board-local transient ACK (ADR-0020): the
+// board injects the call, it is consumed within the BC, and it is NOT promoted to a
+// design-system motion primitive — "board-local" was always about ownership, not
+// pixel footprint.
+//
+// Colors are resolved at FIRE TIME (resolveConfettiColors, confetti-palette.js) off
+// the document root — the four status bases (--st-done/--st-todo/--st-doing/
+// --st-backlog), so the burst tracks the active light/dark theme and stays a true
+// projection of the styleguide tokens (ADR-0003). Never the reserved selection
+// accent --accent-ochre-soft (ADR-0016) nor the --obligation skip-permissions hue
+// (aw-021) — both excluded by construction (neither is a status base).
+function fireConfetti() {
+  if (typeof document === "undefined" || typeof confetti !== "function") return;
+  const colors = resolveConfettiColors(getComputedStyle(document.documentElement));
+  // Lively defaults; the exact tuning is iterated via the aw-025 replay button.
+  // Origin sits near the prompt-bar buttons (lower-left), spraying up-and-out.
+  confetti({
+    particleCount: 120,
+    spread: 75,
+    startVelocity: 48,
+    gravity: 0.9,
+    scalar: 0.9,
+    ticks: 220,
+    origin: { x: 0.18, y: 0.92 },
+    angle: 75,
+    ...(colors.length ? { colors } : {}),
+  });
 }
 
-// A board-local confetti burst (agentic-workflow-023) marking the prompt bar's
-// clearance after a successful launch/copy. It is keyed by a monotonic `fireKey`
-// from the parent: each successful action bumps the key, remounting a fresh burst.
-// Under `prefers-reduced-motion: reduce` it renders NOTHING (the CSS also suppresses
-// the animation — belt and suspenders), so the clearance stays a quiet, motionless
-// ACK (ADR-0014). The pieces draw only from existing status-palette tokens; never
-// the reserved selection accent (ADR-0016) or the --obligation danger hue (aw-021).
-const CONFETTI_TOKENS = ["var(--st-done)", "var(--st-todo)", "var(--st-backlog)", "var(--fg-3)"];
+// A board-local confetti burst (agentic-workflow-023, reimplemented aw-034) marking
+// the prompt bar's clearance after a successful launch/copy. It is keyed by a
+// monotonic `fireKey` from the parent: each successful action bumps the key,
+// remounting a fresh BoardConfetti that fires once on mount. Under
+// `prefers-reduced-motion: reduce` it renders NOTHING and never invokes confetti()
+// — the clearance stays a quiet, motionless ACK (ADR-0014 strip-to-plain).
 function BoardConfetti({ fireKey }) {
   const reduce = typeof window !== "undefined" && typeof window.matchMedia === "function"
     && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  useEffect(() => { if (!reduce) ensureConfettiStyle(); }, [reduce]);
-  if (!fireKey || reduce) return null;
-  // A small deterministic-ish spread, recomputed per fire. Pure presentation.
-  const pieces = Array.from({ length: 14 }, (_, i) => {
-    const angle = (i / 14) * Math.PI * 2;
-    const dist = 26 + (i % 5) * 7;
-    return {
-      dx: `${Math.round(Math.cos(angle) * dist)}px`,
-      dy: `${Math.round(-Math.abs(Math.sin(angle)) * dist - 14)}px`,
-      rot: `${(i % 2 ? 1 : -1) * (140 + (i % 4) * 60)}deg`,
-      dur: `${820 + (i % 5) * 90}ms`,
-      color: CONFETTI_TOKENS[i % CONFETTI_TOKENS.length],
-    };
-  });
-  return html`
-    <div key=${fireKey} aria-hidden="true" style=${{
-      position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none",
-    }}>
-      ${pieces.map((p, i) => html`
-        <span key=${i} className="agentheim-confetti-piece" style=${{
-          background: p.color,
-          "--cf-dx": p.dx, "--cf-dy": p.dy, "--cf-rot": p.rot, "--cf-dur": p.dur,
-        }} />`)}
-    </div>`;
+  useEffect(() => {
+    // The matchMedia guard wraps the canvas-confetti call: under reduce it is never
+    // invoked (ADR-0014), and a falsy fireKey (initial mount) fires nothing.
+    if (reduce || !fireKey) return;
+    fireConfetti();
+  }, [fireKey, reduce]);
+  // canvas-confetti owns its own full-viewport canvas; BoardConfetti renders no DOM.
+  return null;
 }
 
 // The board-level PROMPT BAR (agentic-workflow-023). aw-020's bare Quick Capture /

@@ -4,7 +4,7 @@ title: Board prompt-bar confetti is a board-local transient ACK, not a styleguid
 scope: agentic-workflow
 status: accepted
 date: 2026-06-15
-related_tasks: [agentic-workflow-023]
+related_tasks: [agentic-workflow-023, agentic-workflow-034]
 related_adrs: [ADR-0014, ADR-0016, ADR-0003, ADR-0009, ADR-0001]
 ---
 
@@ -99,3 +99,69 @@ the doing-pulse did?
   this (the silent clear) as the strip-to-plain baseline.
 - **Use the `--obligation` / `--accent-ochre` hues for visual punch.** Declined:
   both are reserved (danger / selection); a celebration must not borrow them.
+
+## Amendment (agentic-workflow-034, 2026-06-15)
+
+The builder found the hand-rolled CSS-keyframe burst underwhelming and asked for
+the real particle physics of **canvas-confetti**. aw-034 reimplements the
+celebration over canvas-confetti. This amendment records what changed and, just as
+importantly, what still binds — it does **not** supersede this ADR.
+
+**What changed:**
+
+1. **CSS-keyframe → canvas-confetti (decision #2 reversed).** The
+   `ensureConfettiStyle` injected `@keyframes` rule and the
+   `.agentheim-confetti-piece` DOM-span rendering are **removed**. `BoardConfetti`
+   now drives a single **canvas-confetti** call on remount (`fireConfetti`). The
+   original "board-local CSS, injected once" mechanism is gone; the burst is now
+   drawn on canvas-confetti's own canvas.
+
+2. **First bundled frontend RUNTIME dependency.** canvas-confetti is added to
+   `dashboard/package.json` `devDependencies` (pinned `^1.9.4`) and `import`ed in
+   `dashboard/app/board.js`, so esbuild folds it into the committed
+   `dashboard/dist/app.js` (`bundle: true`, `nodePaths` → `dashboard/node_modules`).
+   react / react-dom / marked / htm are framework/render infrastructure;
+   canvas-confetti is the dashboard's **first bundled frontend runtime dependency**
+   that exists purely for a board feature. **No CDN / no runtime network fetch** —
+   the dashboard runs offline on `127.0.0.1` (the original dependency-free rationale
+   is preserved by *bundling*, not by avoiding the library).
+
+3. **Full-window footprint — "board-local" meant ownership, not pixels.** The
+   celebration now uses canvas-confetti's **default global `confetti()`** (a fixed
+   full-viewport canvas, `pointer-events: none`, above content, auto-cleared),
+   firing from an **origin near the prompt-bar buttons** so particles rain across
+   the page — the dramatic upgrade the builder wanted, over the old
+   contained-over-the-buttons footprint. This clarifies the original "board-local"
+   clause: it always meant **ownership** (the board injects/owns the call, it is
+   consumed within the BC) and **not-a-DS-primitive**, NOT a literal pixel footprint.
+   The confetti is still **not** promoted to a styleguide motion primitive and files
+   **no** design-system child task (decision #1 and the consequences/alternatives
+   stand — a shared primitive still waits for a second surface).
+
+4. **Palette is now the four status bases, resolved at fire time, theme-aware
+   (decision #4 refined).** canvas-confetti draws on a JS `<canvas>` and cannot
+   consume `var(--st-done)`; it needs concrete color strings. The palette is read at
+   **fire time** via `getComputedStyle(document.documentElement).getPropertyValue('--st-…')`
+   (trimmed) from the four status bases — `--st-done` / `--st-todo` / `--st-doing` /
+   `--st-backlog`. This **drops** the old muted `--fg-3` grey and **adds** the warm
+   `--st-doing` amber for a livelier spread. Resolving at fire time means the burst
+   tracks the active **light/dark theme** for free and stays a true *projection* of
+   the styleguide tokens (ADR-0003), not a forked hard-coded list. The reserved
+   selection accent `--accent-ochre-soft` (ADR-0016) and the `--obligation`
+   skip-permissions hue (ADR-0019 / aw-021) remain excluded **by construction** —
+   neither is a status base.
+
+**What still binds (unchanged):**
+
+- **ADR-0014's reduced-motion silence.** Under `prefers-reduced-motion: reduce` the
+  celebration renders **nothing**: `BoardConfetti`'s `matchMedia` guard wraps the
+  fire path, so `confetti()` is **never invoked** under reduce (decision #3 holds).
+- **Transient ACK, not status** (decision #1) and **no lifecycle write** (decision
+  #5): the celebration is still a one-shot acknowledgement on a successful launch /
+  landed copy (and the aw-025 replay button), fired by the unchanged `confettiKey`
+  remount path; it performs no launch, bridge call, clipboard copy, textarea clear,
+  or lifecycle write beyond the visual (ADR-0001 / ADR-0017).
+
+The exact canvas-confetti tuning (`particleCount` / `spread` / `startVelocity` /
+`gravity` / `scalar` and the precise normalized origin) is an iteration target,
+dialed in via the aw-025 replay button.

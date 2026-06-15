@@ -164,20 +164,76 @@ test('the aw-025 temp button bumps the existing confettiKey and does nothing els
   assert.doesNotMatch(block[0], /setPrompt\(/, 'the temp button must not clear/touch the textarea');
 });
 
-test('confetti honours prefers-reduced-motion and avoids the reserved selection accent (ADR-0014 / ADR-0016)', () => {
-  // The confetti is board-local (the styleguide has no celebration motion). It must
-  // be strippable under reduced motion and must NOT use the reserved selection
-  // accent --accent-ochre-soft (ADR-0016) for its pieces.
+// agentic-workflow-034: the celebration is reimplemented over canvas-confetti
+// (amends ADR-0020). The hand-rolled CSS-keyframe burst is GONE — no @keyframes
+// injection, no .agentheim-confetti-piece DOM spans. BoardConfetti now drives a
+// canvas-confetti call from an origin near the prompt-bar buttons, fired once on
+// remount, with colors resolved at fire time off the four status-palette bases.
+// Trigger wiring (confettiKey / setConfettiKey / onResult) is UNCHANGED — only the
+// implementation behind BoardConfetti swapped.
+test('confetti honours prefers-reduced-motion: the canvas-confetti call is never invoked under reduce (ADR-0014)', () => {
+  // BoardConfetti reads the matchMedia reduce flag and the fire path is guarded by
+  // it — under reduce the canvas-confetti call (fireConfetti / confetti()) is never
+  // reached, so the celebration shows NOTHING (ADR-0014 strip-to-plain).
   assert.match(
     boardSrc,
     /prefers-reduced-motion/,
     'confetti must be gated on prefers-reduced-motion (ADR-0014 strip-to-plain)',
   );
-  const confetti = boardSrc.match(/function BoardConfetti[\s\S]*?\n}/);
-  assert.ok(confetti, 'a board-local BoardConfetti component must exist');
-  assert.doesNotMatch(
-    confetti[0],
-    /--accent-ochre-soft/,
-    'confetti must not paint with the reserved selection accent (ADR-0016)',
+  const confettiFn = boardSrc.match(/function BoardConfetti[\s\S]*?\n}/);
+  assert.ok(confettiFn, 'a board-local BoardConfetti component must exist');
+  // The effect bails out under reduce (or a falsy fireKey) BEFORE firing.
+  assert.match(
+    confettiFn[0],
+    /if\s*\(\s*reduce\s*\|\|\s*!fireKey\s*\)\s*return/,
+    'the fire path must early-return under reduce (and on a falsy fireKey)',
   );
+  assert.match(
+    confettiFn[0],
+    /fireConfetti\(\)/,
+    'BoardConfetti must drive the canvas-confetti call (fireConfetti) once unguarded',
+  );
+});
+
+test('the celebration is rendered by canvas-confetti, not the old CSS keyframes (aw-034 swap)', () => {
+  // board.js imports the bundled canvas-confetti dependency.
+  assert.match(
+    boardSrc,
+    /import\s+confetti\s+from\s+["']canvas-confetti["']/,
+    'board.js must import the bundled canvas-confetti dependency',
+  );
+  // The old CSS-keyframe implementation is removed.
+  assert.doesNotMatch(boardSrc, /@keyframes/, 'no @keyframes injection (CSS burst removed)');
+  assert.doesNotMatch(boardSrc, /agentheim-confetti-piece/, 'no .agentheim-confetti-piece DOM spans (CSS burst removed)');
+  assert.doesNotMatch(boardSrc, /ensureConfettiStyle/, 'ensureConfettiStyle (the keyframe injector) is gone');
+});
+
+test('the burst fires from canvas-confetti default global with an origin near the prompt-bar buttons (not the stock centre)', () => {
+  const fire = boardSrc.match(/function fireConfetti[\s\S]*?\n}/);
+  assert.ok(fire, 'a fireConfetti helper must drive the canvas-confetti call');
+  // Default global confetti() (full-viewport canvas), not confetti.create(...).
+  assert.match(fire[0], /\bconfetti\(\{/, 'must call the default global confetti({...})');
+  assert.doesNotMatch(fire[0], /confetti\.create/, 'must use the default global, not a scoped confetti.create canvas');
+  // A custom origin, NOT the stock {x:0.5, y:0.5} centre.
+  assert.match(fire[0], /origin:\s*\{\s*x:/, 'must pass a custom origin');
+  assert.doesNotMatch(fire[0], /x:\s*0\.5\s*,\s*y:\s*0\.5/, 'must not fire from the stock {x:0.5,y:0.5} centre');
+});
+
+test('colors are resolved at fire time off the four status bases (theme-aware), not a static var() list', () => {
+  // board.js uses the pure resolver against getComputedStyle(documentElement).
+  assert.match(
+    boardSrc,
+    /import\s*\{[^}]*resolveConfettiColors[^}]*\}\s*from\s*["']\.\/confetti-palette\.js["']/,
+    'board.js must import resolveConfettiColors from the palette module',
+  );
+  const fire = boardSrc.match(/function fireConfetti[\s\S]*?\n}/);
+  assert.match(
+    fire[0],
+    /resolveConfettiColors\(\s*getComputedStyle\(document\.documentElement\)\s*\)/,
+    'colors must be resolved at fire time via getComputedStyle(document.documentElement)',
+  );
+  // The fire path holds NO static var(--st-*) color literal — colors come only from
+  // the resolver (the old CSS CONFETTI_TOKENS list of var(--st-*) strings is gone).
+  assert.doesNotMatch(fire[0], /var\(--st-/, 'fireConfetti must not hold a static var(--st-*) color literal (resolved at fire time now)');
+  assert.doesNotMatch(boardSrc, /CONFETTI_TOKENS\s*=\s*\[/, 'the old in-board CONFETTI_TOKENS var(--st-*) array is gone (moved to the palette resolver)');
 });
