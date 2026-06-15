@@ -42,6 +42,15 @@ export const MODELING_COMMAND = '/agentheim:modeling';
 // regardless of the builder's alias setup.
 export const QUICK_CAPTURE_COMMAND = '/agentheim:quick-capture';
 
+// The fully-qualified, bare WORK command (agentic-workflow-024) — what the board
+// prompt bar's right-side action column launches to kick off an EXECUTION run
+// against the ready backlog. Unlike Quick Capture / Modeling (authoring actions that
+// consume the typed prompt), Work IGNORES the textarea and always launches this bare
+// command, so it is a plain constant rather than a `*CommandFor(prompt)` builder.
+// Bare and fully-qualified for the same reason MODELING_COMMAND is — it resolves
+// regardless of the builder's alias setup (ADR-0018 launch / clipboard fallback).
+export const WORK_COMMAND = '/agentheim:work';
+
 /**
  * Trim an id-like value to a safe suffix, or '' for anything that is not a real
  * id. Shared by the explicit-verb card builders so each degrades identically: a

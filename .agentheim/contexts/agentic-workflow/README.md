@@ -147,9 +147,10 @@ separate BC, but today the whole tool lives in this one.
   re-projection never resets it mid-session. See ADR-0015, ADR-0009, ADR-0003.
 - **Persisted skip-permissions armed toggle** — a shell-header control (agentic-workflow-021), **off
   by default**, that when **armed** makes **every** bridge launch request a skip-permissions session:
-  `launchOrCopy` threads an optional `skipPermissions` flag through its one shared seam, so all four
+  `launchOrCopy` threads an optional `skipPermissions` flag through its one shared seam, so all
   bridge launches — the prompt-bar Quick Capture / Modeling pair (aw-020, relocated to the board
-  prompt bar in aw-023) **and** the per-card Refine / Promote pair (aw-022) — POST
+  prompt bar in aw-023), the prompt-bar **Work** button (aw-024) **and** the per-card Refine / Promote
+  pair (aw-022) — POST
   `{ prompt, skipPermissions: true }`, and the bridge (infrastructure-016)
   seeds `claude --dangerously-skip-permissions "<prompt>"`. When **off** the field is **omitted, never
   sent `false`**, so the OFF path is byte-identical to today and matches the contract's strict-`true`
@@ -208,15 +209,25 @@ separate BC, but today the whole tool lives in this one.
   you don't *add* tickets to those columns from here. Launching a session is an **external
   side-effect**, not a lifecycle write: the board stays a projection of disk. See ADR-0018, ADR-0003,
   ADR-0009, ADR-0001.
-- **Board prompt bar (Quick Capture / Modeling)** -- the backlog column's former single
+- **Board prompt bar (Quick Capture / Modeling / Work)** -- the backlog column's former single
   add-ticket **`+`** first became **two** labelled launch buttons inside the backlog column
   (agentic-workflow-020), then those two buttons were **relocated** (agentic-workflow-023) out of the
   column into a **board-level prompt bar**: a multi-line **textarea** rendered on the **board view
   only**, between the shell header and the board columns (above the `Board` count strip), with the two
-  buttons beneath it. The textarea is a board-local, token-matched control (the styleguide has no
+  buttons beneath it. In **agentic-workflow-024** the bar was re-laid-out into a **left/right split**: the
+  textarea narrows to **~two-thirds** width (left) and a **right-side action column** (~one third) holds a
+  single **Work** button. Work is an *execution* action -- it seeds the **bare** `/agentheim:work`
+  (`WORK_COMMAND`, a plain constant: Work **ignores the textarea** and always launches the bare command)
+  and runs the ready backlog, so it earns its own spot **beside** the field rather than below it with the
+  prompt-seeded authoring pair. It threads `skipPermissions` like the others (aw-021 / ADR-0019) but
+  passes **no** `onResult` -- Work never consumed the prompt, so it does **not** clear the textarea or fire
+  confetti. The Quick Capture / Modeling pair stays in its row **beneath** the textarea, unchanged. The
+  split and the action column are board-local, token-matched layout (flex), the styleguide consumed
+  **unforked** (ADR-0003) -- same posture as the textarea and confetti before it.
+  The textarea is a board-local, token-matched control (the styleguide has no
   text-input primitive; the board-control precedent -- the sort `<select>`, the group toggle -- keeps
   the styleguide consumed **unforked**, ADR-0003). The builder **authors a prompt once and hands it to
-  whichever skill they pick**: clicking **Quick Capture** seeds `/agentheim:quick-capture <prompt>`
+  whichever authoring skill they pick**: clicking **Quick Capture** seeds `/agentheim:quick-capture <prompt>`
   (the fast idea-dump, renamed in aw-019) and **Modeling** seeds `/agentheim:modeling <prompt>` (the
   full Socratic session), where `<prompt>` is the **trimmed** textarea contents joined to the command
   by a single space. An **empty / whitespace-only** textarea falls back to the **bare** command
@@ -240,9 +251,10 @@ separate BC, but today the whole tool lives in this one.
   function of an injected `fetch` + `copy` -- `dashboard/app/bridge-launch.js` (`launchOrCopy`,
   `BRIDGE_TOKEN_HEADER`, unit-tested under `node --test`); it never throws or rejects. The exact
   launched/copied command **strings** come from `dashboard/app/modeling-command.js`
-  (the bare `QUICK_CAPTURE_COMMAND` / `MODELING_COMMAND` constants, plus the prompt-taking
+  (the bare `QUICK_CAPTURE_COMMAND` / `MODELING_COMMAND` / `WORK_COMMAND` constants, plus the prompt-taking
   `quickCaptureCommandFor(prompt)` / `modelingCommandFor(prompt)` builders that append a single space +
-  the trimmed prompt or degrade to the bare command -- aw-023) -- one source of truth for both paths.
+  the trimmed prompt or degrade to the bare command -- aw-023; `WORK_COMMAND` is a bare constant with no
+  builder, since Work never appends the prompt -- aw-024) -- one source of truth for both paths.
   Launching a
   session is an **external side-effect** (like the clipboard copy), **not** a lifecycle write: the board
   stays a projection of disk (ADR-0001). See ADR-0018, ADR-0003, ADR-0001, ADR-0009.

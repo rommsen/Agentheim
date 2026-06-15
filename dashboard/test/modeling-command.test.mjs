@@ -20,6 +20,7 @@ import assert from 'node:assert/strict';
 import {
   MODELING_COMMAND,
   QUICK_CAPTURE_COMMAND,
+  WORK_COMMAND,
   refineCommandFor,
   promoteCommandFor,
   quickCaptureCommandFor,
@@ -43,6 +44,20 @@ test('the two column launch commands are distinct and both fully-qualified `/age
   assert.notEqual(QUICK_CAPTURE_COMMAND, MODELING_COMMAND);
   assert.match(QUICK_CAPTURE_COMMAND, /^\/agentheim:/);
   assert.match(MODELING_COMMAND, /^\/agentheim:/);
+});
+
+// agentic-workflow-024: the board prompt bar gains a right-side action column whose
+// single Work button launches the EXECUTION skill — the bare `/agentheim:work`. Work
+// ignores the typed prompt, so this is a bare CONSTANT (no `*CommandFor(prompt)`
+// builder), mirroring MODELING_COMMAND / QUICK_CAPTURE_COMMAND.
+test('WORK_COMMAND is the fully-qualified bare work command (not the /work alias)', () => {
+  assert.equal(WORK_COMMAND, '/agentheim:work');
+});
+
+test('WORK_COMMAND is distinct from the authoring commands and fully-qualified', () => {
+  assert.notEqual(WORK_COMMAND, MODELING_COMMAND);
+  assert.notEqual(WORK_COMMAND, QUICK_CAPTURE_COMMAND);
+  assert.match(WORK_COMMAND, /^\/agentheim:/);
 });
 
 // agentic-workflow-022: the per-card Refine / Promote launch buttons. The verbs are

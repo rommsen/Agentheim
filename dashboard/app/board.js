@@ -42,7 +42,7 @@ import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { loadSkipPermissions, saveSkipPermissions } from "./skip-permissions-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { refineCommandFor, promoteCommandFor, quickCaptureCommandFor, modelingCommandFor } from "./modeling-command.js";
+import { refineCommandFor, promoteCommandFor, quickCaptureCommandFor, modelingCommandFor, WORK_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
@@ -414,23 +414,36 @@ function BoardPromptBar({ skipPermissions = false }) {
       display: "flex", flexDirection: "column", gap: 10,
       padding: "0 4px 20px",
     }}>
-      <textarea
-        className="focusable"
-        aria-label="Prompt for the launched session"
-        placeholder="Type a prompt, then choose how to file it — Quick Capture or Modeling…"
-        rows=${2}
-        value=${prompt}
-        onChange=${(e) => setPrompt(e.target.value)}
-        style=${{
-          width: "100%", resize: "vertical", minHeight: 52,
-          fontFamily: "var(--font-ui)", fontSize: 13, lineHeight: 1.5,
-          color: "var(--fg-1)", background: "var(--surface-1)",
-          border: "1px solid var(--hairline)", borderRadius: "var(--radius-md)",
-          padding: "10px 12px",
-          transition: "border-color var(--duration-fast) var(--ease-base)",
-        }}
-        onFocus=${(e) => { e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
-        onBlur=${(e) => { e.currentTarget.style.borderColor = "var(--hairline)"; }} />
+      <div style=${{
+        display: "flex", flexDirection: "row", alignItems: "stretch", gap: 10,
+        flexWrap: "wrap",
+      }}>
+        <textarea
+          className="focusable"
+          aria-label="Prompt for the launched session"
+          placeholder="Type a prompt, then choose how to file it — Quick Capture or Modeling…"
+          rows=${2}
+          value=${prompt}
+          onChange=${(e) => setPrompt(e.target.value)}
+          style=${{
+            flex: 2, flexBasis: 0, minWidth: 220,
+            resize: "vertical", minHeight: 52,
+            fontFamily: "var(--font-ui)", fontSize: 13, lineHeight: 1.5,
+            color: "var(--fg-1)", background: "var(--surface-1)",
+            border: "1px solid var(--hairline)", borderRadius: "var(--radius-md)",
+            padding: "10px 12px",
+            transition: "border-color var(--duration-fast) var(--ease-base)",
+          }}
+          onFocus=${(e) => { e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+          onBlur=${(e) => { e.currentTarget.style.borderColor = "var(--hairline)"; }} />
+        <div role="group" aria-label="Run the ready backlog" style=${{
+          flex: 1, flexBasis: 0, minWidth: 120,
+          display: "flex", flexDirection: "column", alignItems: "stretch", gap: 8,
+        }}>
+          <${LaunchButton} label="Work" command=${WORK_COMMAND}
+            icon="arrow-right" emphasis="primary" skipPermissions=${skipPermissions} />
+        </div>
+      </div>
       <div role="group" aria-label="Start a session seeded with the prompt above" style=${{
         position: "relative",
         display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
