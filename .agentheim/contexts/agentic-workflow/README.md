@@ -277,8 +277,12 @@ separate BC, but today the whole tool lives in this one.
   (clipboard blocked too) clears nothing and plays nothing. The burst is rendered by **canvas-confetti**
   (aw-034 swapped out the original hand-rolled CSS-keyframe burst -- it is the dashboard's first
   **bundled** frontend runtime dependency, `import`ed in `board.js` and folded into `dist/app.js` by
-  esbuild, **no CDN**). It fires canvas-confetti's default **full-viewport** `confetti()` from an origin
-  near the prompt-bar buttons -- board-**owned** and not a styleguide motion primitive (ADR-0020 amended:
+  esbuild, **no CDN**). It fires canvas-confetti's default **full-viewport** `confetti()` from the
+  **center of the prompt-bar textarea**, aimed at the **viewport center** -- both origin and aim are
+  computed at **fire time** from the textarea's live `getBoundingClientRect()` and the live viewport
+  (aw-035's pure `confettiLaunchFromRect(rect, viewport)` helper, `confetti-launch.js`), replacing
+  aw-034's hardcoded `{x:0.18,y:0.92}` / `angle:75` so a scrolled or resized board still bursts out of
+  the textarea -- board-**owned** and not a styleguide motion primitive (ADR-0020 amended:
   "board-local" means ownership, not pixel footprint). The confetti honours
   `prefers-reduced-motion` (ADR-0014's strip-to-plain contract -- the `matchMedia` guard means
   `confetti()` is never invoked under reduce, so it renders nothing) and draws its colors from the four

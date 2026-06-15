@@ -190,7 +190,7 @@ test('confetti honours prefers-reduced-motion: the canvas-confetti call is never
   );
   assert.match(
     confettiFn[0],
-    /fireConfetti\(\)/,
+    /fireConfetti\(/,
     'BoardConfetti must drive the canvas-confetti call (fireConfetti) once unguarded',
   );
 });
@@ -208,15 +208,56 @@ test('the celebration is rendered by canvas-confetti, not the old CSS keyframes 
   assert.doesNotMatch(boardSrc, /ensureConfettiStyle/, 'ensureConfettiStyle (the keyframe injector) is gone');
 });
 
-test('the burst fires from canvas-confetti default global with an origin near the prompt-bar buttons (not the stock centre)', () => {
+test('the burst fires from canvas-confetti default global, with a dynamic origin computed at fire time (aw-035)', () => {
   const fire = boardSrc.match(/function fireConfetti[\s\S]*?\n}/);
   assert.ok(fire, 'a fireConfetti helper must drive the canvas-confetti call');
   // Default global confetti() (full-viewport canvas), not confetti.create(...).
   assert.match(fire[0], /\bconfetti\(\{/, 'must call the default global confetti({...})');
   assert.doesNotMatch(fire[0], /confetti\.create/, 'must use the default global, not a scoped confetti.create canvas');
-  // A custom origin, NOT the stock {x:0.5, y:0.5} centre.
-  assert.match(fire[0], /origin:\s*\{\s*x:/, 'must pass a custom origin');
+  // aw-035: the origin/angle are no longer the hardcoded {x:0.18,y:0.92}/75 on the
+  // fire path — they come from the launch geometry computed at fire time.
+  assert.match(
+    fire[0],
+    /origin:\s*launch\.origin/,
+    'the confetti() call must use the dynamically-computed origin (launch.origin), not a hardcoded literal',
+  );
+  assert.match(
+    fire[0],
+    /angle:\s*launch\.angle/,
+    'the confetti() call must use the dynamically-computed aim (launch.angle), not a fixed angle',
+  );
   assert.doesNotMatch(fire[0], /x:\s*0\.5\s*,\s*y:\s*0\.5/, 'must not fire from the stock {x:0.5,y:0.5} centre');
+});
+
+test('origin + aim are derived from the textarea live rect at FIRE TIME, aimed at the viewport center (aw-035)', () => {
+  // board.js imports the pure launch-geometry helper.
+  assert.match(
+    boardSrc,
+    /import\s*\{[^}]*confettiLaunchFromRect[^}]*\}\s*from\s*["']\.\/confetti-launch\.js["']/,
+    'board.js must import confettiLaunchFromRect from the launch-geometry module',
+  );
+  const fire = boardSrc.match(/function fireConfetti[\s\S]*?\n}/);
+  // The live on-screen rect is read at fire time (getBoundingClientRect + window
+  // innerWidth/innerHeight), so a scrolled/resized board still fires correctly.
+  assert.match(
+    fire[0],
+    /getBoundingClientRect\(\)/,
+    'origin must be read from the textarea live rect at fire time (getBoundingClientRect)',
+  );
+  assert.match(
+    fire[0],
+    /window\.innerWidth/,
+    'the rect must be normalized against the live viewport (window.innerWidth/innerHeight)',
+  );
+  assert.match(
+    fire[0],
+    /confettiLaunchFromRect\(/,
+    'fireConfetti must delegate the origin/angle geometry to confettiLaunchFromRect',
+  );
+  // The prompt-bar textarea ref is plumbed down to BoardConfetti so the fire path
+  // can read it.
+  assert.match(boardSrc, /originRef=\$\{textareaRef\}/, 'the textarea ref must be passed to BoardConfetti as originRef');
+  assert.match(boardSrc, /ref=\$\{textareaRef\}/, 'the textarea must carry the ref BoardConfetti reads at fire time');
 });
 
 test('colors are resolved at fire time off the four status bases (theme-aware), not a static var() list', () => {

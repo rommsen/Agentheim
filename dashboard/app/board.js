@@ -54,6 +54,7 @@ import { SlideOver } from "./slide-over.js";
 import { MainPaneReader } from "./main-pane-reader.js";
 import { treeToLibrary } from "./library-data.js";
 import { resolveConfettiColors } from "./confetti-palette.js";
+import { confettiLaunchFromRect } from "./confetti-launch.js";
 import { isTaskIntent } from "./intent-route.js";
 import { createLiveUpdate } from "./live-update.js";
 
@@ -336,13 +337,16 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
 // the committed dist/app.js (no CDN; the board runs offline on 127.0.0.1).
 //
 // canvas-confetti's default global confetti() paints a fixed FULL-VIEWPORT canvas
-// (pointer-events: none, above content, auto-cleared). We fire from an origin near
-// the prompt-bar buttons (lower-left of the viewport) so particles rain across the
-// page — a deliberate full-window step up from the old contained-over-the-buttons
-// footprint. It stays a board-OWNED, board-local transient ACK (ADR-0020): the
-// board injects the call, it is consumed within the BC, and it is NOT promoted to a
-// design-system motion primitive — "board-local" was always about ownership, not
-// pixel footprint.
+// (pointer-events: none, above content, auto-cleared). aw-035 makes the burst read
+// as an explosion OUT OF the prompt bar: it originates at the prompt-bar textarea's
+// CENTER and shoots toward the CENTER of the viewport. Both the origin and the aim
+// angle are computed at FIRE TIME from the textarea's live getBoundingClientRect()
+// + window.innerWidth/innerHeight (confettiLaunchFromRect, confetti-launch.js), so
+// a scrolled / resized board still fires from the textarea's current on-screen
+// position — replacing aw-034's hardcoded origin {x:0.18,y:0.92} + fixed angle 75.
+// It stays a board-OWNED, board-local transient ACK (ADR-0020): the board injects
+// the call, it is consumed within the BC, and it is NOT promoted to a design-system
+// motion primitive — "board-local" was always about ownership, not pixel footprint.
 //
 // Colors are resolved at FIRE TIME (resolveConfettiColors, confetti-palette.js) off
 // the document root — the four status bases (--st-done/--st-todo/--st-doing/
@@ -350,11 +354,23 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
 // projection of the styleguide tokens (ADR-0003). Never the reserved selection
 // accent --accent-ochre-soft (ADR-0016) nor the --obligation skip-permissions hue
 // (aw-021) — both excluded by construction (neither is a status base).
-function fireConfetti() {
+function fireConfetti(textareaEl) {
   if (typeof document === "undefined" || typeof confetti !== "function") return;
   const colors = resolveConfettiColors(getComputedStyle(document.documentElement));
-  // Lively defaults; the exact tuning is iterated via the aw-025 replay button.
-  // Origin sits near the prompt-bar buttons (lower-left), spraying up-and-out.
+  // Read the textarea's LIVE on-screen rect at fire time and derive a textarea-
+  // center origin aimed at the viewport center {0.5,0.5}. If the ref is missing
+  // (defensive — never break the celebration), fall back to aw-034's constants.
+  const fallback = { origin: { x: 0.18, y: 0.92 }, angle: 75 };
+  const launch = (textareaEl && typeof textareaEl.getBoundingClientRect === "function"
+    && typeof window !== "undefined")
+    ? confettiLaunchFromRect(
+        textareaEl.getBoundingClientRect(),
+        { width: window.innerWidth, height: window.innerHeight },
+      )
+    : fallback;
+  // Lively defaults; the exact tuning (particleCount/spread/startVelocity/gravity/
+  // scalar) is iterated via the aw-025 replay button — aw-035 changes only the
+  // origin + aim, not the spread profile.
   confetti({
     particleCount: 120,
     spread: 75,
@@ -362,8 +378,8 @@ function fireConfetti() {
     gravity: 0.9,
     scalar: 0.9,
     ticks: 220,
-    origin: { x: 0.18, y: 0.92 },
-    angle: 75,
+    origin: launch.origin,
+    angle: launch.angle,
     ...(colors.length ? { colors } : {}),
   });
 }
@@ -371,17 +387,19 @@ function fireConfetti() {
 // A board-local confetti burst (agentic-workflow-023, reimplemented aw-034) marking
 // the prompt bar's clearance after a successful launch/copy. It is keyed by a
 // monotonic `fireKey` from the parent: each successful action bumps the key,
-// remounting a fresh BoardConfetti that fires once on mount. Under
+// remounting a fresh BoardConfetti that fires once on mount. The `originRef` is the
+// prompt-bar textarea's DOM ref — read at FIRE TIME inside the effect so the burst
+// originates from the textarea's current on-screen center (aw-035). Under
 // `prefers-reduced-motion: reduce` it renders NOTHING and never invokes confetti()
 // — the clearance stays a quiet, motionless ACK (ADR-0014 strip-to-plain).
-function BoardConfetti({ fireKey }) {
+function BoardConfetti({ fireKey, originRef }) {
   const reduce = typeof window !== "undefined" && typeof window.matchMedia === "function"
     && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   useEffect(() => {
     // The matchMedia guard wraps the canvas-confetti call: under reduce it is never
     // invoked (ADR-0014), and a falsy fireKey (initial mount) fires nothing.
     if (reduce || !fireKey) return;
-    fireConfetti();
+    fireConfetti(originRef && originRef.current);
   }, [fireKey, reduce]);
   // canvas-confetti owns its own full-viewport canvas; BoardConfetti renders no DOM.
   return null;
@@ -415,6 +433,9 @@ function BoardConfetti({ fireKey }) {
 function BoardPromptBar({ skipPermissions = false }) {
   const [prompt, setPrompt] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
+  // The celebration burst originates at the textarea's center (aw-035): hold a ref
+  // so BoardConfetti can read its live on-screen rect at fire time.
+  const textareaRef = useRef(null);
 
   // Fire only on a successful launch / landed copy (aw-023). A fully-silent action
   // (clipboard blocked too) leaves the textarea and plays no confetti.
@@ -432,6 +453,7 @@ function BoardPromptBar({ skipPermissions = false }) {
       padding: "0 4px 20px",
     }}>
       <textarea
+        ref=${textareaRef}
         className="focusable"
         aria-label="Prompt for the launched session"
         placeholder="Type a prompt, then choose how to file it — Quick Capture or Modeling…"
@@ -475,7 +497,7 @@ function BoardPromptBar({ skipPermissions = false }) {
             padding: "7px 10px", cursor: "pointer",
           }}>🎉 Replay celebration</button>
         ${/* END TEMP (aw-025) */ ""}
-        <${BoardConfetti} fireKey=${confettiKey} />
+        <${BoardConfetti} fireKey=${confettiKey} originRef=${textareaRef} />
       </div>
     </section>`;
 }
