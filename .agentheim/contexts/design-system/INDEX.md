@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 3
+- **Backlog:** 2
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 15
+- **Done:** 16
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **design-system-018** — Shared Button + Modal + ConfirmDialog primitives (centered, scrim, Esc-to-cancel) (feature) — `done/design-system-018-confirm-dialog-modal.md`
 - **design-system-017** — Add the trash-2 glyph to the shared icon set (feature) — `done/design-system-017-trash-glyph.md`
 - **design-system-015** — Shared Menu / Popover primitive for dropdown menus (feature) — `done/design-system-015-shared-menu-popover-primitive.md`
 - **design-system-014** — Drawer contextual header leads with the item title, path demoted to a sub-line (feature) — `done/design-system-014-drawer-header-leads-with-title.md`
@@ -47,7 +48,6 @@ research touching this BC, and concept synthesis pages.
 <!-- backlog-list:start -->
 - **design-system-012** — Make the colors prettier — `backlog/design-system-012-prettier-colors.md`
 - **design-system-016** — Search field + grouped-results popover/listbox styleguide pattern (feature) — `backlog/design-system-016-search-field-grouped-results-pattern.md`
-- **design-system-018** — Shared ConfirmDialog / Modal primitive (centered, scrim, Esc-to-cancel) (feature) — `backlog/design-system-018-confirm-dialog-modal.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

@@ -5,13 +5,69 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 13:33 -- Task verified and completed: design-system-018 - Shared Button + Modal + ConfirmDialog primitives
+
+**Type:** Work / Task completion
+**Task:** design-system-018 - Shared Button + Modal + ConfirmDialog primitives (centered, scrim, Esc-to-cancel)
+**Summary:** Shipped the three-layer confirm-dialog family — a shared labelled `Button` (neutral + `--obligation` destructive), a viewport-fixed centered scrim-backed `Modal` (fade+scale reveal stripped under reduced-motion, full focus trap, stacked above the Drawer), and a `ConfirmDialog` composed over both — with the pure dismiss/focus-trap decisions factored into a React-free `modal-state.js` and a section-12 canvas specimen. Gate reopened.
+**Verification:** PASS (iteration 1) — verifier mapped every acceptance criterion to evidence (Button --obligation not the reserved accent; Modal fixed/centered + Drawer's exact `rgba(8,9,12,0.40)` scrim + z-index 60>40; ConfirmDialog Esc/scrim/Cancel→onClose & Confirm→onConfirm; destructive flag; full focus trap incl. return-to-trigger; fade+scale reveal + reduced-motion strip; React-free `modal-state.js`; canvas specimens) and confirmed the styleguide suite 73/73 green. Noted the canvas section numbering gap (10→12→13, no 11) as cosmetic, not a defect.
+**Commit:** <pending>
+**Files changed:** 7 (button.js, modal.js, modal-state.js, confirm-dialog.js, app.js, modal.test.mjs, design-system README)
+**Tests added:** 19 (modal.test.mjs — pure modal-state predicates + primitive source/behavior guards)
+**ADRs written:** none — decisions grounded in existing ADR-0003 / 0005 / 0014 / 0016
+
+---
+
+## 2026-06-16 13:31 -- Batch started: [design-system-018]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-018 - Shared Button + Modal + ConfirmDialog primitives (centered, scrim, Esc-to-cancel)
+**Parallel:** no (1 worker) — single ready task. Dependency design-system-001-styleguide is done (gate open).
+
+---
+
+## 2026-06-16 13:30 -- Modeling / Promoted: design-system-018 - Shared Button + Modal + ConfirmDialog primitives
+
+**Type:** Modeling / Promote
+**BC:** design-system
+**From → To:** backlog → todo
+**Note:** Promoted ahead of its own "do not promote yet" build-later trigger — builder override. aw-048's board-local confirm is still in backlog (zero shipped consumers), so the shared primitive is being built ahead of a proven board-local shape; canvas specimens stand in as proof-of-shape. Override recorded in the task Notes.
+
+---
+
+## 2026-06-16 13:05 -- Modeling / Refined: design-system-018 - Shared Button + Modal + ConfirmDialog primitives
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** backlog
+**Summary:** Second refine pass, grounded against the live styleguide source (`drawer.js`, `primitives.js`, the token CSS), which surfaced three details the first pass had left for a worker to guess. Cornered all three with the builder (2026-06-16): (1) **the styleguide has no shared text-button primitive** — only the icon-only `IconButton` — so ds-018 now ships a **third layer, a `Button` base** (neutral + `destructive`/`--obligation` variants) that `ConfirmDialog` composes, rather than hand-rolling button styling; (2) the `Drawer` (the machinery to lift) is a *contained* `absolute/inset-0/z-40` overlay, so the `Modal` is pinned **`position: fixed`, viewport-centered, stacked above the Drawer** — explicitly NOT copying the Drawer's containment; (3) the reveal is **fade + slight scale-up** (slide doesn't transfer to a centered panel), and the scrim reuses the Drawer's exact `rgba(8,9,12,0.40)` dim (there is no `--scrim` token). Title + INDEX line updated to name all three primitives; AC grew the Button + fixed-positioning + stacking + reveal-shape criteria; Notes pin the Drawer bits to lift vs. the three deliberate departures. related_adrs gained 0016 (the destructive tint deliberately avoids the reserved accent). **Build-later hold unchanged — still NOT promoted** (zero shipped consumers; aw-048's board-local confirm hasn't shipped; ds-005 wants two consumers before unifying).
+**Split into:** none — `Button` folded into ds-018 (co-designed with the destructive Confirm); layering kept clean so a future split stays trivial.
+**ADRs written:** none
+
+---
+
+## 2026-06-16 12:43 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (984d317)
+**Notes:**
+- Single ready task (design-system-017); todo/ and doing/ now empty.
+- design-system gate is REOPENED — this is a visible canvas change (section-04 gallery now shows trash-2). The builder must re-review the canvas before aw-048 ships its board dismiss affordance.
+- aw-048 (the consuming dashboard trash-can task) is still in backlog/ and needs a `modeling` promote before `work` can claim it; it also depends on design-system-018 (shared ConfirmDialog/Modal, non-blocking per its refine).
+
+---
+
 ## 2026-06-16 12:42 -- Task verified and completed: design-system-017 - Add the trash-2 glyph to the shared icon set
 
 **Type:** Work / Task completion
 **Task:** design-system-017 - Add the trash-2 glyph to the shared icon set
 **Summary:** Added the Lucide `trash-2` glyph to the shared `LUCIDE` map (`styleguide/app/icons.js`) at the corrected symmetric-lid upstream geometry (`c1 0 2 1 2 2`), and surfaced it in the canvas section-04 interface-set gallery (`foundations2.js` curated `ui` array) — so aw-048's board dismiss affordance consumes it unforked via `Icon name="trash-2"`. `dist/` deliberately NOT rebuilt (derived artifact, ADR-0003). Gate-reopen note added to the BC README.
 **Verification:** PASS (iteration 1) — verifier confirmed the exact symmetric geometry (asymmetric `c1 0 1 1 2 2` absent), the gallery entry, inner-markup-only entry with the `Icon` signature unchanged, the README gate-reopen note, and the styleguide suite 54/54 green incl. 3 new icons-trash guards.
-**Commit:** <pending>
+**Commit:** 984d317
 **Files changed:** 4 (icons.js, foundations2.js, icons-trash.test.mjs [new], design-system README)
 **Tests added:** 3 (icons-trash.test.mjs — static geometry + gallery guards)
 **ADRs written:** none

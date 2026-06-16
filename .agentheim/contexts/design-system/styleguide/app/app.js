@@ -17,6 +17,9 @@ import { HeaderMinimal, HeaderContextual, describeItem } from "./drawer.js";
 import { TreeGroup } from "./library.js";
 import { Collapsible } from "./collapsible.js";
 import { Menu, MenuItem, MenuDivider } from "./menu.js";
+import { Button } from "./button.js";
+import { Modal } from "./modal.js";
+import { ConfirmDialog } from "./confirm-dialog.js";
 import { Segmented, ThemeToggle, LiveApp } from "./live.js";
 import {
   ThemeCtx, Glyph, GuideSection, SubHead, DocCard, ColorSection,
@@ -422,10 +425,84 @@ function MenuSection() {
     </${GuideSection}>`;
 }
 
-// ---- 11: empty states ----
+// ---- 12: modal / confirm dialog ----
+// Documents the shared Button / Modal / ConfirmDialog family (design-system-018).
+// The Modal is the CENTERED sibling of the Drawer (section 07): viewport-fixed,
+// scrim-backed (the Drawer's exact rgba(8,9,12,0.40) dim), stacked above the
+// Drawer, revealing with fade + scale-up (stripped under prefers-reduced-motion),
+// with a full focus trap. The ConfirmDialog composes it with two Button controls
+// (Cancel neutral, Confirm neutral OR destructive). Danger draws from the
+// --obligation family, never the reserved accent (ADR-0016). Click a button below
+// to open the dialog live — Esc, the scrim, and Cancel all dismiss; Confirm fires
+// the callback. The visible addition reopens the design-system gate for re-review.
+function ButtonRow() {
+  return html`
+    <div style=${{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+      <div>
+        <${StateLabel}>Neutral (default)</${StateLabel}>
+        <${Button} onClick=${() => {}}>Save changes<//>
+      </div>
+      <div>
+        <${StateLabel}>Destructive (--obligation)</${StateLabel}>
+        <${Button} variant="destructive" onClick=${() => {}}>Delete<//>
+      </div>
+    </div>`;
+}
+function ConfirmDialogSpecimen() {
+  const [open, setOpen] = useState(false);
+  const [destructiveOpen, setDestructiveOpen] = useState(false);
+  const [lastAction, setLastAction] = useState("—");
+  return html`
+    <${DocCard} style=${{ flex: 1, minWidth: 320 }}>
+      <${SubHead}>Confirm dialog — neutral &amp; destructive</${SubHead}>
+      <p style=${{ margin: "0 0 18px", fontFamily: "var(--font-ui)", fontSize: 12.5, lineHeight: 1.6, color: "var(--fg-3)" }}>
+        A centered, scrim-backed dialog over the <code>Modal</code> shell. The consumer owns the title, body and labels; the primitive owns placement, the fade + scale-up reveal, and dismissal. Esc, the scrim, and Cancel all dismiss without confirming; Confirm fires the callback. Focus is trapped within the panel and returns to the trigger on close. The <code>destructive</code> flag tints Confirm from <code>--obligation</code> (ADR-0016 keeps danger off the reserved accent).
+      </p>
+      <div style=${{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+        <${Button} onClick=${() => setOpen(true)}>Open confirm<//>
+        <${Button} variant="destructive" onClick=${() => setDestructiveOpen(true)}>Dismiss ticket…<//>
+      </div>
+      <div style=${{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-4)" }}>
+        last action = ${lastAction}
+      </div>
+      <${ConfirmDialog}
+        open=${open}
+        title="Save these changes?"
+        onClose=${() => { setOpen(false); setLastAction("cancelled"); }}
+        onConfirm=${() => { setOpen(false); setLastAction("confirmed"); }}
+        confirmLabel="Save">
+        Your edits will be written to the working copy. You can revert from history afterwards.
+      </${ConfirmDialog}>
+      <${ConfirmDialog}
+        open=${destructiveOpen}
+        destructive=${true}
+        title="Dismiss this ticket?"
+        onClose=${() => { setDestructiveOpen(false); setLastAction("cancelled"); }}
+        onConfirm=${() => { setDestructiveOpen(false); setLastAction("dismissed"); }}
+        confirmLabel="Dismiss"
+        cancelLabel="Keep">
+        Dismissing moves the ticket out of the board. This cannot be undone from here.
+      </${ConfirmDialog}>
+    </${DocCard}>`;
+}
+function ModalSection() {
+  return html`
+    <${GuideSection} index="12" title="Modal &amp; confirm dialog"
+      desc="A centered, scrim-backed dialog — the Drawer's centered sibling. The Modal pins to the viewport (above the slide-over), dims the page behind it with the Drawer's exact backdrop, and reveals with a fade + slight scale-up that strips to a hard show under prefers-reduced-motion. Focus moves into the panel and stays trapped while open, returning to the trigger on close. The ConfirmDialog composes it with the new Button primitive — a neutral Cancel and a neutral-or-destructive Confirm, danger drawn from --obligation (never the reserved accent).">
+      <div style=${{ marginBottom: 24 }}>
+        <${SubHead} style=${{ marginBottom: 10 }}>Button — neutral &amp; destructive</${SubHead}>
+        <${ButtonRow} />
+      </div>
+      <div style=${{ display: "flex", gap: 28, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <${ConfirmDialogSpecimen} />
+      </div>
+    </${GuideSection}>`;
+}
+
+// ---- 13: empty states ----
 function EmptySection() {
   return html`
-    <${GuideSection} index="11" title="Empty states"
+    <${GuideSection} index="13" title="Empty states"
       desc="State the fact, then the action — never alarmist, never decorative. An empty column invites a ticket; an empty drawer waits quietly for a selection.">
       <div style=${{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
         <div>
@@ -479,6 +556,7 @@ export function App() {
         <${MarkdownSection} />
         <${NavSection} />
         <${MenuSection} />
+        <${ModalSection} />
         <${EmptySection} />
         <${Footer} />
       </main>

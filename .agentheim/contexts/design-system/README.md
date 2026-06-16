@@ -354,6 +354,63 @@ documents the pattern in BOTH modes (section 10, `MenuSpecimen`).
 > styleguide source; `dist/` is rebuilt by the consuming task (`agentic-workflow-048`)
 > when the trash can actually renders on the board.
 
+### Button / Modal / ConfirmDialog — the centered confirm-dialog family (design-system-018)
+
+The styleguide gained a **three-layer** primitive family for centered, scrim-backed
+confirm dialogs — the affordance the board's per-card dismiss (`agentic-workflow-048`)
+will eventually consume. Built ahead of a shipped board-local consumer (a builder
+override of the build-later trigger); the canvas specimens stand in as proof-of-shape.
+
+- **`Button` (`app/button.js`) — the first shared labelled button.** Before this there
+  was only the icon-only ghost `IconButton` (`app/drawer.js`). A token-composed labelled
+  button (`--font-ui`, `--radius-sm`, hairline, the `IconButton`'s
+  `--duration-fast`/`--ease-base` hover language) with **two variants**: `neutral`
+  (default — `--surface-1` fill brightening to `--surface-2`) and `destructive`, which
+  draws from the **`--obligation` danger family** (`--obligation-soft` fill, `--obligation`
+  border/label). Danger never borrows the **reserved ochre selection accent** (ADR-0016).
+  Presentational and stateless beyond local hover — no state module. Keyboard-operable
+  for free (native `<button>`).
+- **`Modal` (`app/modal.js`) — the centered scrim-backed shell.** The **centered sibling
+  of the `Drawer`**: it borrows the Drawer's proven machinery (the `window`
+  keydown-Escape listener, the scrim `onClick`, the `requestAnimationFrame` shown-flag
+  reveal, the 200ms unmount delay) but differs deliberately on three axes — (1) it is
+  **`position: fixed`, viewport-centered, and stacked ABOVE the Drawer** (`zIndex: 60` >
+  the Drawer's `40`), not a contained `absolute; inset:0` pane; (2) the reveal is **fade +
+  slight scale-up** (`scale(0.97)` → `scale(1)` with opacity over `--duration-base`), not
+  the Drawer's `translateX` slide, **stripped to a hard show under
+  `prefers-reduced-motion`** (ADR-0014); (3) it adds a **full focus trap** — focus moves
+  into the panel on open, Tab/Shift-Tab cycle stays contained, and focus returns to the
+  trigger on close. The scrim reuses the Drawer's **exact** `rgba(8,9,12,0.40)` dim
+  verbatim (there is no `--scrim` token). The panel elevates at `--shadow-lg`, on
+  `--surface-1` with a hairline and `--radius-md`. Body content is arbitrary (the
+  body-agnostic seam of `Menu`/`Collapsible`).
+- **`ConfirmDialog` (`app/confirm-dialog.js`) — composed over `Modal` + `Button`.** Renders
+  consumer-supplied **title** + **body**, a **Cancel** (neutral `Button`) and a **Confirm**
+  `Button`. **Esc, scrim-click, and Cancel all cancel** (route through the `Modal`'s
+  `onClose`); **Confirm** fires the consumer's `onConfirm`. An optional **`destructive`**
+  flag renders the Confirm as the destructive `Button` (the `--obligation` tint); default
+  Confirm stays neutral. The consumer owns the copy/labels (the ds-005 / ds-006 / ds-015
+  seam).
+
+The pure dismiss-key and focus-trap-wrap decisions live React-free in
+`app/modal-state.js` (`isDismissKey`, `isTrapKey`, `nextTrapFocusIndex`), testable under
+`node --test` without the canvas import map — mirroring `collapsible-state` / `menu-state`.
+The canvas documents the family in section 12 (`ModalSection`): the `Button` in both
+variants, and a `ConfirmDialog` specimen with both a neutral and a destructive dialog.
+
+> **Gate re-review reopened by the confirm-dialog family (`design-system-018`).** The
+> canvas gained a new documented **Modal / confirm dialog** pattern (section 12: a Button
+> row in both variants, and a live ConfirmDialog in neutral + destructive forms) — a
+> visible styleguide change that reopens the design-system gate per the `design-system-005`
+> / `007` / `009` / `014` / `015` / `017` precedent. Re-review with the builder against the
+> canvas (`styleguide/index.html` → section 12) **before** `agentic-workflow-048` migrates
+> its board-local confirm onto `ConfirmDialog`.
+
+> Live-board note: the served dashboard `dist/` is a derived artifact (ADR-0003) and was
+> **not** rebuilt here — this task adds new primitives with **no shipped dashboard
+> consumer** yet (the board still owns its own confirm). `dist/` is rebuilt by the consuming
+> task (`agentic-workflow-048`) when `ConfirmDialog` actually renders on the board.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.
@@ -366,4 +423,5 @@ documents the pattern in BOTH modes (section 10, `MenuSpecimen`).
 - Styleguide artifact: `styleguide/index.html` (+ `styleguide/styles/`, `styleguide/app/*.js` ES modules; entry `app/app.js`)
 - Shared `Collapsible` primitive: `styleguide/app/collapsible.js` (+ React-free `collapsible-state.js`), consumed by `TreeGroup` and the dashboard board (design-system-005)
 - Shared `Menu` / `Popover` primitive: `styleguide/app/menu.js` (+ React-free `menu-state.js`), consumed by the dashboard topbar settings gear (design-system-015)
+- Confirm-dialog family: `styleguide/app/button.js`, `styleguide/app/modal.js`, `styleguide/app/confirm-dialog.js` (+ React-free `modal-state.js`); the centered, scrim-backed confirm dialog the board's per-card dismiss will consume (design-system-018)
 - BC index: `INDEX.md`
