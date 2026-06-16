@@ -5,6 +5,43 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 17:02 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 3 (first-try PASS: 3, re-dispatched: 0, skipped: 0) — design-system-019 (6edeacc), agentic-workflow-053 (b210357), agentic-workflow-054 (121db42)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 6 (3 work + 3 chore bookkeeping)
+**Notes:**
+- All 3 ready tasks shared the rebuilt `dashboard/dist/app.js`, and aw-053/aw-054 additionally share `dashboard/app/board.js`, so the batch ran SEQUENTIALLY (one worker per batch) rather than in parallel — the conflict-safe reading of the conflict-detection rule.
+- Session started with pre-existing uncommitted modeling dirt (the ds-019/aw-053/aw-054 captures: untracked todo files + INDEX/protocol entries from the 16:00/16:20/16:28 modeling runs). It was folded into the per-task commits as it was consumed; todo/ is now empty across all BCs.
+- **Open human gate:** design-system-019 reopened the design-system styleguide gate (a visible styleguide change — search category-header colour). The code shipped and dist is rebuilt, but the builder still needs to re-review the canvas (`styleguide/index.html` → section 11) and re-confirm the gate OPEN. Noted in the design-system README.
+- No new backlog items, no ADRs, no concept candidates.
+
+---
+
+## 2026-06-16 16:58 -- Task verified and completed: agentic-workflow-054 - Board prompt bar "Prompt" title + whitespace above "Board"
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-054 - Board prompt bar gets a "Prompt" title; whitespace separates it from the "Board" title
+**Summary:** Added a board-local "Prompt" title above the prompt input in `BoardPromptBar`, token-matched to the board-local "Board" title (--font-ui / 15px / 600 / -0.01em / --fg-1), and an 18px `paddingTop` wrapper above `BoardHeader` so the capture region and the board read as two distinct zones. Board-local token-matched (ADR-0003 unforked), presentation-only (ADR-0017); `dashboard/dist/app.js` rebuilt.
+**Verification:** PASS (iteration 1) — title token-match confirmed against BoardHeader; whitespace via paddingTop:18 wrapper; "Board" title/count strip otherwise unchanged; no styleguide edit; dashboard suite 471 pass / 0 fail; dist carries the change.
+**Commit:** 121db42
+**Files changed:** 3 (board.js, dashboard/dist/app.js, board-prompt-bar.test.mjs) + BC README
+**Tests added:** 2 (board-prompt-bar.test.mjs — "Prompt" title-above-textarea + token-match guard, whitespace-above-Board guard)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 16:56 -- Batch started: [agentic-workflow-054]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-054 - Board prompt bar gets a "Prompt" title; whitespace separates it from the "Board" title
+**Parallel:** no (1 worker) — third of 3 sequential batches; board.js conflict with aw-053 cleared (aw-053 committed b210357).
+
+---
+
 ## 2026-06-16 16:54 -- Task verified and completed: agentic-workflow-053 - Topbar layout — settings gear + Work flush right
 
 **Type:** Work / Task completion

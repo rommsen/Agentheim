@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 52
+- **Done:** 53
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-054** — Board prompt bar gets a "Prompt" title; whitespace separates it from the "Board" title (feature) — `todo/agentic-workflow-054-prompt-title-and-board-spacing.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-054** — Board prompt bar gets a "Prompt" title; whitespace separates it from the "Board" title (feature) — `done/agentic-workflow-054-prompt-title-and-board-spacing.md`
 - **agentic-workflow-053** — Topbar layout — search on the left, settings gear + Work flush right (bug) — `done/agentic-workflow-053-topbar-right-align-settings-work.md`
 - **agentic-workflow-052** — Topbar global search UI — search field replaces the breadcrumb; grouped-results popover routing to the main pane (feature) — `done/agentic-workflow-052-topbar-global-search-ui.md`
 - **agentic-workflow-050** — GET /api/search read endpoint — content search across BC READMEs, ADRs, research & tasks (title + body, title-first ranking, body excerpts) (feature) — `done/agentic-workflow-050-api-search-read-endpoint.md`
