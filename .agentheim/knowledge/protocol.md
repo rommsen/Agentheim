@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 15:20 -- Modeling / Refined: agentic-workflow-052 - Topbar global search UI
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (refined → promoted in the same pass)
+**Summary:** Re-grounded the UI-half task against the now-shipped ds-016 `SearchField` and aw-050 `/api/search` (both `done`). Pinned the controlled-combobox seam (consumer owns `value`/`onChange`/debounce/min-length-2 *fetch* gate + the flat→grouped transform; ds-016's `getTitle`/`getExcerpt` defaults read `item.title`/`item.excerpt`, so no custom getters). Named the one pure board-side unit — `searchResultsToGroups` (`dashboard/app/search-results.js`, `node --test`). Resolved the one open decision (builder): ds-016's `panelState` opens a "No matches" panel for any non-empty query and has no force-closed prop, so the "sub-min → no panel" criterion is **relaxed** to accept the styleguide no-results panel for a 1-char query — ds-016 stays **unforked**, no design-system follow-up. All four deps (`design-system-001`, `design-system-016`, `agentic-workflow-049`, `agentic-workflow-050`) are `done` and the styleguide gate is OPEN → promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-06-16 15:12 -- Styleguide gate re-confirmed: OPEN (design-system-016)
 
 **Type:** Design-system / Gate approval
