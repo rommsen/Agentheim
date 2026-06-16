@@ -340,6 +340,20 @@ documents the pattern in BOTH modes (section 10, `MenuSpecimen`).
 > (ADR-0003) and was **rebuilt** (`node build.mjs`) to fold the shared-Menu retirement
 > into `dashboard/dist/app.js`.
 
+> **Gate re-review reopened by the trash-2 glyph (`design-system-017`).** The shared icon
+> set (`styleguide/app/icons.js`, the `LUCIDE` map) gained a `trash-2` glyph at upstream
+> Lucide geometry, now surfaced in the canvas's section-04 interface-set gallery
+> (`foundations2.js`, the curated `ui` array) — a visible styleguide change that reopens
+> the design-system gate per the `design-system-005` / `007` / `009` / `014` / `015`
+> precedent. Re-review with the builder against the canvas (`styleguide/index.html` →
+> section 04, the new trash can in the monochrome interface set) **before**
+> `agentic-workflow-048` ships the board's per-card dismiss affordance.
+
+> Live-board note: the served dashboard `dist/` is a derived artifact (ADR-0003) and was
+> **not** rebuilt here — this change only adds a dictionary entry + gallery item to the
+> styleguide source; `dist/` is rebuilt by the consuming task (`agentic-workflow-048`)
+> when the trash can actually renders on the board.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.

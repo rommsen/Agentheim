@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 3
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 10
+- **Done:** 15
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,11 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **design-system-017** — Add the trash-2 glyph to the shared icon set (feature) — `done/design-system-017-trash-glyph.md`
+- **design-system-015** — Shared Menu / Popover primitive for dropdown menus (feature) — `done/design-system-015-shared-menu-popover-primitive.md`
+- **design-system-014** — Drawer contextual header leads with the item title, path demoted to a sub-line (feature) — `done/design-system-014-drawer-header-leads-with-title.md`
+- **design-system-013** — Drawer "Open in full screen" uses a maximize glyph, not the external-link icon (chore) — `done/design-system-013-drawer-fullscreen-icon-maximize.md`
+- **design-system-011** — Stale add-affordance test — styleguide suite asserts against dashboard board.js that has dropped onAdd (bug) — `done/design-system-011-stale-add-affordance-test-vs-board-source.md`
 - **design-system-010** — TicketCard — drop the ochre selected-state ring (no replacement cue) (refactor) — `done/design-system-010-ticket-card-drop-ochre-selected-ring.md`
 - **design-system-009** — Drawer header — drop the Copy button, rename "Open in editor" → "Open in full screen", expose a callback (feature) — `done/design-system-009-drawer-header-open-in-full-screen.md`
 - **design-system-008** — TicketCard hover — stronger shadow, no upward content lift (refactor) — `done/design-system-008-ticket-card-hover-no-lift.md`
@@ -40,7 +45,9 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **design-system-011** — Stale add-affordance test — styleguide suite asserts against dashboard board.js that has dropped onAdd (bug) — `backlog/design-system-011-stale-add-affordance-test-vs-board-source.md`
+- **design-system-012** — Make the colors prettier — `backlog/design-system-012-prettier-colors.md`
+- **design-system-016** — Search field + grouped-results popover/listbox styleguide pattern (feature) — `backlog/design-system-016-search-field-grouped-results-pattern.md`
+- **design-system-018** — Shared ConfirmDialog / Modal primitive (centered, scrim, Esc-to-cancel) (feature) — `backlog/design-system-018-confirm-dialog-modal.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

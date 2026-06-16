@@ -5,13 +5,1595 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 12:42 -- Task verified and completed: design-system-017 - Add the trash-2 glyph to the shared icon set
+
+**Type:** Work / Task completion
+**Task:** design-system-017 - Add the trash-2 glyph to the shared icon set
+**Summary:** Added the Lucide `trash-2` glyph to the shared `LUCIDE` map (`styleguide/app/icons.js`) at the corrected symmetric-lid upstream geometry (`c1 0 2 1 2 2`), and surfaced it in the canvas section-04 interface-set gallery (`foundations2.js` curated `ui` array) — so aw-048's board dismiss affordance consumes it unforked via `Icon name="trash-2"`. `dist/` deliberately NOT rebuilt (derived artifact, ADR-0003). Gate-reopen note added to the BC README.
+**Verification:** PASS (iteration 1) — verifier confirmed the exact symmetric geometry (asymmetric `c1 0 1 1 2 2` absent), the gallery entry, inner-markup-only entry with the `Icon` signature unchanged, the README gate-reopen note, and the styleguide suite 54/54 green incl. 3 new icons-trash guards.
+**Commit:** <pending>
+**Files changed:** 4 (icons.js, foundations2.js, icons-trash.test.mjs [new], design-system README)
+**Tests added:** 3 (icons-trash.test.mjs — static geometry + gallery guards)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 12:40 -- Batch started: [design-system-017]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-017 - Add the trash-2 glyph to the shared icon set
+**Parallel:** no (1 worker) — single ready task; the only other todo was empty. Dependency design-system-001-styleguide is done (gate open).
+
+---
+
+## 2026-06-16 12:36 -- Modeling / Promoted: design-system-017 - Add the trash-2 glyph to the shared icon set
+
+**Type:** Modeling / Promote
+**BC:** design-system
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-16 12:34 -- Modeling / Refined: design-system-017 - Add the trash-2 glyph to the shared icon set
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** backlog
+**Summary:** Grounded the task against the live source. Two fixes: (1) pinned the **corrected upstream Lucide geometry** — the lid-handle path is symmetric `c1 0 2 1 2 2`, where the prior draft carried the asymmetric `c1 0 1 1 2 2` that would ship a distorted lid; (2) scoped in the **canvas gallery**. The section-04 `IconSection` `ui` array (`foundations2.js`) is a hand-curated subset of `LUCIDE`, not auto-derived, so a new glyph stays invisible unless explicitly added. Builder chose (2026-06-16) to document trash-2 in the gallery rather than leave it undocumented (the box/compass/maximize precedent) — making this a visible styleguide change that **reopens the design-system gate** (re-review before aw-048 ships). AC gained a gallery criterion; Notes gained the exact path data + gate-impact note. No split. depends_on/blocks/related_adrs unchanged (ds-001 styleguide done/gate open; blocks aw-048; ADR-0003 unforked consumption).
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-16 12:28 -- Modeling / Refined: design-system-018 - Shared ConfirmDialog / Modal primitive (centered, scrim, Esc-to-cancel)
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** backlog
+**Summary:** Cornered the three open decisions the capture left hedged. Builder decisions (2026-06-16): (1) ship a **two-layer** primitive — a generic `Modal` base (centered panel over scrim, Esc + scrim-click dismiss, reduced-motion strip) with `ConfirmDialog` composed over it — not a single ConfirmDialog; (2) `ConfirmDialog` gets an **optional `destructive` variant** tinting the Confirm button with `--obligation` (its first use is a destructive dismiss); (3) **full focus trap** (Tab/Shift-Tab contained, focus returns to trigger on close). Added a React-free `modal-state.js` testability AC mirroring collapsible-state/menu-state, named the `Drawer` (ds-001) as the closest scrim/Esc/reduced-motion machinery to lift, and pinned a **build-later trigger**: deliberately NOT promoted — zero shipped consumers (aw-048's board-local confirm hasn't shipped), and the ds-005 extraction pattern wants two consumers before unifying (the same reasoning that held ds-015). related_adrs grew to [0003, 0005, 0014] via the backlink matcher (htm-authoring + reduced-motion now explicit in the body).
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-16 11:47 -- Work session ended (resumed segment)
+
+**Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0) — agentic-workflow-046 (60d31ac), design-system-015 (70ffde0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3 (2 tasks + 1 orchestrator follow-up chore a707592 — agentic-workflow README drift fix from ds-015's cross-BC retirement)
+**ADRs:** 0
+**Notes:**
+- The two tasks the prior segment had HELD for the builder were cleared by the builder ("work on both now"): the aw-046 `skills/modeling/SKILL.md` entanglement was resolved (the pending unrelated ID-numbering change was reverted, tree clean), and ds-015 was authorized despite its single-consumer build-later framing.
+- Ran as a true parallel batch (2 workers) — no file overlap: aw-046 = `skills/modeling/SKILL.md` (modeling skill doc); ds-015 = styleguide `menu.js`/`menu-state.js`/canvas + `dashboard/app/board.js` retirement + dist. Both verified PASS first try.
+- ds-015 correctly did NOT edit the agentic-workflow README (another BC's) but flagged its `SettingsMenu` prose as stale; the orchestrator fixed that prose in a separate chore commit (a707592) to keep one-task-one-commit clean.
+- todo/ and doing/ are now EMPTY. The concurrent `modeling` session left new backlog items (design-system ds-012/016/017/018; agentic-workflow incl. aw-048 — the dashboard trash-can that fires aw-046's new DISMISS verb) — all in backlog/, each needing a `modeling` promote before `work` can claim them.
+- Combined across the whole session: 7 tasks shipped (infrastructure-020, design-system-013/014/015, agentic-workflow-046/047/049), 1 ADR amended in place (ADR-0018), 8 commits total. All 7 passed verification on the first try; zero bounces, failures, or escalations.
+
+---
+
+## 2026-06-16 12:10 -- Modeling / Refined: agentic-workflow-048 - Board card dismiss — hover-revealed red trash can with a confirmation dialog
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Corrected the placement model — the trash can is a **board-local top-right overlay** around the styleguide `TicketCard` (consumed unforked), NOT the `cornerAction` slot (which is the card's bottom-right meta row, where Refine/Promote already live); on backlog cards the two coexist, on todo the trash stands alone. Hover reveal is driven by a board-local host wrapper + button focus. Builder decisions (2026-06-16): the trash glyph is added to the shared icon set (depends on new design-system-017) rather than hand-rolled inline; the confirmation dialog is a board-local centered overlay now with a shared `ConfirmDialog`/`Modal` primitive filed as design-system-018 (non-blocking). `dismissCommandFor(id)` pinned (pure, unit-tested, bare-verb fallback); does not thread skipPermissions. Dependency aw-046 (DISMISS verb) is now done. depends_on updated to [aw-046, design-system-001-styleguide, design-system-017].
+**Split into:** design-system-017 (trash-2 glyph — blocks aw-048), design-system-018 (shared ConfirmDialog/Modal — follow-up)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 11:46 -- Task verified and completed: design-system-015 - Shared Menu / Popover primitive for dropdown menus
+
+**Type:** Work / Task completion
+**Task:** design-system-015 - Shared Menu / Popover primitive for dropdown menus
+**Summary:** Extracted a shared styleguide `Menu`/`Popover` primitive — `styleguide/app/menu.js` + React-free `styleguide/app/menu-state.js` (controlled/uncontrolled, anchored `--shadow-md` panel, body-agnostic items, Esc + outside-click dismissal, keyboard-operable), documented in the canvas (new section 10) — and RETIRED the aw-049 board-local `SettingsMenu` machinery in `dashboard/app/board.js`, which now consumes the primitive unforked (ADR-0003) with all duplicate popover code deleted and behavior preserved. Completes the aw-014 → ds-005 promotion pattern.
+**Verification:** PASS (iteration 1) — verifier confirmed the new htm-authored primitive (no JSX), the pure state module mirroring ds-005's collapsible-state, the `--shadow-md` anchored panel, dismiss-on-Esc/outside-click + keyboard operability, the board.js retirement (duplicate listeners/refs/raf deleted, closed gear neutral, `--obligation` on the skip-perms toggle in the open menu, Stop closes the menu), the canvas pattern, and the gate-reopen note in the README. Styleguide suite 51/51, dashboard suite 412/412 green.
+**Commit:** 70ffde0
+**Files changed:** 8 (menu.js [new], menu-state.js [new], styleguide app.js canvas, menu.test.mjs [new], dashboard board.js, settings-menu.test.mjs, design-system README, dashboard/dist/app.js) + task file move →done
+**Tests added:** menu.test.mjs (new suite: pure state + behavior guards); settings-menu.test.mjs reframed to assert the shared-primitive consumption
+**ADRs written:** none
+**Follow-up landed:** the now-stale agentic-workflow README `SettingsMenu` prose (flagged by the ds-015 worker, which correctly didn't touch another BC's README) was corrected by the orchestrator in a separate chore commit (a707592).
+
+---
+
+## 2026-06-16 11:45 -- Task verified and completed: agentic-workflow-046 - Modeling DISMISS verb — hard-delete a backlog/todo task with bookkeeping
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-046 - Modeling DISMISS verb — hard-delete a backlog/todo task with bookkeeping
+**Summary:** Added DISMISS as the `modeling` skill's fourth verb (alongside CAPTURE/REFINE/PROMOTE) — documented in `skills/modeling/SKILL.md` the full ADR-0022 contract: resolve by id/number/keyword, refuse for doing/done, compute the transitive dependent-subtree cascade set (depends_on/blocks edges only, upstream only), refuse the whole op if any member is in-flight/shipped, one confirmation over the full set, hard-delete, and the bookkeeping layer (cross-BC INDEX line/count edits — the sanctioned multi-BC-index exception — surviving-task + ADR backlink stripping, one bare `Modeling / Dismissed` protocol entry, retired-never-reused ids). BC README gains the Dismiss command + Task-dismissed event.
+**Verification:** PASS (iteration 1) — verifier mapped every ADR-0022 clause to the SKILL.md prose (all 10 present, including the doing/done refusal, cascade-edges-only rule, and cross-BC index exception), confirmed "three actions" → "four actions" with no dangling references, scope clean (only SKILL.md + BC README; no real task dismissed; aw-048 still present). Test-execution check N/A (skill prose, no suite) — correctly SKIPPED, not failed.
+**Commit:** 60d31ac
+**Files changed:** 2 (skills/modeling/SKILL.md, agentic-workflow README) + task file move →done
+**Tests added:** none (documentation of a skill capability — no code/test surface)
+**ADRs written:** none (ADR-0022 already froze the contract at refine; this is its documentation half)
+
+---
+
+## 2026-06-16 11:36 -- Batch started: [agentic-workflow-046, design-system-015]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-046 - Modeling DISMISS verb — hard-delete a backlog/todo task with bookkeeping; design-system-015 - Shared Menu / Popover primitive for dropdown menus
+**Parallel:** yes (2 workers) — builder said "work on both now". The aw-046 blocker cleared (the pending `skills/modeling/SKILL.md` change was reverted, tree clean). No file overlap: aw-046 touches `skills/modeling/SKILL.md` (agentic-workflow); ds-015 touches the styleguide + `dashboard/app/board.js` + dist (design-system) — different files, different BC READMEs. (Session resumed after the 11:07 end entry below.)
+
+---
+
+## 2026-06-16 11:07 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 5 (first-try PASS: 5, re-dispatched: 0, skipped: 0) — infrastructure-020 (4533d39), design-system-013 (4956ff2), design-system-014 (2a07ec9), agentic-workflow-047 (fe4d6b4), agentic-workflow-049 (f46e6e3)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 5
+**ADRs:** 1 (ADR-0018 amended in place by infrastructure-020 — mechanism clause only)
+**Notes:**
+- Four waves. Wave 1 ran 2 workers in parallel (infra-020 + ds-013, no file overlap); waves 2–4 were solo because of genuine serialization constraints, not lack of work:
+  - ds-014 ran alone because aw-049's `node build.mjs` bundles the styleguide `drawer.js` that ds-014 edits (read-while-write on the styleguide→dist bundle).
+  - aw-047 and aw-049 each ran alone because they both rebuild `dashboard/dist/app.js` and both touch the agentic-workflow BC README (same-BC-README conflict).
+  - The title-leading chain executed in its dependency order: ds-014 (styleguide Drawer title capability) → aw-047 (dashboard threads the title + main-pane reader + rebuild).
+- Every SUCCESS passed verification first try (5/5). No bounces, no failures, no escalations.
+- **Two todo tasks intentionally HELD for the builder (todo is NOT empty by design):**
+  - **agentic-workflow-046** (Modeling DISMISS verb) — deferred, NOT bounced. It edits `skills/modeling/SKILL.md`, which carries a PRE-EXISTING uncommitted change (a deterministic ID-numbering guidance block). A worker edit would entangle that unrelated change into the aw-046 commit (git is file-granular), violating one-task-one-commit. Needs the builder to dispose of the pending SKILL.md change first (commit or revert it), then aw-046 can run cleanly.
+  - **design-system-015** (shared Menu/Popover primitive) — held. Its frontmatter `depends_on` under-declares the real dependency: its body requires aw-049's board-local dropdown to exist so it can retire it (aw-049 is now done, so that precondition is met). BUT the task self-describes as build-later ("build only when a second popover consumer appears or the topbar menu is worth unifying") — there is exactly ONE consumer today, where ds-005's extraction precedent waited for two. Building it now would rework aw-049's just-shipped dropdown for a single consumer. Builder's call whether to promote it now.
+- The backlog grew heavily DURING the run via a concurrent `modeling`/capture session (aw-046/048/049/050, design-system-015/016 captured & some promoted; aw-049 was promoted mid-run and picked up automatically). protocol.md / INDEX.md saw concurrent writes throughout — all merged cleanly.
+- Pre-existing uncommitted working-tree state persists per repo convention (commit:-SHA frontmatter backfills, INDEX/protocol bookkeeping, the pending SKILL.md change) — only code + the per-task file move were committed each task; never `git add -A`.
+
+---
+
+## 2026-06-16 11:06 -- Task verified and completed: agentic-workflow-049 - Topbar settings menu — collapse Stop dashboard / theme / skip-permissions into a gear dropdown
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-049 - Topbar settings menu — collapse Stop dashboard / theme / skip-permissions into a gear dropdown
+**Summary:** A board-local `SettingsMenu` gear dropdown (reusing the existing `settings-2` glyph) now sits immediately left of the standing Work button and holds the three relocated utility controls — Stop dashboard, theme toggle, skip-permissions toggle. The three keep their behavior + persistence (theme-state.js, skip-permissions-state.js, launchOrCopy + StoppedOverlay); the closed gear carries no armed cue (the `--obligation` danger hue lives only on the skip-permissions toggle inside the open menu); the menu dismisses on Esc / outside-click / selecting Stop, while the toggles keep it open.
+**Verification:** PASS (iteration 1) — verifier confirmed exactly-three menu items, inline controls removed, Work left standing, the armed `--obligation` treatment surviving inside the menu with a neutral closed gear, dismiss/keep-open behavior, keyboard operability (focusable gear, aria-haspopup/expanded, Esc), token-matched + prefers-reduced-motion, NO styleguide-source edit (board-local, gate not reopened). Full dashboard suite 412/412 green.
+**Commit:** f46e6e3
+**Files changed:** 6 (board.js, settings-menu.test.mjs [new], shell-relayout.test.mjs, stop-dashboard.test.mjs, dashboard/dist/app.js, agentic-workflow README) + task file move →done
+**Tests added:** settings-menu.test.mjs (new suite) + updated shell-relayout / stop-dashboard guards for the relocation
+**ADRs written:** none
+
+---
+
+## 2026-06-16 11:05 -- Modeling / Captured: agentic-workflow-050 + design-system-016 - Dashboard global search
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow (+ design-system)
+**Filed to:** backlog (both)
+**Summary:** Replace the dead `BoardTopbar` breadcrumb (`Board` + `agentheim / tickets`) with a global search field that searches every `.agentheim` artifact — BC READMEs, ADRs, research, and tickets — by title AND content, showing results grouped by category in a popover below the input (title + first-occurrence excerpt per row), navigable by up/down + Enter and by click, loading the chosen item into the main content pane. Cross-BC capture: **agentic-workflow-050** owns the new `GET /api/search` read endpoint + topbar field + popover + routing (depends on aw-049's topbar rework, in doing); **design-system-016** owns the styleguide search-field + grouped-results combobox pattern (the second popover consumer ds-015 anticipated). Both backlog (under-refined): the read-only server's first content-search endpoint likely warrants an ADR, and ranking/excerpt/keyboard semantics need cornering at refine. Builder decisions captured: tickets open in the main pane (like aw-039), project name stays in the rail brand (breadcrumb removal costs no branding).
+
+---
+
+## 2026-06-16 10:55 -- Batch started: [agentic-workflow-049]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-049 - Topbar settings menu — collapse Stop dashboard / theme / skip-permissions into a gear dropdown
+**Parallel:** no (1 worker). agentic-workflow-046 deferred — it edits `skills/modeling/SKILL.md`, which carries a PRE-EXISTING uncommitted change (deterministic ID-numbering guidance); a worker edit would entangle that unrelated change into the aw-046 commit (git is file-granular). Surfaced to the builder. design-system-015 held (needs aw-049 shipped first; self-described build-later).
+
+---
+
+## 2026-06-16 10:52 -- Task verified and completed: agentic-workflow-047 - Both detail surfaces lead with the item title, not the file path
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-047 - Both detail surfaces lead with the item title, not the file path
+**Summary:** The dashboard-consumer half of the title-leading change: `intentToDrawerItem` now threads `intent.title` onto the doc item so the ds-014 styleguide Drawer header leads with it; the main-pane reader's ready-state header leads with `doc.title` (`<h1>`, `--font-ui`, 21px, `--fg-1`) over a demoted quiet mono `--fg-3` path sub-line, with a path fallback when title-less. Dist rebuilt to fold in ds-014's Drawer change + this data threading.
+**Verification:** PASS (iteration 1) — verifier ran a fresh `node build.mjs` that reproduced the committed dist byte-for-byte; confirmed the slide-over mapping carries the title (+ title-less → empty-string fallback), the main-pane header leads with the title at >11.5px/`--fg-1`/`--font-ui` with the path demoted below, tokens-only (no bespoke hex, ADR-0003), the error-state path diagnostic preserved, and NO styleguide source touched (scope held). Dashboard suite 398/398 green.
+**Commit:** fe4d6b4
+**Files changed:** 6 (slide-over-data.js, main-pane-reader.js, 2 tests, dashboard/dist/app.js, agentic-workflow README) + task file move →done
+**Tests added:** 3 (title-on-doc-item, title-less-fallback, main-pane-title-leads)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 10:49 -- Modeling / Promoted: agentic-workflow-046 - Modeling DISMISS verb — hard-delete a backlog/todo task with bookkeeping
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-16 10:48 -- Batch started: [agentic-workflow-047]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-047 - Both detail surfaces lead with the item title, not the file path
+**Parallel:** no (1 worker) — unblocked by design-system-014 (done, 2a07ec9). agentic-workflow-049 demoted (it and aw-047 both rebuild `dashboard/dist/app.js` and both touch the agentic-workflow BC README — serialized). design-system-015 held: its body requires aw-049 to ship first (undeclared dep) and self-describes as build-later.
+
+---
+
+## 2026-06-16 10:48 -- Modeling / Refined: agentic-workflow-046 - Modeling DISMISS verb — hard-delete a backlog/todo task with bookkeeping
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Cornered the three open questions. Dependency-reconciliation policy decided as **cascade** (dismiss the whole transitive dependent subtree under one confirmation; refuse entirely if the set touches `doing/`/`done/`) — recorded as ADR-0022. Protocol entry decided as a **bare record** (no builder-typed reason). Verb-vs-skill kept as a `modeling` verb. Rewrote the DISMISS algorithm, acceptance criteria, and Notes around the cascade; propagated the cascade caveat into aw-048's confirm-dialog contract.
+**Split into:** none
+**ADRs written:** ADR-0022
+
+---
+
+## 2026-06-16 10:43 -- Task verified and completed: design-system-014 - Drawer contextual header leads with the item title, path demoted to a sub-line
+
+**Type:** Work / Task completion
+**Task:** design-system-014 - Drawer contextual header leads with the item title, path demoted to a sub-line
+**Summary:** The styleguide `Drawer` `HeaderContextual` now leads with the item title (`<h2>`, `--font-ui`, 15.5px, weight 600, `--fg-1`) and demotes the path to a quiet mono `--fg-3` sub-line; `describeItem` carries `title` from `item.title` on both the doc and ticket branches, with a graceful fallback to the path as the lead when no title is present. Styleguide-capability half only — the dist rebuild + intent title-threading is agentic-workflow-047.
+**Verification:** PASS (iteration 1) — verifier confirmed title-on-both-branches, the prominent title line (size >11.5, weight ≥500, `--fg-1`), the demoted mono/--fg-3 path sub-line, the title-absent path fallback, consumed-unforked (no `dashboard/` file touched — scope held), and the gate-reopen note in the README. Styleguide suite 41/41 green.
+**Commit:** 2a07ec9
+**Files changed:** 3 (drawer.js, drawer.test.mjs, design-system README) + task file move →done
+**Tests added:** 4 (title-both-branches, prominent-title-line, demoted-path, title-absent-fallback)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 10:42 -- Modeling / Promoted: design-system-015 - Shared Menu / Popover primitive for dropdown menus
+
+**Type:** Modeling / Promote
+**BC:** design-system
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-16 10:33 -- Batch started: [design-system-014]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-014 - Drawer contextual header leads with the item title, path demoted to a sub-line
+**Parallel:** no (1 worker) — agentic-workflow-049 demoted (its `node build.mjs` dist rebuild bundles the styleguide drawer.js that ds-014 edits — read-while-write hazard; serialized). agentic-workflow-047 still blocked on ds-014.
+
+---
+
+## 2026-06-16 10:31 -- Task verified and completed: infrastructure-020 - Bridge mangles prompts containing quotes — POSIX escaping breaks the Windows shell
+
+**Type:** Work / Task completion
+**Task:** infrastructure-020 - Bridge mangles prompts containing quotes — POSIX escaping breaks the Windows shell
+**Summary:** The bridge no longer types a shell command line into a terminal — it spawns `claude` directly as the terminal process via `createTerminal({ shellPath, shellArgs })`, so the prompt is a raw argv element no shell parses and every metacharacter survives verbatim. The pure core emits a structured `{ command:'claude', args }` descriptor (seam renamed `launchTerminal` → `launchClaude`) and the `\"`-escaping is deleted; ADR-0018 amended in place (mechanism only; HTTP wire unchanged); `.vsix` bumped 0.2.0 → 0.2.1.
+**Verification:** PASS (iteration 1) — verifier confirmed the descriptor contract + seam rename forcing all call sites, the strict-`true` skip-permissions matrix re-expressed as descriptors, the new metacharacter-survival guard (`" ' \` $ & | ; $(…)` → one verbatim `args[0]`), the in-place additive ADR-0018 amendment (status stays proposed, infra-020 in `related_tasks`, HTTP wire noted unchanged), README corrections, and the Windows PATH×PATHEXT resolver localized in `extension.js`. Bridge suite: 12/14 ephemeral-port tests green; the 2 failures are the documented port-31425 contention (live bridge holds it), not a regression.
+**Commit:** 4533d39
+**Files changed:** 7 + task file move →done
+**Tests added:** 2 metacharacter-survival tests; string assertions migrated to descriptor shape
+**ADRs written:** 0018 (in-place amendment)
+
+---
+
+## 2026-06-16 10:31 -- Task verified and completed: design-system-013 - Drawer "Open in full screen" uses a maximize glyph, not the external-link icon
+
+**Type:** Work / Task completion
+**Task:** design-system-013 - Drawer "Open in full screen" uses a maximize glyph, not the external-link icon
+**Summary:** The styleguide Drawer "Open in full screen" action now wears the `maximize` glyph (four outward corners) instead of the external-link `square-arrow-out-up-right`, in both `HeaderMinimal` and `HeaderContextual`; `maximize` was added to `icons.js`'s LUCIDE map and the dashboard `dist/` rebuilt so the live slide-over shows it.
+**Verification:** PASS (iteration 1) — verifier confirmed both headers use `name="maximize"` (none on the action use `square-arrow-out-up-right`), the glyph resolves non-empty, title/aria-label and `onOpenFullScreen` behaviour unchanged, consumed-unforked (ADR-0003), the derived dist reflects the swap. Styleguide suite 37/37 green; dashboard suite 395/395 green.
+**Commit:** 4956ff2
+**Files changed:** 5 + task file move →done
+**Tests added:** 1 (maximize-glyph-resolves) + existing guards flipped to assert the new glyph
+**ADRs written:** none
+
+---
+
+## 2026-06-16 11:40 -- Modeling / Refined: agentic-workflow-049 - Topbar settings menu
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Resolved the four open questions. **Primitive:** the styleguide has no Menu/Dropdown/Popover primitive (only an `--shadow-md` "Popovers" token comment), so this builds as a board-local, token-matched dropdown (ADR-0003 unforked, the sort-`<select>` precedent) — it does NOT depend on the shared-primitive follow-up. **Glyph:** reuse the existing `settings-2` glyph — no styleguide edit, no gate reopen. **Closed gear:** no armed cue; the skip-perms danger hue lives only on the toggle inside the open menu (consistent with amended ADR-0019). **Menu persistence:** the theme/skip-perms toggles keep the menu open; Stop dashboard / Esc / outside-click close it. Sharpened acceptance criteria around the board-local-no-gate-reopen constraint, keyboard operability, and the dist rebuild; added related_adrs [ADR-0003, ADR-0017, ADR-0019]. Promoted backlog → todo (gate is open, no remaining blockers).
+**Split into:** none
+**Filed (follow-up capture):** design-system-015 — shared Menu/Popover primitive (backlog), mirrors aw-014 → ds-005; aw-049 ships board-local first and is retired into it later.
+**ADRs written:** none
+
+---
+
+## 2026-06-16 11:00 -- Modeling / Captured: agentic-workflow-049 - Topbar settings menu
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Collapse the three topbar utility controls (Stop dashboard, theme toggle, skip-permissions toggle) into a settings gear dropdown placed immediately left of the standing Work button. Relocation, not rewrite — controls keep their behavior, persistence, and the skip-permissions armed/danger hue. Knowingly supersedes aw-021's inline "one setting today" placement. Open question: styleguide menu primitive vs board-local dropdown.
+
+---
+
+## 2026-06-16 10:23 -- Batch started: [design-system-013, infrastructure-020]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-013 - Drawer "Open in full screen" uses a maximize glyph, not the external-link icon; infrastructure-020 - Bridge mangles prompts containing quotes — POSIX escaping breaks the Windows shell
+**Parallel:** yes (2 workers) — design-system-014 demoted to next wave (drawer.js conflict with ds-013); agentic-workflow-047 blocked on ds-014.
+
+---
+
+## 2026-06-16 -- Modeling / Captured: agentic-workflow-046 + agentic-workflow-048 - Dismiss a backlog/todo ticket
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Builder wants a hover-revealed red trash can on backlog/todo cards (with a
+confirmation dialog) to dismiss a ticket. Because the dashboard is read-only (ADR-0017)
+and dismissal carries real bookkeeping (dependency reconciliation, INDEX, protocol,
+backlinks), the work split in two: aw-046 adds a `modeling` **DISMISS** verb that
+hard-deletes the file + reconciles bookkeeping; aw-048 adds the dashboard trash-can
+affordance that fires `/agentheim:modeling dismiss <id>` via the bridge (aw-048
+depends on aw-046 + the styleguide gate). Disposition: hard delete (no archive folder /
+status flag). The board task was renumbered 047→048 at capture: a concurrent session
+had already taken 047 for an unrelated task; resolved per the duplicate-id rule by
+moving the less-integrated one.
+
+---
+
+## 2026-06-16 -- Modeling / Refined: infrastructure-020 - Bridge mangles prompts containing quotes — POSIX escaping breaks the Windows shell
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Architect resolved the branching fix flagged as the blocker. Decided Approach 1 (bypass the shell): the seam spawns `claude` as the terminal process via `createTerminal({ shellPath, shellArgs })`, the pure core emits a structured launch descriptor `{ command:'claude', args:[…] }` and the `\"`-escaping is deleted — quoting stops mattering for any shell. Rejected detect-and-quote-per-shell (Approach 2) and kept out-of-band temp-file/stdin (Approach 3) only as the Windows-resolution escape hatch. Sharpened acceptance criteria around the descriptor contract, the renamed seam, the metacharacter-survival test, and an in-place ADR-0018 amendment (mechanism clause only; HTTP wire unchanged) with verbatim amendment text and the Windows `shellPath` PATH×PATHEXT resolution caveats captured as worker-confirmable points. Promoted backlog → todo (the architect decision was the only stated blocker).
+**Split into:** none
+**ADRs written:** none (ADR-0018 amendment specced into the task; the worker lands it with the code)
+
+---
+
+## 2026-06-16 -- Modeling / Captured + Refined: title-not-path on both detail surfaces (design-system-014 + agentic-workflow-047)
+
+**Type:** Modeling / Capture + Refine
+**BC:** design-system, agentic-workflow
+**Filed to:** todo (both)
+**Summary:** User correction: the slide-over Drawer does NOT show the item title — its contextual header (`drawer.js:67-93`) shows a type pill + the path, and in the live dashboard `intentToDrawerItem` builds a doc item `{type, meta, body}` with no title field at all. So BOTH detail surfaces (slide-over + main-pane reader) show the path, not the title — a cross-BC change. Re-scoped the original capture and split it: **design-system-014** (new) adds a prominent title heading to the styleguide Drawer's contextual header — larger, `--fg-1` — with the path demoted to a quiet sub-line (graceful fallback when no title); **agentic-workflow-047** (re-scoped, file renamed) threads the intent's title into the Drawer item, shows the title in the main-pane reader, and rebuilds `dashboard/dist/`. aw-047 depends_on design-system-014. Mirrors the design-system-009 → agentic-workflow-039 cross-BC precedent. The earlier "main-pane only / slide-over already shows the title" framing was wrong and is superseded.
+**Split into:** design-system-014, agentic-workflow-047 (re-scoped)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 10:30 -- Modeling / Captured: design-system-013 - Drawer "Open in full screen" uses a maximize glyph
+
+**Type:** Modeling / Capture
+**BC:** design-system
+**Filed to:** todo
+**Summary:** The item-details / slide-over "Open in full screen" action wears the external-link glyph (`square-arrow-out-up-right`), which reads as "navigate away". Swap it for a maximize/expand glyph (recommended Lucide `maximize`) in `icons.js` + both `drawer.js` header variants; rebuild dashboard `dist/` so the slide-over shows it. Filed ready-to-work.
+
+---
+
+## 2026-06-16 10:12 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0) — agentic-workflow-044 (c3b77a4), agentic-workflow-045 (bac8a0b)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2
+**ADRs:** 0
+**Notes:**
+- Two single-task batches (no parallelism — only ever one ready task per wave). aw-044 (remove the temp "Replay celebration" button) then aw-045 (frontmatter/body glue bug) — both touch `dashboard/` and would have serialized on the shared dist rebuild + `node --test` suite anyway.
+- The backlog grew DURING the run via parallel `modeling`/`capture` sessions: design-system-012, infrastructure-020, agentic-workflow-046 captured to backlog, and aw-045 itself was promoted todo mid-session (picked up automatically on the next re-scan). All three new backlog items still need a `modeling` promote before `work` can claim them.
+- Dashboard suite: 393 → 393 (aw-044, net-zero — guards inverted) → 395 (aw-045, +2 regression tests).
+- ⚠️ Pre-existing uncommitted working-tree state persists (commit:-SHA frontmatter backfills on many done tasks, plus INDEX/protocol bookkeeping from prior + this run). Per repo convention these bookkeeping files stay uncommitted; only code + the per-task file move were committed each task.
+- Backlog remaining (all need a `modeling` promote): agentic-workflow-031, agentic-workflow-046, design-system-012, infrastructure-020.
+
+---
+
+## 2026-06-16 10:12 -- Task verified and completed: agentic-workflow-045 - Folded frontmatter glues onto the body so a task's first heading renders as literal "## Why"
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-045 - Folded frontmatter glues onto the body so a task's first heading renders as literal "## Why"
+**Summary:** `withFrontmatterSection` now joins the collapsed `<details>` "Front matter" section to the stripped body with a blank line (`section + '\n\n' + body`) only when a section is present, so marked closes the type-6 raw-HTML block and the body's first heading (e.g. `## Why`) renders as a real heading on both render surfaces; a no-frontmatter document still passes through byte-for-byte.
+**Verification:** PASS (iteration 1) — dashboard suite 395/395 green; verifier confirmed the blank-line separator (`</details>\n\n## Why`, no double-spacing since parseFrontmatter strips the leading newline), byte-for-byte no-frontmatter passthrough, the guard reflected in the rebuilt dist bundle, both surfaces fed by the one shared transform (ADR-0010/0021), no styleguide/ADR/lifecycle change.
+**Commit:** bac8a0b
+**Files changed:** 3 (frontmatter.js, frontmatter.test.mjs, dist/app.js) + task file move →done
+**Tests added:** 2 (separator-present + no-frontmatter-no-separator regression); dashboard suite 393 → 395
+**ADRs written:** none
+
+---
+
+## 2026-06-16 10:09 -- Batch started: [agentic-workflow-045]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-045 - Folded frontmatter glues onto the body so a task's first heading renders as literal "## Why"
+**Parallel:** no (1 worker) — only ready task this wave (dependency design-system-001 satisfied in done/).
+
+---
+
+## 2026-06-16 -- Modeling / Captured: agentic-workflow-045 - Folded frontmatter glues onto the body so a task's first heading renders as literal "## Why"
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Bug — since aw-043 folded frontmatter into a `<details>` section, `withFrontmatterSection` joins `</details>` directly onto the stripped body (`frontmatter.js:146`), so the body's first heading (`## Why`) lands inside the raw HTML block and renders as literal `##`. Affects both the slide-over Drawer and the main-pane reader. Root-caused at capture; fix is a blank-line separator. Filed straight to todo (small, well-understood; styleguide gate satisfied — design-system-001 done).
+
+---
+
+## 2026-06-16 10:08 -- Task verified and completed: agentic-workflow-044 - Remove the temporary "Replay celebration" button
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-044 - Remove the temporary "Replay celebration" button
+**Summary:** Deleted the temporary aw-025 "🎉 Replay celebration" scaffold block from BoardPromptBar in dashboard/app/board.js; the real confetti machinery (BoardConfetti, confettiKey, and its legitimate successful-launch/landed-copy onResult caller) stays intact, confetti still fires on a real launch/copy.
+**Verification:** PASS (iteration 1) — dashboard suite 393/393 green; verifier confirmed the TEMP (aw-025) fence is gone from source AND the rebuilt dist/app.js (zero "Replay celebration"), the legitimate confettiKey caller survives, the aw-025 "block exists" guards were inverted to assert removal, no styleguide/ADR/lifecycle change.
+**Commit:** c3b77a4
+**Files changed:** 4 (board.js, board-prompt-bar.test.mjs, dist/app.js, agentic-workflow README) + task file move →done
+**Tests added:** 0 (two aw-025 existence guards inverted to removal/survival guards)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 -- Modeling / Captured: infrastructure-020 - Bridge mangles prompts containing quotes
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** Prompts typed with `"` (and other shell metacharacters) are cut off when a dashboard launch button hands them to the terminal. Root-caused to `vscode-extension/src/bridge.js:182` — the `\"` POSIX-shell escaping doesn't parse in the builder's Windows PowerShell/cmd default shell, so the first quote terminates the string early. JSON transport carries the prompt fine; the break is the bridge→terminal command construction. Filed to backlog (needs an architect decision: bypass-the-shell via `shellArgs` argv vs. detect-and-quote-per-shell vs. stdin/temp-file).
+
+---
+
+## 2026-06-16 10:01 -- Batch started: [agentic-workflow-044]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-044 - Remove the temporary "Replay celebration" button
+**Parallel:** no (1 worker) — only ready task this wave.
+
+---
+
+## 2026-06-16 -- Capture / Captured: design-system-012 - Make the colors prettier
+
+**Type:** Capture
+**BC:** design-system
+**Filed to:** backlog
+**Summary:** "Macht die Farben schöner." — make the colors prettier (aesthetic, unscoped).
+
+---
+
+## 2026-06-16 -- Modeling / Captured: agentic-workflow-044 - Remove the temporary "Replay celebration" button
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Tear down aw-025's throwaway "🎉 Replay celebration" scaffold button — the confetti has been iterated to satisfaction (aw-034, aw-042), so the replay-on-demand trigger has served its purpose. Pure removal of the confined `TEMP (aw-025)` block in `board.js` plus its test guards; confetti still fires on successful launch/copy. Filed ready-to-work (no styleguide gate — removal adds no UI).
+
+---
+
+## 2026-06-16 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 3 (first-try PASS: 3, re-dispatched: 0, skipped: 0) — agentic-workflow-039 (f289c29), design-system-011 (076870b), agentic-workflow-043 (62625b8)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3
+**ADRs:** 0 new; 1 in-place amendment — ADR-0021 (aw-039, Related line documents the "Open in full screen" per-action override of the open-intent split).
+**Notes:**
+- Two batches. Batch 1 ran aw-039 + ds-011 in PARALLEL (independent: different BCs, different test runners). aw-043 was held to batch 2 because it shares `dashboard/app/slide-over.js` + the single shared `dashboard/dist` rebuild and `node --test` suite with aw-039 (the documented frontend serialization race) — dispatched solo once aw-039 was committed.
+- All three verified first-try. Dashboard suite climbed 370 → 375 (aw-039) → 393 (aw-043); styleguide suite trimmed to 36 green (ds-011 removed 2 stale cross-boundary assertions).
+- The aw-039 → aw-043 dependency-in-spirit resolved cleanly: aw-039's note warned a task rendered full-screen shows raw frontmatter until aw-043 ships; aw-043 (built right after) fixes exactly that on both surfaces via one shared pure helper.
+- ⚠️ Working-tree housekeeping (pre-existing, NOT this session): the repo carries uncommitted `commit:`-SHA backfills on many done-task frontmatter files plus accumulated INDEX.md/protocol.md edits from prior `work`/`modeling` runs. Per the established repo convention these bookkeeping files are left uncommitted; only code + task-file moves are committed per task. This session's INDEX/protocol/frontmatter updates ride alongside that existing uncommitted state.
+- Backlog remaining (needs a `modeling` promote before `work` can claim): agentic-workflow-031 (next-steps overview when work is done).
+
+---
+
+## 2026-06-16 -- Task verified and completed: agentic-workflow-043 - Dashboard hides document frontmatter behind a collapsible "Front matter" section
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-043 - Dashboard hides document frontmatter behind a collapsible "Front matter" section (slide-over + main pane)
+**Summary:** A document's leading YAML frontmatter no longer renders as a bold setext heading on either dashboard surface; one shared pure helper (`dashboard/app/frontmatter.js` — `parseFrontmatter`/`frontmatterSection`/`withFrontmatterSection`) strips it and re-emits a quiet, collapsed-by-default native `<details>` "Front matter" table upstream of the unforked styleguide `Markdown`, wired into both the task slide-over and the main-pane reader.
+**Verification:** PASS (iteration 1) — dashboard suite 393/393 green; verifier confirmed both surfaces strip before `Markdown`, empty/no-frontmatter passthrough, collapsed-by-default `<details>` (no `open`), structured rows, HTML-escaping, array/empty values readable, `Drawer`/`Markdown` unforked (no styleguide diff), dist rebuilt.
+**Commit:** 62625b8
+**Files changed:** 6 (frontmatter.js [new], frontmatter.test.mjs [new], slide-over.js, main-pane-reader.js, dist/app.js, agentic-workflow README) + task file move →done
+**Tests added:** ~12 pure unit tests (frontmatter.test.mjs); dashboard suite 375 → 393
+**ADRs written:** none
+
+---
+
+## 2026-06-16 -- Batch started: [agentic-workflow-043]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-043 - Dashboard hides document frontmatter behind a collapsible "Front matter" section (slide-over + main pane)
+**Parallel:** no (1 worker) — held from batch 1 because it shares `dashboard/app/slide-over.js` + the dashboard dist/test suite with aw-039; now unblocked since aw-039 is committed.
+
+---
+
+## 2026-06-16 -- Task verified and completed: design-system-011 - Stale add-affordance test asserts against dashboard board.js
+
+**Type:** Work / Task completion
+**Task:** design-system-011 - Stale add-affordance test asserts against dashboard board.js
+**Summary:** Removed the ADR-0003 cross-boundary smell from the styleguide add-affordance suite — it now asserts only the styleguide-owned `onAdd &&` guard contract on EmptyColumn/ColumnHeader and no longer reads dashboard board.js. Consumer wiring stays covered in the dashboard suite.
+**Verification:** PASS (iteration 1) — `node --test` under styleguide/ 36/36 green; verifier confirmed no `boardSrc`/`REPO` hop remains, the four styleguide guard tests stay, header comment describes only the guard contract.
+**Commit:** 076870b
+**Files changed:** 1 (add-affordance.test.mjs) + task file move backlog→done
+**Tests added:** 0 (removed 2 stale cross-boundary assertions; net suite trimmed)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 -- Task verified and completed: agentic-workflow-039 - Slide-over "Open in full screen" renders the task in the main content pane
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-039 - Slide-over "Open in full screen" renders the task in the main content pane
+**Summary:** The slide-over's "Open in full screen" action now promotes the open task out of the cramped slide-over into the main content pane (the MainPaneReader surface), as a deliberate per-action override of the ADR-0021 open-intent split — default `isTaskIntent` routing untouched, path stays read-only.
+**Verification:** PASS (iteration 1) — dashboard suite 375/375 green; verifier confirmed the shell handler `setSelectedDoc(openIntent); setOpenIntent(null)`, slide-over forwards `onOpenFullScreen` to the Drawer unforked (ADR-0003), no `isTaskIntent` change, read-only, dist rebuilt.
+**Commit:** f289c29
+**Files changed:** 6 (slide-over.js, board.js, slide-over-full-screen.test.mjs, dist/app.js, agentic-workflow README, ADR-0021 amended) + task file move →done
+**Tests added:** 5 source-reading static guards (slide-over-full-screen.test.mjs); dashboard suite 370 → 375
+**ADRs written:** none (ADR-0021 amended in place — Related line += agentic-workflow-039, documenting the per-action override)
+
+---
+
+## 2026-06-16 -- Batch started: [agentic-workflow-039, design-system-011]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-039 - Slide-over "Open in full screen" renders the task in the main content pane, design-system-011 - Stale add-affordance test asserts against dashboard board.js
+**Parallel:** yes (2 workers)
+**Note:** aw-043 (frontmatter collapsible) held to next batch — conflicts with aw-039 on `dashboard/app/slide-over.js` + shared `dashboard/dist` rebuild.
+
+---
+
+## 2026-06-16 -- Modeling / Refined: agentic-workflow-039 - Slide-over "Open in full screen" renders the task in the main content pane
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Verified the seam against live code — the shell already holds `openIntent` in scope, so the new `onOpenFullScreen` handler is just `setSelectedDoc(openIntent); setOpenIntent(null)` (no task travels back through the Drawer's bare callback). Settled the one open modeling question — reuse `MainPaneReader` as-is, no "back to slide-over" control. Pinned the test approach to source-reading static guards (no pure module extracted) and noted the aw-043 frontmatter relationship. Dependency ds-009 is done/committed, so promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-15 12:00 -- Modeling / Refined: design-system-011 - Stale add-affordance test asserts against dashboard board.js
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** todo
+**Summary:** Resolved the task's open decision by inspecting source. The board
+dropped `onAdd` on purpose (zero refs in `dashboard/app/board.js`); aw-018
+(`remove dead add-ticket affordances`), aw-022 (per-card Refine/Promote pair) and
+aw-023+ (board prompt bar) superseded the inline add affordance — the dashboard is
+a read-only projection of disk (ADR-0001/0017). Fix scoped to: delete the two
+cross-boundary `Board:` assertions + the `boardSrc`/`REPO` hop from
+`add-affordance.test.mjs` (an ADR-0003 smell), keep the four EmptyColumn/
+ColumnHeader styleguide-owned guard tests. Consumer add-story already covered in
+`dashboard/test/{board-prompt-bar,backlog-card-launch}.test.mjs`, so no relocation
+needed. Sharpened acceptance criteria; stays a design-system task; promoted to todo.
+**Split into:** —
+**ADRs written:** —
+
+---
+
+## 2026-06-16 00:01 -- Modeling / Promoted: agentic-workflow-043 - Dashboard hides document frontmatter behind a collapsible "Front matter" section
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-15 23:59 -- Modeling / Refined: agentic-workflow-043 - Dashboard hides document frontmatter behind a collapsible "Front matter" section
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog (ready to promote)
+**Summary:** Grounded the fix in the actual render path and resolved both open
+questions. Scope decided as **both** surfaces (task slide-over + main-pane reader,
+aw-027) since they leak frontmatter identically through the same unforked
+`Markdown` primitive. Mechanism decided as a **native `<details>` block folded
+into the body string** by one shared pure helper (`dashboard/app/frontmatter.js`:
+`parseFrontmatter` / `frontmatterSection` / `withFrontmatterSection`) — chosen
+because the styleguide `Drawer` exposes no slot above the body and `Markdown`
+passes raw HTML through, so this keeps both primitives unforked (ADR-0003) with
+no design-system child task and no React state. Supersedes the prior
+board-local-vs-design-system-primitive open question. Tightened acceptance
+criteria (both surfaces, HTML-escaping, pure-helper tests, dist rebuild).
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-15 23:52 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 8 (first-try PASS: 8, re-dispatched: 0, skipped: 0) — aw-037, aw-038, aw-040, aw-041, design-system-009, aw-042, design-system-010, infrastructure-019
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 8 (aw-037 87e8991, aw-038 72fdbb9, aw-040 b5b663b, aw-041 15cfda5, ds-009 96bd905, aw-042 e5499ec, ds-010 5ba2524, infra-019 a47d31a)
+**ADRs:** 0 new; 2 in-place amendments — ADR-0019 (aw-041, dot→red-icon armed cue) and ADR-0002 (infra-019, derived-first→last-good-first port selection, closing the self-heal follow-up infra-018 deferred).
+**New backlog:** design-system-011 (filed by the ds-009 worker — a PRE-EXISTING `styleguide/test/add-affordance.test.mjs` failure asserting against drifted `dashboard/app/board.js`; the dashboard suite stayed fully green throughout, only the styleguide suite carries this one known-red test).
+**Notes:**
+- Every task ran SERIALIZED, one worker at a time — the documented flake race: all frontend tasks rebuild the single shared `dashboard/dist/app.js`, and every task (incl. server-side infra-019) invokes the shared `dashboard/` `node --test` suite. todo was refilled mid-run by concurrent `modeling`/`research` sessions (037→038→040→041→042→043, ds-009→010→011) and each new ready task was picked up as it appeared.
+- **Coupling caught:** aw-042 tore out aw-037's confetti aim plumbing, but aw-038 had repurposed the same `textareaRef` for the prompt-field auto-grow — the worker was directed to keep `textareaRef` and remove only the aim chain; verifier confirmed auto-grow survived.
+- **⚠️ Builder action pending:** design-system-009 (Drawer header) is a visible styleguide change that REOPENS the design-system gate — re-review against the canvas (section 07 header demos) is required before the downstream consumer agentic-workflow-039 ships.
+- Remaining in backlog (need a `modeling` promote before `work` can claim): aw-031 (next-steps overview), aw-039 (slide-over open-in-full-screen — blocked on the ds-009 gate re-review), aw-043 (frontmatter collapsible section), design-system-011 (stale add-affordance test).
+
+---
+
+## 2026-06-15 23:50 -- Task verified and completed: infrastructure-019 - Dashboard origin sticks to its last-good port so an intermittent collision can't flap it
+
+**Type:** Work / Task completion
+**Task:** infrastructure-019 - Dashboard origin sticks to its last-good port so an intermittent collision can't flap it
+**Summary:** The dashboard now remembers its last successfully-bound port in a separate gitignored `.agentheim/.dashboard/last-port.json` marker (written at bind time, beside `runtime.json`) and binds **last-good → derived → ladder**, so an intermittently-held derived port can no longer flap the `127.0.0.1:<port>` origin launch-to-launch (which would orphan the origin-keyed localStorage stores). Pure `bindSequence(root, lastGood)` in `port.mjs` (in-window guard + ladder-dedup); `serve.mjs` reads-before-bind and writes-at-bind; `runtime.json`/`inspectExisting`/`stopDashboard` untouched.
+**Verification:** PASS (iteration 1) — dashboard suite 370/370 green; verifier confirmed all 6 acceptance criteria, that `inspectExisting`/`stopDashboard`/`writeRunfile` are byte-unchanged (runtime.json pid-gated contract intact), the dedup (last-good==derived / last-good-on-a-rung → single attempt) is unit-tested, and the marker is written only after a successful bind.
+**Commit:** a47d31a
+**Files changed:** 7 (port.mjs, runfile.mjs, serve.mjs, port.test.mjs, runfile.test.mjs, ADR-0002 [amended], infra README) + task file move
+**Tests added:** bindSequence + listenOnLadder-with-lastGood cases (port.test.mjs) and readLastPort/writeLastPort round-trip + absent/malformed/non-integer→null + marker-independent-of-reap (runfile.test.mjs); dashboard suite 352 → 370
+**ADRs written:** ADR-0002 amended in place (dated addendum, infrastructure-019 — port selection changes from derived-first to last-good-first; `related_tasks` += infrastructure-019; the task's `related_adrs` already lists 0002/0018). This closes the self-heal follow-up the infra-018 addendum had deferred.
+
+---
+
+## 2026-06-15 23:46 -- Batch started: [infrastructure-019]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-019 - Dashboard origin sticks to its last-good port so an intermittent collision can't flap it
+**Parallel:** no (1 worker — last ready task; server-side, edits `serve.mjs` / `port.mjs` / `port.test.mjs` + ADR-0002 amendment, disjoint from the frontend work but shares the dashboard `node --test` suite)
+
+---
+
+## 2026-06-15 23:42 -- Task verified and completed: design-system-010 - TicketCard — drop the ochre selected-state ring (no replacement cue)
+
+**Type:** Work / Task completion
+**Task:** design-system-010 - TicketCard — drop the ochre selected-state ring (no replacement cue)
+**Summary:** The styleguide `TicketCard` lost its ochre selected-state cue — the `selected ? --accent-ochre` border branch and the `0 0 0 1px var(--accent-ochre)` ring are gone, so a selected card is visually identical to an unselected one. The `selected` prop survives as semantic `aria-pressed` only. Completes ADR-0016's "selection by de-emphasis, never the reserved accent" direction for the card (its last ochre-ring holdout).
+**Verification:** PASS (iteration 1) — dashboard suite 352/352 green; styleguide suite 37/38 with the single failure being the confirmed PRE-EXISTING out-of-scope `add-affordance.test.mjs` (design-system-011), not this task's `ticket-card.test.mjs`; verifier confirmed all 5 acceptance criteria, `aria-pressed=${selected}` retained, hover (ds-008) unchanged, dist rebuilt unforked.
+**Commit:** 5ba2524
+**Files changed:** 4 (kanban.js, ticket-card.test.mjs, dashboard/dist/app.js [rebuilt], design-system README) + task file move
+**Tests added:** net 0 (the `selected-state shadow unchanged` guard was inverted to `selected carries no ochre / accent ring`)
+**ADRs written:** none (completes ADR-0016's direction; no new decision)
+
+---
+
+## 2026-06-15 23:38 -- Batch started: [design-system-010]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-010 - TicketCard — drop the ochre selected-state ring (no replacement cue)
+**Parallel:** no (1 worker — serialized vs the one other ready task infra-019: disjoint source files / BCs / ADRs, but both invoke the shared `dashboard/` `node --test` suite (ds-010 also rebuilds the bundled `dashboard/dist/`), the documented flake race. Lowest-id first: ds-010.)
+
+---
+
+## 2026-06-15 23:34 -- Task verified and completed: agentic-workflow-042 - Confetti uses canvas-confetti's realistic multi-fire preset, centered on screen
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-042 - Confetti uses canvas-confetti's realistic multi-fire preset, centered on screen
+**Summary:** The celebration now fires canvas-confetti's canonical "realistic look" preset — a layered five-shot multi-fire burst (shared `count:200`, per-shot ratio/spread/velocity/decay/scalar) from a centered origin `{x:0.5,y:0.7}` with no angle aim — retiring aw-037's single textarea-aimed burst. The aim helper became a pure `confettiFireSequence()` returning `{count, defaults, shots}`; `fireConfetti` walks it. aw-038's prompt-field auto-grow `textareaRef` was preserved (only the confetti-aim use of it was torn out).
+**Verification:** PASS (iteration 1) — dashboard suite 352/352 green; verifier ran the critical coupling check and confirmed `textareaRef`/`autoGrowField` survive for aw-038 while `confettiLaunchToRect`/`originRef`/`getBoundingClientRect` are fully gone from board.js, the matchMedia guard wraps the whole five-shot loop (reduced-motion fires none), and `confetti-palette.js` is untouched.
+**Commit:** e5499ec
+**Files changed:** 6 (board.js, confetti-launch.js [aim helper → fire-sequence], dist/app.js, board-prompt-bar.test.mjs, confetti-launch.test.mjs, aw README) + task file move
+**Tests added:** confetti-launch.test.mjs rewritten to the new contract (5 fire-sequence guards: count=200, centered origin no-angle, exact five-shot array, no per-shot angle, floor(count*ratio)=[50,40,70,20,20]); board-prompt-bar guard updated to the centered wiring; reduced-motion no-call + aw-038 auto-grow guards retained
+**ADRs written:** none (origin/tuning/multi-fire structure is ADR-0020's open replay-loop dial; no genuine new decision)
+
+---
+
+## 2026-06-15 23:30 -- Modeling / Captured: agentic-workflow-043 - Slide-over hides task frontmatter behind a collapsible, structured "Front matter" section
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Clicking a ticket renders the task file's YAML frontmatter as one large bold heading, because the styleguide `Markdown` primitive parses the raw body (the `key: value` block above the closing `---` becomes a setext heading). Capture: strip frontmatter out of the rendered body and show it instead as a quiet, collapsed-by-default "Front matter" section that expands to a structured key/value view. `Markdown` stays unforked (ADR-0003); parsing is board-local. Open question flagged: extend the same fix to the main-pane reader (aw-027), whose non-task docs leak frontmatter the same way.
+
+---
+
+## 2026-06-15 22:50 -- Batch started: [agentic-workflow-042]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-042 - Confetti uses canvas-confetti's realistic multi-fire preset, centered on screen
+**Parallel:** no (1 worker — serialized: aw-042 + design-system-010 both rebuild the shared `dashboard/dist/app.js`; infra-019 shares the `dashboard/` `node --test` suite. Lowest-id first: aw-042.) Coupling watch: aw-042 tears out aw-037's confetti aim plumbing, but aw-038 repurposed the same `textareaRef` for the prompt-field auto-grow — the worker must keep `textareaRef` and remove only the aim chain.
+
+---
+
+## 2026-06-15 22:46 -- Task verified and completed: design-system-009 - Drawer header — drop the Copy button, rename "Open in editor" → "Open in full screen", expose a callback
+
+**Type:** Work / Task completion
+**Task:** design-system-009 - Drawer header — drop the Copy button, rename "Open in editor" → "Open in full screen", expose a callback
+**Summary:** The styleguide `Drawer` header (both `HeaderMinimal` and `HeaderContextual`) dropped its dead Copy button and turned the dead "Open in editor" button into an optional consumer-supplied **Open in full screen** action — a bare `onOpenFullScreen()` callback threaded through `Drawer` to both headers; absent callback renders nothing (ds-006 cornerAction precedent) and the HeaderMinimal divider no longer dangles. The canvas section-07 demo supplies a handler so the action is visible for gate re-review.
+**Verification:** PASS (iteration 1) — dashboard suite 353/353 green; new `styleguide/test/drawer.test.mjs` (7 guards) green; verifier confirmed all 8 acceptance criteria, the Drawer consumed unforked in the rebuilt dist, and the open/close/Esc/scrim behavior untouched.
+**Commit:** 96bd905
+**Files changed:** 6 (styleguide drawer.js, styleguide app.js canvas, styleguide drawer.test.mjs [new], dashboard/dist/app.js [rebuilt], design-system README, design-system-011 [new backlog]) + task file move
+**Tests added:** 7 (styleguide/test/drawer.test.mjs: no Copy button, Open-in-full-screen label, fires onOpenFullScreen, absent→not-rendered both headers, divider no-dangle, canvas demo wires handler)
+**ADRs written:** none (ADR-0003/0010 govern; ds-006 cornerAction callback precedent)
+**Gate:** ⚠️ Visible styleguide change — REOPENS the design-system gate. Builder re-review against the canvas (section 07 header demos) is required before the downstream consumer agentic-workflow-039 (wires `onOpenFullScreen` to the main pane) ships.
+**New backlog:** design-system-011 — the worker surfaced a PRE-EXISTING, unrelated styleguide-suite failure (`add-affordance.test.mjs` asserts against `dashboard/app/board.js` which dropped `onAdd` in the aw-026/027 refactor) and filed it rather than fixing out of scope. The styleguide suite carries this one known-red test; the dashboard suite is fully green.
+
+---
+
+## 2026-06-15 22:42 -- Modeling / Captured: agentic-workflow-042 - Confetti uses canvas-confetti's realistic multi-fire preset, centered on screen
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Next replay-loop iteration on the celebration confetti — replace aw-037's single textarea-aimed burst with canvas-confetti's canonical layered five-shot "realistic look" demo, fired from a centered origin (x:0.5, demo y:0.7) with no aim. Drops the aw-037 aim helper + textareaRef plumbing; palette / triggers / reduced-motion / ownership unchanged.
+
+---
+
+## 2026-06-15 22:28 -- Batch started: [design-system-009]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-009 - Drawer header — drop the Copy button, rename "Open in editor" → "Open in full screen", expose a callback
+**Parallel:** no (1 worker — serialized: design-system-009 and design-system-010 both edit the styleguide source + the design-system README and rebuild the shared `dashboard/dist/app.js`; infra-019 shares the `dashboard/` `node --test` suite. Lowest-id first: ds-009.) Note: ds-009 is a visible styleguide change that REOPENS the design-system gate — builder re-review required before the downstream consumer aw-039 ships.
+
+---
+
+## 2026-06-15 22:24 -- Task verified and completed: agentic-workflow-041 - Armed skip-permissions per-launch cue becomes a red icon, not a separate dot
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-041 - Armed skip-permissions per-launch cue becomes a red icon, not a separate dot
+**Summary:** Each board `LaunchButton` now signals an armed (skip-permissions) launch by tinting its always-rendered icon `--obligation` (red), replacing the separate `--obligation` indicator dot and its `armed ? dot : icon` swap. Border + label stay normal (aw-030's no-button-wide-red rule), the "skips permissions" aria-label/title is retained on the button, and the launch payload is unchanged.
+**Verification:** PASS (iteration 1) — dashboard suite 353/353 green (old dot test replaced by 3 aw-041 guards); verifier ran the critical accessibility check and confirmed the "skips permissions" wording survives on the `<button>` aria-label/title (not lost with the dot), the SkipPermissionsToggle + POST/launch path untouched, styleguide unforked, dist rebuilt.
+**Commit:** 15cfda5
+**Files changed:** 5 (board.js, dist/app.js, launch-button-hover.test.mjs, ADR-0019 [amended], aw README) + task file move
+**Tests added:** net +2 (launch-button-hover.test.mjs: replaced the dot-retained test with no-dot-element + always-render-icon + armed-icon-tint guards); suite 351 → 353
+**ADRs written:** ADR-0019 amended in place (second dated amendment, agentic-workflow-041 — dot→red-icon; bidirectional backlink: ADR-0019.related_tasks += agentic-workflow-041, task already lists ADR-0019). The money-named `--obligation`-as-danger reconciliation (future shared `--danger` token) remains flagged for the design-system README — still open, design-system's to make.
+
+---
+
+## 2026-06-15 22:20 -- Research: Cloud session auto-naming from the prompt (extends terminal-naming report)
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/claude-code-terminal-session-naming-2026-06-15.md (new "## Cloud sessions — auto-naming from the prompt" section, sources 13–19)
+**Review:** PASS (iteration 1)
+**Summary:**
+- The cloud auto-name is official and documented: Remote Control docs spell out the title precedence (`--name`/`/remote-control` > `/rename` > last meaningful message > `hostname-graceful-unicorn` placeholder) and state "If you didn't set an explicit name, the title updates to reflect your prompt once you send one." Same family as claude.ai chat titling.
+- Why it works in the cloud but not locally: the cloud names an **Anthropic-owned session-list row** (rendered in a UI Anthropic fully controls), whereas a local IDE terminal tab is owned by VS Code/the OS — the CLI can only push an OSC title string it then overwrites every spinner tick.
+- Cloud name is editable and persistent, but split across two non-reconciling stores per community bug #64304 (native `aiTitle` vs cloud Bridge `updateBridgeSessionTitle`). Native local auto-titling request #47176 closed not-planned — the prior report's "no local terminal-tab naming" conclusion stands.
+
+---
+
+## 2026-06-15 22:14 -- Batch started: [agentic-workflow-041]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-041 - Armed skip-permissions per-launch cue becomes a red icon, not a separate dot
+**Parallel:** no (1 worker — serialized: the three frontend ready tasks (aw-041, design-system-009, design-system-010) each rebuild the single shared `dashboard/dist/app.js` (ds-009/ds-010 also share the design-system README), and all ready tasks invoke the shared `dashboard/` `node --test` suite. Lowest-id first: aw-041.)
+
+---
+
+## 2026-06-15 22:08 -- Task verified and completed: agentic-workflow-040 - Main-pane document reader centers its reading column in the content area
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-040 - Main-pane document reader centers its reading column in the content area
+**Summary:** The main-pane document reader (`MainPaneReader`) now centers its constrained reading column horizontally in the content area via `margin: "0 auto"` on the `<article>`, keeping the `maxWidth: 760` measure — block centering of the whole column (path header + Markdown), not center-aligned text.
+**Verification:** PASS (iteration 1) — dashboard suite 351/351 green; verifier confirmed all 4 acceptance criteria, the only production change is the `<article>` style, the styleguide `Markdown` primitive stays unforked (no design-system change), dist genuinely rebuilt.
+**Commit:** b5b663b
+**Files changed:** 4 (main-pane-reader.js, main-pane-reader.test.mjs, dist/app.js, aw README) + task file move
+**Tests added:** 1 (main-pane-reader.test.mjs: asserts `margin:"0 auto"` + maxWidth preserved + no `textAlign:center`); suite 350 → 351
+**ADRs written:** none (board-local layout tweak inside the BC-owned reader; ADR-0021/0003 govern)
+
+---
+
+## 2026-06-15 22:05 -- Research: Naming a Claude Code terminal session in the IDE
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/claude-code-terminal-session-naming-2026-06-15.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- No official way exists to give a Claude Code terminal session a custom name — no setting, CLI flag, or env var; the relevant feature requests (#18326, #29349, #52258, #23998, #55197) are all closed (duplicate / not-planned / stale). The CLI rewrites the tab title on every spinner tick, defeating manual rename, OSC sequences, and `/rename`.
+- The user almost certainly means the VS Code extension / CLI in VS Code's integrated terminal — there is no official Anthropic Visual Studio (proper) extension (open request #15942).
+- Only workaround: a third-party VS Code extension "Claude Terminal Name Sync" (publisher jesshart), macOS/Linux only, Windows untested. The graphical chat-panel sessions, unlike CLI terminal tabs, DO get nameable AI-generated titles.
+
+---
+
+## 2026-06-15 21:52 -- Batch started: [agentic-workflow-040]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-040 - Main-pane document reader centers its reading column in the content area
+**Parallel:** no (1 worker — serialized: every frontend ready task (aw-040, aw-041, design-system-009, design-system-010) rebuilds the single shared `dashboard/dist/app.js` and all ready tasks invoke the shared `dashboard/` `node --test` suite, the documented flake race. Lowest-id first: aw-040.)
+
+---
+
+## 2026-06-15 21:48 -- Task verified and completed: agentic-workflow-038 - Board prompt bar — single-line auto-growing input replaces the multi-line textarea
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-038 - Board prompt bar — single-line auto-growing input replaces the multi-line textarea
+**Summary:** The board prompt-bar field is now a single-logical-line, auto-growing control: still a `<textarea>` element (so the aw-035/aw-037 confetti rect/aim path reads the same node) but it soft-wraps with no horizontal scrollbar, auto-grows in height to a cap then scrolls, swallows Enter (no newline, no launch), and runs every change through the pure `sanitizePromptLine` so the value can never hold a newline (multi-line paste collapses to one line). The Quick Capture / Modeling / Research builders read the same sanitized value unchanged.
+**Verification:** PASS (iteration 1) — dashboard suite 350/350 green (4 new board-glue guards); verifier confirmed all 7 acceptance criteria, the styleguide source and `modeling-command.js` builders untouched, the `textareaRef` confetti path intact, dist genuinely rebuilt, styleguide consumed unforked.
+**Commit:** 72fdbb9
+**Files changed:** 4 (board.js, board-prompt-bar.test.mjs, dist/app.js, aw README) + task file move
+**Tests added:** 4 (board-prompt-bar.test.mjs: single-line+auto-grow wiring, Enter-swallow, never-a-newline/paste-collapse, builders read the sanitized value); suite 346 → 350
+**ADRs written:** none (board-local token-matched control consuming the styleguide unforked; ADR-0003/ADR-0020 govern, no new decision)
+
+---
+
+## 2026-06-15 21:45 -- Modeling / Captured: agentic-workflow-041 - Armed skip-permissions per-launch cue becomes a red icon, not a separate dot
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** When the skip-permissions toggle is armed, the board launch buttons should tint their existing icon red (`--obligation`) instead of swapping it for a separate red dot. Drops the dot, colours the always-present icon. A further narrowing of the aw-030 / ADR-0019 armed-cue treatment (dot-only → red icon); the amended ADR-0018 per-launch mandate still holds.
+
+---
+
+## 2026-06-15 21:30 -- Modeling / Captured: design-system-010 - TicketCard — drop the ochre selected-state ring
+
+**Type:** Modeling / Capture
+**BC:** design-system
+**Filed to:** todo
+**Summary:** Remove the ochre (orange/yellow) selected-state cue on TicketCard — the accent border + 1px ring (kanban.js:78,80) — with no replacement cue (selected == unselected). Aligns the card with ADR-0016's accent-reservation / de-emphasis direction. Global keyboard `:focus-visible` ring left intact as out of scope.
+
+---
+
+## 2026-06-15 20:12 -- Batch started: [agentic-workflow-038]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-038 - Board prompt bar — single-line auto-growing input replaces the multi-line textarea
+**Parallel:** no (1 worker — serialized vs the three other ready tasks: aw-040 + design-system-009 both rebuild the same `dashboard/dist/app.js` bundle (aw-040 also shares the aw README), and all four ready tasks invoke the shared `dashboard/` `node --test` suite — the documented flake race the prior three sessions serialized around). Lowest-id first: aw-038.
+
+---
+
+## 2026-06-15 20:10 -- Modeling / Captured: agentic-workflow-040 - Main-pane document reader centers its reading column in the content area
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Non-task documents opened in the main pane (MainPaneReader, aw-027) render flush
+against the left edge — the `<article>` constrains the measure (`maxWidth: 760`) but is not
+centered. Center the reading column horizontally in the content area (natural fix: `margin: 0 auto`),
+keeping the measure; horizontal block-centering only, not center-aligned text. Reader-owned
+board-local wrapper, styleguide `Markdown` consumed unforked (ADR-0003). Filed to todo (frontend
+gate design-system-001 satisfied; small, unambiguous bug).
+
+---
+
+## 2026-06-15 20:08 -- Task verified and completed: agentic-workflow-037 - Confetti launches from the page center and shoots up toward the prompt-bar textarea
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-037 - Confetti launches from the page center and shoots up toward the prompt-bar textarea
+**Summary:** Inverted aw-035's celebration geometry — the burst now originates at the page center `{0.5,0.5}` and shoots upward toward the prompt-bar textarea center (converging on the prompt bar). The pure helper `confettiLaunchFromRect` was replaced by the mirror `confettiLaunchToRect(rect, viewport) → { origin:{x:0.5,y:0.5}, angle }`; `board.js` keeps the live fire-time rect/viewport read and the missing-ref fallback.
+**Verification:** PASS (iteration 1) — dashboard suite 346/346 green (1 new below-center degenerate test); verifier confirmed all 9 acceptance criteria, `confetti-palette.js` untouched, reduced-motion never-invoke path intact, dist genuinely rebuilt to the new geometry, styleguide consumed unforked.
+**Commit:** 87e8991
+**Files changed:** 6 (confetti-launch.js, board.js, confetti-launch.test.mjs, board-prompt-bar.test.mjs, dist/app.js, aw README) + task file move
+**Tests added:** net +1 (confetti-launch.test.mjs rewritten to the new contract + a below-center degenerate case); suite 345 → 346
+**ADRs written:** none (origin/aim is the iteration target ADR-0020 already frames; no genuine new decision)
+
+---
+
+## 2026-06-15 20:05 -- Modeling / Refined: design-system-009 - Drawer header — drop Copy, rename "Open in editor" → "Open in full screen", expose a callback
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** todo (promoted)
+**Summary:** Grounded the task against the real source (`.agentheim/contexts/design-system/styleguide/app/drawer.js`) — confirmed both `HeaderMinimal` and `HeaderContextual` carry the two dead, onClick-less buttons. Surfaced two things the capture missed: (1) `HeaderMinimal`'s vertical divider before Close would **dangle** once Copy is gone and "Open in full screen" may be absent — added an AC to render it only when an action precedes it; (2) tightened the canvas-demo AC from "either/or" to **must supply a handler so the button is visibly rendered**, since this task reopens the gate and the builder must see the new action to approve it. Settled the callback signature to a bare `onOpenFullScreen()` (consumer owns the task). Promoted to todo — only dep (design-system-001) is done; gate re-review happens after implementation (ds-005/007 precedent). Downstream aw-039 still waits on it.
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-15 19:50 -- Batch started: [agentic-workflow-037]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-037 - Confetti launches from the page center and shoots up toward the prompt-bar textarea
+**Parallel:** no (1 worker — serialized vs the two other ready tasks: aw-038 shares `board.js` / `dist/app.js` / `board-prompt-bar.test.mjs` / aw README with aw-037 (hard file conflict, demoted to next wave); infra-019 edits disjoint files but invokes the same shared `dashboard/` `node --test` suite, the documented flake race the prior two sessions serialized around)
+
+---
+
+## 2026-06-15 19:25 -- Modeling / Captured: design-system-009 + agentic-workflow-039 - Slide-over "Open in full screen"
+
+**Type:** Modeling / Capture
+**BC:** design-system + agentic-workflow
+**Filed to:** backlog (both)
+**Summary:** The task slide-over has two dead header buttons (Copy path, Open in editor). Drop Copy
+and turn "Open in editor" into "Open in full screen", which renders the task in the main content
+pane (the MainPaneReader surface where ADRs/docs render, aw-027). Split across two BCs because the
+buttons live in the styleguide `Drawer` (consumed unforked): **design-system-009** changes the
+`Drawer` header (drop Copy, rename, expose an `onOpenFullScreen` callback; reopens the gate) and
+**agentic-workflow-039** wires that callback to the main pane (an explicit per-action override of
+the ADR-0021 open-intent split). aw-039 depends on ds-009. (Renumbered 037→039 around a concurrent
+modeling session consuming those ids.)
+
+---
+
+## 2026-06-15 19:10 -- Modeling / Refined: infrastructure-019 - Dashboard origin sticks to its last-good port so an intermittent collision can't flap it
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo (promoted)
+**Summary:** Cornered a load-bearing contradiction in the task's premise. The original Why claimed a collision-driven move "persists on every relaunch even after the colliding process is gone" — but infra-018's `listenOnLadder` already tries the derived port first, so the shipped code *already* snaps back to the derived port when a collision clears. The real open gap is **flapping** under an *intermittent* collision (origin bounces derived ↔ ladder-rung launch-to-launch, resetting the origin-keyed localStorage stores). The draft conflated two opposite behaviors (snap-back-to-derived, already shipped; vs last-good-sticky). User chose **last-good-sticky**. Decided the persistence mechanism: a **separate `last-port.json` marker** (over muddying `runtime.json` or a pid-less slimmed runfile) — refined further to write it at **successful-bind time** in `serve.mjs` (covers crash *and* clean-stop, leaves `inspectExisting`/`stopDashboard` unchanged), with the child reading it (no env-plumb; `serve.mjs` stays sole bind owner) and pure last-good→derived→ladder ordering in `port.mjs`. Renamed the file/title to match the corrected framing; rewrote Why/What/ACs. Promoted (only dep infra-018 is done; backend-only, no styleguide gate).
+**Split into:** none
+**ADRs written:** none (worker to add a dated ADR-0002 addendum when the port-selection contract changes from derived-first to last-good-first)
+
+---
+
+## 2026-06-15 19:45 -- Modeling / Captured: agentic-workflow-038 - Board prompt bar — single-line auto-growing input replaces the multi-line textarea
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Swap the board prompt-bar `<textarea>` (aw-023) for a control that renders multi-line but holds a single logical line: text wraps + the field auto-grows to fit, but the value never contains a newline (Enter is swallowed, no launch; multi-line paste collapses to one line). Buttons + confetti consume it unchanged (aw-035/aw-037 rect contract preserved). Board-local token-matched control, styleguide consumed unforked (ADR-0003). Captured aw-037 first taken by a concurrent confetti capture, so this is aw-038. Filed to todo (frontend gate design-system-001 satisfied).
+
+---
+
+## 2026-06-15 19:30 -- Modeling / Captured: agentic-workflow-037 - Confetti launches from the page center and shoots up toward the prompt-bar textarea
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Inverse of aw-035's celebration geometry — the burst now starts at the page center `{0.5,0.5}` and aims upward at the prompt-bar textarea center (converging on the prompt bar), instead of originating at the textarea and aiming at the viewport center. Same pure helper (`confetti-launch.js`), same triggers / palette / reduced-motion / ownership. Filed to todo (frontend gate design-system-001 satisfied).
+
+---
+
+## 2026-06-15 18:51 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 3 (first-try PASS: 3, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3 (aw-035 b688673, aw-036 1cfbccf, infra-018 398dee2)
+**ADRs:** 0 new; 1 in-place amendment (ADR-0002 deterministic-port addendum [infra-018])
+**Note:** Started with 1 ready task (aw-035). Parallel `modeling` sessions promoted aw-036 (Research button) and infra-018 (deterministic port) to todo mid-run — both picked up as they became ready. Despite two ready tasks at once, the batch was serialized one-at-a-time: aw-036 and infra-018 edit disjoint source files but both invoke the shared `dashboard/` `node --test` suite (a worker running the full suite mid-edit of another's file would flake), the same race the prior session documented. Every worker passed verification first try. Remaining in backlog (need a `modeling` promote before `work` can claim): aw-031 (next-steps overview) and infra-019 (port last-good self-heal — the deferred infra-018 follow-up).
+
+---
+
+## 2026-06-15 18:50 -- Task verified and completed: infrastructure-018 - Dashboard binds a deterministic project-root port so the origin survives relaunch
+
+**Type:** Work / Task completion
+**Task:** infrastructure-018 - Dashboard binds a deterministic project-root port so the origin survives relaunch
+**Summary:** The dashboard now binds a deterministic project-root-derived port (sha256 of the absolute root folded into window 41000–42023) with a bounded fallback ladder of 8 wrapping in-band on EADDRINUSE, replacing ADR-0002's ephemeral `:0`. The browser origin is now stable across stop+relaunch, so the three origin-keyed `localStorage` stores (theme aw-017, board view-state ADR-0015, skip-permissions aw-021) survive relaunch. Pure derivation in new `dashboard/port.mjs`; `serve.mjs` consumes it; ADR-0002 amended in place.
+**Verification:** PASS (iteration 1) — dashboard suite 345/345 green (14 new port tests); verifier confirmed all 8 acceptance criteria, launcher reuse path (`launch.mjs` / `inspectExisting`) untouched, `127.0.0.1`-only preserved, no frontend touched, ADR-0002 addendum purely additive (reverses only the ephemeral-port clause).
+**Commit:** 398dee2
+**Files changed:** 5 (port.mjs [new], serve.mjs, port.test.mjs [new], ADR-0002 [amended], infrastructure README) + task file move
+**Tests added:** 14 (dashboard/test/port.test.mjs — derivation determinism, cross-root distinctness, in-band + wrap, ladder walk on EADDRINUSE, whole-ladder-exhausted clear error, non-EADDRINUSE re-throw); suite 331 → 345
+**ADRs written:** ADR-0002 amended in place (dated addendum, infrastructure-018 — deterministic port; bidirectional backlink added: ADR-0002 ↔ infrastructure-018). Self-heal / last-good-port retry deferred to infrastructure-019 (backlog).
+
+---
+
+## 2026-06-15 18:43 -- Batch started: [infrastructure-018]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-018 - Dashboard binds a deterministic project-root port so the origin survives relaunch
+**Parallel:** no (1 worker — last ready task; server-side `decision` touching `serve.mjs` + new `port.mjs` + ADR-0002 amendment, disjoint from the just-shipped aw frontend work)
+
+---
+
+## 2026-06-15 18:42 -- Task verified and completed: agentic-workflow-036 - Board prompt bar — Research launch button next to Quick Capture / Modeling
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-036 - Board prompt bar — Research launch button next to Quick Capture / Modeling
+**Summary:** The board prompt bar gains a third **Research** launch button beside Quick Capture / Modeling — it seeds `/agentheim:research <prompt>` from the live textarea via a new pure `researchCommandFor` builder (+ `RESEARCH_COMMAND`), reusing the bridge→clipboard launch path (`launchOrCopy`/`LaunchButton`) unchanged and sharing the prompt-bar's clear+confetti `onResult`. Only the command string is new.
+**Verification:** PASS (iteration 1) — dashboard suite 331/331 green; verifier confirmed all 9 acceptance criteria, styleguide + `bridge-launch.js` + server/API untouched, builder pure + unit-tested (bare/append/trim/whitespace/non-string), board stays a read-only projection.
+**Commit:** 1cfbccf
+**Files changed:** 5 (modeling-command.js, board.js, modeling-command.test.mjs, board-prompt-bar.test.mjs, dist/app.js, aw README) + task file move
+**Tests added:** 12 (modeling-command.test.mjs: +8 researchCommandFor/RESEARCH_COMMAND cases; board-prompt-bar.test.mjs: +4 render/seed/thread/import guards); suite 319 → 331
+**ADRs written:** none (straight extension of aw-023's prompt-bar builder pattern; ADR-0018/0003/0009/0001 reused)
+
+---
+
+## 2026-06-15 18:35 -- Batch started: [agentic-workflow-036]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-036 - Board prompt bar — Research launch button next to Quick Capture / Modeling
+**Parallel:** no (1 worker — serialized vs the ready infrastructure-018: disjoint source files but both invoke the shared dashboard `node --test` suite, the same race the prior session documented; aw-036 first, infra-018 next)
+
+---
+
+## 2026-06-15 18:33 -- Task verified and completed: agentic-workflow-035 - Confetti bursts from the prompt-bar textarea center, aimed at the viewport center
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-035 - Confetti bursts from the prompt-bar textarea center, aimed at the viewport center
+**Summary:** The board celebration burst now originates at the prompt-bar textarea's center and aims at the viewport center; origin + angle are computed at fire time from the textarea's live `getBoundingClientRect()` (new pure `confettiLaunchFromRect(rect, viewport)` helper, mirroring `confetti-palette.js`), replacing aw-034's hardcoded `{x:0.18,y:0.92}`/`angle:75`. Triggers, palette, reduced-motion silence, and board-local ownership unchanged.
+**Verification:** PASS (iteration 1) — dashboard suite 319/319 green; verifier confirmed all 9 acceptance criteria, styleguide + `confetti-palette.js` untouched, reduced-motion never-invoke path intact, pure-helper unit-tested (center normalization + aim angles).
+**Commit:** b688673
+**Files changed:** 6 (board.js, confetti-launch.js [new], confetti-launch.test.mjs [new], board-prompt-bar.test.mjs, dist/app.js, aw README) + task file move
+**Tests added:** 6 (confetti-launch.test.mjs: 5 geometry cases; board-prompt-bar.test.mjs: +1 fire-time/ref-plumbing guard); suite 313 → 319
+**ADRs written:** none (origin/aim becoming dynamic is already framed by ADR-0020; no amendment needed)
+
+---
+
+## 2026-06-15 18:32 -- Modeling / Refined: infrastructure-018 - Dashboard binds a deterministic project-root port so the origin survives relaunch
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo (promoted)
+**Summary:** Grounded the task in the real code path and cornered two ambiguities. (1) The last-good-port retry was both called "deferrable" and baked into 3 ACs + an `inspectExisting` change — and it has an architectural wrinkle: `inspectExisting` deletes the stale runfile *before* the detached child (`serve.mjs`, where the bind lives) spawns. Resolved by deferring it: v1 ships only the load-bearing contract (deterministic root-derived port + bounded ladder). (2) Pinned the unpinned derivation: window **41000–42023** (`41000 + hash(root) mod 1024`), bounded ladder of **8** wrapping in-band — clear of privileged / ephemeral / bridge (31425–27) / common dev ports. Rewrote the ADR-0002 addendum to match. Promoted to todo (the open decisions are now anchored by the user).
+**Split into:** infrastructure-019 (last-good-port self-heal; backlog, depends_on infrastructure-018)
+**ADRs written:** none (ADR-0002 addendum drafted in the task body for the worker to paste)
+
+---
+
+## 2026-06-15 18:30 -- Modeling / Captured: agentic-workflow-036 - Board prompt bar — Research launch button next to Quick Capture / Modeling
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Add a third launch button (**Research**) to the board prompt bar beside Quick Capture / Modeling, with identical behaviour — seed `/agentheim:research <prompt>` from the trimmed textarea (bare command when empty), reuse `launchOrCopy`/`LaunchButton` and the bridge→clipboard fallback unchanged (ADR-0018), thread `skipPermissions` (aw-021), and share the prompt bar's clear-textarea + confetti `onResult`. Pure builder `RESEARCH_COMMAND` + `researchCommandFor(prompt)` in `modeling-command.js` mirroring aw-023's builders. Filed straight to todo — small, unambiguous extension of aw-023's pattern; styleguide gate satisfied.
+
+---
+
+## 2026-06-15 18:20 -- Batch started: [agentic-workflow-035]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-035 - Confetti bursts from the prompt-bar textarea center, aimed at the viewport center
+**Parallel:** no (1 worker — only ready task; edits board.js confetti origin/aim + extracts a pure helper, rebuilds shared dist)
+
+---
+
+## 2026-06-15 18:05 -- Modeling / Captured: infrastructure-018 - Dashboard binds a deterministic project-root port so the origin survives relaunch
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** User reported the skip-permissions toggle isn't remembered across dashboard launches. Root cause: the toggle (aw-021) already persists to browser `localStorage`, but `serve.mjs` binds an ephemeral port (`listen(0)`), so each relaunch is a new `127.0.0.1:<port>` origin and orphans all three origin-keyed stores (skip-perms, theme aw-017, board view-state ADR-0015). Architect (via orchestrator) shaped a `decision` task: bind a deterministic project-root-derived port for a stable origin, with a bounded EADDRINUSE ladder + last-good-port retry, amending only ADR-0002's ephemeral-port clause (addendum drafted in the task body). Server-side persistence rejected (less coverage, more code). Held in backlog for the user to read the decision before promotion.
+
+---
+
+## 2026-06-15 17:55 -- Modeling / Captured: agentic-workflow-035 - Confetti bursts from the prompt-bar textarea center, aimed at the viewport center
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Next aw-025 replay-loop iteration on aw-034 — make the celebration's origin + aim dynamic: fire from the prompt-bar textarea's live-rect center (not hardcoded `{0.18,0.92}`) and aim the launch angle at the viewport center `{0.5,0.5}` (not fixed 75°). Triggers/palette/reduced-motion/ownership unchanged. Filed straight to todo (small, unambiguous; styleguide gate satisfied).
+
+---
+
+## 2026-06-15 17:40 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 8 (first-try PASS: 8, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 8 (aw-025 8694491, aw-029 39447ec, aw-028 77e9c41, aw-030 7e7e191, aw-032 74f23cf, aw-033 4e6f537, aw-034 bb953cd, ds-008 44476fc)
+**ADRs:** 0 new; 2 in-place amendments (ADR-0019 dot-only cue [aw-030], ADR-0020 canvas-confetti [aw-034])
+**Note:** Started with 4 ready tasks; parallel modeling/research sessions promoted aw-032/033/034 (and captured aw-031, still backlog) mid-run — all picked up as they became ready. Despite MAX_PARALLEL=3 the whole run was serialized one-task-per-batch: every task rebuilt the shared `dashboard/dist/app.js` bundle and most edited `board.js`, so parallel workers would have raced the bundle and the shared `node --test` tree. Every worker passed verification first try. Remaining: aw-031 (next-steps overview) in backlog — needs a `modeling` promote before `work` can claim it.
+
+---
+
+## 2026-06-15 17:38 -- Task verified and completed: design-system-008 - TicketCard hover — stronger shadow, no upward content lift
+
+**Type:** Work / Task completion
+**Task:** design-system-008 - TicketCard hover — stronger shadow, no upward content lift
+**Summary:** Styleguide TicketCard hover now deepens the shadow one step (--shadow-sm → --shadow-md) and drops the translateY(-1px) lift (and its transition entry), so the card reads as raised without content jumping. Selected + idle states unchanged. Made in the styleguide source (no fork, ADR-0003); dashboard consumes it unforked and its dist was rebuilt.
+**Verification:** PASS (iteration 1) — dashboard suite 313/313 green (orchestrator re-confirmed after an inconsistent verifier note); verifier confirmed all 4 acceptance criteria, no styleguide token changed, no dashboard/app source edited (only the rebuilt dist), pulse/cornerAction/estimate-chip undisturbed.
+**Commit:** 44476fc
+**Files changed:** 4 (kanban.js, ticket-card.test.mjs [new], design-system README, dist/app.js) + task file move
+**Tests added:** 8 (styleguide/test/ticket-card.test.mjs — --shadow-md hover, no transform, selected-shadow unchanged)
+**ADRs written:** none (extends ADR-0003 unforked consumption)
+
+---
+
+## 2026-06-15 17:35 -- Research: detecting a live Work session
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/work-session-presence-lock-2026-06-15.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- `doing/` is NOT a liveness signal (the work skill's own Phase 1 recovery treats a doing/ task as a possibly-interrupted session). A clean SessionStart-writes / SessionEnd-removes bracket is NOT achievable: no hook exposes the Claude PID, and SessionEnd is unreliable (does not fire on `/exit` per issue #17885, no crash/SIGKILL guarantee).
+- Robust deterministic design: a skill-frontmatter `Stop` hook in the work SKILL.md creates a lock on first fire and bumps a `lastHeartbeat` timestamp every turn; the read-only dashboard treats the lock as live within a staleness window — mirroring the existing runtime.json/bridge.json pid-liveness reaping, with the timestamp window standing in for `process.kill(pid,0)`.
+- Scoping to WORK sessions only requires skill-frontmatter hooks (settings.json hooks have no skill/command matcher and fire for every claude session). `${CLAUDE_PROJECT_DIR}` is available so the hook can write into `.agentheim/.dashboard/`.
+
+---
+
+## 2026-06-15 17:14 -- Batch started: [design-system-008]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-008 - TicketCard hover — stronger shadow, no upward content lift
+**Parallel:** no (1 worker — edits styleguide/app/kanban.js TicketCard hover + rebuilds the consumer dashboard/dist; last ready task)
+
+---
+
+## 2026-06-15 17:12 -- Task verified and completed: agentic-workflow-034 - Fire the celebration with canvas-confetti instead of the CSS-keyframe burst
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-034 - Fire the celebration with canvas-confetti instead of the CSS-keyframe burst
+**Summary:** Replaced the CSS-keyframe burst with canvas-confetti — a full-viewport burst from an origin near the prompt-bar buttons, palette = the four status bases resolved at fire time (new confetti-palette.js) so it tracks the active theme. Trigger wiring unchanged; reduced-motion stays silent. canvas-confetti bundled into dist (no CDN) — the dashboard's first bundled frontend runtime dependency.
+**Verification:** PASS (iteration 1) — dashboard suite 313/313 green; verifier confirmed all 9 acceptance criteria, canvas-confetti installed + bundled into dist (no CDN), styleguide untouched, reserved tokens excluded + resolver tested, reduced-motion no-call path guarded + tested, old CSS-keyframe tests updated (not gutted), trigger wiring + aw-025 TEMP block intact.
+**Commit:** bb953cd
+**Files changed:** 9 (board.js, confetti-palette.js [new], confetti-palette.test.mjs [new], board-prompt-bar.test.mjs, package.json, package-lock.json, dist/app.js, ADR-0020 [amended], aw README) + task file move
+**Tests added:** confetti-palette.test.mjs (resolver + reserved-token exclusion + theme-tracking) + reduced-motion no-call guard; suite 305 → 313
+**ADRs written:** none — ADR-0020 amended in-place (canvas-confetti as first bundled frontend runtime dep, CSS→canvas swap, full-window footprint = ownership not pixels, four-status theme-aware palette; ADR-0014 reduced-motion silence still binds); bidirectional related_tasks link added (aw-034 ↔ ADR-0020)
+
+---
+
+## 2026-06-15 17:10 -- Research: knowing when the Work terminal is finished
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/work-terminal-completion-signal-2026-06-15.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- The only deterministic on-disk signal the read-only dashboard can observe is a pre-configured Claude Code hook running a shell command to write/touch a file (FS-watch + SSE then picks it up); there is no runtime/in-prompt way for a skill to register a hook.
+- Stop fires at the end of every assistant turn (session stays alive); SessionEnd fires once when the CLI process exits — "user closed the session," not "work done." VS Code onDidCloseTerminal / shell-execution-end can't distinguish turn-completion from REPL exit and are in-process, not on-disk.
+- Headless `claude -p` exits cleanly when done (a natural process-exit signal) but loses the visible interactive terminal.
+
+---
+
+## 2026-06-15 16:45 -- Batch started: [agentic-workflow-034]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-034 - Fire the celebration with canvas-confetti instead of the CSS-keyframe burst
+**Parallel:** no (1 worker — adds canvas-confetti as a bundled dep, rewrites BoardConfetti in board.js, amends ADR-0020, rebuilds dist; serialized against ds-008 [shared dist])
+
+---
+
+## 2026-06-15 16:42 -- Task verified and completed: agentic-workflow-033 - Work button follows the active theme instead of the inverse light/dark treatment
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-033 - Work button follows the active theme instead of the inverse light/dark treatment
+**Summary:** Switched the topbar Work launch from emphasis="inverse" (opposite-scheme) to emphasis="primary" so it follows the active theme (dark text on light fill in light mode, light fill on dark in dark mode). Launch wiring unchanged (bare WORK_COMMAND, skipPermissions, no onResult, read-only).
+**Verification:** PASS (iteration 1) — dashboard suite 305/305 green; verifier confirmed all 7 acceptance criteria, only the topbar Work button touched, styleguide unforked (primary is a pre-existing variant, no new token), Stop/toggles/armed-cue/hover undisturbed, dist rebuilt.
+**Commit:** 4e6f537
+**Files changed:** 3 (board.js, shell-relayout.test.mjs, dist/app.js) + aw README + task file move
+**Tests added:** 0 net (updated 2 shell-relayout assertions from inverse → theme-following); suite stayed green
+**ADRs written:** none (composes ADR-0009/0003 unchanged; emphasis swap, no decision)
+
+---
+
+## 2026-06-15 16:40 -- Modeling / Refined: agentic-workflow-034 - Fire the celebration with canvas-confetti instead of the CSS-keyframe burst
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (promoted — frontend gate design-system-001 is done/approved)
+**Summary:** Cornered the three open items. **Canvas scope:** full-window default `confetti()` with origin near the prompt bar (over a board-local scoped canvas). **Palette:** the four status bases (`--st-done/--st-todo/--st-doing/--st-backlog`), dropping `--fg-3`, adding the `--st-doing` amber. **Token resolution:** at fire time via `getComputedStyle` so the burst tracks the active theme. **Delivery:** canvas-confetti as a `dashboard/package.json` devDependency esbuild folds into `dist/app.js`. **ADR:** amend ADR-0020 in place (aw-021/aw-030 precedent). ACs sharpened to testable form; tuning (count/spread/velocity/origin) left to the aw-025 replay loop.
+**Split into:** none
+**ADRs written:** none yet (ADR-0020 amendment is written by the worker)
+
+---
+
+## 2026-06-15 16:14 -- Batch started: [agentic-workflow-033]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-033 - Work button follows the active theme instead of the inverse light/dark treatment
+**Parallel:** no (1 worker — edits board.js BoardTopbar Work button + rebuilds dist; serialized against ds-008 [shared dist])
+
+---
+
+## 2026-06-15 16:12 -- Task verified and completed: agentic-workflow-032 - Dashboard launch no longer auto-opens the browser
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-032 - Dashboard launch no longer auto-opens the browser
+**Summary:** Removed the auto-open from the dashboard launch path (reverses aw-011). `launch` now prints the served URL/pid/stop-hint and returns — the builder opens the URL themselves. The openBrowser/browserCommand OS-divergent helpers were removed entirely (no other production caller) with their tests.
+**Verification:** PASS (iteration 1) — dashboard suite 305/305 green; verifier confirmed all 4 acceptance criteria, helpers fully removed (only `=== undefined` guard remains), stop/status branches + statusDashboard untouched, no frontend bundle touched (server-launcher only, no dist).
+**Commit:** 74f23cf
+**Files changed:** 4 (launch.mjs, status-open.test.mjs, dashboard/README.md, aw README) + task file move
+**Tests added:** net −2 (dropped 3 auto-open helper tests, added 1 helpers-gone guard); suite stayed green
+**ADRs written:** none (server-launch chore, no decision)
+
+---
+
+## 2026-06-15 16:10 -- Modeling / Captured: agentic-workflow-034 - Fire the celebration with canvas-confetti instead of the CSS-keyframe burst
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Replace the board's hand-rolled CSS-keyframe confetti (BoardConfetti / ensureConfettiStyle, ADR-0020) with the canvas-confetti library, fired from the same triggers (prompt-bar success + aw-025 replay button). Builder chose a brand-derived but livelier palette and vendor+bundle delivery (offline dashboard, no CDN). Amends ADR-0020 (reverses CSS-only/dependency-free), keeps ADR-0014 reduced-motion silence and ADR-0016/ADR-0003 color + unforked discipline; first bundled frontend runtime dep, so an ADR is in scope.
+
+---
+
+## 2026-06-15 15:52 -- Batch started: [agentic-workflow-032]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-032 - Dashboard launch no longer auto-opens the browser
+**Parallel:** no (1 worker — edits dashboard/launch.mjs only [no board.js, no dist rebuild]; serialized against aw-033/ds-008 to avoid shared working-tree node --test cross-talk)
+
+---
+
+## 2026-06-15 15:50 -- Task verified and completed: agentic-workflow-030 - Board buttons — hover shadow + background highlight; armed launch cue keeps only the dot
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-030 - Board buttons — hover shadow + background highlight; armed launch cue keeps only the dot (no red border/text)
+**Summary:** LaunchButton now raises on hover (--shadow-md + --surface-2 background, no transform/content shift); the armed skip-permissions per-launch cue is narrowed to the --obligation dot alone (armed buttons drop the button-wide red border + label tint, read identical to unarmed); the SkipPermissionsToggle keeps the full danger treatment. Launch payload unchanged.
+**Verification:** PASS (iteration 1) — dashboard suite 307/307 green (8 new hover/dot guards); verifier confirmed all 6 acceptance criteria, styleguide + bridge-launch.js untouched, toggle treatment intact, dot retained, dist rebuilt.
+**Commit:** 7e7e191
+**Files changed:** 5 (board.js, launch-button-hover.test.mjs [new], ADR-0019 [amended], dist/app.js, aw README) + task file move
+**Tests added:** 8 (launch-button-hover.test.mjs); suite 299 → 307
+**ADRs written:** none — ADR-0019 amended in-file (per-launch cue narrowed to dot-only; narrowing not reversal, dot still satisfies amended ADR-0018 mandate); bidirectional related_tasks ↔ related_adrs link added (aw-030 ↔ ADR-0019)
+
+---
+
+## 2026-06-15 15:42 -- Batch started: [agentic-workflow-030]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-030 - Board buttons — hover shadow + background highlight; armed launch cue keeps only the dot
+**Parallel:** no (1 worker — edits board.js LaunchButton + amends ADR-0019 + rebuilds dist; serialized against aw-033/ds-008 [shared board.js/dist] and aw-032 [shared-tree test suite])
+
+---
+
+## 2026-06-15 15:40 -- Task verified and completed: agentic-workflow-028 - Add a button to stop the dashboard from the dashboard
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-028 - Add a button to stop the dashboard from the dashboard
+**Summary:** Added a quiet Stop dashboard launch at the far-left of the main-column topbar, set apart from the [theme][skip-perms][Work] cluster. Reuses the existing launchOrCopy bridge path (no new server endpoint) to run the new bare STOP_DASHBOARD_COMMAND ('/agentheim:dashboard stop'); a bridge dispatch flips a shell-level full-pane "Dashboard stopped — safe to close this tab" overlay, a clipboard fallback shows none.
+**Verification:** PASS (iteration 1) — dashboard suite 299/299 green on re-run (the lone events.test.mjs hit was the pre-existing SSE-watcher flake, passed on re-run). Verifier confirmed all 9 acceptance criteria, server.mjs unmodified/read-only (ADR-0017), bridge-launch.js + LaunchButton definition + styleguide untouched (emphasis="quiet" is a pre-existing variant — no collision with aw-030), overlay mounts only on res.via==="bridge", dist rebuilt.
+**Commit:** 77e9c41
+**Files changed:** 6 (modeling-command.js, board.js, modeling-command.test.mjs, stop-dashboard.test.mjs [new], dist/app.js, aw README) + task file move
+**Tests added:** 11 (9 board static guards in stop-dashboard.test.mjs + 2 STOP_DASHBOARD_COMMAND constant cases); suite 288 → 299
+**ADRs written:** none (bridge-reuse adds no mutating endpoint, reopens no doctrine — the seam decision was recorded in the task, option B over a self-stop endpoint)
+
+---
+
+## 2026-06-15 15:30 -- Modeling / Captured: agentic-workflow-033 - Work button follows the active theme instead of the inverse light/dark treatment
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** The topbar Work launch uses `emphasis="inverse"` (aw-026), so it always reads as the opposite theme to the page. Builder wants it to follow the active scheme (light fill/dark text in light mode, dark fill/light text in dark mode) — likely switching to the existing `emphasis="primary"` variant. Frontend gate (design-system-001) satisfied.
+
+---
+
+## 2026-06-15 15:25 -- Batch started: [agentic-workflow-028]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-028 - Add a button to stop the dashboard from the dashboard
+**Parallel:** no (1 worker — aw-028 edits board.js + modeling-command.js + rebuilds dist; serialized against aw-030/ds-008 which share board.js/dist, and against aw-032 to avoid shared-tree test cross-talk). Unblocked by aw-029 (its topbar dep) completing.
+
+---
+
+## 2026-06-15 15:20 -- Task verified and completed: agentic-workflow-029 - Move the theme + skip-permissions toggles to the topbar, left of the Work button
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-029 - Move the theme + skip-permissions toggles to the topbar, left of the Work button
+**Summary:** Relocated the theme + skip-permissions armed toggles out of the ShellRail footer into the main-column BoardTopbar, left of the inverse Work launch (order: theme, skip-permissions, Work); the now-empty rail footer dropped. Pure presentation relayout — controls stay unforked (ADR-0003), persistence + armed/danger treatment unchanged.
+**Verification:** PASS (iteration 1) — dashboard suite 288/288 green; verifier confirmed all 8 acceptance criteria, styleguide untouched, launch path / theme-state / skip-permissions-state unchanged, LaunchButton left untouched for aw-030, dist rebuilt.
+**Commit:** 39447ec
+**Files changed:** 4 (board.js, shell-relayout.test.mjs, dist/app.js, aw README) + task file move
+**Tests added:** net +1 guard (replaced footer-placement test with rail-no-longer-renders + topbar-order assertions); suite 287 → 288
+**ADRs written:** none (pure presentation relayout composing settled ADRs 0009/0003/0019/0018)
+
+---
+
+## 2026-06-15 15:05 -- Modeling / Captured: agentic-workflow-032 - Dashboard launch no longer auto-opens the browser
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** The dashboard `launch` should stop hijacking the default browser. Builder confirmed scope: **remove the auto-open entirely** (the `openBrowser(url)` call + "Opening it in your default browser…" line in `dashboard/launch.mjs`), not an opt-in `--open` flag — `launch` will just print the URL for the builder to open. Reverses the auto-open from aw-011 (recorded as prior_art). Server-launch UX only, not UI, so no styleguide gate; no ADR expected. Concrete enough to file straight to todo.
+
+---
+
+## 2026-06-15 15:08 -- Batch started: [agentic-workflow-029]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-029 - Move the theme + skip-permissions toggles to the topbar, left of the Work button
+**Parallel:** no (1 worker — serialized: aw-029/030 both edit board.js and all remaining ready tasks rebuild the shared dashboard/dist bundle)
+
+---
+
+## 2026-06-15 15:05 -- Task verified and completed: agentic-workflow-025 - Add a temporary board button that fires the celebration animation
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-025 - Add a temporary board button that fires the celebration animation
+**Summary:** Added a throwaway "🎉 Replay celebration" button beside Quick Capture / Modeling in BoardPromptBar that bumps the existing confettiKey to replay the board-local confetti burst on demand — reusing BoardConfetti unchanged, no launch/bridge/clipboard/textarea-clear/lifecycle-write. Confined to one removable TEMP (aw-025) block.
+**Verification:** PASS (iteration 1) — dashboard suite 287/287 green (2 new static board-glue guards); verifier confirmed all 8 acceptance criteria, styleguide source untouched (ADR-0003), animation code unchanged, dist rebuilt.
+**Commit:** 8694491
+**Files changed:** 3 (board.js, board-prompt-bar.test.mjs, dist/app.js) + task file move
+**Tests added:** 2 (TEMP-block existence + confettiKey-bump-only guards); suite 285 → 287
+**ADRs written:** none (replays ADR-0020's confetti, reopens no doctrine)
+
+---
+
+## 2026-06-15 15:00 -- Batch started: [agentic-workflow-025]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-025 - Add a temporary board button that fires the celebration animation
+**Parallel:** no (1 worker — aw-025/029/030/ds-008 all rebuild the shared dashboard/dist bundle and the three aw-tasks all edit board.js, so the ready set is serialized one task per batch)
+
+---
+
+## 2026-06-15 14:45 -- Modeling / Refined + Promoted: agentic-workflow-025 - Add a temporary board button that fires the celebration animation
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (promoted backlog → todo)
+**Summary:** Turned the quick-capture stub into a ready task. Builder confirmed "celebration animation" = the board-local confetti burst (`BoardConfetti`/`ensureConfettiStyle`, ADR-0020, introduced by aw-023) — the only celebration motion in the codebase — and chose the **prompt-bar placement** (a temp button beside Quick Capture / Modeling, exactly where the confetti already renders) over a topbar or floating button, since it reuses `BoardConfetti` with **zero re-homing**. Refinement is mechanical: the temp button is a second, unconditional caller of the existing `setConfettiKey((k)=>k+1)` that already drives the burst — **no** launch / bridge / clipboard / textarea-clear / lifecycle write (ADR-0001). Animation code (keyframes, palette tokens, reduced-motion guard) is reused **unchanged**; under `prefers-reduced-motion` the button fires nothing (ADR-0014 strip-to-plain), accepted. Board-local token-matched control consumed unforked (ADR-0003) — **no** design-system child task. **No ADR** (replays ADR-0020's confetti, reopens no doctrine). Confined to a single clearly-commented temp block for trivial later removal. Frontend gate dep `design-system-001` is done → promoted. Backlinks: related_adrs [ADR-0020, ADR-0014, ADR-0003], prior_art [agentic-workflow-023].
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-15 14:45 -- Capture / Captured: agentic-workflow-031 - Next-steps overview when work is done
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** When work is done, surface a clear overview of the next sensible steps — via a new agent/skill or an analysis of the worker conversation; design the process.
+
+---
+
+## 2026-06-15 14:30 -- Modeling / Refined + Promoted: agentic-workflow-028 - Add a button to stop the dashboard from the dashboard
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (promoted backlog → todo)
+**Summary:** Turned the quick-capture stub into a ready task. Resolved the seam the capture flagged: of (A) a new self-stop server endpoint vs (B) reusing the bridge launch to run `/dashboard stop`, the builder chose **B** — keeps `server.mjs` purely read-only (no first mutating endpoint, ADR-0017 untouched), reuses `launchOrCopy`/`LaunchButton` unchanged, and needs **no ADR** (a launch is an external side-effect under ADR-0001/0018, not a lifecycle write). New bare constant `STOP_DASHBOARD_COMMAND = '/agentheim:dashboard stop'` in `modeling-command.js` (fully-qualified per aw-016). Post-stop UX (builder: **"Stopped" overlay**) keys off `launchOrCopy`'s return: `via:'bridge'` → optimistic full-pane "Dashboard stopped — safe to close this tab" overlay; `via:'clipboard'` → no overlay, just the "Copied" flash (accepted bridge-present/absent asymmetry). **No confirmation** (builder). Overlay/button are board-local token-matched (no full-screen modal primitive exists; styleguide unforked, ADR-0003). Added `depends_on: [design-system-001, agentic-workflow-029]` — aw-029 reshuffles the same topbar region of board.js, so serialize. Styleguide gate (design-system-001) done → promoted.
+**Split into:** none
+**ADRs written:** none (the chosen bridge-reuse seam reopens no doctrine)
+
+---
+
+## 2026-06-15 14:35 -- Modeling / Refined: agentic-workflow-030 - keep the red dot
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Builder narrowed the skip-permissions change: **keep the red indicator dot** on armed launch buttons; only strip the button-wide red (the `--obligation` border + label color). The per-launch cue therefore stays (dot-only), so this is no longer an ADR-0018 reversal — just a narrowing of ADR-0019's treatment from "border + dot" to "dot only," recorded as an ADR-0019 amendment note rather than a superseding ADR. Title + acceptance criteria updated accordingly.
+
+---
+
+## 2026-06-15 14:30 -- Modeling / Captured: hover polish + skip-permissions cue (2 tasks, 2 BCs)
+
+**Type:** Modeling / Capture
+**BC:** design-system + agentic-workflow
+**Filed to:** todo (both)
+**Summary:** One hover-polish + danger-color request split across two BCs by where the code lives.
+**design-system-008** (refactor): `TicketCard` hover gets a stronger shadow (`--shadow-sm` → `--shadow-md`) and drops the `translateY(-1px)` lift so content stops jumping — a styleguide primitive change (card consumed unforked, ADR-0003).
+**agentic-workflow-030** (feature): board `LaunchButton` hover gains a stronger shadow + background-color highlight (no content shift), and the armed per-launch `--obligation` cue (red border / dot / label on all four launch buttons) is **removed** — the danger hue stays only on the skip-permissions toggle. This **reverses** the amended ADR-0018 per-launch-cue mandate + ADR-0019; the worker writes a superseding ADR folded into the commit. Both frontend; styleguide gate (design-system-001) done → filed straight to todo.
+
+---
+
+## 2026-06-15 14:10 -- Modeling / Captured: agentic-workflow-029 - Move the theme + skip-permissions toggles to the topbar, left of the Work button
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Partial reversal of aw-026's footer placement — move the theme (brightness) toggle and the skip-permissions armed toggle out of the rail footer into the main-column topbar, rendered left of the inverse Work launch (order: theme, skip-permissions, Work). Pure presentation relayout; both controls stay unforked (ADR-0003) with persistence/armed-danger behaviour unchanged. Styleguide gate (design-system-001) done, so filed straight to todo.
+
+---
+
+## 2026-06-15 13:50 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (5210581 agentic-workflow-027)
+**Note:** Single ready task (aw-027); both deps (aw-026, design-system-001) done. One worker, passed verification first try (dashboard suite 272 → 285 green). ADR-0021 written by the worker alongside the code (the folded decision), reshaping ADR-0010 (drawer now task-only) and ADR-0011 §5 (board↔library toggle retired); both reshaped ADRs and the task `related_adrs` were back-linked. After completion `todo/` is empty; `backlog/` holds aw-028 (stop-dashboard button, captured mid-run) and aw-025 (temp celebration button) — both need a `modeling` promote pass before `work` can claim them, so neither was picked up. Per the repo's bookkeeping precedent, only the task's own scoped files were committed; INDEX.md/protocol.md and pre-existing uncommitted working-tree changes were left uncommitted.
+
+---
+
+## 2026-06-15 14:00 -- Capture / Captured: agentic-workflow-028 - Add a button to stop the dashboard from the dashboard
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** A button on the dashboard UI that stops the dashboard.
+
+---
+
+## 2026-06-15 13:48 -- Task verified and completed: agentic-workflow-027 - Non-task documents render in the main content pane
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-027 - Non-task documents render in the main content pane; the slide-over becomes task-only
+**Summary:** Split the dashboard's single open-intent sink into two render targets keyed on artifact kind — a board task (carries lifecycle `status`) keeps the right-hand slide-over; a non-task document (`vision|map|context|adr|research`, no `status`) renders in the main content pane via a new `MainPaneReader`. New pure `intent-route.isTaskIntent` router; `DashboardApp` now holds two mutually-exclusive selection states (`openIntent` / `selectedDoc`), the rail edge follows `selectedDoc`, and the Board RailItem returns the main pane to the board. Dead full-pane `library.js` removed; one `/api/doc` fetch, two render targets.
+**Verification:** PASS (iteration 1) — dashboard suite 285/285 green (13 new tests); verifier confirmed all 8 acceptance criteria, styleguide source untouched (`Markdown` consumed unforked, ADR-0003), `library.js` cleanly removed, dist rebuilt.
+**Commit:** 5210581
+**Files changed:** 11 (board.js, intent-route.js [new], main-pane-reader.js [new], 2 test files [new], library.js [deleted], dist/app.js, ADR-0021 [new], ADR-0010 & ADR-0011 [reshaped], aw README) + task file move
+**Tests added:** 13 (intent-route.test.mjs pure router + main-pane-reader.test.mjs static guards); suite 272 → 285
+**ADRs written:** 0021 (scope agentic-workflow — open-intent split; reshapes ADR-0010 & ADR-0011 §5, bidirectionally linked)
+
+---
+
+## 2026-06-15 13:48 -- Batch started: [agentic-workflow-027]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-027 - Non-task documents render in the main content pane; the slide-over becomes task-only
+**Parallel:** no (1 worker)
+
+---
+
+## 2026-06-15 -- Modeling / Refined + Promoted: agentic-workflow-027 - Non-task docs render in the main pane
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (promoted backlog → todo)
+**Summary:** Grounded the already-orchestrator-decomposed task against the post-aw-026 code and verified its two load-bearing claims hold: (1) the styleguide `Markdown` primitive is independently exported (`primitives.js:129`, prop `source`) so the main-pane reader consumes it unforked with **no** design-system child task; (2) the artifact-kind discriminator already exists cleanly — a task intent carries lifecycle `status`, a non-task doc intent carries a content `type` and no `status`, so the `onOpen` split needs no new intent field. Folded into the task a **two-state selection model** note (`openIntent` task→slide-over vs a new `selectedDoc` non-task→main pane; the rail's `selectedId` must follow `selectedDoc` for AC bullet 4, and the Board `RailItem` clears it). Builder chose to **keep the ADR folded into the worker's commit** (not draft up front). Both deps (aw-026, design-system-001) done → promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none (the open-intent-split ADR is written by the worker alongside the code, per the decision above)
+
+---
+
+## 2026-06-15 13:05 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (0ab1f34 agentic-workflow-026)
+**Note:** Single ready task (aw-026); dependency design-system-001 satisfied (done). One worker, passed verification first try (dashboard suite 262 → 272 green). No new ADR — the left-rail relayout composes ADR-0009/0011/0017/0003/0018/0019 unchanged, and the topbar inverse button is a board-local `LaunchButton` emphasis under ADR-0003. aw-027 (non-task docs render in main pane) is now unblocked (its only dep aw-026 is done) but sits in `backlog/` — it needs a `modeling` promote pass before `work` can claim it; not picked up this session. Per the repo's bookkeeping precedent, INDEX.md/protocol.md, the task-file commit-SHA backfill, and pre-existing uncommitted working-tree changes were left uncommitted; only the task's own scoped files were committed.
+
+---
+
+## 2026-06-15 13:05 -- Task verified and completed: agentic-workflow-026 - Dashboard left-rail shell relayout
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-026 - Rewrite the dashboard shell to the styleguide's left-rail layout (Components in context)
+**Summary:** Rewrote the live dashboard shell to the styleguide §05 "Components in context" full-height left-rail layout — `ShellRail` (brand → single Board `RailItem` → divider → "Workspace" label → live `treeToLibrary` tree → footer holding the theme + skip-permissions toggles) beside a main column whose ~52px topbar carries the inverse Work launch. The Work button moved out of the prompt bar (aw-024) into the topbar; the horizontal header and the board↔library toggle are retired. Pure consumer-side recomposition of unforked styleguide primitives (ADR-0003/0009/0011).
+**Verification:** PASS (iteration 1) — dashboard suite 272/272 green; verifier confirmed all 10 acceptance criteria, no styleguide source touched, dist rebuilt to carry the relocated topbar.
+**Commit:** 0ab1f34
+**Files changed:** 5 (board.js, dist/app.js, shell-relayout.test.mjs [new], board-prompt-bar.test.mjs, aw README) + task file move
+**Tests added:** new `shell-relayout.test.mjs` (rail composition / topbar Work / footer toggles / no-styleguide-fork guards) + updated prompt-bar tests for the removed Work button; suite 262 → 272
+**ADRs written:** none — refactor composes ADR-0009/0011/0017/0003/0018/0019 unchanged; the topbar `inverse` is a board-local `LaunchButton` emphasis under ADR-0003
+
+---
+
+## 2026-06-15 12:55 -- Batch started: [agentic-workflow-026]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-026 - Rewrite the dashboard shell to the styleguide's left-rail layout (Components in context)
+**Parallel:** no (1 worker)
+
+---
+
+## 2026-06-15 -- Modeling / Refined + Promoted: agentic-workflow-026 - Dashboard left-rail shell relayout
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (promoted backlog → todo)
+**Summary:** Settled the four orchestrator-flagged open questions with the builder, all to the recommended option: (1) the §05 inverse topbar button **becomes** the Work launch and aw-024's prompt-bar Work button is removed/relocated there (prompt bar keeps only textarea + Quick Capture / Modeling); (2) the §05 Search box is **dropped** (read-only, no backend); (3) the theme + skip-permissions toggles move to the **rail footer**; (4) the separate Library `RailItem` is **dropped** — the always-visible Workspace tree is the library, only the Board item sits above it. Folded all four into the task's *What* / *Acceptance criteria*. Also **dropped the spurious aw-025 dependency** (a temporary, unrefined throwaway button — board.js overlap is a scheduling concern, not a hard dep); with design-system-001 (styleguide gate) already done, the task became ready and was promoted backlog → todo. No split, no ADR (the aw-027 follow-on still owns the open-intent-split ADR).
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-15 -- Modeling / Captured: agentic-workflow-026 + agentic-workflow-027 - Dashboard left-rail shell relayout (Components in context)
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Builder asked to rewrite the dashboard's overall layout to match the styleguide §05 "Components in context" assembled shell (full left-rail), with: the library file-tree shown in the left rail, a Board re-select option at the top of that menu, the board's primary action button restyled to the §05 filled "New ticket" look, and non-task library documents rendering in the main content pane rather than the slide-over. Orchestrator (tactical-modeler) decomposed it into two dependent tasks: **aw-026** (refactor — shell relayout to left-rail + topbar over live data, absorbing the button restyle; depends_on design-system-001, aw-025) and **aw-027** (decision — split the open-intent sink so non-task docs render in the main pane and the slide-over becomes task-only; writes a BC-scoped ADR superseding/reshaping ADR-0010 & ADR-0011; depends_on aw-026). Both left under-refined in backlog with REFINE-time open questions noted (prompt-bar vs. topbar button, topbar Search, toggle homes, Library RailItem retirement). No ADR written yet — folded into aw-027's worker pass per the orchestrator's recommendation.
+
+---
+
+## 2026-06-15 -- Capture / Captured: agentic-workflow-025 - Add a temporary board button that fires the celebration animation
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Temporary board-view button that only replays the celebration animation, for iterating on it; to be removed later.
+
+---
+
+## 2026-06-15 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (b16022d agentic-workflow-024)
+**Note:** Single ready task (aw-024); dependency design-system-001 satisfied (done). One worker, passed verification first try (suite 262 green). No new ADR — composes ADR-0018/0001/0003/0019 unchanged. Standing design-system follow-up unchanged: the board-local "action column beside a prompt field" is the same family as aw-023's flagged shared TextArea/prompt-input primitive — no new capture filed. Per the repo's bookkeeping precedent, INDEX.md/protocol.md and pre-existing uncommitted working-tree changes (infra-015/016/017 + aw-021/022/023 done files, repo-review-2026-06-10.md) were left uncommitted; only the task's own scoped files were committed.
+
+---
+
+## 2026-06-15 -- Task verified and completed: agentic-workflow-024 - Board prompt bar — two-thirds textarea + Work launch button
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-024 - Board prompt bar — textarea to two-thirds width, Work launch button on the right
+**Summary:** Re-laid-out aw-023's `BoardPromptBar` into a left/right flex split — the textarea narrows to ~two-thirds (left) and a right-side action column (~one third) holds a single **Work** button that launches the **bare** `/agentheim:work` (new `WORK_COMMAND` constant; ignores the textarea) to kick off an execution run, reusing `launchOrCopy`/`LaunchButton` unchanged and threading `skipPermissions` (no `onResult`, so no clear/confetti). Quick Capture / Modeling stay prompt-seeded beneath, unchanged.
+**Verification:** PASS (iteration 1) — dashboard suite 262/262 green; verifier confirmed `bridge-launch.js`/`LaunchButton` reused unforked, Work passes no `onResult`, dist rebuilt to carry the change.
+**Commit:** b16022d
+**Files changed:** 6 (board.js, modeling-command.js [+ `WORK_COMMAND` constant], 2 test files, dist/app.js, aw README) + task file move
+**Tests added:** 7 (2 WORK_COMMAND constant cases + 5 prompt-bar split/Work-button board-glue guards)
+**ADRs written:** none — composes ADR-0018/0001/0003/0019 unchanged (a builder refinement, not an architecture decision)
+
+---
+
+## 2026-06-15 -- Batch started: [agentic-workflow-024]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-024 - Board prompt bar — textarea to two-thirds width, Work launch button on the right
+**Parallel:** no (1 worker)
+
+---
+
+## 2026-06-15 -- Modeling / Captured: agentic-workflow-024 - Board prompt bar — textarea to two-thirds width, Work launch button on the right
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Re-lay-out aw-023's `BoardPromptBar` into a left/right split — textarea narrows to two-thirds width, freeing a right-side action column whose single occupant is a new **Work** button that launches/copies the bare `/agentheim:work` (ignores the prompt; reuses `launchOrCopy`/`LaunchButton` + `skipPermissions` unchanged). Quick Capture & Modeling stay prompt-seeded beneath the textarea. Filed straight to todo (styleguide gate open via design-system-001).
+
+---
+
+## 2026-06-15 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 3 (first-try PASS: 3, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 3 (2ff0add infrastructure-017, 0a6275a agentic-workflow-021, d75d820 agentic-workflow-023)
+**Note:** Started with 2 ready tasks across infrastructure + agentic-workflow (no file conflict → parallel batch); both passed verification first try. infrastructure-017 re-packaged the bridge .vsix to 0.2.0; agentic-workflow-021 added the armed skip-permissions toggle (ADR-0019). A parallel modeling session promoted agentic-workflow-023 (board prompt bar) to todo mid-run — picked up as a second batch AFTER aw-021 landed so its board.js edits rebased cleanly; the verifier confirmed aw-021's skipPermissions wiring survived the relocation. aw-023 wrote ADR-0020 (board-local confetti).
+**Design-system follow-ups flagged for the builder (cross-BC README — no worker can write it):** (1) `--obligation` now doubles as the dashboard's generic danger hue (ADR-0019) — candidate to alias into a named `--danger` token; (2) a shared TextArea / prompt-input primitive (none in the styleguide today); (3) a shared confetti / celebration motion treatment (ADR-0020 keeps it board-local for now).
+**Bookkeeping note:** Per the git-authority rule, each task commit was scoped to its own code + task file + BC README + ADR. INDEX.md and protocol.md were updated for live-dashboard correctness but left uncommitted (matching the repo's pre-existing working-tree bookkeeping); pre-existing uncommitted changes from earlier sessions (infra-015/016 done files, aw-022 done file, repo-review-2026-06-10.md) were deliberately left untouched.
+
+---
+
+## 2026-06-15 -- Task verified and completed: agentic-workflow-023 - Board prompt bar (seeded launches)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-023 - Board prompt bar — type a prompt, Quick Capture / Modeling launch seeded with it
+**Summary:** Relocated aw-020's Quick Capture / Modeling buttons out of the backlog column into a board-only prompt bar above the columns; the trimmed textarea seeds `/agentheim:quick-capture <prompt>` / `/agentheim:modeling <prompt>` (bare command when empty), reusing `launchOrCopy`/`LaunchButton` unchanged; on a successful launch/landed copy the textarea clears and a board-local, reduced-motion-aware confetti burst plays.
+**Verification:** PASS (iteration 1) — dashboard suite 255/255 green; verifier explicitly confirmed aw-021's skipPermissions wiring survives through to both relocated buttons
+**Commit:** d75d820
+**Files changed:** 9 (board.js, modeling-command.js [+ pure prompt builders], 3 test files, dist/app.js, ADR-0020 [new], aw README, task file)
+**Tests added:** ~14 (pure command-builder degradation matrix + prompt-bar render/seed/clear/confetti + aw-021 regression)
+**ADRs written:** 0020-board-confetti-board-local-transient-ack.md (scope: agentic-workflow)
+**Note:** Two design-system follow-ups flagged for the builder (no design-system child task created by the worker, per scope): (1) a shared TextArea / prompt-input primitive (styleguide has none today); (2) a shared confetti/celebration motion treatment — ADR-0020 keeps it board-local as a transient ACK distinct from ADR-0014's status pulse, to promote once a second celebration surface exists.
+
+---
+
+## 2026-06-15 -- Batch started: [agentic-workflow-023]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-023 - Board prompt bar — type a prompt, Quick Capture / Modeling launch seeded with it
+**Parallel:** no (1 worker) — picked up mid-run after promotion by a parallel modeling session; dispatched after aw-021 landed so the worker reads post-aw-021 board.js
+
+---
+
+## 2026-06-15 -- Task verified and completed: agentic-workflow-021 - Dashboard armed-launch setting (skip-permissions)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-021 - Dashboard armed-launch setting — all bridge launches skip permissions when armed
+**Summary:** A persisted, off-by-default shell-header toggle that, when armed, threads `skipPermissions: true` through the one shared `launchOrCopy` seam so all four bridge launches (Quick Capture, Modeling, per-card Refine/Promote) POST `{ prompt, skipPermissions: true }` (omitted-not-false when off); each launch button shows a per-launch danger indicator reflecting the armed state; clipboard fallback cannot carry the bypass (asymmetry accepted).
+**Verification:** PASS (iteration 1) — full dashboard suite 240/240 green
+**Commit:** 0a6275a
+**Files changed:** 9 (board.js, bridge-launch.js, skip-permissions-state.js [new], 2 test files, dist/app.js, ADR-0019 [new], aw README, task file)
+**Tests added:** 14 (store safe-degrade matrix + launchOrCopy armed/omit-not-false + strict-true threading)
+**ADRs written:** 0019-dashboard-armed-launch-danger-token.md (scope: agentic-workflow)
+**Note:** ADR-0019 reuses the existing `--obligation` token unforked as the danger hue (reserved selection accent ADR-0016 deliberately not touched). A design-system README reconciliation is flagged: `--obligation` now also serves as the dashboard's generic danger hue — a candidate to alias into a named `--danger` token later. No new design-system child task (refinement decision). Coordination note: the just-captured aw-023 (board prompt bar) also edits board.js — it must rebase on this aw-021 board.js change.
+
+---
+
+## 2026-06-15 -- Task verified and completed: infrastructure-017 - Re-package & version the bridge .vsix (skip-permissions)
+
+**Type:** Work / Task completion
+**Task:** infrastructure-017 - Re-package & version the bridge .vsix carrying the skip-permissions change
+**Summary:** Bumped vscode-extension 0.1.0→0.2.0 and reconciled the extension README with the amended ADR-0018 POST /run contract (opt-in, off-by-default, strict-`true` `skipPermissions`); rebuilt `agentheim-bridge-0.2.0.vsix` (stale 0.1.0 removed, stays gitignored). No runtime code changed.
+**Verification:** PASS (iteration 1)
+**Commit:** 2ff0add
+**Files changed:** 4 (package.json, extension README, INDEX, task file) + backlog→done move
+**Tests added:** 0 (packaging chore; infra-016's skipPermissions suite stays green)
+**ADRs written:** none (packages the already-amended ADR-0018)
+**Note:** `extension.js` confirmed unchanged. Two pre-existing fixed-port-contention tests fail environmentally (a live VS Code bridge host holds 127.0.0.1:31425/:31426) — unrelated to this diff.
+
+---
+
+## 2026-06-15 -- Modeling / Captured: agentic-workflow-023 - Board prompt bar — Quick Capture / Modeling launch seeded with a typed prompt
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Relocate and extend aw-020's backlog launch buttons into a board-level prompt bar: a board-view-only textarea between the shell header and the columns, with Quick Capture / Modeling lifted out of the backlog column to sit beneath it. Each button now seeds its command WITH the trimmed textarea contents appended (`/agentheim:quick-capture <prompt>` / `/agentheim:modeling <prompt>`), reusing aw-020's `launchOrCopy` bridge/clipboard path unchanged (ADR-0018). Builder decisions: empty textarea → bare command (byte-identical to aw-020); after a successful launch/copy → clear the textarea + confetti animation; board surface only; scope is the two column buttons only (aw-022's per-card pair stays id-seeded). Captured straight to todo — concrete, styleguide gate (design-system-001) satisfied. Flagged two non-blocking design-system follow-ups (shared text-input primitive; shared confetti/celebration motion, cf. ADR-0014) and a board.js coordination note with the in-flight aw-021.
+
+---
+
+## 2026-06-15 -- Batch started: [infrastructure-017, agentic-workflow-021]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-017 - Re-package & version the bridge .vsix carrying the skip-permissions change, agentic-workflow-021 - Dashboard armed-launch setting (all bridge launches skip permissions when armed)
+**Parallel:** yes (2 workers)
+
+---
+
+## 2026-06-15 -- Modeling / Refined: agentic-workflow-021 - Dashboard armed-launch setting (skip-permissions)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo (promoted)
+**Summary:** Refined and promoted. Both blocking deps are now done (infrastructure-015 frozen `skipPermissions` contract 54c242a; infrastructure-016 extension honours it 1ad7d46; design-system-001 styleguide gate approved), so the task moved from dependency-blocked to ready. Three refinement decisions taken with the builder: (1) **scope broadened to all bridge launches** — aw-022 shipped per-card Refine/Promote bridge launches *after* this task was written; since both aw-020's column buttons and aw-022's per-card buttons call the shared `launchOrCopy`, the armed flag threads at one seam to govern all four; (2) the persisted toggle lives as a **shell-header armed control** (theme-toggle precedent), not a settings panel; (3) the per-launch indicator is built **board-local / unforked** with **no** new design-system child task (must avoid ADR-0016's reserved accent; flag any new danger token for the design-system README). Folded in the now-settled clipboard decision (startup-only flag ⇒ fallback cannot carry the bypass, asymmetry accepted per amended ADR-0018) and dropped that stale open question. Rewrote title, Why/What, 8 acceptance criteria, and worker touch-points (`skip-permissions-state.js` mirroring `theme-state.js`; `launchOrCopy` option-threading; pure `node --test` coverage; `dist/` rebuild).
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-15 -- Modeling / Refined: infrastructure-017 - Re-package & version the bridge .vsix carrying the skip-permissions change
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Settled the two open questions and promoted to todo. (1) Version bump → `0.2.0` minor (additive `skipPermissions` param on the POST /run surface); flagged that the extension's version is independent of ADR-0013 / the plugin manifest and needs no `vX.Y.Z` tag. (2) Distribution → keep build-on-demand — confirmed via `git check-ignore` that the `.vsix` is gitignored and uncommitted (only README + package.json tracked). Rewrote the task with 7 concrete acceptance criteria, including a README reconcile (the "never hard-wires --dangerously-skip-permissions" line and Tests/HTTP-surface/install-filename all lag the amended ADR-0018 contract). prior_art linked to infrastructure-013 (the original vsce-package flow).
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-15 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (1ad7d46 infrastructure-016)
+**Note:** Single ready task (infrastructure-016) — its dependency infrastructure-015 was already done. Worker confined the change to the pure core `vscode-extension/src/bridge.js` and passed verification first try. Worker spun off infrastructure-017 (backlog) to re-package & version the `.vsix`. Verifier flagged 2 environmentally-failing tests: a live VS Code bridge extension host is holding 127.0.0.1:31425 and :31426 on this dev box (PIDs 7636, 22852), so the pre-existing fixed-port-contention tests can't bind their fixtures — unrelated to the diff; every test covering the changed path is green. Left untouched: pre-existing uncommitted changes from earlier sessions (agentic-workflow INDEX + aw-022 done file, infrastructure-015 done file, repo-review-2026-06-10.md) were deliberately kept out of the commit.
+
+---
+
 ## 2026-06-15 -- Task verified and completed: infrastructure-016 - Bridge extension honours the opt-in skip-permissions option
 
 **Type:** Work / Task completion
 **Task:** infrastructure-016 - Bridge extension honours the opt-in skip-permissions option on POST /run
 **Summary:** The bridge's POST /run handler now honours `skipPermissions`: a strict-`true` identity check (`parsed?.skipPermissions === true`) seeds `claude --dangerously-skip-permissions "<prompt>"`, while absent/`false`/`null`/`"true"`/numeric all fail safe to the byte-identical pre-amendment `claude "<prompt>"`. Confined to the pure core `bridge.js`; `extension.js` (the only vscode-API file) untouched.
 **Verification:** PASS (iteration 1)
-**Commit:** f7348a2
+**Commit:** 1ad7d46
 **Files changed:** 3 (bridge.js, bridge.test.mjs, package.json) + 1 new backlog item
 **Tests added:** 3 (skipPermissions:true bypass, 5-case strict-true matrix, byte-identical regression guard) — all green; 2 pre-existing fixed-port-contention tests fail environmentally (a live bridge host holds :31425/:31426), unrelated to this diff
 **ADRs written:** none (implements the frozen command construction in ADR-0018's 2026-06-14 amendment)
