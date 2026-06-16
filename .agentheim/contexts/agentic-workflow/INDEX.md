@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 50
+- **Done:** 51
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-052** — Topbar global search UI — search field replaces the breadcrumb; grouped-results popover routing to the main pane (feature) — `todo/agentic-workflow-052-topbar-global-search-ui.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-052** — Topbar global search UI — search field replaces the breadcrumb; grouped-results popover routing to the main pane (feature) — `done/agentic-workflow-052-topbar-global-search-ui.md`
 - **agentic-workflow-050** — GET /api/search read endpoint — content search across BC READMEs, ADRs, research & tasks (title + body, title-first ranking, body excerpts) (feature) — `done/agentic-workflow-050-api-search-read-endpoint.md`
 - **agentic-workflow-051** — Dismiss (trash-can) button threads the armed skip-permissions signal like the launch buttons (feature) — `done/agentic-workflow-051-dismiss-button-threads-armed-skip-permissions.md`
 - **agentic-workflow-048** — Board card dismiss — hover-revealed red trash can with a confirmation dialog (feature) — `done/agentic-workflow-048-board-card-dismiss-trash-can.md`

@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 15:34 -- Task verified and completed: agentic-workflow-052 - Topbar global search UI
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-052 - Topbar global search UI — search field replaces the breadcrumb; grouped-results popover routing to the main pane
+**Summary:** Replaced the dead BoardTopbar breadcrumb with a global search field — the ds-016 `SearchField` consumed unforked (ADR-0003), wired to `GET /api/search` (aw-050/ADR-0023). `TopbarSearch` owns the controlled value + ~200ms debounce + min-length-2 fetch gate; the pure `searchResultsToGroups` (`dashboard/app/search-results.js`, `node --test`) buckets the flat ranked results into ds-016's fixed-order groups. Selection routes via the unchanged `isTaskIntent` (ADR-0021) into the main pane for both kinds (tickets via the aw-039 full-screen path).
+**Verification:** PASS (iteration 1) — all 8 acceptance criteria mapped to behavior; SearchField consumed unforked (styleguide source untouched); pure transform `node --test` green; dashboard suite 466 pass / 0 fail; dist rebuilt from source (mtime newer than edited sources).
+**Commit:** 46fa5ec
+**Files changed:** 6 (+ dist/app.js build output)
+**Tests added:** search-results.test.mjs (7 — fixed order, order-preserving, loss-tolerant), topbar-search.test.mjs (breadcrumb gone, unforked SearchField, debounce+min-length-2 gate, isTaskIntent routing, empty/no-panel)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 15:30 -- Batch started: [agentic-workflow-052]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-052 - Topbar global search UI — search field replaces the breadcrumb; grouped-results popover routing to the main pane
+**Parallel:** no (1 worker) — single ready task; all four deps (design-system-001, design-system-016, agentic-workflow-049, agentic-workflow-050) done.
+
+---
+
 ## 2026-06-16 15:20 -- Modeling / Refined: agentic-workflow-052 - Topbar global search UI
 
 **Type:** Modeling / Refine

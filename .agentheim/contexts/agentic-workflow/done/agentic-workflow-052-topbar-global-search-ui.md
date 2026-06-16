@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 46fa5ec
 depends_on: [design-system-001, design-system-016, agentic-workflow-049, agentic-workflow-050]
 blocks: []
 tags: [captured, frontend, dashboard, search]
