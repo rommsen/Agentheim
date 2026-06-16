@@ -17,6 +17,7 @@ import { HeaderMinimal, HeaderContextual, describeItem } from "./drawer.js";
 import { TreeGroup } from "./library.js";
 import { Collapsible } from "./collapsible.js";
 import { Menu, MenuItem, MenuDivider } from "./menu.js";
+import { SearchField } from "./search.js";
 import { Button } from "./button.js";
 import { Modal } from "./modal.js";
 import { ConfirmDialog } from "./confirm-dialog.js";
@@ -425,6 +426,76 @@ function MenuSection() {
     </${GuideSection}>`;
 }
 
+// ---- 11: search field + grouped results ----
+// Documents the search-field + grouped-results combobox pattern (design-system-016)
+// — the affordance the dashboard global search runs on (agentic-workflow-052, fed
+// by the /api/search backend aw-050). Shown in context: a token-styled text input
+// (the styleguide's first input control, search-scoped) that opens a STANDALONE
+// floating panel at --shadow-md (the Menu's Popover elevation, matched by
+// convention NOT composed on ds-015's Menu — a combobox keeps focus in the input
+// and highlights rows via aria-activedescendant, whereas the Menu moves focus into
+// its items). Results are partitioned into labelled category groups (Bounded
+// contexts / Decisions / Research / Tickets); each row is a title + a matched-
+// excerpt sub-line with the term marked. The pattern owns the look, placement and
+// keyboard mechanics (up/down across all rows, Enter selects, Esc closes, outside-
+// click dismisses); it is body-agnostic — the consumer supplies the grouped data +
+// an onSelect (the ds-006 / ds-005 seam). Empty-query (no panel) and no-results
+// (an explicit line, never a dead box) states are both defined.
+
+// A small local index standing in for the consumer's ranked /api/search results.
+// The styleguide does not fetch or rank — it is FED; this demo filters a fixed
+// corpus by substring so the specimen is live without a backend.
+const SEARCH_CORPUS = [
+  { group: "Bounded contexts", title: "design-system", excerpt: "The visual language and reference components for the dashboard." },
+  { group: "Bounded contexts", title: "agentic-workflow", excerpt: "The kanban board, slide-over reader and global search dashboard." },
+  { group: "Decisions", title: "ADR-0003 — Styleguide as ES-module single source", excerpt: "One ES-module source of truth feeds the buildless canvas and the dashboard bundle." },
+  { group: "Decisions", title: "ADR-0005 — Buildless view factory (htm)", excerpt: "Views are authored with htm tagged templates, no JSX shipped to the browser." },
+  { group: "Research", title: "Combobox keyboard models", excerpt: "Active-descendant keeps focus in the input while a single highlight moves across rows." },
+  { group: "Tickets", title: "aw-052 — Topbar global search UI", excerpt: "Wire the styleguide search pattern into the dashboard topbar with routing." },
+];
+function searchGroups(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const hits = SEARCH_CORPUS.filter(
+    (r) => r.title.toLowerCase().includes(q) || r.excerpt.toLowerCase().includes(q),
+  );
+  const order = ["Bounded contexts", "Decisions", "Research", "Tickets"];
+  return order
+    .map((label) => ({ label, items: hits.filter((h) => h.group === label) }))
+    .filter((g) => g.items.length > 0);
+}
+function SearchSpecimen() {
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState("—");
+  return html`
+    <${DocCard} style=${{ flex: 1, minWidth: 360 }}>
+      <${SubHead}>Search field &amp; grouped results</${SubHead}>
+      <p style=${{ margin: "0 0 18px", fontFamily: "var(--font-ui)", fontSize: 12.5, lineHeight: 1.6, color: "var(--fg-3)" }}>
+        Type to open a floating panel of results grouped by category, each row a title plus a matched-excerpt sub-line with the term marked. Focus stays in the input; <code>↑/↓</code> move a single highlight across all rows (spanning groups) via <code>aria-activedescendant</code>, <code>Enter</code> selects, <code>Esc</code> closes; hover + click select the same way. Standalone panel at <code>--shadow-md</code> — try <em>design</em>, <em>adr</em>, or <em>zzz</em> (no results).
+      </p>
+      <div style=${{ maxWidth: 420 }}>
+        <${SearchField}
+          value=${query}
+          onChange=${setQuery}
+          groups=${searchGroups(query)}
+          onSelect=${(item) => { setPicked(item.title); setQuery(""); }}
+          placeholder="Search the workspace…" />
+      </div>
+      <div style=${{ marginTop: 12, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-4)" }}>
+        last selected = ${picked}
+      </div>
+    </${DocCard}>`;
+}
+function SearchSection() {
+  return html`
+    <${GuideSection} index="11" title="Search &amp; grouped results"
+      desc="A token-styled search field that opens a floating panel of results grouped by category — the dashboard's global search runs on it. The input is the system's first text-input control (search-scoped for now). Focus stays in the input while up/down move a single highlight across all rows via aria-activedescendant; Enter or click selects. The standalone panel matches the Menu's --shadow-md Popover elevation by convention. Body-agnostic: the consumer supplies the grouped data and an onSelect; the styleguide owns the look, placement and keyboard.">
+      <div style=${{ display: "flex", gap: 28, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <${SearchSpecimen} />
+      </div>
+    </${GuideSection}>`;
+}
+
 // ---- 12: modal / confirm dialog ----
 // Documents the shared Button / Modal / ConfirmDialog family (design-system-018).
 // The Modal is the CENTERED sibling of the Drawer (section 07): viewport-fixed,
@@ -556,6 +627,7 @@ export function App() {
         <${MarkdownSection} />
         <${NavSection} />
         <${MenuSection} />
+        <${SearchSection} />
         <${ModalSection} />
         <${EmptySection} />
         <${Footer} />

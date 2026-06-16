@@ -411,6 +411,74 @@ variants, and a `ConfirmDialog` specimen with both a neutral and a destructive d
 > consumer** yet (the board still owns its own confirm). `dist/` is rebuilt by the consuming
 > task (`agentic-workflow-048`) when `ConfirmDialog` actually renders on the board.
 
+### Search field + grouped-results combobox (design-system-016, ADR-0024)
+
+The styleguide gained a **search-field + grouped-results** pattern, `SearchField`
+(`app/search.js`) — the affordance the dashboard's global search runs on. A
+token-styled text input that, as you type, opens a floating panel of results
+**grouped by category** (Bounded contexts → Decisions → Research → Tickets), each
+row a title plus a matched-text excerpt, walked by the keyboard and chosen by Enter
+or click. Consumed unforked (ADR-0003); same body-agnostic seam as `Menu` /
+`Collapsible` / `cornerAction`.
+
+- **The styleguide's first text-input control — search-scoped.** A token-styled
+  input (surfaces / type / radii, an `--accent-ochre` focus ring + `--accent-ochre-soft`
+  halo, a search glyph, and a clear `×` affordance). It stays **scoped to this
+  module** — *not* extracted as a shared `Input` primitive (refine 2026-06-16): a
+  general input waits for a **second** consumer, per the BC's "promote when the
+  second consumer appears" doctrine (`Collapsible` ds-005, `Menu` ds-015). Retiring
+  the bespoke board prompt-bar `<textarea>` onto a shared input is a *future* task.
+- **A STANDALONE floating panel — not composed on the `Menu` (ADR-0024).** A
+  combobox keeps focus **in the input** and highlights rows via
+  `aria-activedescendant`, whereas `Menu` (ds-015) moves focus **into** its items —
+  so wholesale reuse would fight that primitive. `SearchField` owns its **own**
+  panel + outside-click/Esc dismiss machinery, and **matches the Menu's Popover
+  elevation by convention** — the same `--shadow-md` / `--surface-1` / `--hairline`
+  / `--radius-md` — so the two read identically **without sharing code**. The reveal
+  is the standing one-frame opacity + translate, **stripped under
+  `prefers-reduced-motion`**. (A third popover-ish consumer would make the dismiss
+  machinery an extraction candidate — out of scope here.)
+- **Active-descendant keyboard model.** Focus stays in the input; **↑/↓ move a
+  single highlight across ALL rows (spanning groups)** via `aria-activedescendant`,
+  **Enter** selects the highlighted row, **Esc** closes + clears; mouse hover + click
+  select the same way. ARIA `combobox` input over a `role="listbox"` panel of
+  `role="option"` rows.
+- **Never a dead panel.** The panel state is a pure machine
+  (`panelState(query, count)`): **closed** on an empty/whitespace query (no box),
+  **no-results** (an explicit "no matches" line) on a non-empty query that matched
+  nothing, **results** otherwise.
+- **Body-agnostic / data-driven.** The consumer supplies the grouped result data +
+  an `onSelect` callback (and optional `getTitle` / `getExcerpt` readers); the
+  styleguide owns the look, placement, and keyboard mechanics. It **never** calls
+  `/api/search` itself — it is fed (the `agentic-workflow-050` backend + ADR-0023;
+  `agentic-workflow-052` does the topbar wiring + routing). Mirrors the
+  `design-system-014` → `agentic-workflow-047` and `design-system-009` →
+  `agentic-workflow-039` styleguide-capability-first ordering.
+
+The load-bearing decisions are pure (`app/search-state.js`: `flattenGroups`,
+`resultCount`, `panelState`, `nextActiveIndex`, `activeDescendantId`,
+`arrowDirection`, `isDismissKey`, `isSelectKey`, `shouldDismissOnOutsideClick`,
+`markMatches`), testable under `node --test` without the canvas import map —
+mirroring `collapsible-state` / `menu-state` / `modal-state`. The canvas documents
+the pattern in **section 11** (`SearchSpecimen` — type *design*, *adr*, or *zzz*).
+
+> **Gate re-review reopened by the search pattern (`design-system-016`).** The canvas
+> gained a new documented **Search & grouped results** pattern (section 11: a
+> token-styled field opening a standalone `--shadow-md` panel of grouped, marked-
+> excerpt result rows, walked by the keyboard) — a visible styleguide change that
+> reopens the design-system gate per the `design-system-005` / `007` / `009` / `014`
+> / `015` / `017` / `018` precedent. Re-review with the builder against the canvas
+> (`styleguide/index.html` → section 11) **before** `agentic-workflow-052` wires it
+> into the dashboard topbar.
+
+> Live-board note: the served dashboard `dist/` is a derived artifact (ADR-0003) and
+> was rebuilt here (`node build.mjs`), but the bundle is byte-identical — the
+> dashboard entry is the board, and `SearchField` has **no shipped dashboard consumer
+> yet** (it is consumed only by the canvas + the future `agentic-workflow-052`), so it
+> is not yet pulled into `dist/app.js`. The build was re-run to keep `dist/` provably
+> in sync with source; `dist/` folds `SearchField` in when `agentic-workflow-052`
+> actually renders it on the board.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.
@@ -424,4 +492,5 @@ variants, and a `ConfirmDialog` specimen with both a neutral and a destructive d
 - Shared `Collapsible` primitive: `styleguide/app/collapsible.js` (+ React-free `collapsible-state.js`), consumed by `TreeGroup` and the dashboard board (design-system-005)
 - Shared `Menu` / `Popover` primitive: `styleguide/app/menu.js` (+ React-free `menu-state.js`), consumed by the dashboard topbar settings gear (design-system-015)
 - Confirm-dialog family: `styleguide/app/button.js`, `styleguide/app/modal.js`, `styleguide/app/confirm-dialog.js` (+ React-free `modal-state.js`); the centered, scrim-backed confirm dialog the board's per-card dismiss will consume (design-system-018)
+- Search field + grouped-results combobox: `styleguide/app/search.js` (+ React-free `search-state.js`); a standalone `--shadow-md` popover (NOT composed on `Menu`, ADR-0024) feeding the dashboard global search (`agentic-workflow-052`, fed by `/api/search` aw-050 + ADR-0023) (design-system-016)
 - BC index: `INDEX.md`

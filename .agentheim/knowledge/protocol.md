@@ -5,6 +5,44 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 15:05 -- Task verified and completed: design-system-016 - Search field + grouped-results popover/listbox styleguide pattern
+
+**Type:** Work / Task completion
+**Task:** design-system-016 - Search field + grouped-results popover/listbox styleguide pattern
+**Summary:** Shipped the styleguide search-field + grouped-results combobox pattern — `SearchField` (`styleguide/app/search.js`) over a React-free `search-state.js`: a token-styled, search-scoped input opening a standalone `--shadow-md` floating panel of category-grouped, marked-excerpt rows with an active-descendant keyboard model. Built standalone (not composed on ds-015's `Menu`), matching its Popover elevation by convention. Body-agnostic — consumer feeds grouped data + `onSelect` (future consumer aw-052).
+**Verification:** PASS (iteration 1) — all 7 acceptance criteria mapped to behavior; htm gotchas guarded by render-smoke; standalone-not-on-Menu + `--shadow-md`-by-convention confirmed by source-guards; styleguide 96/96 + dashboard 452/452 green; dist correctly unchanged (no dashboard consumer wired yet).
+**Commit:** <pending SHA backfill>
+**Files changed:** 6
+**Tests added:** search.test.mjs (panelState, nextActiveIndex wrap, Enter-selects-highlight, Escape-only dismiss, outside-click predicate, markMatches, ARIA + no-menu-import source-guards)
+**ADRs written:** ADR-0024 (scope: design-system)
+
+---
+
+## 2026-06-16 14:58 -- Batch started: [design-system-016]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-016 - Search field + grouped-results popover/listbox styleguide pattern
+**Parallel:** no (1 worker) — single ready task; depends_on [design-system-001] satisfied (done).
+
+---
+
+## 2026-06-16 16:20 -- Modeling / Promoted: design-system-016 - Search field + grouped-results popover/listbox styleguide pattern
+
+**Type:** Modeling / Promote
+**BC:** design-system
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-16 16:18 -- Modeling / Refined: design-system-016 - Search field + grouped-results popover/listbox styleguide pattern
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** backlog
+**Summary:** Cornered the two open questions the capture flagged "decide at refine," both resolved toward independence. (1) **ds-015 relationship** — ds-015 (`Menu`/`Popover`) shipped (`70ffde0`), collapsing the "build it first?" question; the builder chose to build the combobox's floating panel + dismiss **standalone**, not composed on `Menu` (a combobox keeps focus in the input via `aria-activedescendant`, whereas `Menu` moves focus into its items — wholesale reuse would fight it), matching ds-015's `--shadow-md` Popover elevation **by convention** so the two read identically without sharing code. (2) **Shared text-input** — the token-styled input stays **search-scoped** inside `search.js`, not extracted as a shared `Input` primitive (per the BC's "promote when a second consumer appears" doctrine). Updated What / acceptance criteria / Notes accordingly; added ds-015 to `prior_art`. No split, no ADRs. Now ready to promote.
+
+---
+
 ## 2026-06-16 16:13 -- Work session ended
 
 **Type:** Work / Session end
