@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 16:12 -- Task verified and completed: agentic-workflow-050 - GET /api/search read endpoint
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-050 - GET /api/search read endpoint — content search across BC READMEs, ADRs, research & tasks
+**Summary:** Shipped the read-only server's first content-search endpoint — a pure walk/rank/excerpt core (`dashboard/search.mjs`, mirroring `tree.mjs`) matching title+body only across BC READMEs, ADRs, research & tasks, ranking title-tier-first then fixed category order, returning library/board-compatible open-intent results behind a thin `handleSearch` route.
+**Verification:** PASS (iteration 1) — all 8 acceptance criteria mapped to behavior; ranking fixture exercises both tiers and category order; excerpt edge cases pinned; in-root guard reused; read-only; `dist/` untouched. Full suite green (451 passing, 18 new).
+**Commit:** e164ff0
+**Files changed:** 5 (search.mjs, read-api.mjs, server.mjs, test/search.test.mjs, BC README)
+**Tests added:** 18
+**ADRs written:** none (implements pre-existing ADR-0023)
+
+---
+
 ## 2026-06-16 16:05 -- Batch started: [agentic-workflow-050]
 
 **Type:** Work / Batch start
