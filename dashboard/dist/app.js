@@ -304,14 +304,6 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{l=!1}},[e,r]),k`
           icon="compass" skipPermissions=${e} onResult=${l} />
         <${xn} label="Research" command=${xp(t)}
           icon="search" skipPermissions=${e} onResult=${l} />
-        ${""}
-        <button
-          type="button"
-          className="focusable"
-          aria-label="Replay the celebration animation (temporary, aw-025)"
-          onClick=${()=>o(u=>u+1)}
-          style=${{display:"inline-flex",alignItems:"center",gap:6,fontFamily:"var(--font-ui)",fontSize:12,lineHeight:1,color:"var(--fg-2)",background:"var(--surface-1)",border:"1px dashed var(--hairline-strong)",borderRadius:"var(--radius-md)",padding:"7px 10px",cursor:"pointer"}}>🎉 Replay celebration</button>
-        ${""}
         <${ny} fireKey=${r} />
       </div>
     </section>`}function ly({id:e,skipPermissions:t=!1}){return k`

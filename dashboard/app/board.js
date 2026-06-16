@@ -540,25 +540,6 @@ function BoardPromptBar({ skipPermissions = false }) {
           icon="compass" skipPermissions=${skipPermissions} onResult=${onResult} />
         <${LaunchButton} label="Research" command=${researchCommandFor(prompt)}
           icon="search" skipPermissions=${skipPermissions} onResult=${onResult} />
-        ${/* TEMP (aw-025): replay-on-demand trigger for the celebration confetti, so the
-             animation can be iterated on without authoring + launching a real session.
-             It is throwaway scaffolding — delete this one contiguous block to remove it.
-             It only bumps the existing confettiKey (reusing BoardConfetti unchanged); it
-             does NOT launch, hit the bridge, copy, clear the textarea, or write lifecycle
-             state. Under prefers-reduced-motion BoardConfetti stays silent (ADR-0014). */ ""}
-        <button
-          type="button"
-          className="focusable"
-          aria-label="Replay the celebration animation (temporary, aw-025)"
-          onClick=${() => setConfettiKey((k) => k + 1)}
-          style=${{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            fontFamily: "var(--font-ui)", fontSize: 12, lineHeight: 1,
-            color: "var(--fg-2)", background: "var(--surface-1)",
-            border: "1px dashed var(--hairline-strong)", borderRadius: "var(--radius-md)",
-            padding: "7px 10px", cursor: "pointer",
-          }}>🎉 Replay celebration</button>
-        ${/* END TEMP (aw-025) */ ""}
         <${BoardConfetti} fireKey=${confettiKey} />
       </div>
     </section>`;

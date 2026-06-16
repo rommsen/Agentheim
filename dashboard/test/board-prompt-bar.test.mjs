@@ -168,36 +168,24 @@ test('board.js still imports WORK_COMMAND from modeling-command (now used by the
   );
 });
 
-// agentic-workflow-025: a TEMPORARY replay-on-demand trigger for the celebration
-// confetti, confined to one clearly-commented block in BoardPromptBar. It reuses the
-// existing confettiKey state UNCHANGED — a second, unconditional caller of
-// setConfettiKey((k)=>k+1) — and must NOT launch, hit the bridge, copy, clear the
-// textarea, or write lifecycle state. These guards lock that wiring (and the single
-// removable block) without a DOM harness.
-test('a temporary aw-025 block adds a confetti-replay button to the prompt-bar button row', () => {
+// agentic-workflow-044: the TEMPORARY aw-025 replay-on-demand confetti trigger has
+// served its purpose (the animation was tuned in aw-034/aw-042) and was removed. The
+// real confetti machinery stays: BoardConfetti, the confettiKey state, and its single
+// legitimate caller (the successful-launch / landed-copy path) are unchanged. These
+// guards lock that the throwaway scaffold is gone while the genuine wiring remains.
+test('the temporary aw-025 confetti-replay button has been removed from BoardPromptBar', () => {
   const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
   assert.ok(bar, 'BoardPromptBar component must exist');
-  // The temp control lives in a single clearly-commented fenced block.
-  const block = bar[0].match(/TEMP \(aw-025\)[\s\S]*?END TEMP \(aw-025\)/);
-  assert.ok(block, 'the temp button must be a single TEMP (aw-025) … END TEMP (aw-025) block');
-  // It renders a button inside the prompt-bar button row.
-  assert.match(block[0], /<button/, 'the temp block must render a <button>');
+  // No trace of the aw-025 temp fence or the replay button it housed.
+  assert.doesNotMatch(bar[0], /TEMP \(aw-025\)/, 'the aw-025 TEMP block must be gone');
+  assert.doesNotMatch(bar[0], /Replay celebration/, 'the "Replay celebration" button must be gone');
 });
 
-test('the aw-025 temp button bumps the existing confettiKey and does nothing else', () => {
+test('the real confetti machinery survives the aw-025 button removal', () => {
   const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
-  const block = bar[0].match(/TEMP \(aw-025\)[\s\S]*?END TEMP \(aw-025\)/);
-  assert.ok(block, 'the temp block must exist');
-  // Reuses the existing remount trigger unchanged.
-  assert.match(
-    block[0],
-    /setConfettiKey\(\(k\)\s*=>\s*k\s*\+\s*1\)/,
-    'the temp button must bump confettiKey via the existing setConfettiKey((k) => k + 1)',
-  );
-  // No launch / bridge / clipboard / textarea-clear inside the temp block.
-  assert.doesNotMatch(block[0], /launchOrCopy|LaunchButton|command=/, 'the temp button must not launch or hit the bridge');
-  assert.doesNotMatch(block[0], /clipboard/i, 'the temp button must not copy to the clipboard');
-  assert.doesNotMatch(block[0], /setPrompt\(/, 'the temp button must not clear/touch the textarea');
+  assert.ok(bar, 'BoardPromptBar component must exist');
+  // BoardConfetti is still mounted and driven by the confettiKey state.
+  assert.match(bar[0], /<\$\{BoardConfetti\}\s+fireKey=\$\{confettiKey\}/, 'BoardConfetti must still be mounted off confettiKey');
 });
 
 // agentic-workflow-034: the celebration is reimplemented over canvas-confetti

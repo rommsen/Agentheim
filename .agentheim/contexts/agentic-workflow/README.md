@@ -298,7 +298,8 @@ separate BC, but today the whole tool lives in this one.
   (`confetti-launch.js`); `fireConfetti` walks it, issuing one `confetti()` call per shot with
   `particleCount = Math.floor(count * particleRatio)` -- board-**owned** and not a styleguide motion
   primitive (ADR-0020 amended: "board-local" means ownership, not pixel footprint; origin / tuning is
-  the open aw-025 replay-loop dial). The confetti honours
+  considered settled per aw-034/aw-042, and the temporary aw-025 replay-loop dial has been removed,
+  aw-044). The confetti honours
   `prefers-reduced-motion` (ADR-0014's strip-to-plain contract -- the `matchMedia` guard means
   `confetti()` is never invoked under reduce, so it renders nothing) and draws its colors from the four
   **status-palette bases** (`--st-done` / `--st-todo` / `--st-doing` / `--st-backlog`), **resolved at
