@@ -5,6 +5,22 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 13:35 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — design-system-018 (29482ee)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (29482ee)
+**Notes:**
+- Single ready task (design-system-018); todo/ and doing/ now empty across all BCs.
+- design-system gate is REOPENED — new visible canvas section 12 (Button both variants + a live ConfirmDialog in neutral + destructive). Builder must re-review the canvas (`styleguide/index.html` → section 12) before aw-048 migrates its board-local confirm onto `ConfirmDialog`.
+- Minor cosmetic note surfaced by the verifier (not a defect): the canvas section numbering now reads 10 → 12 → 13 (Empty states renumbered 11→13, Modal inserted as 12), leaving no section 11. Worth a one-line cleanup in a future styleguide touch.
+- aw-048 (the eventual ConfirmDialog consumer) remains in backlog/ and needs a `modeling` promote before `work` can claim it.
+
+---
+
 ## 2026-06-16 13:33 -- Task verified and completed: design-system-018 - Shared Button + Modal + ConfirmDialog primitives
 
 **Type:** Work / Task completion
@@ -13,6 +29,7 @@ Newest entries on top.
 **Verification:** PASS (iteration 1) — verifier mapped every acceptance criterion to evidence (Button --obligation not the reserved accent; Modal fixed/centered + Drawer's exact `rgba(8,9,12,0.40)` scrim + z-index 60>40; ConfirmDialog Esc/scrim/Cancel→onClose & Confirm→onConfirm; destructive flag; full focus trap incl. return-to-trigger; fade+scale reveal + reduced-motion strip; React-free `modal-state.js`; canvas specimens) and confirmed the styleguide suite 73/73 green. Noted the canvas section numbering gap (10→12→13, no 11) as cosmetic, not a defect.
 **Commit:** <pending>
 **Files changed:** 7 (button.js, modal.js, modal-state.js, confirm-dialog.js, app.js, modal.test.mjs, design-system README)
+**Commit:** 29482ee
 **Tests added:** 19 (modal.test.mjs — pure modal-state predicates + primitive source/behavior guards)
 **ADRs written:** none — decisions grounded in existing ADR-0003 / 0005 / 0014 / 0016
 

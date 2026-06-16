@@ -6,7 +6,7 @@ type: feature
 context: design-system
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 29482ee
 depends_on: [design-system-001-styleguide]
 blocks: []
 tags: [styleguide, modal, dialog, confirm, overlay, button]
