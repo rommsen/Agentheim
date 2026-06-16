@@ -5,6 +5,54 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 16:46 -- Task verified and completed: design-system-019 - Search results — category headers need more contrast
+
+**Type:** Work / Task completion
+**Task:** design-system-019 - Search results — category headers need more contrast
+**Summary:** Raised the search panel's grouped-results category-header colour from the dimmest `--fg-4` to `--fg-2`, so the organising headers out-read the `--fg-3` excerpts while staying quieter than the `--fg-1` result-row titles. Colour-token-only; panel elevation tokens (ADR-0024 source-guards) untouched. Styleguide consumed unforked; `dashboard/dist/app.js` rebuilt.
+**Verification:** PASS (iteration 1) — token ramp 1<2<3<4 honoured; size/weight/uppercase/letter-spacing unchanged; styleguide 96 pass, dashboard 467 pass; dist carries `--fg-2`. Builder canvas re-review (gate re-confirm) is a human gate — README notes it reopened, confirmation pending.
+**Commit:** 6edeacc
+**Files changed:** 3 (search.js, dashboard/dist/app.js, README.md)
+**Tests added:** 0 (presentation-only colour-token refactor; covered by existing suites)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 16:40 -- Batch started: [design-system-019]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-019 - Search results — category headers need more contrast
+**Parallel:** no (1 worker) — first of 3 sequential batches; ds-019, aw-053, aw-054 all rebuild the shared `dashboard/dist/app.js` and aw-053/aw-054 share `board.js`, so they run one-per-batch.
+
+---
+
+## 2026-06-16 16:28 -- Modeling / Captured: agentic-workflow-054 - Board prompt bar "Prompt" title + whitespace above the "Board" title
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** The board view stacks the prompt-authoring region flush against the Kanban board. Add a "Prompt" title above the prompt input (mirroring the board-local "Board" title in `BoardHeader`) and vertical whitespace above the "Board" title so the capture region and the board read as two distinct zones. Captured ready-to-work as board-local, token-matched layout tweaks in `board.js` (`BoardPromptBar` + `BoardHeader`), styleguide consumed unforked. Renumbered from 053 → 054 after a concurrent capture claimed 053.
+
+---
+
+## 2026-06-16 16:20 -- Modeling / Captured: agentic-workflow-053 - Topbar layout — search on the left, settings gear + Work flush right
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Dashboard topbar doesn't right-align the settings gear + Work group — on wide viewports it floats mid-bar with trailing empty space instead of sitting flush right, while search should stay anchored left. Captured ready-to-work as a consumer-side flex tweak in `board.js` `BoardTopbar` (no styleguide change).
+
+---
+
+## 2026-06-16 16:00 -- Modeling / Captured: design-system-019 - Search results — category headers need more contrast
+
+**Type:** Modeling / Capture
+**BC:** design-system
+**Filed to:** todo
+**Summary:** The grouped-results category headers in the `SearchField` combobox (ds-016) sit at `--fg-4`, the dimmest foreground token — dimmer than the excerpts (`--fg-3`). Raise the header colour (e.g. → `--fg-2`) so the category titles read with more contrast; size/weight/uppercase unchanged. Styleguide change, consumed unforked, reopens the design-system gate and needs a `dist/` rebuild for the live aw-052 search.
+
+---
+
 ## 2026-06-16 15:36 -- Work session ended
 
 **Type:** Work / Session end

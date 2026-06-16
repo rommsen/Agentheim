@@ -6,7 +6,7 @@ type: refactor
 context: design-system
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 6edeacc
 depends_on: [design-system-001]
 blocks: []
 tags: [search, contrast, accessibility, styleguide]
