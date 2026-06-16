@@ -5,6 +5,61 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 15:51 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — agentic-workflow-051 (dd970ca)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 feature (dd970ca) + 1 chore (this SHA/protocol backfill)
+**Notes:**
+- Single ready task (aw-051); todo/ and doing/ now empty across all BCs.
+- Surfaced a pre-existing INDEX drift: aw-048 (done, committed 5864548, file in done/) is still listed under the agentic-workflow Doing list with the count showing Doing:1 / Done was 47 — the prior session's doing→done INDEX transition for aw-048 never landed. Left untouched to keep this commit surgical; flagged for the builder to correct separately.
+- The working tree was already broadly dirty at session start (pre-existing M on many done/ task files + infra/design-system INDEX + several untracked research/decision files); staging was kept surgical (never `git add -A`).
+- The dashboard `dist/` needed an explicit rebuild before commit (a transient verifier-build had reverted it to HEAD); rebuilt, +3 `skipPermissions` occurrences vs HEAD confirm the change shipped.
+- No new backlog items, no ADRs, no concept candidates.
+
+---
+
+## 2026-06-16 15:50 -- Task verified and completed: agentic-workflow-051 - Dismiss (trash-can) button threads the armed skip-permissions signal like the launch buttons
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-051 - Dismiss (trash-can) button threads the armed skip-permissions signal like the launch buttons
+**Summary:** The per-card dismiss trash-can now threads the armed skip-permissions signal like the four launch buttons — POSTing `skipPermissions:true` only when armed (strict-`true`, field omitted when off), reversing aw-048's deliberate omission; the in-session cascade re-confirm (ADR-0022) preserves safety. No distinct armed cue needed — the trash glyph is already `--obligation`-tinted (aw-041 doctrine).
+**Verification:** PASS (iteration 1) — all six acceptance criteria mapped to behavior-named `node --test` cases (armed/unarmed body shape, prop-sourced armed value with no second source / no `/api/bridge` probe, clipboard-no-bypass); full suite green 434/434; dist byte-identical to a fresh rebuild.
+**Commit:** dd970ca
+**Files changed:** 6 (board.js, board-card-dismiss.test.mjs, dist/app.js, BC README, INDEX, task file)
+**Tests added:** 5 (armed/unarmed/no-bridge dismiss body shape + prop-threading guards)
+**ADRs written:** none (behavioural flip within ADR-0018/0019 territory)
+
+---
+
+## 2026-06-16 15:46 -- Batch started: [agentic-workflow-051]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-051 - Dismiss (trash-can) button threads the armed skip-permissions signal like the launch buttons
+**Parallel:** no (1 worker) — single ready task; dep design-system-001 done.
+
+---
+
+## 2026-06-16 15:45 -- Modeling / Promoted: agentic-workflow-051 - Dismiss (trash-can) button threads the armed skip-permissions signal like the launch buttons
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-16 15:30 -- Modeling / Captured: agentic-workflow-051 - Dismiss (trash-can) button threads the armed skip-permissions signal like the launch buttons
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** The per-card dismiss trash-can should honour the armed skip-permissions toggle like the four launch buttons do, threading `skipPermissions` through `launchOrCopy` when armed. Deliberately filed to backlog (not todo) because it reverses aw-048's explicit decision to keep the destructive dismiss behind its normal permission prompt (mirroring the Stop button) — that safety reversal wants a confirm before promote. Open question carried in Notes: the trash-can icon is already `--obligation`-tinted, so the standard per-launch armed cue is a no-op and refinement must decide whether armed-dismiss needs any distinct cue.
+
+---
+
 ## 2026-06-16 15:00 -- Release shipped: v0.8.6
 
 **Type:** Release
