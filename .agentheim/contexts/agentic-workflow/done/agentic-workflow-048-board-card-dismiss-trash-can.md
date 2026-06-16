@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 5864548
 depends_on: [agentic-workflow-046, design-system-001-styleguide, design-system-017, design-system-018]
 blocks: []
 tags: [dashboard, board, card, dismiss, frontend, bridge]

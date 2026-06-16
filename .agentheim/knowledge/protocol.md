@@ -5,6 +5,63 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 13:54 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — agentic-workflow-048 (5864548)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 feature (5864548) + 1 chore (this bookkeeping backfill)
+**Notes:**
+- Single ready task (aw-048); todo/ and doing/ now empty across all BCs.
+- aw-048 was the first shipped consumer of ds-018's `ConfirmDialog` and owned the `dist/` esbuild rebuild ds-018 had deferred — the deployed bundle now imports it.
+- The repo's working tree was already dirty at session start (pre-existing M on several done/ task files + infrastructure files + INDEX); staging was kept surgical (never `git add -A`) so none of that unrelated work was swept into the aw-048 commit.
+- No new backlog items, no ADRs, no concept candidates.
+
+---
+
+## 2026-06-16 13:53 -- Task verified and completed: agentic-workflow-048 - Board card dismiss — hover-revealed red trash can with a confirmation dialog
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-048 - Board card dismiss — hover-revealed red trash can with a confirmation dialog
+**Summary:** Backlog/todo cards gain a hover-revealed top-right red trash can that opens the shared ConfirmDialog (ds-018, unforked) and fires `/agentheim:modeling dismiss <id>` through the VS Code bridge; the board stays read-only and the agent runs the cascade dismiss with in-session re-confirmation (ADR-0022).
+**Verification:** PASS (iteration 1) — verifier mapped all 11 acceptance criteria to evidence (backlog+todo-only gate; opacity-0 reveal on host-hover/focus; unforked TicketCard overlay + unforked ConfirmDialog destructive; trash-2 glyph tinted `--obligation`, not the reserved ochre accent; cascade-caveat dialog copy consistent with ADR-0022; propagation isolation; no skipPermissions; read-only ADR-0017 honored; dist/ rebuilt; pure unit-tested `dismissCommandFor` with id-degradation) and confirmed the dashboard suite 429/429 green.
+**Commit:** 5864548
+**Files changed:** 8 (board.js, modeling-command.js, modeling-command.test.mjs, board-card-dismiss.test.mjs [new], README, INDEX, dist/app.js, task file)
+**Tests added:** 6 (`dismissCommandFor` unit) + the new `board-card-dismiss.test.mjs` board-glue guards
+**ADRs written:** none — grounded in existing ADR-0022 / 0017 / 0018 / 0003 / 0016
+
+---
+
+## 2026-06-16 13:52 -- Batch started: [agentic-workflow-048]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-048 - Board card dismiss — hover-revealed red trash can with a confirmation dialog
+**Parallel:** no (1 worker) — single ready task; all four deps done (aw-046, ds-001, ds-017, ds-018).
+
+---
+
+## 2026-06-16 13:51 -- Modeling / Promoted: agentic-workflow-048 - Board card dismiss — hover-revealed red trash can with a confirmation dialog
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+**Note:** Promoted immediately after the refine that made it dependency-clear (all four deps done: aw-046, ds-001, ds-017, ds-018). Builder override of the standing "don't promote a frontend task ahead of the styleguide gate" caution: ds-017/ds-018 reopened the gate for canvas re-review, and the builder chose to promote now rather than wait on that re-review. The §12 canvas re-review remains the human checkpoint before/at work-time.
+
+---
+
+## 2026-06-16 13:50 -- Modeling / Refined: agentic-workflow-048 - Board card dismiss — hover-revealed red trash can with a confirmation dialog
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Reconciled the task against design-system-018 having shipped (commit 29482ee) earlier the same day. At capture the styleguide had no centered confirm primitive, so the dialog was specced as a hand-rolled board-local overlay with ds-018 merely *filed* as a follow-up. ds-018 now exports the shared `Button`/`Modal`/`ConfirmDialog` family, so the task flips from "hand-roll a board-local centered overlay" to "consume `ConfirmDialog` unforked with `destructive=true`" — the board supplies only `open`/title/body/`onClose`/`onConfirm`; the primitive owns the scrim, focus trap, fade+scale reveal, reduced-motion strip, and stacking above the Drawer. Added `design-system-018` to `depends_on` (and the reverse `blocks` edge on ds-018), added ADR-0016 to `related_adrs`, added a `dist/` esbuild-rebuild acceptance criterion (ds-018 left dist unbuilt; aw-048 is the consumer that rebuilds it). All four dependencies (aw-046, ds-001, ds-017, ds-018) are now done — the task is dependency-clear; the only remaining checkpoint is the builder's canvas re-review (ds-017/ds-018 reopened the gate). The trash-can placement, bridge seed-and-fire, `dismissCommandFor`, and SSE-removal facets are unchanged.
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-06-16 13:35 -- Work session ended
 
 **Type:** Work / Session end
