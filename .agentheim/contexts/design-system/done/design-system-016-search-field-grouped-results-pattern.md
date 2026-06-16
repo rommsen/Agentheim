@@ -6,7 +6,7 @@ type: feature
 context: design-system
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 9c7f353
 depends_on: [design-system-001]
 blocks: [agentic-workflow-052]
 tags: [captured, frontend, styleguide, search]

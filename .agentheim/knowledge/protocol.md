@@ -5,13 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 15:08 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — design-system-016 (9c7f353)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 feature (9c7f353) + 1 chore (SHA/protocol backfill)
+**Notes:**
+- Single ready task (ds-016); todo/ and doing/ now empty across all BCs.
+- ADR-0024 written (scope: design-system) — search combobox panel is standalone, matches Menu's `--shadow-md` by convention not composition; indexed under design-system adr-local.
+- Concept candidate surfaced (NOT auto-created): **styleguide-owns-look-consumer-drives-behavior** — the worker flags 5 converging artifacts (ds-005 Collapsible, ds-006 cornerAction, ds-015 Menu, ds-016 SearchField, ds-018 Button/Modal). A genuine synthesis-page candidate; builder decides.
+- Pre-existing tree dirt left untouched (not this task, surfaced for the builder): the aw-050 old-name backlog deletion `agentic-workflow-050-dashboard-global-search.md`, the untracked aw-052 backlog file, and the untracked ADR-0023 — these are prior modeling-session outputs (the aw-050 refine/split) that were never committed. Staging was kept surgical (never `git add -A`).
+
+---
+
 ## 2026-06-16 15:05 -- Task verified and completed: design-system-016 - Search field + grouped-results popover/listbox styleguide pattern
 
 **Type:** Work / Task completion
 **Task:** design-system-016 - Search field + grouped-results popover/listbox styleguide pattern
 **Summary:** Shipped the styleguide search-field + grouped-results combobox pattern — `SearchField` (`styleguide/app/search.js`) over a React-free `search-state.js`: a token-styled, search-scoped input opening a standalone `--shadow-md` floating panel of category-grouped, marked-excerpt rows with an active-descendant keyboard model. Built standalone (not composed on ds-015's `Menu`), matching its Popover elevation by convention. Body-agnostic — consumer feeds grouped data + `onSelect` (future consumer aw-052).
 **Verification:** PASS (iteration 1) — all 7 acceptance criteria mapped to behavior; htm gotchas guarded by render-smoke; standalone-not-on-Menu + `--shadow-md`-by-convention confirmed by source-guards; styleguide 96/96 + dashboard 452/452 green; dist correctly unchanged (no dashboard consumer wired yet).
-**Commit:** <pending SHA backfill>
+**Commit:** 9c7f353
 **Files changed:** 6
 **Tests added:** search.test.mjs (panelState, nextActiveIndex wrap, Enter-selects-highlight, Escape-only dismiss, outside-click predicate, markMatches, ARIA + no-menu-import source-guards)
 **ADRs written:** ADR-0024 (scope: design-system)
