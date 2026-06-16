@@ -41,6 +41,25 @@ test('a board task intent becomes a ticket-typed doc item carrying its real path
   assert.equal(item.type, 'ticket');
   assert.equal(item.meta, '.agentheim/contexts/alpha/todo/alpha-002.md');
   assert.equal(item.body, '# A todo task\n\nbody');
+  // The doc item carries the intent's title so the styleguide Drawer header
+  // (ds-014) leads with it rather than the bare path (aw-047).
+  assert.equal(item.title, 'A todo task');
+});
+
+test('the doc item carries the intent title so the Drawer header leads with it, not the path (aw-047)', () => {
+  // ds-014 keyed the Drawer's HeaderContextual title on a `title` field carried
+  // by describeItem's doc branch; this is the dashboard half that feeds it.
+  const item = intentToDrawerItem(
+    { type: 'adr', title: 'ADR-0009 — Some decision',
+      path: '.agentheim/knowledge/decisions/0009-x.md' },
+    '# ADR-0009',
+  );
+  assert.equal(item.title, 'ADR-0009 — Some decision');
+});
+
+test('a title-less intent yields an empty-string title (the Drawer falls back to the path)', () => {
+  const item = intentToDrawerItem({ path: 'p.md' }, 'b');
+  assert.equal(item.title, '');
 });
 
 test('a non-task artifact intent keeps its own content-type and renders uniformly', () => {

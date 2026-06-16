@@ -43,7 +43,7 @@ test('a main-pane document reader exists and renders through the styleguide Mark
 });
 
 test('the reader column is horizontally centered as a block while preserving the maxWidth measure (aw-040)', () => {
-  // The reading column is the `<article>` wrapper holding the path header + Markdown.
+  // The reading column is the `<article>` wrapper holding the title header + Markdown.
   // It must keep its comfortable measure AND be centered (margin: 0 auto) — block
   // centering only, NOT center-aligned paragraph text, NOT vertical centering.
   const article = readerSrc.match(/<article style=\$\{\{([^}]*)\}\}>/);
@@ -53,6 +53,37 @@ test('the reader column is horizontally centered as a block while preserving the
   assert.match(articleStyle, /margin:\s*["']0 auto["']/, 'the article must center horizontally via margin: "0 auto"');
   // Guard against accidental center-aligned text or vertical centering creep.
   assert.doesNotMatch(articleStyle, /textAlign:\s*["']center["']/, 'paragraph text must NOT be center-aligned');
+});
+
+test('the ready-state header LEADS with doc.title (strong contrast, larger than the old 11.5px path), not the mono path line (aw-047)', () => {
+  // The article wrapper holds a header element followed by the Markdown primitive.
+  // aw-047: that header must now show the title, not the bare path. Isolate the
+  // ready-state <article> block so the error-state path span (line 74) is excluded.
+  const article = readerSrc.match(/<article[\s\S]*?<\/article>/);
+  assert.ok(article, 'the ready-state <article> block must exist');
+  const body = article[0];
+
+  // The header renders the title (a path fallback for a title-less doc is fine).
+  assert.match(body, /\$\{doc\.title\b/, 'the ready-state header must render doc.title');
+
+  // Stronger contrast than the old quiet path line (--fg-3) — leads with --fg-1.
+  assert.match(body, /color:\s*["']?var\(--fg-1\)["']?/, 'the title must use the strong --fg-1 foreground token');
+
+  // A clearly larger font than the old 11.5px path line, declared as a number.
+  const sizeMatch = body.match(/fontSize:\s*([0-9]+(?:\.[0-9]+)?)/);
+  assert.ok(sizeMatch, 'the title element must set an explicit fontSize');
+  assert.ok(Number(sizeMatch[1]) > 11.5, `the title font (${sizeMatch[1]}) must be clearly larger than the old 11.5px`);
+
+  // Styleguide UI font token, not a bespoke stack (ADR-0003 consume-unforked).
+  assert.match(body, /fontFamily:\s*["']var\(--font-ui\)["']/, 'the title must use the styleguide --font-ui token');
+
+  // The first/leading element of the header is the title heading, not the path:
+  // the strong --fg-1 title element must appear before any --fg-3 path sub-line.
+  const titleIdx = body.search(/color:\s*["']?var\(--fg-1\)["']?/);
+  const pathSubIdx = body.search(/color:\s*["']?var\(--fg-3\)["']?/);
+  assert.ok(titleIdx >= 0, 'a --fg-1 title element must exist');
+  assert.ok(pathSubIdx === -1 || titleIdx < pathSubIdx,
+    'the title (--fg-1) must lead, with any path sub-line (--fg-3) demoted below it');
 });
 
 test('the reader reuses the existing /api/doc fetch mechanism (docUrl) — one fetch mechanism', () => {

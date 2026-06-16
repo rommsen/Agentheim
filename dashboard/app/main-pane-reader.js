@@ -74,15 +74,25 @@ export function MainPaneReader({ doc, fetchDoc = defaultFetchDoc }) {
     return html`<${ReaderState}><${Icon} name="triangle-alert" size=${15} color="var(--st-doing)" /> Could not load <span style=${{ fontFamily: "var(--font-mono)", marginLeft: 4 }}>${doc.path}</span> from /api/doc.</${ReaderState}>`;
   }
 
-  // A quiet reading column: the styleguide Markdown primitive (its `.prose` class
-  // carries the typography), constrained to a comfortable measure. Consumed
-  // unforked (ADR-0003) — same primitive the slide-over reaches through the Drawer.
+  // A quiet reading column: a title header that LEADS with doc.title (--fg-1,
+  // --font-ui) over a demoted quiet mono path sub-line (aw-047), then the
+  // styleguide Markdown primitive (its `.prose` class carries the typography),
+  // constrained to a comfortable measure. Consumed unforked (ADR-0003) — same
+  // primitive the slide-over reaches through the Drawer.
   return html`
     <article style=${{ maxWidth: 760, margin: "0 auto" }}>
-      <div style=${{
-        display: "flex", alignItems: "center", gap: 10, padding: "0 0 14px",
-        fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--fg-3)",
-      }}>${doc.path}</div>
+      <header style=${{ padding: "0 0 14px" }}>
+        <h1 style=${{
+          margin: 0,
+          fontFamily: "var(--font-ui)", fontSize: 21, fontWeight: 600,
+          lineHeight: 1.25, color: "var(--fg-1)",
+        }}>${doc.title || doc.path}</h1>
+        ${doc.title && html`
+          <div style=${{
+            marginTop: 6,
+            fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--fg-3)",
+          }}>${doc.path}</div>`}
+      </header>
       <${Markdown} source=${withFrontmatterSection(body)} />
     </article>`;
 }

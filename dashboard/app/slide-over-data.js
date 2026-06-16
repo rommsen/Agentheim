@@ -45,7 +45,7 @@ export function docUrl(path) {
  *
  * @param {object|null} intent — the clicked task/artifact (must carry `path`).
  * @param {string} body — the raw markdown fetched from /api/doc.
- * @returns {{ type, meta, body }|null} a doc item, or null for no intent.
+ * @returns {{ type, meta, title, body }|null} a doc item, or null for no intent.
  */
 export function intentToDrawerItem(intent, body) {
   if (!intent) return null;
@@ -54,6 +54,11 @@ export function intentToDrawerItem(intent, body) {
     // branch so the REAL path (meta) and fetched markdown (body) are shown.
     type: resolveType(intent),
     meta: intent.path ?? '',
+    // Carry the intent's title so the styleguide Drawer header (ds-014) LEADS
+    // with it and demotes the path to a quiet sub-line (aw-047). The intent
+    // always has a title (board cards and library rows both do); empty-string
+    // fallback lets the Drawer fall back to the path for a title-less item.
+    title: intent.title ?? '',
     body: body ?? '',
   };
 }

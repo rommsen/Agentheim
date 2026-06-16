@@ -352,8 +352,11 @@ separate BC, but today the whole tool lives in this one.
   the body via `GET /api/doc?path=`, and renders the markdown **client-side** (no SSR) through
   the approved styleguide `Drawer` + `Markdown` — imported as-is from the committed dist, never
   forked (ADR-0003). The slide-over hands the `Drawer` a *doc-shaped* item
-  (`{ type, meta: <real path>, body }`) so the real in-root path is shown and the fetched
-  markdown rendered (ADR-0010, reshaped by ADR-0021). Lives in `dashboard/app/slide-over.js`
+  (`{ type, meta: <real path>, title, body }`) so the real in-root path is carried and the
+  fetched markdown rendered (ADR-0010, reshaped by ADR-0021). The header **leads with the
+  item `title`** (styleguide Drawer, design-system-014) and demotes the path to a quiet mono
+  sub-line — `intentToDrawerItem` threads `intent.title` onto the doc item (agentic-workflow-047).
+  Lives in `dashboard/app/slide-over.js`
   over the pure, unit-tested `dashboard/app/slide-over-data.js`. Esc and scrim-click close it.
   Its header carries an **"Open in full screen"** action (the styleguide `Drawer`'s bare
   `onOpenFullScreen` callback, design-system-009): clicking it promotes the open task **out of the
@@ -368,7 +371,9 @@ separate BC, but today the whole tool lives in this one.
   client-side through the styleguide `Markdown` primitive, consumed unforked (ADR-0003). Lives
   in `dashboard/app/main-pane-reader.js`. The reading column keeps a comfortable measure
   (`maxWidth: 760`) and is centered **horizontally** in the content area (`margin: 0 auto`,
-  agentic-workflow-040) — block centering, not center-aligned text. The main pane shows EITHER
+  agentic-workflow-040) — block centering, not center-aligned text. Its ready-state header
+  **leads with `doc.title`** (`--font-ui`, strong `--fg-1`) over a demoted quiet mono path
+  sub-line (agentic-workflow-047). The main pane shows EITHER
   the selected document OR the board (the default); the rail's **Board** item returns it to the
   board. See ADR-0021.
 - **Frontmatter folding** — both render surfaces share one pure helper,
