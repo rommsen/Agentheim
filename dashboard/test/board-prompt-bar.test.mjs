@@ -33,6 +33,52 @@ test('a board-level prompt bar component owns a multi-line <textarea>', () => {
   assert.match(bar[0], /<textarea/, 'the prompt bar must render a multi-line textarea');
 });
 
+// agentic-workflow-054: the prompt bar gains a board-local "Prompt" title above the
+// field, mirroring the board-local "Board" title in BoardHeader (same --font-ui,
+// fontSize 15, fontWeight 600, letterSpacing -0.01em, --fg-1) — the styleguide is
+// consumed unforked (ADR-0003), so this is a board-local token-matched element, not a
+// styleguide component. The title renders BEFORE the <textarea> in the section. The
+// "Board" title additionally gains vertical whitespace above it so the prompt-capture
+// region and the board read as two distinct zones.
+test('BoardPromptBar renders a board-local "Prompt" title above the textarea, token-matched to the "Board" title', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  assert.ok(bar, 'BoardPromptBar component must exist');
+  // A "Prompt" title literal exists in the section.
+  const titleIdx = bar[0].indexOf('>Prompt<');
+  assert.ok(titleIdx !== -1, 'the prompt bar must render a "Prompt" title');
+  // It sits ABOVE the field: the title appears before the <textarea> in source order.
+  const textareaIdx = bar[0].indexOf('<textarea');
+  assert.ok(textareaIdx !== -1, 'the prompt bar must still render a textarea');
+  assert.ok(titleIdx < textareaIdx, 'the "Prompt" title must render above the textarea');
+  // Token-matched to the "Board" title: same font/size/weight/letterSpacing/color.
+  const titleSpan = bar[0].match(/<span[^>]*>[\s\S]{0,120}?>Prompt</);
+  // Grab the style block immediately preceding the "Prompt" text.
+  const styleBlock = bar[0].slice(Math.max(0, titleIdx - 400), titleIdx);
+  assert.match(styleBlock, /fontFamily:\s*"var\(--font-ui\)"/, 'Prompt title must use --font-ui');
+  assert.match(styleBlock, /fontSize:\s*15\b/, 'Prompt title must be fontSize 15');
+  assert.match(styleBlock, /fontWeight:\s*600\b/, 'Prompt title must be fontWeight 600');
+  assert.match(styleBlock, /letterSpacing:\s*"-0\.01em"/, 'Prompt title must match the -0.01em letter-spacing');
+  assert.match(styleBlock, /color:\s*"var\(--fg-1\)"/, 'Prompt title must use --fg-1');
+});
+
+test('there is vertical whitespace above the "Board" title separating it from the prompt-capture region', () => {
+  // The space is added either on BoardHeader itself or on the wrapping board <div>
+  // between BoardPromptBar and BoardHeader. Either way, the rendered DashboardBoard
+  // tree must place explicit top spacing on/around the BoardHeader. We accept a
+  // marginTop/paddingTop on the header, OR a spacer between the two components.
+  const header = boardSrc.match(/function BoardHeader[\s\S]*?\n}/);
+  assert.ok(header, 'BoardHeader must exist');
+  const headerSpacing = /(marginTop|paddingTop):/.test(header[0]) ||
+    // header padding shorthand "top right? bottom left?" with a non-zero top value
+    /padding:\s*"[1-9]/.test(header[0]);
+  const render = boardSrc.match(/<\$\{BoardPromptBar\}[\s\S]{0,400}?<\$\{BoardHeader\}/);
+  const wrapperSpacing = render && /(marginTop|paddingTop|height):/.test(render[0]);
+  assert.ok(
+    headerSpacing || wrapperSpacing,
+    'there must be explicit vertical whitespace above the "Board" title (on BoardHeader or a wrapper spacer)',
+  );
+});
+
 test('the prompt bar is rendered inside DashboardBoard, above the BoardHeader count strip', () => {
   const render = boardSrc.match(/return html`\s*<div>\s*<\$\{BoardPromptBar\}[\s\S]*?<\$\{BoardHeader\}/);
   assert.ok(

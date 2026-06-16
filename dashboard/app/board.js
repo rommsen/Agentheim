@@ -514,6 +514,10 @@ function BoardPromptBar({ skipPermissions = false }) {
       display: "flex", flexDirection: "column", gap: 10,
       padding: "0 4px 20px",
     }}>
+      <span style=${{
+        fontFamily: "var(--font-ui)", fontSize: 15, fontWeight: 600,
+        letterSpacing: "-0.01em", color: "var(--fg-1)",
+      }}>Prompt</span>
       <textarea
         ref=${textareaRef}
         className="focusable"
@@ -905,7 +909,9 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree", skipPermissions 
   return html`
     <div>
       <${BoardPromptBar} skipPermissions=${skipPermissions} />
-      <${BoardHeader} count=${total} />
+      <div style=${{ paddingTop: 18 }}>
+        <${BoardHeader} count=${total} />
+      </div>
       <div className="scroll-quiet" style=${{ overflowX: "auto", paddingBottom: 8 }}>
         <div style=${{ minWidth: 880 }}>
           <div style=${{ display: "flex", gap: 20, alignItems: "flex-start" }}>

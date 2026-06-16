@@ -401,6 +401,7 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{l=!1}},[e,r]),k`
       <span>${p}</span>
     </button>`}function Py(){if(typeof document>"u"||typeof Ts!="function")return;let e=hh(getComputedStyle(document.documentElement)),{count:t,defaults:n,shots:r}=mh();for(let{particleRatio:o,...i}of r)Ts({...n,...i,particleCount:Math.floor(t*o),...e.length?{colors:e}:{}})}function Ny({fireKey:e}){let t=typeof window<"u"&&typeof window.matchMedia=="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;return(0,_.useEffect)(()=>{t||!e||Py()},[e,t]),null}function Ly(e){return typeof e!="string"?"":e.replace(/[\r\n]+/g," ")}function kh(e,t){if(!e||typeof e.style>"u")return;e.style.height="auto";let n=Math.min(e.scrollHeight,t);e.style.height=`${n}px`}var Oy=40,Gs=168;function Ay({skipPermissions:e=!1}){let[t,n]=(0,_.useState)(""),[r,o]=(0,_.useState)(0),i=(0,_.useRef)(null),l=(0,_.useCallback)(u=>{u&&(u.via==="bridge"||u.copied===!0)&&(n(""),kh(i.current,Gs),o(h=>h+1))},[]),a=(0,_.useCallback)(u=>{n(Ly(u.target.value)),kh(u.currentTarget,Gs)},[]),s=(0,_.useCallback)(u=>{u.key==="Enter"&&u.preventDefault()},[]);return k`
     <section aria-label="Author a prompt, then launch a capture or modeling session" style=${{position:"relative",display:"flex",flexDirection:"column",gap:10,padding:"0 4px 20px"}}>
+      <span style=${{fontFamily:"var(--font-ui)",fontSize:15,fontWeight:600,letterSpacing:"-0.01em",color:"var(--fg-1)"}}>Prompt</span>
       <textarea
         ref=${i}
         className="focusable"
@@ -493,7 +494,9 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{l=!1}},[e,r]),k`
     </div>`}function Hy({onOpen:e,treeUrl:t="/api/tree",skipPermissions:n=!1}){let[r,o]=(0,_.useState)(xh),[i,l]=(0,_.useState)("loading"),[a,s]=(0,_.useState)(null),[u,f]=(0,_.useState)(()=>{let d=typeof window<"u"?window.localStorage:null,c=ah(d),m={};for(let y of en)m[y]={...ih(),...c[y]||{}};return m});(0,_.useEffect)(()=>{let d=typeof window<"u"?window.localStorage:null;sh(d,u)},[u]);let h=(0,_.useCallback)((d,c)=>{f(m=>m[d].sort===c?m:{...m,[d]:{...m[d],sort:c}})},[]),p=(0,_.useCallback)((d,c)=>{f(m=>m[d].grouped===c?m:{...m,[d]:{...m[d],grouped:c}})},[]),v=(0,_.useCallback)((d,c)=>{f(m=>{let y=m[d],b=y.collapsed.includes(c)?y.collapsed.filter(R=>R!==c):[...y.collapsed,c];return{...m,[d]:{...y,collapsed:b}}})},[]),w=(0,_.useCallback)(()=>{let d=!0;return fetch(t).then(c=>{if(!c.ok)throw new Error(`/api/tree ${c.status}`);return c.json()}).then(c=>{d&&(o(Lp(c)),l("ready"))}).catch(()=>{d&&(o(xh),l("error"))}),()=>{d=!1}},[t]);(0,_.useEffect)(()=>(l("loading"),w()),[w]),wh(w);let $=(0,_.useCallback)(d=>{s(d.id),typeof e=="function"&&e(d)},[e]),T=en.reduce((d,c)=>d+r[c].length,0);return i==="loading"?k`<${nl}><${U} name="loader" size=${15} color="var(--fg-4)" /> Loading board…</${nl}>`:i==="error"?k`<${nl}><${U} name="triangle-alert" size=${15} color="var(--st-doing)" /> Could not load the board. Is the dashboard server running?</${nl}>`:k`
     <div>
       <${Ay} skipPermissions=${n} />
-      <${_y} count=${T} />
+      <div style=${{paddingTop:18}}>
+        <${_y} count=${T} />
+      </div>
       <div className="scroll-quiet" style=${{overflowX:"auto",paddingBottom:8}}>
         <div style=${{minWidth:880}}>
           <div style=${{display:"flex",gap:20,alignItems:"flex-start"}}>

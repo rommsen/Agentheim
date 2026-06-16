@@ -313,6 +313,10 @@ separate BC, but today the whole tool lives in this one.
   stored value can **never hold a newline** -- a multi-line **paste collapses to one line**. The launch
   builders read this sanitized value, so the seeded-command contract and the empty/whitespace bare
   fallback are unchanged.
+  **The bar carries a board-local `Prompt` title above the field (aw-054)**, token-matched to the
+  `Board` title (same `--font-ui` / 15px / 600 / `--fg-1`) so the capture region and the board below
+  read as two labelled zones; vertical whitespace above the `Board` title separates them. Both are
+  board-local, token-matched elements -- the styleguide stays unforked (ADR-0003).
 - **Shell layout (aw-026, styleguide §05)** -- the live shell is the styleguide "Components in context"
   full-height **left rail** beside a **main column**. The main column is a ~52px **topbar** (the global
   **search field** — aw-052; was a dead breadcrumb until then — plus a single **primary** action that
