@@ -138,10 +138,21 @@ export function frontmatterSection(fields) {
  * the raw body and prepend the collapsible section. A document with no
  * frontmatter passes through byte-for-byte (no section, no change).
  *
+ * The section ends in `</details>` (no trailing newline) and `parseFrontmatter`
+ * strips the leading newline off `body`, so a naive `section + body` glues them
+ * onto one line (`…</details>## Why`). marked then reads that as one line inside
+ * the type-6 raw-HTML block (which runs until a blank line), so the body's first
+ * heading never gets a line-start and renders as literal `## Why` text (aw-045).
+ * Separate the two with a blank line — but ONLY when a section is present, so a
+ * no-frontmatter document still passes through byte-for-byte.
+ *
  * @param {string} raw — the raw markdown fetched from /api/doc.
- * @returns {string} section + stripped body.
+ * @returns {string} section + blank line + stripped body (or the body unchanged
+ *   when there is no frontmatter).
  */
 export function withFrontmatterSection(raw) {
   const { fields, body } = parseFrontmatter(raw);
-  return frontmatterSection(fields) + body;
+  const section = frontmatterSection(fields);
+  if (section === '') return body;
+  return section + '\n\n' + body;
 }

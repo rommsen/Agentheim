@@ -178,9 +178,31 @@ test('withFrontmatterSection prepends the section to the stripped body', () => {
   assert.ok(out.indexOf('## Why') > out.indexOf('Front matter'));
 });
 
+test('withFrontmatterSection separates the section from the body with a blank line so the first heading survives (aw-045)', () => {
+  const out = withFrontmatterSection(SAMPLE);
+  // The closing </details> must be followed by a blank line, not glued straight
+  // onto the body. Without the separator marked reads `</details>## Why` as one
+  // line inside the type-6 raw-HTML block and renders the heading as literal text.
+  assert.match(out, /<\/details>\n\n## Why/,
+    'the </details> section must be separated from the body by a blank line');
+  // The body's first heading sits at a line-start (not glued to </details>), so
+  // marked closes the HTML block and parses `## Why` as a real heading.
+  assert.doesNotMatch(out, /<\/details>\S/,
+    'the body must not start on the same line as </details>');
+  assert.match(out, /\n## Why/, 'the first body heading must begin at a line-start');
+});
+
 test('withFrontmatterSection passes a no-frontmatter document straight through (no section, identical body)', () => {
   const raw = '# Plain\n\nNothing to fold.';
+  // Byte-for-byte: no section, and crucially no added blank line.
   assert.equal(withFrontmatterSection(raw), raw);
+});
+
+test('withFrontmatterSection adds NO separator when the document has no frontmatter (a body opening with a heading is untouched)', () => {
+  const raw = '# Title\n\nA README body, no frontmatter.';
+  const out = withFrontmatterSection(raw);
+  assert.equal(out, raw, 'a no-frontmatter doc must pass through byte-for-byte');
+  assert.doesNotMatch(out, /^\n/, 'no leading blank line must be prepended');
 });
 
 test('withFrontmatterSection tolerates empty/null input', () => {
