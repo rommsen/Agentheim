@@ -57,7 +57,7 @@ export function HeaderMinimal({ info, onClose, onOpenFullScreen }) {
       <${TypePill} type=${info.type} />
       <span style=${{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--fg-3)" }}>${info.path}</span>
       <div style=${{ flex: 1 }} />
-      ${onOpenFullScreen && html`<${IconButton} name="square-arrow-out-up-right" title="Open in full screen" aria-label="Open in full screen" onClick=${onOpenFullScreen} />`}
+      ${onOpenFullScreen && html`<${IconButton} name="maximize" title="Open in full screen" aria-label="Open in full screen" onClick=${onOpenFullScreen} />`}
       ${onOpenFullScreen && html`<div style=${{ width: 1, height: 18, background: "var(--hairline)", margin: "0 2px" }} />`}
       <${IconButton} name="x" title="Close" onClick=${onClose} size=${17} />
     </div>`;
@@ -75,7 +75,7 @@ export function HeaderContextual({ info, onClose, onOpenFullScreen }) {
         <${TypePill} type=${info.type} />
         ${info.kind === "ticket" && html`<${StatusChip} status=${info.status} />`}
         <div style=${{ flex: 1 }} />
-        ${onOpenFullScreen && html`<${IconButton} name="square-arrow-out-up-right" title="Open in full screen" aria-label="Open in full screen" onClick=${onOpenFullScreen} />`}
+        ${onOpenFullScreen && html`<${IconButton} name="maximize" title="Open in full screen" aria-label="Open in full screen" onClick=${onOpenFullScreen} />`}
         <${IconButton} name="x" title="Close" onClick=${onClose} size=${17} />
       </div>
       <div style=${{ display: "flex", alignItems: "center", gap: 10, marginTop: 11, paddingLeft: 1 }}>

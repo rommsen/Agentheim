@@ -34,8 +34,15 @@ test('neither header renders a "Copy path" button anymore', () => {
 test('the remaining action reads "Open in full screen", not "Open in editor"', () => {
   assert.doesNotMatch(drawerSrc, /Open in editor/, 'the old "Open in editor" label must be gone');
   assert.match(drawerSrc, /Open in full screen/, 'the action must be relabelled "Open in full screen"');
-  // It must be the square-arrow-out-up-right glyph (placement/look unchanged).
-  assert.match(drawerSrc, /name="square-arrow-out-up-right"/, 'the open action keeps its glyph');
+  // It must wear the maximize/fullscreen glyph (ds-013), not the external-link
+  // square-arrow-out-up-right — "open elsewhere" is the wrong mental model.
+  assert.match(drawerSrc, /name="maximize"/, 'the open action uses the maximize glyph');
+  assert.doesNotMatch(drawerSrc, /name="square-arrow-out-up-right"/, 'the external-link glyph must no longer dress the open action');
+});
+
+test('the maximize glyph resolves in the icon set (no empty inner)', () => {
+  const iconsSrc = readFileSync(join(APP, 'icons.js'), 'utf8');
+  assert.match(iconsSrc, /"maximize":\s*'<path/, 'icons.js LUCIDE map must define a non-empty "maximize" glyph');
 });
 
 test('the "Open in full screen" button is wired to an onOpenFullScreen callback', () => {
@@ -55,12 +62,12 @@ test('onOpenFullScreen is threaded through Drawer to both headers', () => {
 });
 
 test('the open button is conditional on onOpenFullScreen — absent callback renders nothing (both headers)', () => {
-  // Mirrors the cornerAction absent-slot contract: the square-arrow IconButton
+  // Mirrors the cornerAction absent-slot contract: the maximize IconButton
   // must only render when onOpenFullScreen is supplied. Each header carries one
   // guarded render line.
   const openLines = drawerSrc
     .split('\n')
-    .filter((line) => /name="square-arrow-out-up-right"/.test(line));
+    .filter((line) => /name="maximize"/.test(line));
   assert.equal(openLines.length, 2, 'exactly two open-action render lines expected (one per header)');
   for (const line of openLines) {
     assert.match(line, /onOpenFullScreen\s*&&/, 'the open action must be guarded by onOpenFullScreen &&');

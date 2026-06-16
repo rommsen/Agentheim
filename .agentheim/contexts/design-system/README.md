@@ -226,14 +226,17 @@ The slide-over `Drawer` header (`app/drawer.js`, both `HeaderMinimal` and
 - **Copy button removed.** The `IconButton name="copy" title="Copy path"` is gone
   from both headers — no replacement. (The `copy` glyph stays in `icons.js`; it is
   still used by the canvas copy-command button.)
-- **Open-in-editor → optional Open-in-full-screen action.** The
-  `square-arrow-out-up-right` button is relabelled **"Open in full screen"** (title
-  + `aria-label`) and wired to an **optional `onOpenFullScreen` callback** the
-  consumer supplies — a single bare `onOpenFullScreen()` prop on `Drawer`, threaded
-  to BOTH headers. **Absent callback → the button is not rendered** (the ds-006
-  `cornerAction` absent-slot precedent: the styleguide owns look/placement, the
-  consumer owns behavior). In `HeaderMinimal` the vertical hairline divider before
-  Close is guarded by the same callback, so it never dangles when the action is absent.
+- **Open-in-editor → optional Open-in-full-screen action.** The action is labelled
+  **"Open in full screen"** (title + `aria-label`) and wears the **`maximize` glyph**
+  (four outward corners — the fullscreen/expand cue; ds-013 swapped it off the
+  external-link `square-arrow-out-up-right`, which read as "navigate away" — the wrong
+  mental model for an action that maximizes the task into the main pane). It is wired
+  to an **optional `onOpenFullScreen` callback** the consumer supplies — a single bare
+  `onOpenFullScreen()` prop on `Drawer`, threaded to BOTH headers. **Absent callback →
+  the button is not rendered** (the ds-006 `cornerAction` absent-slot precedent: the
+  styleguide owns look/placement, the consumer owns behavior). In `HeaderMinimal` the
+  vertical hairline divider before Close is guarded by the same callback, so it never
+  dangles when the action is absent.
 
 The Drawer's existing behavior (open/close animation, Esc + scrim-click close,
 markdown body) is unchanged. The canvas (`styleguide/index.html` section 07)
