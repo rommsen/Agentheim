@@ -3,12 +3,18 @@
 // The main-column topbar had accumulated four controls — Stop dashboard, theme,
 // skip-permissions, and the Work launch. aw-049 collapses the first three utility
 // controls behind a single SETTINGS GEAR (the existing `settings-2` glyph) sitting
-// immediately LEFT of the standing Work button. Clicking the gear opens a board-local,
-// token-matched dropdown (path 2 — no styleguide Menu/Popover primitive exists, so this
-// is composed from tokens UNFORKED, the sort-<select> / group-by precedent, ADR-0003).
+// immediately LEFT of the standing Work button. Clicking the gear opens a dropdown.
+//
+// ds-015 RETIRED the original board-local dropdown into the shared styleguide
+// Menu/Popover primitive (consumed unforked across the BC boundary, ADR-0003). The
+// board is now a pure CONSUMER: it owns the gear TRIGGER look and composes the menu
+// items; the floating panel, its --shadow-md elevation, dismissal on Esc /
+// outside-click, the root-ref inside-click scoping, and the reduced-motion-aware
+// reveal all live in the primitive (locked by the styleguide menu.test.mjs). The four
+// aw-049 decisions below are preserved through the retirement.
 //
 // The four resolved decisions (2026-06-16):
-//   1. board-local dropdown (no styleguide source edit; ds-015 is the later shared primitive)
+//   1. dropdown affordance (originally board-local; ds-015 promoted it to the shared primitive)
 //   2. reuse the existing `settings-2` glyph (no new cog glyph)
 //   3. the CLOSED gear carries NO armed cue — the --obligation danger hue lives ONLY on
 //      the skip-permissions toggle INSIDE the open menu (amended ADR-0019)
@@ -135,33 +141,40 @@ test('the gear is keyboard-operable: focusable, with the focusable class and a c
   assert.match(trigger[0], /aria-haspopup=/, 'the gear must declare it pops up a menu (aria-haspopup)');
 });
 
-test('the menu dismisses on Esc and on outside click; toggles keep it open (decision 4)', () => {
+test('the menu dismisses on Esc and on outside click; toggles keep it open (decision 4) — now via the shared Menu primitive (ds-015)', () => {
+  // ds-015 RETIRED the board-local popover machinery into the shared styleguide
+  // Menu/Popover primitive (consumed unforked, ADR-0003). The board no longer wires
+  // its own Esc / outside-click listeners — it delegates to the primitive, which owns
+  // dismissal (locked by the styleguide menu.test.mjs: isDismissKey / outside-click /
+  // root-ref scoping). Decision 4 is preserved: the board drives the Menu CONTROLLED
+  // (open + onOpenChange) so an in-panel toggle keeps it open while Stop closes it.
   const menu = fn('SettingsMenu');
-  // Esc handling.
-  assert.match(menu, /Escape/, 'the menu must close on Escape');
-  // Outside-click dismiss is wired via a document listener (mousedown/pointerdown).
-  assert.match(menu, /mousedown|pointerdown/, 'the menu must dismiss on an outside click (document listener)');
-  // A ref scopes "inside" so clicks within the menu do not dismiss it (needed so toggles keep it open).
-  assert.match(menu, /useRef/, 'the menu must use a ref to scope inside-vs-outside clicks');
-  // Selecting Stop dashboard closes the menu; the toggles do NOT (they only thread their existing handlers).
-  // Guard that the Stop control's onResult path closes the menu while the toggles keep their plain handlers.
+  assert.match(menu, /<\$\{Menu\}/, 'the board consumes the shared Menu primitive (popover machinery delegated, not board-local)');
+  assert.match(menu, /onOpenChange=/, 'the board threads onOpenChange — Esc / outside-click dismissal flow back from the primitive');
+  // The board no longer re-implements the dismissal listeners it delegated.
+  assert.doesNotMatch(menu, /addEventListener\("mousedown"/, 'the board must NOT wire its own outside-click listener (the primitive owns it)');
+  assert.doesNotMatch(menu, /"Escape"/, 'the board must NOT match the Escape key itself (the primitive owns Esc dismissal)');
+  // Selecting Stop dashboard closes the menu (the board drives it controlled).
   const stop = menu.match(/label="Stop dashboard"[\s\S]{0,400}?\/>/);
   assert.ok(stop, 'the Stop control must be present');
 });
 
-test('any open/close transition honors prefers-reduced-motion (token-matched, not hardcoded)', () => {
+test('any open/close transition honors prefers-reduced-motion — now owned by the shared Menu primitive (ds-015)', () => {
+  // The reduced-motion-aware reveal moved into the shared Menu primitive (ds-015);
+  // the styleguide menu.test.mjs / menu.js locks it. The board no longer holds its own
+  // reveal/transition machinery.
   const menu = fn('SettingsMenu');
-  // Reduced-motion guard for the dropdown reveal.
-  assert.match(menu, /prefers-reduced-motion/, 'the open/close transition must honor prefers-reduced-motion');
+  assert.doesNotMatch(menu, /prefers-reduced-motion/, 'the board must NOT re-implement the reduced-motion reveal — the primitive owns it');
+  assert.doesNotMatch(menu, /requestAnimationFrame/, 'the board must NOT hold its own reveal-transition machinery');
 });
 
-test('the dropdown is token-matched (styleguide tokens, no hardcoded colors) — board-local, no styleguide edit', () => {
+test('the gear trigger is token-matched (styleguide tokens, no hardcoded colors)', () => {
+  // The board now owns only the GEAR TRIGGER look (the floating-panel chrome moved into
+  // the shared primitive). The trigger is still token-matched, no raw hex.
   const menu = fn('SettingsMenu');
-  // Surfaces / hairlines / shadow come from tokens.
-  assert.match(menu, /var\(--surface-/, 'the dropdown surface must use a styleguide surface token');
-  assert.match(menu, /var\(--hairline\)/, 'the dropdown border must use the styleguide hairline token');
-  // No raw hex colors in the menu chrome.
-  assert.doesNotMatch(menu, /#[0-9a-fA-F]{3,6}\b/, 'the dropdown must not hardcode hex colors (token-matched)');
+  assert.match(menu, /var\(--surface-/, 'the gear trigger must use a styleguide surface token');
+  assert.match(menu, /var\(--hairline/, 'the gear trigger border must use the styleguide hairline token');
+  assert.doesNotMatch(menu, /#[0-9a-fA-F]{3,6}\b/, 'the trigger must not hardcode hex colors (token-matched)');
 });
 
 test('no styleguide source file is edited — the gear reuses the unforked settings-2 glyph (decision 1/2, ADR-0003)', () => {

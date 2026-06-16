@@ -40,6 +40,7 @@ import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/ico
 import { Glyph, ThemeCtx } from "../../.agentheim/contexts/design-system/styleguide/app/foundations.js";
 import { RailItem, TreeGroup } from "../../.agentheim/contexts/design-system/styleguide/app/library.js";
 import { Collapsible } from "../../.agentheim/contexts/design-system/styleguide/app/collapsible.js";
+import { Menu, MenuItem, MenuDivider } from "../../.agentheim/contexts/design-system/styleguide/app/menu.js";
 import { ThemeToggle } from "../../.agentheim/contexts/design-system/styleguide/app/live.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
@@ -938,77 +939,45 @@ function StoppedOverlay() {
     </div>`;
 }
 
-// The topbar SETTINGS MENU (agentic-workflow-049). A board-local, token-matched
-// dropdown that collapses the three utility controls — Stop dashboard (aw-028), the
-// theme toggle (aw-017) and the skip-permissions armed toggle (aw-021) — behind a
-// single settings GEAR (the existing `settings-2` glyph, reused unforked from the
-// styleguide icon set; no new cog glyph, no styleguide edit — decision 2). Only the
+// The topbar SETTINGS MENU (agentic-workflow-049, retired into the shared
+// Menu/Popover primitive by design-system-015). Collapses the three utility
+// controls — Stop dashboard (aw-028), the theme toggle (aw-017) and the
+// skip-permissions armed toggle (aw-021) — behind a single settings GEAR. Only the
 // Work launch stays a standing topbar button; the gear sits immediately to its left.
 //
-// PRIMITIVE: there is NO styleguide Menu / Popover primitive (the lone "Popover"
-// reference is an --shadow-md elevation comment), so this is built board-local from
-// TOKENS, consumed unforked (ADR-0003) — the established board-control precedent (the
-// sort <select>, the group-by toggle). A design-system follow-up (ds-015) will promote
-// a shared Menu/Popover later; this task ships first and is retired into it (aw-014 →
-// ds-005 sequencing). This task does NOT depend on ds-015.
+// PRIMITIVE (ds-015): the board no longer carries its own popover machinery. The
+// anchored floating panel at --shadow-md, dismissal on Esc / outside-click, the
+// reduced-motion-aware reveal, and the open/close truth all live in the shared
+// styleguide `Menu` (consumed unforked across the BC boundary, ADR-0003). The board
+// is now a pure CONSUMER: it owns the trigger's look (the neutral gear) and composes
+// the menu items — the "styleguide owns the look/placement, consumer owns the
+// behavior" seam (ds-005 Collapsible, ds-006 cornerAction). The aw-014 → ds-005
+// sequencing, repeated: board-local control first, promoted to a shared primitive
+// once a second consumer is worth unifying.
 //
-// The three relocated controls keep their behavior + persistence AS-IS (relocation,
-// not rewrite): ThemeToggle still feeds theme-state.js, SkipPermissionsToggle still
-// wears its --obligation armed/danger treatment + skip-permissions-state.js
-// persistence, and Stop dashboard still runs STOP_DASHBOARD_COMMAND via launchOrCopy
-// with its post-stop StoppedOverlay onResult.
+// The three relocated controls keep their behavior + persistence AS-IS: ThemeToggle
+// still feeds theme-state.js, SkipPermissionsToggle still wears its --obligation
+// armed/danger treatment + skip-permissions-state.js persistence, and Stop dashboard
+// still runs STOP_DASHBOARD_COMMAND via launchOrCopy with its post-stop
+// StoppedOverlay onResult.
 //
-// DECISION 3 — the CLOSED gear carries NO armed cue: it stays neutral even when
-// skip-permissions is armed. The --obligation danger hue lives ONLY on the
-// skip-permissions toggle INSIDE the open menu (amended ADR-0019: the toggle is the
-// single control wearing the full danger hue; the per-launch icon cue on the launch
-// buttons is unaffected by this task).
+// DECISION 3 (preserved) — the CLOSED gear carries NO armed cue: it stays neutral
+// even when skip-permissions is armed. The --obligation danger hue lives ONLY on the
+// skip-permissions toggle INSIDE the open menu (amended ADR-0019).
 //
-// DECISION 4 — the theme + skip-permissions toggles KEEP the menu open (so both can be
-// adjusted in one visit). The menu closes on: selecting Stop dashboard (which then
-// shows the stopped overlay), Esc, and an outside click. Inside clicks are scoped by a
-// container ref so flipping a toggle never dismisses the popover.
+// DECISION 4 (preserved) — the theme + skip-permissions toggles KEEP the menu open
+// (an in-panel click is scoped out by the primitive's root ref). The menu closes on:
+// selecting Stop dashboard (the board drives the Menu CONTROLLED so it can close it
+// programmatically after a successful stop), Esc, and an outside click.
 //
-// Keyboard: the gear is focusable (the styleguide `focusable` ring), Enter/Space opens
-// it (native <button> activation), the menu items are themselves focusable controls,
-// and Esc closes it. The reveal honors prefers-reduced-motion.
+// Keyboard: the gear is focusable (Enter/Space opens via native <button> activation),
+// the menu items are themselves focusable controls, and Esc closes — all delivered by
+// the shared primitive, which also honors prefers-reduced-motion on its reveal.
 function SettingsMenu({ theme, setTheme, skipPermissions = false, setSkipPermissions, onStopped }) {
+  // The board drives the Menu CONTROLLED (it owns the open truth) so it can close the
+  // popover programmatically when Stop dashboard fires on the bridge. Esc / outside-
+  // click dismissal still come from the primitive via onOpenChange.
   const [open, setOpen] = useState(false);
-  // A one-frame-delayed reveal flag drives a board-local inline open transition
-  // (opacity + a small translate). Under prefers-reduced-motion the popover is shown
-  // hard (no transition) — the reveal flag is set synchronously so there is no fade.
-  const [shown, setShown] = useState(false);
-  const rootRef = useRef(null);
-
-  // The reveal transition is suppressed under prefers-reduced-motion (a hard show/hide).
-  const reduce = typeof window !== "undefined" && typeof window.matchMedia === "function"
-    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  // Esc closes; an outside mousedown closes. A click WITHIN the menu (a toggle flip)
-  // is scoped out by the container ref so the popover stays open (decision 4). The
-  // listeners are only attached while open, and torn down on close/unmount.
-  useEffect(() => {
-    if (!open) { setShown(false); return undefined; }
-    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
-    const onDocDown = (e) => {
-      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onDocDown);
-    // Reveal: under reduced motion show immediately (no fade); otherwise flip the
-    // reveal flag on the next frame so the inline opacity/translate transition runs.
-    let raf = 0;
-    if (reduce || typeof requestAnimationFrame !== "function") {
-      setShown(true);
-    } else {
-      raf = requestAnimationFrame(() => setShown(true));
-    }
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      document.removeEventListener("keydown", onKey);
-      document.removeEventListener("mousedown", onDocDown);
-    };
-  }, [open, reduce]);
 
   // Selecting Stop dashboard closes the menu, THEN flips the shell-stopped overlay on a
   // bridge dispatch (a clipboard fallback stopped nothing → no overlay). Closing first
@@ -1019,69 +988,51 @@ function SettingsMenu({ theme, setTheme, skipPermissions = false, setSkipPermiss
   }, [onStopped]);
 
   return html`
-    <div ref=${rootRef} style=${{ position: "relative", display: "inline-flex" }}>
-      <!-- The settings GEAR — the reused settings-2 glyph. Neutral at all times: the
-           closed gear carries NO armed cue (decision 3). -->
-      <button
-        type="button"
-        className="focusable"
-        aria-label="Settings"
-        aria-haspopup="menu"
-        aria-expanded=${open}
-        title="Settings — theme, skip-permissions, stop dashboard"
-        onClick=${() => setOpen((v) => !v)}
-        style=${{
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          color: open ? "var(--fg-1)" : "var(--fg-2)",
-          background: open ? "var(--surface-2)" : "transparent",
-          border: `1px solid ${open ? "var(--hairline-strong)" : "var(--hairline)"}`,
-          borderRadius: "var(--radius-sm)", padding: "5px 7px", cursor: "pointer",
-          transition: "color var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
-        }}>
-        <${Icon} name="settings-2" size=${14.5} color=${open ? "var(--fg-1)" : "var(--fg-2)"} />
-      </button>
-      ${open ? html`
-        <div
-          role="menu"
-          aria-label="Dashboard settings"
+    <${Menu}
+      ariaLabel="Dashboard settings"
+      open=${open}
+      onOpenChange=${setOpen}
+      trigger=${({ open: isOpen, toggle }) => html`
+        <!-- The settings GEAR — the reused settings-2 glyph. Neutral at all times: the
+             closed gear carries NO armed cue (decision 3). -->
+        <button
+          type="button"
+          className="focusable"
+          aria-label="Settings"
+          aria-haspopup="menu"
+          aria-expanded=${isOpen}
+          title="Settings — theme, skip-permissions, stop dashboard"
+          onClick=${toggle}
           style=${{
-            position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 20,
-            minWidth: 188, display: "flex", flexDirection: "column", gap: 8,
-            padding: 10, boxSizing: "border-box",
-            background: "var(--surface-1)", border: "1px solid var(--hairline)",
-            borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-md)",
-            transformOrigin: "top right",
-            // Board-local reveal (no styleguide keyframe — the shared CSS is copied
-            // verbatim from the styleguide source, ADR-0003, never edited here): an
-            // inline opacity + small translate driven by `shown`, flipped one frame
-            // after open. Under prefers-reduced-motion `shown` is set synchronously and
-            // the transition is dropped, so the popover appears with no motion.
-            opacity: shown ? 1 : 0,
-            transform: shown ? "translateY(0)" : "translateY(-4px)",
-            transition: reduce ? "none"
-              : "opacity var(--duration-fast) var(--ease-base), transform var(--duration-fast) var(--ease-base)",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            color: isOpen ? "var(--fg-1)" : "var(--fg-2)",
+            background: isOpen ? "var(--surface-2)" : "transparent",
+            border: `1px solid ${isOpen ? "var(--hairline-strong)" : "var(--hairline)"}`,
+            borderRadius: "var(--radius-sm)", padding: "5px 7px", cursor: "pointer",
+            transition: "color var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
           }}>
-          <!-- Theme (light/dark) — keeps the menu open (decision 4). -->
-          <div role="menuitem" style=${{ display: "flex" }}>
-            <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
-              { value: "dark", label: "Dark", icon: "moon" },
-              { value: "light", label: "Light", icon: "sun" },
-            ]} />
-          </div>
-          <!-- Skip-permissions armed toggle — keeps its --obligation armed/danger hue
-               INSIDE the menu (decision 3); keeps the menu open (decision 4). -->
-          <div role="menuitem" style=${{ display: "flex" }}>
-            <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
-          </div>
-          <div style=${{ height: 1, background: "var(--hairline)", margin: "1px 0" }} />
-          <!-- Stop dashboard — selecting it CLOSES the menu, then shows the stopped
-               overlay on a bridge dispatch. -->
-          <div role="menuitem" style=${{ display: "flex" }}>
-            <${LaunchButton} label="Stop dashboard" command=${STOP_DASHBOARD_COMMAND}
-              icon="x" emphasis="quiet" onResult=${onStopResult} />
-          </div>
-        </div>` : null}
-    </div>`;
+          <${Icon} name="settings-2" size=${14.5} color=${isOpen ? "var(--fg-1)" : "var(--fg-2)"} />
+        </button>`}>
+      <!-- Theme (light/dark) — keeps the menu open (decision 4). -->
+      <${MenuItem}>
+        <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
+          { value: "dark", label: "Dark", icon: "moon" },
+          { value: "light", label: "Light", icon: "sun" },
+        ]} />
+      </${MenuItem}>
+      <!-- Skip-permissions armed toggle — keeps its --obligation armed/danger hue
+           INSIDE the menu (decision 3); keeps the menu open (decision 4). -->
+      <${MenuItem}>
+        <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
+      </${MenuItem}>
+      <${MenuDivider} />
+      <!-- Stop dashboard — selecting it CLOSES the menu (controlled), then shows the
+           stopped overlay on a bridge dispatch. -->
+      <${MenuItem}>
+        <${LaunchButton} label="Stop dashboard" command=${STOP_DASHBOARD_COMMAND}
+          icon="x" emphasis="quiet" onResult=${onStopResult} />
+      </${MenuItem}>
+    </${Menu}>`;
 }
 
 // The main-column TOPBAR (agentic-workflow-026) — the styleguide §05 board topbar.

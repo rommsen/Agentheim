@@ -284,6 +284,62 @@ job, not this task's — mirrors the `design-system-009` → `agentic-workflow-0
 > Re-review against the canvas **before** the agentic-workflow wiring (`agentic-workflow-047`)
 > ships the title data and rebuilds `dist/`.
 
+### Menu / Popover — the shared dropdown primitive (design-system-015)
+
+The trigger-plus-dismissible-floating-panel affordance is now a single shared
+primitive, `Menu` (`app/menu.js`, with `MenuItem` / `MenuDivider` sugar), instead
+of a board-local dropdown. It was **factored out of the dashboard topbar's settings
+gear** (`agentic-workflow-049`, which shipped the affordance board-local first) and
+the topbar now consumes it **unforked** (ADR-0003) — the `agentic-workflow-014` →
+`design-system-005` sequencing repeated (board-local control promoted once worth
+unifying). Same seam as `Collapsible` (ds-005) and `cornerAction` (ds-006): the
+styleguide owns the look/placement, the consumer owns the behavior.
+
+- **Owns the open/close truth + the panel it reveals.** The `{open && panel}` reveal
+  logic lives in ONE place. The floating panel is **anchored** under the trigger,
+  aligned to the `align` edge (default `right`), elevated at **`--shadow-md`** (the
+  "Popovers" elevation role named in the token set), on `--surface-1` with a hairline
+  and `--radius-md`. The reveal is a one-frame opacity + small translate, **stripped
+  under `prefers-reduced-motion`** (a hard show) — the standing ambient-motion
+  contract.
+- **Body-agnostic item area.** Consumers compose arbitrary menu items via `children`
+  (the board composes a theme toggle, a skip-permissions toggle, a divider, and a
+  Stop launch). `MenuItem` / `MenuDivider` are thin token-styled wrappers; consumers
+  may also drop raw elements.
+- **Trigger is a render-prop.** The consumer owns the trigger's look (the board passes
+  a neutral gear that stays neutral when closed) and receives `{ open, toggle }`; the
+  primitive owns the panel + dismissal. Keyboard-operable: a focusable `<button>`
+  trigger (Enter/Space opens natively), focusable items, **Esc closes**.
+- **Dismissal: Esc + outside-click, root-ref scoped.** An in-panel click (flipping a
+  toggle) is scoped out by the primitive's root ref so the popover survives in-menu
+  interaction. The decisions are pure (`app/menu-state.js`: `isControlled`,
+  `isDismissKey`, `shouldDismissOnOutsideClick`, `isOpenKey`), testable under
+  `node --test` without the canvas import map (mirroring `collapsible-state`).
+- **Controlled OR uncontrolled.** Controlled when `open` + `onOpenChange` are
+  supplied — the board drives it controlled so it can close the menu programmatically
+  after a successful Stop; the primitive writes no internal state, only announces.
+  Uncontrolled when `open` is omitted and `defaultOpen` is given — the primitive holds
+  its own `useState`.
+
+The board's `SettingsMenu` (`dashboard/app/board.js`) is now a **pure consumer**: its
+former board-local popover machinery (the outside-click / Esc document listeners, the
+root ref, the reduced-motion reveal, the panel chrome) is **deleted**, re-expressed via
+the shared `Menu`. The aw-049 decisions are preserved — the closed gear stays neutral,
+the `--obligation` armed hue stays on the skip-permissions toggle inside the open menu,
+the toggles keep the menu open while Stop / Esc / outside-click close it. The canvas
+documents the pattern in BOTH modes (section 10, `MenuSpecimen`).
+
+> **Gate re-review reopened by the shared-Menu extraction (`design-system-015`).** The
+> canvas gained a new documented **Menu / popover** pattern (section 10, a gear trigger
+> + anchored `--shadow-md` panel in both controlled and uncontrolled modes) — a visible
+> styleguide change that reopens the design-system gate per the `design-system-005` /
+> `007` / `009` precedent. Re-review with the builder against the canvas
+> (`styleguide/index.html` → section 10).
+
+> Live-board note: same as Motion — the served dashboard `dist/` is a derived artifact
+> (ADR-0003) and was **rebuilt** (`node build.mjs`) to fold the shared-Menu retirement
+> into `dashboard/dist/app.js`.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.
@@ -295,4 +351,5 @@ job, not this task's — mirrors the `design-system-009` → `agentic-workflow-0
 
 - Styleguide artifact: `styleguide/index.html` (+ `styleguide/styles/`, `styleguide/app/*.js` ES modules; entry `app/app.js`)
 - Shared `Collapsible` primitive: `styleguide/app/collapsible.js` (+ React-free `collapsible-state.js`), consumed by `TreeGroup` and the dashboard board (design-system-005)
+- Shared `Menu` / `Popover` primitive: `styleguide/app/menu.js` (+ React-free `menu-state.js`), consumed by the dashboard topbar settings gear (design-system-015)
 - BC index: `INDEX.md`

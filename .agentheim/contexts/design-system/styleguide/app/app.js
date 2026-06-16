@@ -16,6 +16,7 @@ import { ColumnHeader, TicketCard } from "./kanban.js";
 import { HeaderMinimal, HeaderContextual, describeItem } from "./drawer.js";
 import { TreeGroup } from "./library.js";
 import { Collapsible } from "./collapsible.js";
+import { Menu, MenuItem, MenuDivider } from "./menu.js";
 import { Segmented, ThemeToggle, LiveApp } from "./live.js";
 import {
   ThemeCtx, Glyph, GuideSection, SubHead, DocCard, ColorSection,
@@ -323,10 +324,108 @@ function NavSection() {
     </${GuideSection}>`;
 }
 
-// ---- 10: empty states ----
+// ---- 10: menu / popover ----
+// Documents the shared Menu / Popover primitive (design-system-015) — the
+// affordance the dashboard topbar's settings gear runs on (agentic-workflow-049,
+// retired into this primitive). Shown in context: a neutral gear trigger that
+// stays quiet when closed, and an anchored floating panel at --shadow-md holding
+// arbitrary menu items (a theme toggle, a divider, an action row). The primitive
+// owns the open/close truth, the panel placement + elevation, and dismissal on
+// Esc / outside-click; the consumer composes the items (body-agnostic, the
+// ds-005 / ds-006 seam). Documented in BOTH ownership modes:
+//   • UNCONTROLLED — `defaultOpen` omitted; the primitive holds its own open
+//     state (the board gear, which owns no menu state of its own).
+//   • CONTROLLED — `open` + `onOpenChange` lifted into this specimen's React
+//     state; the parent owns the truth and the primitive announces every change.
+function DemoGearTrigger({ open, toggle }) {
+  return html`
+    <button
+      type="button"
+      className="focusable"
+      aria-label="Settings"
+      aria-haspopup="menu"
+      aria-expanded=${open}
+      onClick=${toggle}
+      style=${{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        color: open ? "var(--fg-1)" : "var(--fg-2)",
+        background: open ? "var(--surface-2)" : "transparent",
+        border: `1px solid ${open ? "var(--hairline-strong)" : "var(--hairline)"}`,
+        borderRadius: "var(--radius-sm)", padding: "5px 7px", cursor: "pointer",
+        transition: "color var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
+      }}>
+      <${Icon} name="settings-2" size=${14.5} color=${open ? "var(--fg-1)" : "var(--fg-2)"} />
+    </button>`;
+}
+// A quiet token-styled control standing in for an arbitrary menu item — the
+// primitive is body-agnostic about its item content.
+function DemoMenuButton({ icon, label, danger }) {
+  return html`
+    <button type="button" className="focusable"
+      onClick=${() => {}}
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 8, width: "100%",
+        padding: "6px 8px", border: "1px solid var(--hairline)", borderRadius: "var(--radius-sm)",
+        background: "transparent", cursor: "pointer", textAlign: "left",
+        fontFamily: "var(--font-ui)", fontSize: 12.5,
+        color: danger ? "var(--obligation, var(--fg-1))" : "var(--fg-2)",
+      }}>
+      <${Icon} name=${icon} size=${13} color=${danger ? "var(--obligation, var(--fg-2))" : "var(--fg-3)"} />${label}
+    </button>`;
+}
+function MenuSpecimen() {
+  const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState("dark");
+  return html`
+    <${DocCard} style=${{ flex: 1, minWidth: 320 }}>
+      <${SubHead}>Menu / popover — controlled & uncontrolled</${SubHead}>
+      <p style=${{ margin: "0 0 18px", fontFamily: "var(--font-ui)", fontSize: 12.5, lineHeight: 1.6, color: "var(--fg-3)" }}>
+        A trigger toggles an anchored, dismissible floating panel of arbitrary items. It owns the open/close truth, the panel placement + <code>--shadow-md</code> elevation, and dismissal on Esc / outside-click; the consumer composes the items. Keyboard-operable: the trigger is focusable (Enter/Space opens), items are focusable, Esc closes.
+      </p>
+      <div style=${{ display: "flex", gap: 40, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <div>
+          <${StateLabel}>Uncontrolled — owns its own open state</${StateLabel}>
+          <${Menu} ariaLabel="Demo settings"
+            trigger=${({ open: o, toggle }) => html`<${DemoGearTrigger} open=${o} toggle=${toggle} />`}>
+            <${MenuItem}>
+              <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
+                { value: "dark", label: "Dark", icon: "moon" },
+                { value: "light", label: "Light", icon: "sun" },
+              ]} />
+            </${MenuItem}>
+            <${MenuDivider} />
+            <${MenuItem}><${DemoMenuButton} icon="x" label="Stop" /></${MenuItem}>
+          </${Menu}>
+        </div>
+        <div>
+          <${StateLabel}>Controlled — parent owns open + onOpenChange</${StateLabel}>
+          <${Menu} align="left" ariaLabel="Demo overflow"
+            open=${open} onOpenChange=${setOpen}
+            trigger=${({ open: o, toggle }) => html`<${DemoGearTrigger} open=${o} toggle=${toggle} />`}>
+            <${MenuItem}><${DemoMenuButton} icon="copy" label="Copy command" /></${MenuItem}>
+            <${MenuItem}><${DemoMenuButton} icon="arrow-right" label="Open" /></${MenuItem}>
+          </${Menu}>
+          <div style=${{ marginTop: 10, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-4)" }}>
+            open = ${String(open)} (held in this specimen)
+          </div>
+        </div>
+      </div>
+    </${DocCard}>`;
+}
+function MenuSection() {
+  return html`
+    <${GuideSection} index="10" title="Menu &amp; popover"
+      desc="A trigger that toggles an anchored, dismissible floating panel of menu items — the dashboard topbar's settings gear runs on it. The primitive owns the open/close truth, the panel's placement and --shadow-md elevation, and dismissal on Esc / outside-click; the item area is body-agnostic, so each consumer composes its own controls (the ds-005 / ds-006 seam).">
+      <div style=${{ display: "flex", gap: 28, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <${MenuSpecimen} />
+      </div>
+    </${GuideSection}>`;
+}
+
+// ---- 11: empty states ----
 function EmptySection() {
   return html`
-    <${GuideSection} index="10" title="Empty states"
+    <${GuideSection} index="11" title="Empty states"
       desc="State the fact, then the action — never alarmist, never decorative. An empty column invites a ticket; an empty drawer waits quietly for a selection.">
       <div style=${{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
         <div>
@@ -379,6 +478,7 @@ export function App() {
         <${DrawerSection} />
         <${MarkdownSection} />
         <${NavSection} />
+        <${MenuSection} />
         <${EmptySection} />
         <${Footer} />
       </main>
