@@ -609,8 +609,13 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{l=!1}},[e,r]),k`
     <div style=${{display:"flex",alignItems:"center",gap:12,padding:"0 18px",minHeight:52,flexShrink:0,borderBottom:"1px solid var(--hairline)",background:"var(--surface-0)"}}>
       <${Gy} onOpen=${i} />
       <!-- The settings gear (collapsing Stop / theme / skip-perms) then the standing
-           Work launch, left → right: [ ⚙ ][ Work ] (aw-049). -->
-      <div style=${{display:"flex",alignItems:"center",gap:9}}>
+           Work launch, left to right: [ gear ][ Work ] (aw-049). The marginLeft:auto
+           pushes this group FLUSH against the topbar's right edge (aw-053): the
+           bounded search field stays left-anchored and all unconsumed free space
+           collects here, ahead of the group — so the bar reads
+           [ search field ] … [ gear ] [ Work ] across any width, gracefully
+           shrinking the search side first on narrow viewports. -->
+      <div style=${{display:"flex",alignItems:"center",gap:9,marginLeft:"auto"}}>
         <${Qy}
           theme=${e} setTheme=${t}
           skipPermissions=${n} setSkipPermissions=${r}
