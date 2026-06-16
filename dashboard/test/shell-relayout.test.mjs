@@ -91,17 +91,21 @@ test('the rail no longer renders the theme or skip-permissions toggle (aw-029)',
   assert.doesNotMatch(rail, /<\$\{SkipPermissionsToggle\}/, 'the toggles moved to the topbar — the rail must not host the skip-permissions toggle');
 });
 
-test('the topbar hosts the theme + skip-permissions toggles, in that order, LEFT of the Work launch (aw-029)', () => {
+test('the theme + skip-permissions toggles moved into the settings menu, left of the standing Work launch (aw-029 → aw-049)', () => {
+  // aw-049 collapsed the theme + skip-permissions toggles (and Stop) into the gear's
+  // SettingsMenu; they no longer render inline in the topbar. The topbar now hosts the
+  // gear (SettingsMenu) immediately LEFT of the standing Work launch.
   const top = fn('BoardTopbar');
-  assert.match(top, /<\$\{ThemeToggle\}/, 'the topbar must host the theme toggle');
-  assert.match(top, /<\$\{SkipPermissionsToggle\}/, 'the topbar must host the skip-permissions toggle');
-  // Left-to-right order in the top-right cluster: theme, skip-permissions, Work.
-  const themeAt = top.indexOf('${ThemeToggle}');
-  const skipAt = top.indexOf('${SkipPermissionsToggle}');
+  assert.doesNotMatch(top, /<\$\{ThemeToggle\}/, 'the theme toggle moved into the settings menu — not inline in the topbar');
+  assert.doesNotMatch(top, /<\$\{SkipPermissionsToggle\}/, 'the skip-permissions toggle moved into the settings menu — not inline in the topbar');
+  const menu = fn('SettingsMenu');
+  assert.match(menu, /<\$\{ThemeToggle\}/, 'the settings menu must host the theme toggle');
+  assert.match(menu, /<\$\{SkipPermissionsToggle\}/, 'the settings menu must host the skip-permissions toggle');
+  // The gear sits left of the Work launch in the topbar.
+  const menuAt = top.indexOf('${SettingsMenu}');
   const workAt = top.indexOf('label="Work"');
-  assert.ok(themeAt > -1 && skipAt > -1 && workAt > -1, 'all three controls must render in the topbar');
-  assert.ok(themeAt < skipAt, 'the theme toggle must render before the skip-permissions toggle');
-  assert.ok(skipAt < workAt, 'the skip-permissions toggle must render before (left of) the Work launch');
+  assert.ok(menuAt > -1 && workAt > -1, 'the gear and the Work launch must render in the topbar');
+  assert.ok(menuAt < workAt, 'the settings gear must render left of the Work launch');
 });
 
 test('a main-column topbar renders the theme-following Work launch and no Search box', () => {

@@ -938,6 +938,152 @@ function StoppedOverlay() {
     </div>`;
 }
 
+// The topbar SETTINGS MENU (agentic-workflow-049). A board-local, token-matched
+// dropdown that collapses the three utility controls — Stop dashboard (aw-028), the
+// theme toggle (aw-017) and the skip-permissions armed toggle (aw-021) — behind a
+// single settings GEAR (the existing `settings-2` glyph, reused unforked from the
+// styleguide icon set; no new cog glyph, no styleguide edit — decision 2). Only the
+// Work launch stays a standing topbar button; the gear sits immediately to its left.
+//
+// PRIMITIVE: there is NO styleguide Menu / Popover primitive (the lone "Popover"
+// reference is an --shadow-md elevation comment), so this is built board-local from
+// TOKENS, consumed unforked (ADR-0003) — the established board-control precedent (the
+// sort <select>, the group-by toggle). A design-system follow-up (ds-015) will promote
+// a shared Menu/Popover later; this task ships first and is retired into it (aw-014 →
+// ds-005 sequencing). This task does NOT depend on ds-015.
+//
+// The three relocated controls keep their behavior + persistence AS-IS (relocation,
+// not rewrite): ThemeToggle still feeds theme-state.js, SkipPermissionsToggle still
+// wears its --obligation armed/danger treatment + skip-permissions-state.js
+// persistence, and Stop dashboard still runs STOP_DASHBOARD_COMMAND via launchOrCopy
+// with its post-stop StoppedOverlay onResult.
+//
+// DECISION 3 — the CLOSED gear carries NO armed cue: it stays neutral even when
+// skip-permissions is armed. The --obligation danger hue lives ONLY on the
+// skip-permissions toggle INSIDE the open menu (amended ADR-0019: the toggle is the
+// single control wearing the full danger hue; the per-launch icon cue on the launch
+// buttons is unaffected by this task).
+//
+// DECISION 4 — the theme + skip-permissions toggles KEEP the menu open (so both can be
+// adjusted in one visit). The menu closes on: selecting Stop dashboard (which then
+// shows the stopped overlay), Esc, and an outside click. Inside clicks are scoped by a
+// container ref so flipping a toggle never dismisses the popover.
+//
+// Keyboard: the gear is focusable (the styleguide `focusable` ring), Enter/Space opens
+// it (native <button> activation), the menu items are themselves focusable controls,
+// and Esc closes it. The reveal honors prefers-reduced-motion.
+function SettingsMenu({ theme, setTheme, skipPermissions = false, setSkipPermissions, onStopped }) {
+  const [open, setOpen] = useState(false);
+  // A one-frame-delayed reveal flag drives a board-local inline open transition
+  // (opacity + a small translate). Under prefers-reduced-motion the popover is shown
+  // hard (no transition) — the reveal flag is set synchronously so there is no fade.
+  const [shown, setShown] = useState(false);
+  const rootRef = useRef(null);
+
+  // The reveal transition is suppressed under prefers-reduced-motion (a hard show/hide).
+  const reduce = typeof window !== "undefined" && typeof window.matchMedia === "function"
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Esc closes; an outside mousedown closes. A click WITHIN the menu (a toggle flip)
+  // is scoped out by the container ref so the popover stays open (decision 4). The
+  // listeners are only attached while open, and torn down on close/unmount.
+  useEffect(() => {
+    if (!open) { setShown(false); return undefined; }
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    const onDocDown = (e) => {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onDocDown);
+    // Reveal: under reduced motion show immediately (no fade); otherwise flip the
+    // reveal flag on the next frame so the inline opacity/translate transition runs.
+    let raf = 0;
+    if (reduce || typeof requestAnimationFrame !== "function") {
+      setShown(true);
+    } else {
+      raf = requestAnimationFrame(() => setShown(true));
+    }
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onDocDown);
+    };
+  }, [open, reduce]);
+
+  // Selecting Stop dashboard closes the menu, THEN flips the shell-stopped overlay on a
+  // bridge dispatch (a clipboard fallback stopped nothing → no overlay). Closing first
+  // keeps the popover from lingering over the overlay that replaces the board.
+  const onStopResult = useCallback((res) => {
+    setOpen(false);
+    if (res && res.via === "bridge" && typeof onStopped === "function") onStopped();
+  }, [onStopped]);
+
+  return html`
+    <div ref=${rootRef} style=${{ position: "relative", display: "inline-flex" }}>
+      <!-- The settings GEAR — the reused settings-2 glyph. Neutral at all times: the
+           closed gear carries NO armed cue (decision 3). -->
+      <button
+        type="button"
+        className="focusable"
+        aria-label="Settings"
+        aria-haspopup="menu"
+        aria-expanded=${open}
+        title="Settings — theme, skip-permissions, stop dashboard"
+        onClick=${() => setOpen((v) => !v)}
+        style=${{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          color: open ? "var(--fg-1)" : "var(--fg-2)",
+          background: open ? "var(--surface-2)" : "transparent",
+          border: `1px solid ${open ? "var(--hairline-strong)" : "var(--hairline)"}`,
+          borderRadius: "var(--radius-sm)", padding: "5px 7px", cursor: "pointer",
+          transition: "color var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
+        }}>
+        <${Icon} name="settings-2" size=${14.5} color=${open ? "var(--fg-1)" : "var(--fg-2)"} />
+      </button>
+      ${open ? html`
+        <div
+          role="menu"
+          aria-label="Dashboard settings"
+          style=${{
+            position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 20,
+            minWidth: 188, display: "flex", flexDirection: "column", gap: 8,
+            padding: 10, boxSizing: "border-box",
+            background: "var(--surface-1)", border: "1px solid var(--hairline)",
+            borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-md)",
+            transformOrigin: "top right",
+            // Board-local reveal (no styleguide keyframe — the shared CSS is copied
+            // verbatim from the styleguide source, ADR-0003, never edited here): an
+            // inline opacity + small translate driven by `shown`, flipped one frame
+            // after open. Under prefers-reduced-motion `shown` is set synchronously and
+            // the transition is dropped, so the popover appears with no motion.
+            opacity: shown ? 1 : 0,
+            transform: shown ? "translateY(0)" : "translateY(-4px)",
+            transition: reduce ? "none"
+              : "opacity var(--duration-fast) var(--ease-base), transform var(--duration-fast) var(--ease-base)",
+          }}>
+          <!-- Theme (light/dark) — keeps the menu open (decision 4). -->
+          <div role="menuitem" style=${{ display: "flex" }}>
+            <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
+              { value: "dark", label: "Dark", icon: "moon" },
+              { value: "light", label: "Light", icon: "sun" },
+            ]} />
+          </div>
+          <!-- Skip-permissions armed toggle — keeps its --obligation armed/danger hue
+               INSIDE the menu (decision 3); keeps the menu open (decision 4). -->
+          <div role="menuitem" style=${{ display: "flex" }}>
+            <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
+          </div>
+          <div style=${{ height: 1, background: "var(--hairline)", margin: "1px 0" }} />
+          <!-- Stop dashboard — selecting it CLOSES the menu, then shows the stopped
+               overlay on a bridge dispatch. -->
+          <div role="menuitem" style=${{ display: "flex" }}>
+            <${LaunchButton} label="Stop dashboard" command=${STOP_DASHBOARD_COMMAND}
+              icon="x" emphasis="quiet" onResult=${onStopResult} />
+          </div>
+        </div>` : null}
+    </div>`;
+}
+
 // The main-column TOPBAR (agentic-workflow-026) — the styleguide §05 board topbar.
 // A ~52px strip over the scrollable board carrying a board title / breadcrumb and a
 // single primary action that FOLLOWS the active theme (aw-033 — the primary emphasis,
@@ -948,35 +1094,14 @@ function StoppedOverlay() {
 // skipPermissions (aw-021) and passing NO onResult (Work never consumed a prompt).
 // NO Search box is rendered — the dashboard is read-only with no search backend.
 //
-// The top-right cluster groups the session-level controls (aw-029): the theme
-// toggle and the skip-permissions armed toggle, LEFT of the Work launch — read,
-// left → right: [ theme ][ skip-permissions ][ Work ]. Both controls are consumed
-// from the styleguide unforked (ADR-0003): the theme toggle keeps its persisted
-// light/dark behaviour (aw-017) and the skip-permissions toggle keeps its armed /
-// danger (--obligation) treatment, off-by-default persistence, and threading of
-// skipPermissions through every launch (aw-021 / ADR-0019). This is the only
-// home for the two toggles — the rail footer that held them (aw-026) is retired.
-//
-// A QUIET "Stop dashboard" launch (aw-028) sits at the FAR LEFT, after the breadcrumb
-// and BEFORE the flex spacer — set APART from the right-side [theme][skip-perms][Work]
-// cluster so it never reads or fat-fingers as the Work primary. It reuses the same
-// launchOrCopy seam to run STOP_DASHBOARD_COMMAND (`/agentheim:dashboard stop`); the
-// spawned session runs `/dashboard stop` → stopDashboard(root) (aw-011), so the server
-// is never asked to stop itself (ADR-0017 read-only). NO confirmation step (a single
-// click stops, matching the directness of `/dashboard stop`). It deliberately does NOT
-// thread skipPermissions — a stop is not a risky work launch, so it never wears the
-// armed/danger --obligation per-launch cue (aw-021/ADR-0019 is a non-goal here). Its
-// onResult flips the shell-level "stopped" overlay ONLY on a bridge dispatch
-// (`res.via === "bridge"`); a clipboard fallback stopped nothing, so it shows no overlay
-// and just lets LaunchButton flash the existing quiet "Copied" feedback.
+// aw-049 COLLAPSED the three utility controls (Stop dashboard, theme, skip-permissions)
+// behind a single settings GEAR (SettingsMenu) that sits immediately LEFT of the Work
+// launch — the topbar now reads, left → right: [ breadcrumb ] … [ ⚙ ] [ Work ]. The
+// three controls are no longer rendered inline; they live only inside the gear's
+// dropdown. Work remains the sole STANDING action (the one primary worth permanent bar
+// real estate). The toggles + Stop keep all their existing behavior + persistence —
+// SettingsMenu just relocates them into a popover (relocation, not rewrite).
 function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissions, onStopped }) {
-  const onStopResult = useCallback((res) => {
-    // Optimistic on dispatch: `res.via === "bridge"` means POST /run landed (the
-    // terminal opened to run `/dashboard stop`), so the page is now talking to a
-    // server that is shutting down — the overlay is the honest end state. A clipboard
-    // fallback stopped nothing (the command was only copied), so we show no overlay.
-    if (res && res.via === "bridge" && typeof onStopped === "function") onStopped();
-  }, [onStopped]);
   return html`
     <div style=${{
       display: "flex", alignItems: "center", gap: 12,
@@ -989,17 +1114,14 @@ function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissi
       <span style=${{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
         agentheim / tickets
       </span>
-      <!-- Stop dashboard — quiet, far-left, set APART from the right-side cluster (aw-028). -->
-      <${LaunchButton} label="Stop dashboard" command=${STOP_DASHBOARD_COMMAND}
-        icon="x" emphasis="quiet" onResult=${onStopResult} />
       <div style=${{ flex: 1 }} />
-      <!-- Session-level controls, left → right: theme, skip-permissions, Work (aw-029) -->
+      <!-- The settings gear (collapsing Stop / theme / skip-perms) then the standing
+           Work launch, left → right: [ ⚙ ][ Work ] (aw-049). -->
       <div style=${{ display: "flex", alignItems: "center", gap: 9 }}>
-        <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
-          { value: "dark", label: "Dark", icon: "moon" },
-          { value: "light", label: "Light", icon: "sun" },
-        ]} />
-        <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
+        <${SettingsMenu}
+          theme=${theme} setTheme=${setTheme}
+          skipPermissions=${skipPermissions} setSkipPermissions=${setSkipPermissions}
+          onStopped=${onStopped} />
         <${LaunchButton} label="Work" command=${WORK_COMMAND}
           icon="arrow-right" emphasis="primary" skipPermissions=${skipPermissions} />
       </div>

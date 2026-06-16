@@ -46,29 +46,29 @@ test('the topbar imports and seeds the bare STOP_DASHBOARD_COMMAND (reusing laun
   );
 });
 
-test('the topbar renders a Stop dashboard launch button seeded with STOP_DASHBOARD_COMMAND', () => {
+test('the settings menu renders a Stop dashboard launch button seeded with STOP_DASHBOARD_COMMAND (aw-049 relocation)', () => {
+  // aw-049 moved the Stop dashboard launch out of the inline topbar and into the gear's
+  // SettingsMenu. It keeps the same launchOrCopy bridge wiring — relocation, not rewrite.
   const top = fn('BoardTopbar');
-  assert.match(top, /label="Stop dashboard"/, 'the topbar must render the Stop dashboard launch');
-  const stop = top.match(/label="Stop dashboard"[\s\S]{0,400}?\/>/);
-  assert.ok(stop, 'the Stop dashboard button must be present in the topbar');
+  assert.doesNotMatch(top, /label="Stop dashboard"/, 'the Stop launch moved into the settings menu — not inline in the topbar');
+  const menu = fn('SettingsMenu');
+  assert.match(menu, /label="Stop dashboard"/, 'the settings menu must render the Stop dashboard launch');
+  const stop = menu.match(/label="Stop dashboard"[\s\S]{0,400}?\/>/);
+  assert.ok(stop, 'the Stop dashboard button must be present in the settings menu');
   assert.match(stop[0], /command=\$\{STOP_DASHBOARD_COMMAND\}/, 'Stop must seed the bare STOP_DASHBOARD_COMMAND');
 });
 
-test('the Stop button is set APART from the [theme][skip-perms][Work] cluster (not inside it)', () => {
-  const top = fn('BoardTopbar');
-  const stopAt = top.indexOf('label="Stop dashboard"');
-  const themeAt = top.indexOf('${ThemeToggle}');
-  const workAt = top.indexOf('label="Work"');
-  assert.ok(stopAt > -1 && themeAt > -1 && workAt > -1, 'Stop, theme, and Work must all render');
-  // Apart means it does not sit BETWEEN the cluster controls. It renders either before
-  // the whole cluster (far edge after the breadcrumb) or clearly after the Work primary.
-  const insideCluster = stopAt > themeAt && stopAt < workAt;
-  assert.ok(!insideCluster, 'the Stop button must NOT sit between the theme toggle and the Work launch');
+test('selecting Stop dashboard closes the menu and the Work launch is NOT inside the menu (aw-049)', () => {
+  const menu = fn('SettingsMenu');
+  // Work is the only standing topbar action — it never lives inside the gear's menu.
+  assert.doesNotMatch(menu, /label="Work"/, 'the Work launch must NOT sit inside the settings menu');
+  // The Stop control's onResult closes the popover (setOpen(false)) before flipping the overlay.
+  assert.match(menu, /setOpen\(false\)/, 'selecting Stop dashboard must close the menu');
 });
 
 test('the Stop button does NOT wear the armed/danger per-launch cue (it never threads skipPermissions)', () => {
-  const top = fn('BoardTopbar');
-  const stop = top.match(/label="Stop dashboard"[\s\S]{0,400}?\/>/);
+  const menu = fn('SettingsMenu');
+  const stop = menu.match(/label="Stop dashboard"[\s\S]{0,400}?\/>/);
   assert.ok(stop, 'the Stop dashboard button must be present');
   assert.doesNotMatch(stop[0], /skipPermissions/, 'Stop must NOT thread skipPermissions (no armed/danger cue — aw-021/ADR-0019 is a non-goal here)');
 });
@@ -80,16 +80,23 @@ test('the Stop button fires with NO confirmation step (a single click launches)'
   assert.doesNotMatch(top, /confirm\s*\(/, 'the Stop launch must not be gated behind a confirmation prompt');
 });
 
-test('the topbar accepts an onStopped callback wired to the Stop button onResult, flipping shell state only on bridge', () => {
-  const sig = boardSrc.match(/function BoardTopbar\(\{[^}]*\}\)/);
-  assert.ok(sig, 'BoardTopbar must take a props object');
-  assert.match(sig[0], /onStopped/, 'BoardTopbar must accept an onStopped prop from the shell');
+test('the onStopped callback threads shell → topbar → settings menu, wired to the Stop onResult, flipping shell state only on bridge', () => {
+  // The shell hands onStopped to BoardTopbar, which threads it into SettingsMenu (aw-049);
+  // the menu's Stop control fires it only on a bridge dispatch.
+  const topSig = boardSrc.match(/function BoardTopbar\(\{[^}]*\}\)/);
+  assert.ok(topSig, 'BoardTopbar must take a props object');
+  assert.match(topSig[0], /onStopped/, 'BoardTopbar must accept an onStopped prop from the shell');
   const top = fn('BoardTopbar');
-  const stop = top.match(/label="Stop dashboard"[\s\S]{0,400}?\/>/);
-  assert.ok(stop, 'the Stop dashboard button must be present');
+  assert.match(top, /onStopped=\$\{onStopped\}/, 'BoardTopbar must thread onStopped into the SettingsMenu');
+  const menuSig = boardSrc.match(/function SettingsMenu\(\{[^}]*\}\)/);
+  assert.ok(menuSig, 'SettingsMenu must take a props object');
+  assert.match(menuSig[0], /onStopped/, 'SettingsMenu must accept onStopped');
+  const menu = fn('SettingsMenu');
+  const stop = menu.match(/label="Stop dashboard"[\s\S]{0,400}?\/>/);
+  assert.ok(stop, 'the Stop dashboard button must be present in the menu');
   assert.match(stop[0], /onResult=/, 'Stop must pass an onResult to LaunchButton');
   // The onResult passed to Stop keys the shell-stopped flip off res.via === "bridge".
-  assert.match(top, /res\.via === "bridge"/, 'the Stop onResult must flip the shell state only on a bridge dispatch');
+  assert.match(menu, /res\.via === "bridge"/, 'the Stop onResult must flip the shell state only on a bridge dispatch');
 });
 
 test('DashboardApp owns a "stopped" shell state, flips it via onStopped, and mounts the overlay over the main content', () => {

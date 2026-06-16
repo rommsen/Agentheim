@@ -85,12 +85,17 @@ separate BC, but today the whole tool lives in this one.
   **left rail** (`ShellRail`) beside a **main column** (a ~52px topbar over the scrollable
   board). The rail carries brand → a single **Board** `RailItem` → divider → "Workspace"
   label → the **live** library tree (`treeToLibrary`, the always-visible tree *is* the
-  library). The **theme + skip-permissions toggles** sit in the **main-column topbar**,
-  left of the theme-following **Work** launch (aw-029 placement — a partial reversal of
-  aw-026's rail-footer; the rail no longer has a toggle footer). A quiet **Stop dashboard** launch
-  (aw-028) sits at the **far left** of the same topbar (after the breadcrumb), set **apart**
-  from the `[theme][skip-perms][Work]` cluster so it never reads as the Work primary — see
-  *Stop dashboard from the UI* below. The old horizontal header
+  library). As of **aw-049** the three utility controls — **Stop dashboard**, the **theme
+  toggle** and the **skip-permissions armed toggle** — are collapsed behind a single
+  **settings gear** (`SettingsMenu`, the reused `settings-2` glyph) that opens a board-local
+  token-matched dropdown; the gear sits immediately **left** of the standing theme-following
+  **Work** launch, so the topbar reads `[breadcrumb] … [⚙] [Work]`. (Earlier: aw-029 put the
+  theme + skip-perms toggles inline in the topbar and aw-028 added a far-left Stop launch;
+  aw-049 supersedes both by tucking all three into the gear. Work stays the only standing
+  action.) The **closed gear carries no armed cue** — the skip-permissions `--obligation`
+  danger hue lives only on the toggle inside the open menu; the menu dismisses on Esc,
+  outside click, and selecting Stop, while the two toggles keep it open. See *Stop dashboard
+  from the UI* below. The old horizontal header
   and the board↔library toggle are retired (the separate full-pane library surface is
   formally removed in aw-027). See ADR-0009 / ADR-0011.
 - **Board view** — the dashboard's home view (agentic-workflow-006): a **flat** Kanban of the
@@ -147,8 +152,8 @@ separate BC, but today the whole tool lives in this one.
   than throwing — a corrupt preference can never blank the board. See ADR-0015, ADR-0001.
 - **Persisted theme choice (light/dark toggle)** — the dashboard consumes the styleguide's "dark-first
   with a light toggle" theme switch **unforked** (ADR-0003): the `ThemeToggle` Dark/Light control (from
-  `styleguide/app/live.js`) lives in the **main-column topbar**, left of the theme-following Work launch
-  (relocated there in aw-029, after a brief stint in the aw-026 rail footer; originally in the
+  `styleguide/app/live.js`) lives in the topbar **settings menu** (the gear dropdown, aw-049;
+  inline in the topbar over aw-029, after a brief stint in the aw-026 rail footer; originally in the
   retired horizontal header), feeding the existing `ThemeCtx.Provider` and a `data-theme` documentElement effect that animates
   the flip with the styleguide `theme-fade` transition (agentic-workflow-017). **Theme resolution +
   persistence** is a sibling presentation concern to the board view-state: a **separate** versioned
@@ -157,8 +162,9 @@ separate BC, but today the whole tool lives in this one.
   once the user toggles, that override is remembered across reloads. A malformed / stale-version / absent
   blob degrades to the **system default**, and the resolved theme is read once on mount so an SSE
   re-projection never resets it mid-session. See ADR-0015, ADR-0009, ADR-0003.
-- **Persisted skip-permissions armed toggle** — a **main-column topbar** control (agentic-workflow-021;
-  relocated to the topbar in aw-029, after a brief stint in the aw-026 rail footer), **off
+- **Persisted skip-permissions armed toggle** — a control that lives in the topbar **settings menu**
+  (the gear dropdown, agentic-workflow-049; inline in the topbar over aw-029, after a brief stint in
+  the aw-026 rail footer; introduced aw-021), **off
   by default**, that when **armed** makes **every** bridge launch request a skip-permissions session:
   `launchOrCopy` threads an optional `skipPermissions` flag through its one shared seam, so all
   bridge launches — the prompt-bar Quick Capture / Modeling pair (aw-020, relocated to the board
@@ -175,9 +181,13 @@ separate BC, but today the whole tool lives in this one.
   / non-boolean / no backend / throwing backend) resolves to **OFF**, never a throw, never on. It is
   presentation view-state only — never a disk lifecycle write — so the dashboard stays read-only over
   `.agentheim/` (ADR-0017 / ADR-0001) and the armed choice survives every SSE re-projection untouched.
-  The control lives in the **main-column topbar** next to the theme toggle and left of the Work launch
-  (the aw-017 persisted-control precedent; relocated to the topbar in aw-029), **not** a settings panel (there is one setting today), and carries an **armed / danger**
-  treatment so it never reads as a neutral preference. Per the **amended ADR-0018** mandate, when armed
+  The control lives in the topbar **settings menu** next to the theme toggle and the Stop dashboard launch
+  (the aw-017 persisted-control precedent; inline in the topbar over aw-029, collapsed into the gear in aw-049,
+  which supersedes aw-021's "not a settings panel — one setting today" micro-decision now that three controls
+  collapse together), and carries an **armed / danger**
+  treatment so it never reads as a neutral preference. Inside the open menu the toggle keeps its full
+  `--obligation` danger hue (the menu stays open when it is flipped); the **closed gear carries no armed cue**
+  (aw-049 decision 3 / amended ADR-0019). Per the **amended ADR-0018** mandate, when armed
   **each** of the four launch buttons also shows an at-a-glance per-launch "skips permissions" cue —
   the button's **icon tinted with `--obligation`** (narrowed by **aw-030 then aw-041 / amended ADR-0019**
   from the original `--obligation` border + label tint, down to a separate dot, down to just the
@@ -259,9 +269,26 @@ separate BC, but today the whole tool lives in this one.
   from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo
   `AppRail`, and its tree is the **live** `treeToLibrary(/api/tree)` projection (re-fetched on every SSE
   frame, ADR-0011). See ADR-0009, ADR-0003, ADR-0017, ADR-0018.
-- **Stop dashboard from the UI (aw-028)** -- a quiet `LaunchButton` (`emphasis="quiet"`) at the
-  **far left** of the main-column topbar, set **apart** from the `[theme][skip-perms][Work]` cluster
-  so it never reads or fat-fingers as the Work primary. It **reuses the existing bridge launch path
+- **Topbar settings menu (aw-049)** -- a board-local, token-matched **dropdown** (`SettingsMenu`) behind a
+  single **settings gear** (the reused `settings-2` glyph from the styleguide icon set — consumed
+  **unforked**, no styleguide edit, no new glyph) that sits immediately **left** of the standing Work
+  launch, so the topbar reads `[breadcrumb] … [⚙] [Work]`. It collapses the three utility controls — the
+  **Stop dashboard** launch, the **theme** toggle and the **skip-permissions** armed toggle — that aw-029
+  (toggles) and aw-028 (Stop) had spread across the topbar; only Work stays standing. The styleguide
+  exposes **no** Menu/Popover primitive, so this is built from tokens (the sort-`<select>` / group-by
+  precedent, ADR-0003); the shared `Menu`/`Popover` primitive is the **design-system-015** follow-up, which
+  retires this board-local control later (the aw-014 → ds-005 sequencing). The three relocated controls
+  keep their behavior + persistence **as-is** (relocation, not rewrite). **Dismissal:** Esc, outside click,
+  and selecting Stop dashboard close the menu; flipping the **theme** or **skip-permissions** toggle **keeps
+  it open** (so both can be adjusted in one visit; inside clicks are scoped by a container ref). The
+  **closed gear carries no armed cue** — the skip-permissions `--obligation` danger hue lives only on the
+  toggle inside the open menu (amended ADR-0019). The gear is keyboard-operable (focusable, Enter/Space
+  opens, `aria-haspopup`/`aria-expanded`, Esc closes) and the reveal honors `prefers-reduced-motion`. See
+  ADR-0003, ADR-0017, ADR-0019.
+- **Stop dashboard from the UI (aw-028; relocated aw-049)** -- a quiet `LaunchButton` (`emphasis="quiet"`)
+  that, as of **aw-049**, lives inside the topbar **settings menu** (the gear dropdown) rather than inline
+  at the far left of the topbar; **selecting it closes the menu** before flipping the stopped overlay. It
+  **reuses the existing bridge launch path
   unchanged** (`launchOrCopy`, no new server endpoint) to run the bare `STOP_DASHBOARD_COMMAND`
   (`/agentheim:dashboard stop`, a plain constant in `modeling-command.js`, mirroring `WORK_COMMAND`).
   The spawned session runs `/dashboard stop` -> `stopDashboard(root)` (aw-011), so the server is
