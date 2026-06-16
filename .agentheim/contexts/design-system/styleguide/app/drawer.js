@@ -35,14 +35,14 @@ export function describeItem(item) {
     return {
       kind: "ticket", type: "ticket",
       path: `tickets/${item.id}.md`,
-      id: item.id, status: item.status,
+      id: item.id, status: item.status, title: item.title,
       context: item.context, est: item.est, agent: item.agent, updated: item.updated,
       body: item.body,
     };
   }
   return {
     kind: "doc", type: item.type,
-    path: item.meta, id: null, body: item.body,
+    path: item.meta, id: null, title: item.title, body: item.body,
   };
 }
 
@@ -66,6 +66,9 @@ export function HeaderMinimal({ info, onClose, onOpenFullScreen }) {
 // ---- Drawer header: contextual (tinted band + meta) ----
 export function HeaderContextual({ info, onClose, onOpenFullScreen }) {
   const t = CONTENT_TYPES[info.type];
+  // Lead with the item's title; fall back to the path so a title-less item
+  // still names itself rather than rendering a blank heading.
+  const heading = info.title || info.path;
   return html`
     <div style=${{
       padding: "16px 16px 14px 22px", borderBottom: "1px solid var(--hairline)",
@@ -78,8 +81,13 @@ export function HeaderContextual({ info, onClose, onOpenFullScreen }) {
         ${onOpenFullScreen && html`<${IconButton} name="maximize" title="Open in full screen" aria-label="Open in full screen" onClick=${onOpenFullScreen} />`}
         <${IconButton} name="x" title="Close" onClick=${onClose} size=${17} />
       </div>
-      <div style=${{ display: "flex", alignItems: "center", gap: 10, marginTop: 11, paddingLeft: 1 }}>
-        <span style=${{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--fg-3)" }}>${info.path}</span>
+      <h2 style=${{
+        margin: "12px 0 0", paddingLeft: 1,
+        fontFamily: "var(--font-ui)", fontSize: 15.5, fontWeight: 600,
+        lineHeight: 1.25, color: "var(--fg-1)",
+      }}>${heading}</h2>
+      <div style=${{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, paddingLeft: 1 }}>
+        ${info.title && html`<span style=${{ fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--fg-3)" }}>${info.path}</span>`}
         ${info.kind === "ticket" && html`
           <${Fragment}>
             <span style=${{ color: "var(--fg-4)" }}>·</span>

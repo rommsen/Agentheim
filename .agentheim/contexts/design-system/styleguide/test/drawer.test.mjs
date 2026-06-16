@@ -89,3 +89,62 @@ test('the canvas demo supplies an onOpenFullScreen handler so the button is visi
   // the builder can re-review the gate. The demo must pass onOpenFullScreen.
   assert.match(appSrc, /onOpenFullScreen=\$\{/, 'the canvas Drawer demo must supply an onOpenFullScreen handler');
 });
+
+// ── design-system-014: contextual header leads with the title, path demoted ──
+// Same source-reading static-guard convention (no DOM under `node --test`).
+
+test('describeItem carries title from item.title on both the doc and ticket branches', () => {
+  // Slice on the branch markers (line-ending-agnostic).
+  const docStart = drawerSrc.indexOf('kind: "doc"');
+  const ticketStart = drawerSrc.indexOf('kind: "ticket"');
+  assert.ok(docStart > -1 && ticketStart > -1, 'both describeItem branches must exist');
+  const ticketBranch = drawerSrc.slice(ticketStart, docStart);
+  const docBranch = drawerSrc.slice(docStart);
+  assert.match(docBranch, /title:\s*item\.title/, 'the doc branch of describeItem must carry title from item.title');
+  assert.match(ticketBranch, /title:\s*item\.title/, 'the ticket branch of describeItem must carry title from item.title');
+});
+
+test('HeaderContextual renders a prominent title line: UI font, larger than the path, --fg-1, heavier weight', () => {
+  const header = drawerSrc.slice(
+    drawerSrc.indexOf('export function HeaderContextual'),
+    drawerSrc.indexOf('export function Drawer'),
+  );
+  // A title line referencing info.title must exist.
+  assert.match(header, /info\.title/, 'HeaderContextual must render info.title');
+  // The title style must use the UI font, a larger-than-11.5 size, strong fg, and a heavier weight.
+  // Pull the style object that carries fontFamily: var(--font-ui) and a fontSize.
+  const titleStyle = header.match(/style=\$\{\{[^}]*fontFamily:\s*"var\(--font-ui\)"[^}]*color:\s*"var\(--fg-1\)"[^}]*\}\}/s);
+  assert.ok(titleStyle, 'the title line must combine var(--font-ui) with color var(--fg-1)');
+  const sizeMatch = titleStyle[0].match(/fontSize:\s*(\d+(?:\.\d+)?)/);
+  assert.ok(sizeMatch, 'the title line must set an explicit fontSize');
+  assert.ok(Number(sizeMatch[1]) > 11.5, 'the title fontSize must be larger than the 11.5px path');
+  const weightMatch = titleStyle[0].match(/fontWeight:\s*(\d+)/);
+  assert.ok(weightMatch, 'the title line must set an explicit fontWeight');
+  assert.ok(Number(weightMatch[1]) >= 500, 'the title fontWeight must be medium/semibold (>=500), heavier than the path');
+});
+
+test('the path is demoted to a quiet sub-line beneath the title, keeping its mono / --fg-3 treatment', () => {
+  const header = drawerSrc.slice(
+    drawerSrc.indexOf('export function HeaderContextual'),
+    drawerSrc.indexOf('export function Drawer'),
+  );
+  // The path line retains the mono + 11.5 + --fg-3 quiet treatment.
+  const pathLine = header.match(/style=\$\{\{[^}]*fontFamily:\s*"var\(--font-mono\)"[^}]*\}\}>\$\{info\.path\}/s);
+  assert.ok(pathLine, 'info.path must still render in var(--font-mono)');
+  assert.match(pathLine[0], /fontSize:\s*11\.5/, 'the path keeps its 11.5px size');
+  assert.match(pathLine[0], /color:\s*"var\(--fg-3\)"/, 'the path keeps its quiet --fg-3 colour');
+});
+
+test('the contextual header falls back to the path when no title is present (no blank lead)', () => {
+  const header = drawerSrc.slice(
+    drawerSrc.indexOf('export function HeaderContextual'),
+    drawerSrc.indexOf('export function Drawer'),
+  );
+  // The title rendering must be guarded / fall back so a title-less item still
+  // shows the path as the lead — reference info.title with a fallback to info.path.
+  assert.match(
+    header,
+    /info\.title\s*(\|\||\?[^:]*:|&&)[^]*info\.path|info\.title\s*\?\?\s*info\.path/,
+    'the lead heading must fall back to info.path when info.title is absent',
+  );
+});

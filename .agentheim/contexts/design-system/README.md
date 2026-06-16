@@ -256,6 +256,34 @@ live slide-over passes no callback, so the action is correctly absent there).
 > artifact (ADR-0003) and was **rebuilt** (`node build.mjs`) to fold the unforked
 > Drawer change into `dashboard/dist/app.js`.
 
+### Drawer contextual header leads with the title, path demoted (design-system-014)
+
+The `HeaderContextual` header (`app/drawer.js`) now **leads with the item's title**
+instead of the file path:
+
+- **`describeItem` carries `title`.** Both the `doc` branch (the one the live
+  dashboard renders on — no `status` is threaded) and the `ticket` branch (styleguide
+  demo) now thread `title: item.title` onto the normalized drawer shape.
+- **A prominent title heading.** `HeaderContextual` renders an `<h2>` lead line —
+  `var(--font-ui)`, `15.5px`, `fontWeight: 600`, `var(--fg-1)` — directly under the
+  pill/action row. The **path is demoted** to a quiet sub-line beneath it, keeping its
+  existing `var(--font-mono)` / `11.5px` / `var(--fg-3)` treatment.
+- **Graceful fallback.** `heading = info.title || info.path` — a title-less item still
+  names itself with the path as the lead, and the (now redundant) path sub-line is
+  guarded by `info.title` so it never duplicates the fallback heading. `HeaderMinimal`
+  is unchanged (out of scope; the dashboard slide-over uses `contextual`).
+
+This is the **styleguide capability** behind the dashboard request. Per ADR-0003 the
+change lives in the styleguide source (consumed unforked); the dashboard `dist/` rebuild
+and the actual title-data threading (`intentToDrawerItem`) are **agentic-workflow-047's**
+job, not this task's — mirrors the `design-system-009` → `agentic-workflow-039` ordering.
+
+> **Gate re-review reopened by the Drawer-header title change (`design-system-014`).**
+> The contextual header now leads with a title heading — a visible styleguide change on
+> the canvas (`styleguide/index.html` → Drawer section, both `describeItem`-fed demos).
+> Re-review against the canvas **before** the agentic-workflow wiring (`agentic-workflow-047`)
+> ships the title data and rebuilds `dist/`.
+
 ## Relationships with other contexts
 
 - **agentic-workflow** — depends on this BC's styleguide for its `dashboard` feature.
