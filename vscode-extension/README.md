@@ -2,9 +2,11 @@
 
 Agentheim's first deployable VS Code component. It runs a tiny `127.0.0.1`-only
 HTTP listener inside the editor so the dashboard — served into VS Code's
-sandboxed Simple Browser — can open a **real, visible, interactive** terminal
-running `claude "<prompt>"`. This is the only path that works from inside the
-browser sandbox; see ADR-0018 and the research report
+sandboxed Simple Browser — can open a **real, visible, interactive** Claude
+terminal. The terminal **is** the `claude` process (spawned via
+`shellPath`/`shellArgs`), so the prompt is delivered as a raw argv element and
+no shell can mangle quotes or other metacharacters. This is the only path that
+works from inside the browser sandbox; see ADR-0018 and the research report
 `knowledge/research/vscode-dashboard-terminal-bridge-2026-06-09.md`.
 
 The bridge is **generic**: it launches whatever prompt it is handed, so the
@@ -29,7 +31,7 @@ HTTP surface (every request requires the `X-Agentheim-Bridge-Token` header):
 
 | Method + path     | Behaviour |
 |-------------------|-----------|
-| `POST /run { prompt, skipPermissions? }` | Opens a `Claude` terminal, shows it, seeds `claude "<prompt>"`. The optional, off-by-default `skipPermissions` boolean seeds `claude --dangerously-skip-permissions "<prompt>"` **only** when set to the literal `true`; absent/`false`/malformed seeds `claude "<prompt>"`. → `202` |
+| `POST /run { prompt, skipPermissions? }` | Opens a `Claude` terminal that **is** the `claude` process — spawned with the prompt as a raw argv element (no shell, no quoting). The optional, off-by-default `skipPermissions` boolean prepends `--dangerously-skip-permissions` to the launch args **only** when set to the literal `true`; absent/`false`/malformed launches with the prompt alone. → `202` |
 | `GET /health`     | Liveness probe for the frontend. → `200` |
 | `OPTIONS *`       | CORS preflight (load-bearing — the custom-header JSON POST is preflighted). → `204` |
 
@@ -41,10 +43,10 @@ Loopback-only bind **plus** the shared-secret token header. Acceptable for a
 single-user dev box; **not** for any networked or multi-user deployment.
 
 The launch carries the `--dangerously-skip-permissions` bypass **only** as an
-opt-in, off-by-default capability: a `POST /run` seeds the bypass flag only when
+opt-in, off-by-default capability: a `POST /run` prepends the bypass flag only when
 the request body sets `skipPermissions` to the literal `true`. Absent, `false`,
-or malformed `skipPermissions` launches the normal prompt-gated
-`claude "<prompt>"` verbatim, exactly as before. The token guardrail is unchanged
+or malformed `skipPermissions` launches with the prompt alone, exactly as before.
+The token guardrail is unchanged
 — a missing/mismatched token still returns `401` byte-identically whether or not
 `skipPermissions` is set, so the bypass widens what an *already-authenticated*
 request may do, never *who* is authenticated. The bypass is **bridge-launch-only**
@@ -60,12 +62,16 @@ ADR-0018 — named, not built.
 ## Architecture
 
 - `src/bridge.js` — pure, editor-free core: bind + fallback ladder, token,
-  `bridge.json` lifecycle, body parsing, CORS, routing. Takes the terminal-launch
-  action as an injected callback, so it is fully unit-tested without the editor.
-  Stdlib only (`node:http`, `node:crypto`, `node:fs`, `node:path`); zero runtime
-  deps.
+  `bridge.json` lifecycle, body parsing, CORS, routing. Emits a structured launch
+  descriptor `{ command:'claude', args:[…] }` (prompt as a raw argv element, no
+  shell escaping) and hands it to an injected callback, so it is fully unit-tested
+  without the editor. Stdlib only (`node:http`, `node:crypto`, `node:fs`,
+  `node:path`); zero runtime deps.
 - `extension.js` — thin activation glue; the **only** file that touches the
-  `vscode` API. Wires `vscode.window.createTerminal` into the injected callback.
+  `vscode` API. Consumes the descriptor, resolves `command` to a concrete
+  executable on Windows (PATH × PATHEXT → absolute path), and spawns it as the
+  terminal's shell via `createTerminal({ shellPath, shellArgs })` — the terminal
+  *is* the `claude` process, no `sendText`.
 
 ## Tests
 
@@ -76,10 +82,12 @@ npm test          # node --test --test-concurrency=1
 
 Covers: loopback bind on the fixed port, the fallback ladder, `bridge.json`
 write/overwrite/remove, token gating (401), body validation (400), `GET /health`,
-the `OPTIONS` preflight, and that `POST /run` launches `claude "<prompt>"` by
-default — with the strict-`true` `skipPermissions` path (seeds
-`claude --dangerously-skip-permissions "<prompt>"`) and the
-absent/`false`/malformed default path (seeds `claude "<prompt>"`) both covered.
+the `OPTIONS` preflight, and that `POST /run` emits the descriptor
+`{ command:'claude', args:[prompt] }` by default — with the strict-`true`
+`skipPermissions` path (prepends `--dangerously-skip-permissions` to `args`), the
+absent/`false`/malformed default path (`args` is exactly `[prompt]`), and a
+**metacharacter-survival** guard (a prompt full of `"`, `'`, `` ` ``, `$`, `&`,
+`|`, `;`, `$(…)` reaches `args[0]` as one verbatim element) all covered.
 
 ## Install (outside the marketplace)
 
@@ -89,8 +97,8 @@ locally.
 ```sh
 cd vscode-extension
 npm install                       # only to get @vscode/vsce (packaging tool)
-npx vsce package                  # produces agentheim-bridge-0.2.0.vsix
-code --install-extension agentheim-bridge-0.2.0.vsix
+npx vsce package                  # produces agentheim-bridge-0.2.1.vsix
+code --install-extension agentheim-bridge-0.2.1.vsix
 ```
 
 Then reload VS Code. On startup, with an Agentheim project open in the

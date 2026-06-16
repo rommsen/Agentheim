@@ -68,7 +68,7 @@ function request(port, { method = 'GET', pathName = '/health', headers = {}, bod
 test('binds 127.0.0.1 on the preferred fixed port and writes bridge.json', async () => {
   const base = makeProject();
   const launched = [];
-  const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p) });
+  const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d) });
   try {
     assert.equal(bridge.address, '127.0.0.1');
     assert.equal(bridge.port, PREFERRED_PORTS[0]);
@@ -91,7 +91,7 @@ test('falls back along 31425→31426→31427 when the preferred port is taken', 
   // Occupy the first preferred port so the ladder must advance.
   const blocker = http.createServer(() => {});
   await new Promise((r) => blocker.listen(PREFERRED_PORTS[0], '127.0.0.1', r));
-  const bridge = await startBridge({ root: base, launchTerminal: () => {} });
+  const bridge = await startBridge({ root: base, launchClaude: () => {} });
   try {
     assert.equal(bridge.port, PREFERRED_PORTS[1]);
     assert.equal(JSON.parse(readFileSync(bridgePath(base), 'utf8')).port, PREFERRED_PORTS[1]);
@@ -101,10 +101,10 @@ test('falls back along 31425→31426→31427 when the preferred port is taken', 
   }
 });
 
-test('POST /run with a valid token launches claude "<prompt>" and returns 2xx', async () => {
+test('POST /run with a valid token emits { command:"claude", args:[prompt] } and returns 2xx', async () => {
   const base = makeProject();
   const launched = [];
-  const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d), ...EPHEMERAL });
   try {
     const res = await request(bridge.port, {
       method: 'POST',
@@ -113,17 +113,17 @@ test('POST /run with a valid token launches claude "<prompt>" and returns 2xx', 
       body: JSON.stringify({ prompt: 'do the thing' }),
     });
     assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
-    assert.deepEqual(launched, ['claude "do the thing"']);
-    assert.ok(!launched[0].includes('--dangerously-skip-permissions'), 'no permission-bypass flag');
+    assert.deepEqual(launched, [{ command: 'claude', args: ['do the thing'] }]);
+    assert.ok(!launched[0].args.includes('--dangerously-skip-permissions'), 'no permission-bypass flag');
   } finally {
     cleanup(base, bridge);
   }
 });
 
-test('POST /run { skipPermissions: true } seeds claude --dangerously-skip-permissions "<prompt>"', async () => {
+test('POST /run { skipPermissions: true } prepends --dangerously-skip-permissions to args', async () => {
   const base = makeProject();
   const launched = [];
-  const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d), ...EPHEMERAL });
   try {
     const res = await request(bridge.port, {
       method: 'POST',
@@ -132,13 +132,15 @@ test('POST /run { skipPermissions: true } seeds claude --dangerously-skip-permis
       body: JSON.stringify({ prompt: 'do the thing', skipPermissions: true }),
     });
     assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
-    assert.deepEqual(launched, ['claude --dangerously-skip-permissions "do the thing"']);
+    assert.deepEqual(launched, [
+      { command: 'claude', args: ['--dangerously-skip-permissions', 'do the thing'] },
+    ]);
   } finally {
     cleanup(base, bridge);
   }
 });
 
-test('only literal true activates bypass — false/"true"/null/absent all seed claude "<prompt>"', async () => {
+test('only literal true activates bypass — false/"true"/null/absent all yield args:[prompt]', async () => {
   // Strict identity check (skipPermissions === true): malformed input fails
   // toward the prompt-gated default, never toward the bypass (ADR-0018).
   const cases = [
@@ -151,7 +153,7 @@ test('only literal true activates bypass — false/"true"/null/absent all seed c
   for (const payload of cases) {
     const base = makeProject();
     const launched = [];
-    const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+    const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d), ...EPHEMERAL });
     try {
       const res = await request(bridge.port, {
         method: 'POST',
@@ -162,11 +164,11 @@ test('only literal true activates bypass — false/"true"/null/absent all seed c
       assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
       assert.deepEqual(
         launched,
-        [`claude "${payload.prompt}"`],
+        [{ command: 'claude', args: [payload.prompt] }],
         `skipPermissions=${JSON.stringify(payload.skipPermissions)} must not enable bypass`
       );
       assert.ok(
-        !launched[0].includes('--dangerously-skip-permissions'),
+        !launched[0].args.includes('--dangerously-skip-permissions'),
         `non-true skipPermissions must not inject the bypass flag`
       );
     } finally {
@@ -175,10 +177,10 @@ test('only literal true activates bypass — false/"true"/null/absent all seed c
   }
 });
 
-test('regression guard: POST /run without skipPermissions is byte-identical to the pre-amendment command', async () => {
+test('regression guard (infra-020): no skipPermissions → args is exactly [prompt], no flag element', async () => {
   const base = makeProject();
   const launched = [];
-  const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d), ...EPHEMERAL });
   try {
     const res = await request(bridge.port, {
       method: 'POST',
@@ -188,7 +190,55 @@ test('regression guard: POST /run without skipPermissions is byte-identical to t
     });
     assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
     assert.equal(launched.length, 1);
-    assert.equal(launched[0], 'claude "pre-amendment"');
+    assert.deepEqual(launched[0], { command: 'claude', args: ['pre-amendment'] });
+    assert.equal(launched[0].args.length, 1, 'exactly one argv element, no flag');
+  } finally {
+    cleanup(base, bridge);
+  }
+});
+
+test('metacharacter survival (infra-020 guard): shell metachars reach args[0] verbatim, as one element', async () => {
+  // The infrastructure-020 regression guard: a prompt full of shell-significant
+  // characters must travel into a SINGLE raw argv element with NOTHING dropped,
+  // re-quoted, or re-parsed — proving no shell sits in the path.
+  const base = makeProject();
+  const launched = [];
+  const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d), ...EPHEMERAL });
+  try {
+    const prompt = `say "hi" & echo $x \`whoami\` $(id) 'single' | tail; rm`;
+    const res = await request(bridge.port, {
+      method: 'POST',
+      pathName: '/run',
+      headers: { [TOKEN_HEADER]: bridge.token },
+      body: JSON.stringify({ prompt }),
+    });
+    assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
+    assert.equal(launched.length, 1);
+    assert.deepEqual(launched[0], { command: 'claude', args: [prompt] });
+    // The whole metacharacter string is ONE element — never split on the shell ops.
+    assert.equal(launched[0].args.length, 1, 'prompt stays a single argv element');
+    assert.equal(launched[0].args[0], prompt, 'every typed character survives verbatim');
+  } finally {
+    cleanup(base, bridge);
+  }
+});
+
+test('metacharacter survival under skipPermissions: flag prepended, prompt still one verbatim element', async () => {
+  const base = makeProject();
+  const launched = [];
+  const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d), ...EPHEMERAL });
+  try {
+    const prompt = `say "hi" & $(id)`;
+    const res = await request(bridge.port, {
+      method: 'POST',
+      pathName: '/run',
+      headers: { [TOKEN_HEADER]: bridge.token },
+      body: JSON.stringify({ prompt, skipPermissions: true }),
+    });
+    assert.ok(res.status >= 200 && res.status < 300, `expected 2xx, got ${res.status}`);
+    assert.deepEqual(launched, [
+      { command: 'claude', args: ['--dangerously-skip-permissions', prompt] },
+    ]);
   } finally {
     cleanup(base, bridge);
   }
@@ -197,7 +247,7 @@ test('regression guard: POST /run without skipPermissions is byte-identical to t
 test('POST /run with a missing/mismatched token is rejected 401 and launches nothing', async () => {
   const base = makeProject();
   const launched = [];
-  const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d), ...EPHEMERAL });
   try {
     const missing = await request(bridge.port, {
       method: 'POST',
@@ -222,7 +272,7 @@ test('POST /run with a missing/mismatched token is rejected 401 and launches not
 test('POST /run with a malformed/empty body returns 400', async () => {
   const base = makeProject();
   const launched = [];
-  const bridge = await startBridge({ root: base, launchTerminal: (p) => launched.push(p), ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: (d) => launched.push(d), ...EPHEMERAL });
   try {
     const garbage = await request(bridge.port, {
       method: 'POST',
@@ -247,7 +297,7 @@ test('POST /run with a malformed/empty body returns 400', async () => {
 
 test('GET /health with a valid token returns 200', async () => {
   const base = makeProject();
-  const bridge = await startBridge({ root: base, launchTerminal: () => {}, ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: () => {}, ...EPHEMERAL });
   try {
     const ok = await request(bridge.port, { pathName: '/health', headers: { [TOKEN_HEADER]: bridge.token } });
     assert.equal(ok.status, 200);
@@ -260,7 +310,7 @@ test('GET /health with a valid token returns 200', async () => {
 
 test('OPTIONS preflight is answered with permissive CORS for the custom-header POST', async () => {
   const base = makeProject();
-  const bridge = await startBridge({ root: base, launchTerminal: () => {}, ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: () => {}, ...EPHEMERAL });
   try {
     const res = await request(bridge.port, {
       method: 'OPTIONS',
@@ -285,7 +335,7 @@ test('OPTIONS preflight is answered with permissive CORS for the custom-header P
 
 test('close() removes bridge.json so a dead host leaves no live discovery file', async () => {
   const base = makeProject();
-  const bridge = await startBridge({ root: base, launchTerminal: () => {}, ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: () => {}, ...EPHEMERAL });
   const file = bridgePath(base);
   assert.ok(existsSync(file));
   bridge.close();
@@ -298,7 +348,7 @@ test('a stale bridge.json from a prior host is overwritten on activation', async
   mkdirSync(path.join(base, '.agentheim', '.dashboard'), { recursive: true });
   const file = bridgePath(base);
   writeFileSync(file, JSON.stringify({ port: 99999, token: 'stale', pid: 1, startedAt: 'old', v: 0 }));
-  const bridge = await startBridge({ root: base, launchTerminal: () => {}, ...EPHEMERAL });
+  const bridge = await startBridge({ root: base, launchClaude: () => {}, ...EPHEMERAL });
   try {
     const meta = JSON.parse(readFileSync(file, 'utf8'));
     assert.notEqual(meta.token, 'stale');

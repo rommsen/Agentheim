@@ -11,6 +11,35 @@ const path = require('node:path');
 const { existsSync, statSync } = require('node:fs');
 const { startBridge } = require('./src/bridge.js');
 
+/**
+ * Resolve a bare command name to a concrete executable. VS Code's
+ * `createTerminal({ shellPath })` does NOT apply Windows PATHEXT, so a bare
+ * `'claude'` can fail to find `claude.cmd`/`claude.exe`. On win32 we walk
+ * PATH × PATHEXT (stdlib only, no new dependency) and return the first match as
+ * an absolute path; everywhere else we hand `'claude'` back unchanged and let
+ * the OS resolve it. This keeps the OS wart localized in the one impure file
+ * (ADR-0018, amended 2026-06-16); the pure core stays platform-agnostic.
+ */
+function resolveExecutable(command) {
+  if (process.platform !== 'win32') return command;
+  if (command.includes(path.sep) || command.includes('/')) return command;
+  const dirs = (process.env.PATH || '').split(path.delimiter).filter(Boolean);
+  const exts = (process.env.PATHEXT || '.COM;.EXE;.BAT;.CMD')
+    .split(';')
+    .filter(Boolean);
+  for (const dir of dirs) {
+    // A bare name may itself already carry an extension on PATH.
+    const direct = path.join(dir, command);
+    if (existsSync(direct) && statSync(direct).isFile()) return direct;
+    for (const ext of exts) {
+      const candidate = path.join(dir, command + ext);
+      if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+    }
+  }
+  // Nothing matched: hand the bare name back and let createTerminal try.
+  return command;
+}
+
 /** Walk up from a start dir to the nearest `.agentheim/` holder (ADR-0002). */
 function discoverRoot(startDir) {
   let dir = path.resolve(startDir);
@@ -44,17 +73,28 @@ async function activate(context) {
     return;
   }
 
-  // The single editor seam: open a real, visible, interactive terminal and
-  // seed it with the `claude "<prompt>"` command the bridge built. We never
-  // hard-wire any permission-bypass flag (ADR-0018) — `command` is used as-is.
-  const launchTerminal = (command) => {
-    const terminal = vscode.window.createTerminal({ name: 'Claude', cwd: root });
-    terminal.show();
-    terminal.sendText(command);
+  // The single editor seam: make the terminal BE the `claude` process. The pure
+  // core hands us a structured descriptor `{ command, args }` with the prompt as
+  // a raw argv element — no shell, no quoting (ADR-0018, amended 2026-06-16). We
+  // spawn `claude` directly via shellPath/shellArgs so the OS delivers each arg
+  // verbatim; no character the builder typed can be re-parsed by a shell. The
+  // optional `--dangerously-skip-permissions` flag arrives already in `args`
+  // when (and only when) the launch armed it — we never hard-wire it here.
+  const launchClaude = ({ command, args }) => {
+    vscode.window
+      .createTerminal({
+        name: 'Claude',
+        cwd: root,
+        shellPath: resolveExecutable(command),
+        shellArgs: args,
+      })
+      .show();
+    // No sendText — the terminal IS the claude process. When claude exits the
+    // terminal shows an exit notice rather than dropping to a shell prompt.
   };
 
   try {
-    bridge = await startBridge({ root, launchTerminal });
+    bridge = await startBridge({ root, launchClaude });
     context.subscriptions.push({ dispose: () => bridge && bridge.close() });
     console.log(`[agentheim-bridge] listening on 127.0.0.1:${bridge.port}`);
   } catch (err) {

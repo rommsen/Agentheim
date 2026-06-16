@@ -4,7 +4,7 @@ title: VS Code dashboard→terminal bridge — fixed-port localhost extension wi
 scope: infrastructure
 status: proposed
 date: 2026-06-14
-related_tasks: [infrastructure-012, infrastructure-013, infrastructure-014, agentic-workflow-020, infrastructure-015, infrastructure-016, agentic-workflow-021]
+related_tasks: [infrastructure-012, infrastructure-013, infrastructure-014, agentic-workflow-020, infrastructure-015, infrastructure-016, agentic-workflow-021, infrastructure-020]
 related_adrs: [ADR-0002]
 diverges_from: [ADR-0002]
 ---
@@ -18,6 +18,25 @@ diverges_from: [ADR-0002]
 > decision. The reversed section below is now **"Permission-bypass — opt-in, off by default"**; the
 > `POST /run` body and command construction in "HTTP shape and status codes" are extended to match.
 > Everything else in this ADR stands unchanged (see "What stays frozen" at the end of the Decision).
+
+> **Amended 2026-06-16 (infrastructure-020).** The bridge mechanism no longer types a
+> shell command line into a terminal. The original clause —
+> `window.createTerminal()` + `terminal.show()` + `terminal.sendText('claude "<prompt>"')`
+> — seeded a *shell* terminal and let that shell parse `claude "<prompt>"`, which mangled
+> prompts containing shell metacharacters on non-POSIX default shells (Windows
+> PowerShell/cmd treat `\"` differently). The bridge now makes the terminal **be the
+> `claude` process directly**:
+> `createTerminal({ name:'Claude', cwd:root, shellPath:'claude', shellArgs:[<flag?>, prompt] })`,
+> so the prompt and the optional `--dangerously-skip-permissions` flag are delivered as
+> raw `argv` elements with **no shell and no escaping** — quoting cannot corrupt them.
+> The pure core (`bridge.js`) correspondingly emits a structured launch descriptor
+> `{ command:'claude', args:[…] }` instead of a pre-escaped command string; the injected
+> seam (`extension.js`) resolves `command` to a concrete executable on Windows
+> (PATH×PATHEXT → absolute path) and spawns it. **Nothing on the HTTP wire changes:**
+> `POST /run { prompt, skipPermissions? }`, the token header, the load-bearing `OPTIONS`
+> preflight, status codes, `bridge.json`/`GET /api/bridge`, and the strict-`true`
+> skip-permissions activation all stand verbatim. The `\"`-escaping step is deleted as
+> the source of the bug.
 
 > **Diverges from [ADR-0002](0002-dashboard-runtime-transport.md) on one clause.** ADR-0002 fixed
 > the dashboard runtime as an **ephemeral `:0` port** read back into `runtime.json`. That pattern

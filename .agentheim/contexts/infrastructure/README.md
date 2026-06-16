@@ -84,19 +84,23 @@ for an infrastructure BC.
 - **Bridge** — a tiny **VS Code extension** (`vscode-extension/`, infra-owned, its own
   toolchain) running a `127.0.0.1`-only `node:http` listener *inside the editor*. It is the
   only path by which the dashboard — served into VS Code's sandboxed Simple Browser — can open
-  a **real, visible, interactive** terminal running `claude "<prompt>"` (`window.createTerminal`
-  + `show` + `sendText`). Fixed port **31425** with a bounded fallback ladder
+  a **real, visible, interactive** Claude terminal. The terminal **is** the `claude` process:
+  the extension spawns it via `createTerminal({ shellPath:'claude', shellArgs:[<flag?>, prompt] })`
+  (infra-020) — the prompt is a **raw argv element**, no shell parses it, so quotes/backticks/`$`/`&`
+  and every other metacharacter the builder typed survive verbatim. (Earlier the bridge typed a
+  shell command line with `sendText('claude "<prompt>"')`, which mangled metacharacters on Windows
+  PowerShell/cmd; that escaping is deleted.) Fixed port **31425** with a bounded fallback ladder
   `31425 → 31426 → 31427`. Surface: `POST /run { prompt }` (opens a seeded terminal → 202),
   `GET /health` (→ 200), `OPTIONS` preflight (load-bearing — the custom-header JSON POST is
   preflighted). Every request carries the `X-Agentheim-Bridge-Token` header; missing/mismatched
   → 401, malformed/empty body → 400. `POST /run` takes an **optional `skipPermissions` boolean**
-  (off by default): only literal `true` seeds `claude --dangerously-skip-permissions "<prompt>"`;
-  absent/false/malformed seeds `claude "<prompt>"` verbatim. The bypass is **bridge-launch-only**
+  (off by default): only literal `true` prepends `--dangerously-skip-permissions` to the launch
+  args; absent/false/malformed launches with the prompt alone. The bypass is **bridge-launch-only**
   (startup flag — the clipboard fallback cannot carry it) and requires a per-launch at-a-glance
   indicator. The trust boundary is loopback-only bind **plus** the shared-secret token — single-user
   dev box only. The generic launcher carries *whatever* prompt
   it is handed, so all board affordances share it. The inject-into-running-session path
-  (`POST /inject`) is deferred. (ADR-0018, infrastructure-013.)
+  (`POST /inject`) is deferred. (ADR-0018, infrastructure-013, infrastructure-020.)
 - **Bridge discovery file** — `.agentheim/.dashboard/bridge.json` =
   `{ port, token, pid, startedAt, v }`, a **sibling of `runtime.json`** in the same gitignored
   dir, written by a **separate process** (the VS Code extension host) on its own
@@ -228,15 +232,20 @@ Apply write request.
 
 - **ADR-0018 — VS Code dashboard→terminal bridge (fixed-port localhost extension).** Agentheim's
   first deployable VS Code component (`vscode-extension/`): a `127.0.0.1`-only `node:http` listener
-  inside the editor that, on a token-bearing `POST /run`, opens a real interactive terminal seeded
-  with `claude "<prompt>"`. Binds fixed port **31425** with a `31425→31426→31427` fallback ladder;
+  inside the editor that, on a token-bearing `POST /run`, opens a real interactive terminal that
+  **is** the `claude` process — spawned via `createTerminal({ shellPath:'claude', shellArgs })`
+  (amended 2026-06-16, infra-020), so the prompt is a raw argv element no shell parses and every
+  metacharacter survives verbatim. (Originally the bridge typed `sendText('claude "<prompt>"')`,
+  whose POSIX `\"`-escaping mangled prompts on Windows PowerShell/cmd; that escaping is deleted.)
+  Binds fixed port **31425** with a `31425→31426→31427` fallback ladder;
   records the bound port + a per-activation 32-hex token in `.agentheim/.dashboard/bridge.json`
   (a separate process from the dashboard server's `runtime.json`), removed on deactivation. CORS
   preflight is load-bearing; missing/bad token → 401, malformed body → 400. `POST /run` carries an
-  **optional, off-by-default `skipPermissions` boolean** (amended): only literal `true` seeds
-  `claude --dangerously-skip-permissions "<prompt>"`; absent/false/malformed seeds `claude "<prompt>"`
-  verbatim, and the bypass is bridge-launch-only (the clipboard fallback cannot carry the startup
-  flag) with a required per-launch indicator. **Shares ADR-0002's bounded-ladder collision idiom** but on a different port clause
+  **optional, off-by-default `skipPermissions` boolean** (amended): only literal `true` prepends
+  `--dangerously-skip-permissions` to the launch args; absent/false/malformed launches with the
+  prompt alone, and the bypass is bridge-launch-only (the clipboard fallback cannot carry the startup
+  flag) with a required per-launch indicator. The HTTP wire contract is unchanged by infra-020.
+  **Shares ADR-0002's bounded-ladder collision idiom** but on a different port clause
   (a *fixed literal* `31425` start + server-mediated discovery, because the bridge's reader is a
   filesystem-blind sandboxed frame; the dashboard derives a *root-based* port + runfile discovery —
   see the ADR-0002 infrastructure-018 addendum); every other ADR-0002 clause stands (stdlib-only,
@@ -244,7 +253,8 @@ Apply write request.
   lives in `vscode-extension/src/bridge.js` (pure, unit-tested with the terminal-launch action
   injected); `extension.js` is the only file touching the `vscode` API. `POST /inject` deferred.
   Installed outside the marketplace via `vsce package` + `code --install-extension`
-  (see `vscode-extension/README.md`). (infrastructure-013, building on infrastructure-012.)
+  (see `vscode-extension/README.md`). (infrastructure-013, building on infrastructure-012;
+  shell-bypass launch reshape infrastructure-020.)
 
 ## Open questions
 

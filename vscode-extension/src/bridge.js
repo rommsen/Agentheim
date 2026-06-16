@@ -2,8 +2,10 @@
 // ADR-0002 only on the fixed-port + discovery clause).
 //
 // A `node:http` listener bound to 127.0.0.1 ONLY. On a token-bearing POST /run
-// it invokes an injected `launchTerminal(claudeCommand)` callback — the single
+// it invokes an injected `launchClaude({ command, args })` callback — the single
 // seam the editor owns (`vscode.window.createTerminal` lives in extension.js).
+// The core emits a structured launch DESCRIPTOR (raw argv), never a shell command
+// string, so no shell ever parses builder text (ADR-0018, amended 2026-06-16).
 // Everything contractual (loopback bind, fallback ladder, per-activation token,
 // bridge.json discovery file, body/CORS handling) lives here so it is unit-
 // testable without the editor.
@@ -123,12 +125,16 @@ function readBody(req, limit = 64 * 1024) {
 }
 
 /**
- * Build the request handler. `token` gates every request; `launchTerminal` is
- * the injected editor action invoked with the full `claude [--dangerously-skip-
- * permissions] "<prompt>"` command (the flag opt-in via strict-`true`
- * `skipPermissions`, ADR-0018).
+ * Build the request handler. `token` gates every request; `launchClaude` is the
+ * injected editor action invoked with a structured launch descriptor
+ * `{ command: 'claude', args: [...] }`. The prompt is carried as a single raw
+ * argv element — no shell, no quoting, no escaping — so any character the builder
+ * typed (`"`, `'`, `` ` ``, `$`, `&`, `|`, `;`, `$(...)`) reaches the spawned
+ * `claude` session verbatim. The optional `--dangerously-skip-permissions` flag
+ * is prepended ONLY on a strict-`true` `skipPermissions` (ADR-0018, amended
+ * 2026-06-16).
  */
-function makeHandler({ token, launchTerminal }) {
+function makeHandler({ token, launchClaude }) {
   return async function handler(req, res) {
     applyCors(res, req);
 
@@ -173,18 +179,16 @@ function makeHandler({ token, launchTerminal }) {
         return;
       }
       // Opt-in permission bypass (ADR-0018, amended 2026-06-14). The flag is
-      // injected ONLY on a strict-`true` identity check — field absent, `false`,
+      // prepended ONLY on a strict-`true` identity check — field absent, `false`,
       // `null`, the string "true", a number, or anything else falls through to
-      // the prompt-gated default `claude "<prompt>"`, so malformed input never
-      // silently enables the bypass. Embedded double-quotes are escaped so the
-      // shell command stays well-formed regardless of the flag.
+      // the prompt-gated default `args = [prompt]`, so malformed input never
+      // silently enables the bypass. The prompt is a single RAW argv element:
+      // no quoting, no escaping (ADR-0018, amended 2026-06-16). The OS passes it
+      // to the spawned `claude` verbatim, so no shell can corrupt it.
       const skip = parsed?.skipPermissions === true;
-      const quoted = `"${prompt.replace(/"/g, '\\"')}"`;
-      const command = skip
-        ? `claude --dangerously-skip-permissions ${quoted}`
-        : `claude ${quoted}`;
+      const args = skip ? ['--dangerously-skip-permissions', prompt] : [prompt];
       try {
-        launchTerminal(command);
+        launchClaude({ command: 'claude', args });
       } catch (err) {
         send(res, 500, { error: 'launch failed', detail: String(err && err.message) });
         return;
@@ -223,14 +227,14 @@ function removeBridgeFile(root) {
  * returns a handle { port, token, address, server, close() }. `close()` shuts
  * the listener AND removes the discovery file (deactivation contract).
  *
- * @param {{ root: string, launchTerminal: (cmd: string) => void, ports?: number[] }} opts
+ * @param {{ root: string, launchClaude: (descriptor: { command: string, args: string[] }) => void, ports?: number[] }} opts
  */
-async function startBridge({ root, launchTerminal, ports = PREFERRED_PORTS }) {
-  if (typeof launchTerminal !== 'function') {
-    throw new TypeError('startBridge requires a launchTerminal callback');
+async function startBridge({ root, launchClaude, ports = PREFERRED_PORTS }) {
+  if (typeof launchClaude !== 'function') {
+    throw new TypeError('startBridge requires a launchClaude callback');
   }
   const token = generateToken();
-  const server = http.createServer(makeHandler({ token, launchTerminal }));
+  const server = http.createServer(makeHandler({ token, launchClaude }));
   const port = await listenWithLadder(server, ports);
 
   const meta = {
