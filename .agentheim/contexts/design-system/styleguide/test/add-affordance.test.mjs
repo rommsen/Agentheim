@@ -1,14 +1,12 @@
 // Tests for the optional "add ticket" affordance on the EmptyColumn empty-state
 // card and the ColumnHeader (agentic-workflow-018).
 //
-// The board is a projection of disk (ADR-0001): you don't ADD tickets to
-// todo/doing/done from the dashboard — they arrive by being modeled and promoted.
-// So the add affordances are dead buttons on every non-backlog column. Per the
-// ds-006 `cornerAction` precedent (and aw-016's use of it), the affordance becomes
-// an OPTIONAL slot the consumer supplies — `onAdd` — default OFF: absent ->
-// nothing renders. The board supplies it ONLY for backlog; todo/doing/done pass
-// nothing, so they render the empty-state copy + icon with no dead button and a
-// header with no `+`.
+// Per the ds-006 `cornerAction` precedent, the add affordance is an OPTIONAL slot
+// the consumer supplies — `onAdd` — default OFF: absent -> nothing renders. This
+// suite asserts ONLY the styleguide-owned guard contract: both primitives gate the
+// affordance behind an `onAdd &&` guard, never rendering it unconditionally.
+// Whether (and where) a consumer supplies `onAdd` is the consumer's concern and is
+// covered by the dashboard suite — not asserted here (ADR-0003).
 //
 // EmptyColumn / ColumnHeader render via htm/React with no DOM under `node --test`,
 // so — mirroring the ticket-card / collapsible suites — the load-bearing,
@@ -23,11 +21,9 @@ import { dirname, join } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP = join(HERE, '..', 'app');
-const REPO = join(HERE, '..', '..', '..', '..', '..');
 
 const emptySrc = readFileSync(join(APP, 'empty.js'), 'utf8');
 const kanbanSrc = readFileSync(join(APP, 'kanban.js'), 'utf8');
-const boardSrc = readFileSync(join(REPO, 'dashboard', 'app', 'board.js'), 'utf8');
 
 // --- EmptyColumn: the empty-state "Add ticket →" button is now an optional slot ---
 
@@ -66,24 +62,4 @@ test('ColumnHeader renders the `+` add button ONLY when onAdd is supplied (defau
     .split('\n')
     .filter((line) => /name="plus"/.test(line));
   assert.equal(plusLines.length, 1, 'exactly one plus-icon render line expected');
-});
-
-// --- Board: backlog supplies the slot; todo/doing/done supply nothing ---
-
-test('the board supplies onAdd to EmptyColumn ONLY for backlog', () => {
-  // The board renders <EmptyColumn status=... /> and must hand it an onAdd only on
-  // the backlog column. The simplest seam: a per-column value that is undefined
-  // outside backlog, passed straight through.
-  assert.match(boardSrc, /<\$\{EmptyColumn\}[^>]*onAdd=/s,
-    'the board must pass onAdd into EmptyColumn (so backlog keeps its affordance)');
-});
-
-test('the board no longer hands ColumnHeader a no-op onAdd for non-backlog columns', () => {
-  // aw-016 wired `onAdd=${status === "backlog" ? copy : () => {}}`. A `() => {}`
-  // for the non-backlog branch reintroduces the dead `+` (now that the header
-  // gates on onAdd being truthy, a no-op function is still truthy and renders the
-  // button). The non-backlog branch must pass NO add handler — undefined — so the
-  // header renders no `+`.
-  assert.doesNotMatch(boardSrc, /onAdd=\$\{status === "backlog" \? [^}]*: \(\) => \{\}\}/,
-    'the non-backlog onAdd branch must be undefined, not a no-op () => {}');
 });
