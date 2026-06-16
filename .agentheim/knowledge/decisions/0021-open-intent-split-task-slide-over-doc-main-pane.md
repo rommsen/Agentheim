@@ -5,7 +5,7 @@
 - Context (BC): agentic-workflow
 - Supersedes: —
 - Reshapes: ADR-0010 (one drawer for all artifacts → drawer is task-only), ADR-0011 §5 (board↔library toggle retired, full-pane library surface retired)
-- Related: ADR-0003 (styleguide single source), ADR-0009 (dashboard app shell), ADR-0010 (slide-over doc-shaped item), ADR-0011 (library groups from tree locations), ADR-0017 (dashboard read-only), agentic-workflow-026 (left-rail shell relayout), agentic-workflow-027
+- Related: ADR-0003 (styleguide single source), ADR-0009 (dashboard app shell), ADR-0010 (slide-over doc-shaped item), ADR-0011 (library groups from tree locations), ADR-0017 (dashboard read-only), agentic-workflow-026 (left-rail shell relayout), agentic-workflow-027, agentic-workflow-039 (slide-over "Open in full screen" — a deliberate per-action OVERRIDE of this split: it puts a *task* in the main pane, expressed as a separate shell handler `setSelectedDoc(openIntent); setOpenIntent(null)`, NOT a change to `isTaskIntent`; the default click routing below still governs)
 
 ## Context
 

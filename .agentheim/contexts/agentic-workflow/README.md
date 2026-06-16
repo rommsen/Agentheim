@@ -354,6 +354,11 @@ separate BC, but today the whole tool lives in this one.
   (`{ type, meta: <real path>, body }`) so the real in-root path is shown and the fetched
   markdown rendered (ADR-0010, reshaped by ADR-0021). Lives in `dashboard/app/slide-over.js`
   over the pure, unit-tested `dashboard/app/slide-over-data.js`. Esc and scrim-click close it.
+  Its header carries an **"Open in full screen"** action (the styleguide `Drawer`'s bare
+  `onOpenFullScreen` callback, design-system-009): clicking it promotes the open task **out of the
+  cramped slide-over and into the main pane** (`setSelectedDoc(openIntent); setOpenIntent(null)`,
+  agentic-workflow-039) — a deliberate per-action override of the ADR-0021 split, not a change to
+  the default `isTaskIntent` routing. The **Board** rail item returns to the board.
   See ADR-0010, ADR-0021, ADR-0009.
 - **Main-pane reader** — the dashboard's reading surface for a non-task **document**
   (agentic-workflow-027): vision, context map, BC README, ADR, research. Selecting a rail row

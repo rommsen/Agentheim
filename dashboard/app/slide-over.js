@@ -47,9 +47,13 @@ const OVERLAY_STYLE = {
  *
  * @param {object|null} intent — the open-intent (clicked task/artifact). Null = closed.
  * @param {() => void} onClose — close sink; the parent clears `intent`.
+ * @param {() => void} [onOpenFullScreen] — optional "Open in full screen" action
+ *   (ds-009's bare Drawer callback). When supplied the Drawer header renders the action;
+ *   the shell owns the open task, so the callback takes no argument (aw-039). Threaded
+ *   to the styleguide Drawer UNFORKED (ADR-0003).
  * @param {(path: string) => Promise<string>} [fetchDoc] — overridable doc fetcher (tests).
  */
-export function SlideOver({ intent, onClose, fetchDoc = defaultFetchDoc }) {
+export function SlideOver({ intent, onClose, onOpenFullScreen, fetchDoc = defaultFetchDoc }) {
   // `phase` drives the body the Drawer shows while the markdown is in flight.
   const [item, setItem] = useState(null);
 
@@ -79,7 +83,7 @@ export function SlideOver({ intent, onClose, fetchDoc = defaultFetchDoc }) {
   return html`
     <div style=${OVERLAY_STYLE}>
       <div style=${{ position: "absolute", inset: 0, pointerEvents: item ? "auto" : "none" }}>
-        <${Drawer} item=${item} headerVariant="contextual" onClose=${onClose} />
+        <${Drawer} item=${item} headerVariant="contextual" onClose=${onClose} onOpenFullScreen=${onOpenFullScreen} />
       </div>
     </div>`;
 }

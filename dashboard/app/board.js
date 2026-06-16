@@ -1130,6 +1130,17 @@ export function DashboardApp() {
   const onClose = useCallback(() => setOpenIntent(null), []);
   // The Board RailItem returns the main pane to the board: clear the selected doc.
   const onSelectBoard = useCallback(() => setSelectedDoc(null), []);
+  // "Open in full screen" (slide-over header, ds-009 callback): promote the OPEN TASK
+  // out of the cramped slide-over and into the main content pane — the same surface
+  // non-task docs render in (MainPaneReader, aw-027). A deliberate per-action override
+  // of the ADR-0021 split (which routes tasks → slide-over): the task carries a real
+  // on-disk `path` + `id`, so MainPaneReader consumes it directly — no shape adapter.
+  // The Drawer callback is bare; the shell already owns the open task in `openIntent`,
+  // so this is just the two mutually-exclusive states swapping. No write (ADR-0017).
+  const onOpenFullScreen = useCallback(() => {
+    setSelectedDoc(openIntent);  // promote the open task into the main pane
+    setOpenIntent(null);         // and close the slide-over
+  }, [openIntent]);
 
   // The shell-level "stopped" state (aw-028). The topbar's quiet Stop dashboard launch
   // calls onStopped ONLY when launchOrCopy returned `via: "bridge"` — i.e. POST /run
@@ -1171,6 +1182,6 @@ export function DashboardApp() {
           </div>
         </div>
       </div>
-      <${SlideOver} intent=${openIntent} onClose=${onClose} />
+      <${SlideOver} intent=${openIntent} onClose=${onClose} onOpenFullScreen=${onOpenFullScreen} />
     </${ThemeCtx.Provider}>`;
 }
