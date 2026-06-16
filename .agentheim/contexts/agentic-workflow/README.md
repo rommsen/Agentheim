@@ -260,12 +260,20 @@ separate BC, but today the whole tool lives in this one.
   *seeds-and-fires* -- the spawned `modeling` session runs the **cascade** dismiss and **lists +
   re-confirms the full dependent subtree** before deleting anything (ADR-0022), so the dialog body says
   so (the card can only name itself). The card disappears via the existing SSE live-update once the
-  agent deletes the file -- **no** dashboard write path. Unlike the launch buttons, the dismiss
-  deliberately does **not** thread `skipPermissions` (a destructive intent keeps its normal permission
-  prompt -- mirrors the Stop button, aw-028). The click is propagation-isolated so dismissing never
-  opens the slide-over. The dashboard `dist/` was rebuilt (esbuild) so the deployed app imports
-  `ConfirmDialog` (ds-018 shipped `dist/` unbuilt; aw-048 is its first consumer). See ADR-0022,
-  ADR-0017, ADR-0018, ADR-0003, ADR-0016.
+  agent deletes the file -- **no** dashboard write path. Like every other launch, the dismiss now
+  **threads the armed `skipPermissions` signal** (agentic-workflow-051, reversing aw-048): the armed
+  value arrives as a prop from the single `skip-permissions-state.js` store -- no second source, no
+  `/api/bridge` probe on render -- and the bridge POSTs `{ prompt, skipPermissions: true }` **only when
+  armed**, omitting the field otherwise (strict-`true` contract, never sends `false`; OFF path stays
+  byte-identical to aw-048). The clipboard fallback still carries **no** bypass
+  (`--dangerously-skip-permissions` is startup-only). Dropping the prompt on a hard-deleting cascade is
+  safe because the spawned `modeling` session re-confirms the full subtree **inside** the session
+  (ADR-0022) -- that guard survives `--dangerously-skip-permissions`. No distinct per-launch armed cue
+  is needed: the trash glyph is **already** `--obligation`-tinted because it is destructive (aw-048), and
+  under aw-041 doctrine the toggle is the single control wearing the danger hue, so dismiss satisfies
+  ADR-0018's per-launch mandate trivially. The click is propagation-isolated so dismissing never
+  opens the slide-over. The dashboard `dist/` was rebuilt (esbuild) so the deployed app carries the
+  change. See ADR-0022, ADR-0017, ADR-0018, ADR-0019, ADR-0003, ADR-0016.
 - **Board prompt bar (Quick Capture / Modeling / Research)** -- the backlog column's former single
   add-ticket **`+`** first became **two** labelled launch buttons inside the backlog column
   (agentic-workflow-020), then those two buttons were **relocated** (agentic-workflow-023) out of the

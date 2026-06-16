@@ -607,13 +607,26 @@ function BacklogCardLaunchPair({ id, skipPermissions = false }) {
 // onMouseEnter/onMouseLeave (`hostHover`); the button is ALWAYS in the DOM at
 // opacity 0 and rises to opacity 1 on host hover OR its own keyboard focus, so it is
 // keyboard-reachable without a pointer. On its OWN hover it highlights (intensified
-// --obligation fill). Like the Stop button (aw-028) it deliberately does NOT thread
-// skipPermissions — a dismiss keeps its normal permission prompt.
+// --obligation fill).
+//
+// ARMED skip-permissions (aw-051, reversing aw-048): the dismiss now honours the
+// armed toggle like every other launch — when armed it threads `skipPermissions:
+// true` into launchOrCopy (strict-`true` check), so the bridge seeds
+// `claude --dangerously-skip-permissions`; OFF, it omits the field byte-identically
+// to aw-048. The armed value arrives as a PROP threaded down from DashboardApp (the
+// single skip-permissions-state store — no second source, no /api/bridge probe on
+// render, ADR-0017/0019). Dropping the permission prompt on a hard-deleting cascade
+// is acceptable because the spawned `modeling` session LISTS and RE-CONFIRMS the full
+// dependent subtree INSIDE the session before deleting (ADR-0022) — that in-session
+// guard survives even under --dangerously-skip-permissions. No distinct per-launch cue
+// is needed (the trash glyph is ALREADY --obligation-tinted because it is destructive,
+// aw-048): under aw-041 doctrine "the toggle is the single control wearing the danger
+// hue", so dismiss satisfies ADR-0018's per-launch mandate trivially.
 //
 // The click is propagation-isolated (stopPropagation on the button) so dismissing
 // never opens the slide-over; the dialog (rendered as a sibling) likewise stops
 // propagation on its host so confirm/cancel clicks never bubble to the card.
-function CardTrashCan({ ticket, hostHover }) {
+function CardTrashCan({ ticket, hostHover, skipPermissions = false }) {
   const [open, setOpen] = useState(false);
   const [hover, setHover] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -623,12 +636,14 @@ function CardTrashCan({ ticket, hostHover }) {
     const fetchImpl = typeof window !== "undefined" && typeof window.fetch === "function"
       ? window.fetch.bind(window)
       : undefined;
-    // No skipPermissions threaded — a dismiss keeps its normal permission prompt
-    // (mirrors the Stop button, aw-028). The clipboard fallback copies the same
-    // command silently when the bridge is absent (launchOrCopy never throws).
-    launchOrCopy({ prompt: dismissCommandFor(ticket.id), fetchImpl, copy: copyToClipboard });
+    // Thread the armed signal exactly like the launch buttons (aw-051): strict-`true`
+    // so the bridge POST omits the field unless armed (never sends `false`). The
+    // clipboard fallback carries NO bypass (--dangerously-skip-permissions is
+    // startup-only; the slash command pastes into a running session) — launchOrCopy
+    // handles that asymmetry and never throws when the bridge is absent.
+    launchOrCopy({ prompt: dismissCommandFor(ticket.id), fetchImpl, copy: copyToClipboard, skipPermissions: skipPermissions === true });
     setOpen(false);
-  }, [ticket.id]);
+  }, [ticket.id, skipPermissions]);
 
   const onTrashClick = useCallback((e) => {
     if (e && typeof e.stopPropagation === "function") e.stopPropagation();
@@ -729,7 +744,7 @@ function BoardCard({ ticket, status, selectedId, onOpen, skipPermissions = false
       onMouseEnter=${() => setHostHover(true)}
       onMouseLeave=${() => setHostHover(false)}>
       ${card}
-      <${CardTrashCan} ticket=${ticket} hostHover=${hostHover} />
+      <${CardTrashCan} ticket=${ticket} hostHover=${hostHover} skipPermissions=${skipPermissions} />
     </div>`;
 }
 

@@ -21,8 +21,9 @@
 //   - the dialog body conveys the agent's cascade dismiss (lists + re-confirms the
 //     full set in the spawned session);
 //   - the click is propagation-isolated so dismissing never opens the slide-over;
-//   - the trash does NOT thread skipPermissions (a dismiss keeps its normal prompt,
-//     mirroring the Stop button, aw-028).
+//   - the trash THREADS the armed skipPermissions signal (aw-051) from the shared
+//     skip-permissions-state store, exactly like the launch buttons — posting
+//     skipPermissions only when armed, omitting it otherwise (strict-`true` contract).
 //
 // Reading source is deliberately blunt, but it catches the regression classes this
 // task cares about without standing up a React+DOM test rig the project doesn't have.
@@ -33,9 +34,35 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { launchOrCopy } from '../app/bridge-launch.js';
+import { dismissCommandFor } from '../app/modeling-command.js';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dashboardDir = path.join(here, '..');
 const boardSrc = readFileSync(path.join(dashboardDir, 'app', 'board.js'), 'utf8');
+
+// A scriptable fetch that records the /run POST, mirroring bridge-launch.test.mjs.
+function makeFetch(routes) {
+  const calls = [];
+  const fetchImpl = async (url, opts = {}) => {
+    calls.push({ url: String(url), opts });
+    for (const [needle, responder] of routes) {
+      if (String(url).includes(needle)) return responder(url, opts);
+    }
+    throw new Error(`unrouted fetch: ${url}`);
+  };
+  fetchImpl.calls = calls;
+  return fetchImpl;
+}
+function jsonResponse(status, body) {
+  return { ok: status >= 200 && status < 300, status, json: async () => body };
+}
+function makeCopy(result = true) {
+  const copied = [];
+  const copy = async (text) => { copied.push(text); return result; };
+  copy.copied = copied;
+  return copy;
+}
 
 function fn(name) {
   const m = boardSrc.match(new RegExp(`function ${name}\\b[\\s\\S]*?\\n}`));
@@ -116,16 +143,90 @@ test('the trash click is propagation-isolated so dismissing never opens the slid
   assert.match(boardSrc, /stopPropagation/, 'the trash affordance must stop propagation (never open the slide-over)');
 });
 
-test('the trash does NOT thread skipPermissions (a dismiss keeps its normal permission prompt)', () => {
-  // Mirrors the Stop button (aw-028): a dismiss is a destructive intent that should
-  // keep its normal permission prompt, so the dismiss launch never threads
-  // skipPermissions into launchOrCopy.
+test('the trash THREADS the armed skipPermissions signal into launchOrCopy (aw-051)', () => {
+  // aw-051 reverses aw-048: the dismiss now honours the armed toggle like every other
+  // launch. The launchOrCopy call inside the dismiss fire must pass skipPermissions,
+  // and it must be guarded by the strict-`true` check (skipPermissions === true) so the
+  // OFF path stays byte-identical (the bridge POST omits the field unless armed, per the
+  // strict-`true` contract in amended ADR-0018).
   const card = fn('CardTrashCan');
-  // The launchOrCopy call inside the dismiss fire must NOT pass skipPermissions —
-  // the body is { prompt, fetchImpl, copy }, never a skipPermissions field.
-  const launch = card.match(/launchOrCopy\(\{[^}]*\}\)/);
+  const launch = card.match(/launchOrCopy\(\{[\s\S]*?\}\)/);
   assert.ok(launch, 'CardTrashCan must call launchOrCopy');
-  assert.doesNotMatch(launch[0], /skipPermissions/, 'the dismiss launchOrCopy must NOT thread skipPermissions (aw-028 precedent)');
+  assert.match(launch[0], /skipPermissions:\s*skipPermissions === true/,
+    'the dismiss launchOrCopy must thread the armed skipPermissions via the strict-`true` check (aw-051)');
+});
+
+test('CardTrashCan reads the armed signal via a prop, not a second source of truth', () => {
+  // The armed value must arrive as the `skipPermissions` prop threaded down from
+  // DashboardApp (the single skip-permissions-state store), NOT re-read from localStorage
+  // or probed off /api/bridge inside the component (one source of truth, ADR-0019).
+  const card = fn('CardTrashCan');
+  assert.match(card, /function CardTrashCan\(\{[^}]*skipPermissions[^}]*\}\)/,
+    'CardTrashCan must accept skipPermissions as a prop (single store, no second source)');
+  assert.doesNotMatch(card, /loadSkipPermissions|localStorage|\/api\/bridge/,
+    'CardTrashCan must not re-read the armed state or probe the bridge on render (ADR-0017/0019)');
+});
+
+test('BoardCard threads its skipPermissions prop down into the CardTrashCan', () => {
+  // The armed flag flows DashboardApp -> DashboardBoard -> BoardColumn -> BoardCard ->
+  // CardTrashCan, the same chain the launch buttons ride.
+  const card = fn('BoardCard');
+  assert.match(card, /<\$\{CardTrashCan\}[^>]*skipPermissions=\$\{skipPermissions\}/,
+    'BoardCard must thread skipPermissions into CardTrashCan');
+});
+
+// ---- dismiss bridge body shape, both armed states (aw-051) ------------------
+// The dismiss fires `launchOrCopy({ prompt: dismissCommandFor(id), ..., skipPermissions:
+// skipPermissions === true })`. These drive the REAL launchOrCopy with the REAL dismiss
+// command to lock the exact POST /run body for a dismiss in each armed state.
+
+test('ARMED dismiss -> POST /run body is { prompt: dismiss-command, skipPermissions:true }', async () => {
+  let runCall = null;
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31440, token: 't', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', (url, opts) => { runCall = { url, opts }; return jsonResponse(202, { ok: true }); }],
+  ]);
+  const armed = true;
+  const result = await launchOrCopy({
+    prompt: dismissCommandFor('agentic-workflow-051'),
+    fetchImpl, copy: makeCopy(), skipPermissions: armed === true,
+  });
+  assert.equal(result.via, 'bridge');
+  assert.deepEqual(JSON.parse(runCall.opts.body), {
+    prompt: '/agentheim:modeling dismiss agentic-workflow-051',
+    skipPermissions: true,
+  });
+});
+
+test('UNARMED dismiss -> POST /run body OMITS skipPermissions (byte-identical to aw-048)', async () => {
+  let runCall = null;
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { port: 31441, token: 't', v: 1 })],
+    ['/health', () => jsonResponse(200, { ok: true })],
+    ['/run', (url, opts) => { runCall = { url, opts }; return jsonResponse(202, { ok: true }); }],
+  ]);
+  const armed = false;
+  await launchOrCopy({
+    prompt: dismissCommandFor('agentic-workflow-051'),
+    fetchImpl, copy: makeCopy(), skipPermissions: armed === true,
+  });
+  const body = JSON.parse(runCall.opts.body);
+  assert.deepEqual(body, { prompt: '/agentheim:modeling dismiss agentic-workflow-051' });
+  assert.equal('skipPermissions' in body, false, 'OFF dismiss must OMIT the field, never send false');
+});
+
+test('ARMED dismiss with NO bridge -> clipboard fallback carries NO bypass (startup-only)', async () => {
+  // --dangerously-skip-permissions is startup-only; the clipboard pastes the slash
+  // command into a RUNNING session, so the fallback never carries the bypass even armed.
+  const fetchImpl = makeFetch([
+    ['/api/bridge', () => jsonResponse(200, { present: false })],
+  ]);
+  const copy = makeCopy();
+  const cmd = dismissCommandFor('agentic-workflow-051');
+  const result = await launchOrCopy({ prompt: cmd, fetchImpl, copy, skipPermissions: true });
+  assert.notEqual(result.via, 'bridge');
+  assert.deepEqual(copy.copied, [cmd], 'the fallback copies exactly the dismiss command, no bypass marker');
 });
 
 test('the styleguide TicketCard is consumed unforked — no new prop is added for placement', () => {
