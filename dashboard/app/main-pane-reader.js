@@ -26,6 +26,7 @@ import { Markdown } from "../../.agentheim/contexts/design-system/styleguide/app
 import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/icons.js";
 
 import { docUrl } from "./slide-over-data.js";
+import { withFrontmatterSection } from "./frontmatter.js";
 
 function ReaderState({ children }) {
   return html`
@@ -82,7 +83,7 @@ export function MainPaneReader({ doc, fetchDoc = defaultFetchDoc }) {
         display: "flex", alignItems: "center", gap: 10, padding: "0 0 14px",
         fontFamily: "var(--font-mono)", fontSize: 11.5, color: "var(--fg-3)",
       }}>${doc.path}</div>
-      <${Markdown} source=${body} />
+      <${Markdown} source=${withFrontmatterSection(body)} />
     </article>`;
 }
 

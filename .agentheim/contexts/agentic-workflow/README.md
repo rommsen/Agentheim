@@ -370,6 +370,18 @@ separate BC, but today the whole tool lives in this one.
   agentic-workflow-040) — block centering, not center-aligned text. The main pane shows EITHER
   the selected document OR the board (the default); the rail's **Board** item returns it to the
   board. See ADR-0021.
+- **Frontmatter folding** — both render surfaces share one pure helper,
+  `dashboard/app/frontmatter.js` (`parseFrontmatter` / `frontmatterSection` /
+  `withFrontmatterSection`, unit-tested under `node --test`, agentic-workflow-043). A document's
+  leading YAML frontmatter would otherwise reach the styleguide `Markdown` primitive raw and be
+  rendered by `marked` as one large bold setext heading (the trailing `---` reads as an
+  underline). The helper runs **upstream of `Markdown`**: it strips the first `---`…`---` block
+  out of the body and re-emits it as a quiet, token-styled, collapsed-by-default native
+  `<details><summary>Front matter</summary>` table (one row per field, HTML-escaped) prepended to
+  the stripped body. `marked` passes the raw HTML through (ADR-0003), so the same composed string
+  flows through the `Drawer` (slide-over) and the direct `Markdown` (main-pane reader) — both
+  primitives stay **unforked**, no design-system change. A document with no frontmatter passes
+  through unchanged. Wired in `slide-over.js` (success path only) and `main-pane-reader.js`.
 - **Open-intent routing** — the shell (`DashboardApp`) routes every clicked artifact on
   artifact KIND via the pure `dashboard/app/intent-route.js` → `isTaskIntent`
   (agentic-workflow-027): an intent carrying a lifecycle `status` is a **task** → slide-over; an

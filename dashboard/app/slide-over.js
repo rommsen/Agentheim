@@ -29,6 +29,7 @@ import { html } from "../../.agentheim/contexts/design-system/styleguide/app/htm
 import { Drawer } from "../../.agentheim/contexts/design-system/styleguide/app/drawer.js";
 
 import { docUrl, intentToDrawerItem } from "./slide-over-data.js";
+import { withFrontmatterSection } from "./frontmatter.js";
 
 // The Drawer renders position:absolute inside its nearest positioned ancestor
 // (in the styleguide demo, the framed app). On the live dashboard the panel must
@@ -68,7 +69,10 @@ export function SlideOver({ intent, onClose, onOpenFullScreen, fetchDoc = defaul
     // on the network — the Drawer animates in, then the body swaps to the doc.
     setItem(intentToDrawerItem(intent, "_Loading…_"));
     fetchDoc(intent.path)
-      .then((md) => { if (alive) setItem(intentToDrawerItem(intent, md)); })
+      // Fold the fetched body's YAML frontmatter into a quiet collapsible section
+      // BEFORE it becomes the Drawer item's body (aw-043). The _Loading…_ / error
+      // bodies above carry no frontmatter, so only the success path is transformed.
+      .then((md) => { if (alive) setItem(intentToDrawerItem(intent, withFrontmatterSection(md))); })
       .catch(() => {
         if (alive) {
           setItem(intentToDrawerItem(
