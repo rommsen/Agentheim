@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 16:54 -- Task verified and completed: agentic-workflow-053 - Topbar layout — settings gear + Work flush right
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-053 - Topbar layout — search on the left, settings gear + Work flush right
+**Summary:** Added `marginLeft: "auto"` to the `BoardTopbar` gear+Work group div so unconsumed free space collects ahead of it and the group sits flush against the right edge, search staying left-anchored at its bounded `flex:1/maxWidth:520`. Consumer-side only (ADR-0003 unforked, ADR-0017 read-only); `dashboard/dist/app.js` rebuilt.
+**Verification:** PASS (iteration 1) — flush-right + left-anchored + narrow-graceful covered by 2 source-guard tests (project idiom for the harness-less React glue); dashboard suite 469 pass / 0 fail; dist carries the change; no styleguide edit.
+**Commit:** b210357
+**Files changed:** 3 (board.js, dashboard/dist/app.js, topbar-right-align.test.mjs)
+**Tests added:** 2 (topbar-right-align.test.mjs — marginLeft:auto group guard, bounded left-anchored search guard)
+**ADRs written:** none
+
+---
+
+## 2026-06-16 16:48 -- Batch started: [agentic-workflow-053]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-053 - Topbar layout — search on the left, settings gear + Work flush right
+**Parallel:** no (1 worker) — second of 3 sequential batches; aw-053 and aw-054 both edit `dashboard/app/board.js`, so they run one-per-batch.
+
+---
+
 ## 2026-06-16 16:46 -- Task verified and completed: design-system-019 - Search results — category headers need more contrast
 
 **Type:** Work / Task completion
