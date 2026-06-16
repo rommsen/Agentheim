@@ -470,6 +470,11 @@ the pattern in **section 11** (`SearchSpecimen` — type *design*, *adr*, or *zz
 > / `015` / `017` / `018` precedent. Re-review with the builder against the canvas
 > (`styleguide/index.html` → section 11) **before** `agentic-workflow-052` wires it
 > into the dashboard topbar.
+>
+> **Gate re-confirmed: OPEN — approved by the builder 2026-06-16.** The builder
+> reviewed the live Search & grouped-results pattern in the canvas (section 11) and
+> confirmed it ("styleguide looks good"). The gate stands open against the source that
+> includes the search-field combobox; `agentic-workflow-052` may now consume it.
 
 > Live-board note: the served dashboard `dist/` is a derived artifact (ADR-0003) and
 > was rebuilt here (`node build.mjs`), but the bundle is byte-identical — the

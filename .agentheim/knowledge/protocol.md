@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 15:12 -- Styleguide gate re-confirmed: OPEN (design-system-016)
+
+**Type:** Design-system / Gate approval
+**BC:** design-system
+**Trigger:** design-system-016 (Search & grouped-results pattern, canvas section 11)
+**Outcome:** Builder reviewed the live canvas and approved ("styleguide looks good"). Gate stands OPEN against the source including the search-field combobox; agentic-workflow-052 unblocked to consume it. Recorded in the BC README gate note.
+
+---
+
 ## 2026-06-16 15:08 -- Work session ended
 
 **Type:** Work / Session end
