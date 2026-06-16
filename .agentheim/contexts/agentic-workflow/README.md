@@ -458,7 +458,8 @@ separate BC, but today the whole tool lives in this one.
 ## Aggregates
 
 - **Task** — protects: status always matches its folder (`backlog/` → `todo/` → `doing/` →
-  `done/`); one task = one commit; IDs (`<bc>-NNN`) are stable and never renumbered.
+  `done/`); one task = one commit; IDs (`<bc>-NNN`) are stable and never renumbered — a
+  **dismissed** id (ADR-0022) is retired, not reused; a future capture takes the next free number.
 - **Vision** — protects: a single, two-minute-readable strategic root per project.
 - **Knowledge base** (protocol + ADRs + research + indexes) — protects: every action is
   logged; indexes point rather than duplicate; ADR↔task backlinks stay bidirectional.
@@ -469,12 +470,26 @@ separate BC, but today the whole tool lives in this one.
 
 Past-tense, domain-language. Vision created · Bounded context identified · Idea captured ·
 Task refined · Task promoted · Task claimed · Task completed · Task verified · Task bounced ·
-Decision recorded (ADR) · Research published · Research reviewed.
+Task dismissed · Decision recorded (ADR) · Research published · Research reviewed.
 
 ## Key commands
 
-Intents entering the context. Brainstorm · Quick Capture · Refine · Promote · Work · Research ·
-Dashboard.
+Intents entering the context. Brainstorm · Quick Capture · Refine · Promote · Dismiss · Work ·
+Research · Dashboard.
+
+**Dismiss** (the `modeling` skill's fourth action, agentic-workflow-046) hard-deletes a
+`backlog/`/`todo/` task that will never be worked — a stray capture, a duplicate, an abandoned
+idea — together with its **entire transitive dependent subtree** under one confirmation that
+names every task in the set (ADR-0022's cascade). It **refuses** the whole operation if any task
+in the set is in `doing/` or `done/` (you don't dismiss work in flight or shipped), and the
+removal lives entirely in the skill — never a server write endpoint — so the dashboard stays
+read-only (ADR-0017). Around the raw `.md` deletes the skill reconciles bookkeeping for the whole
+set: INDEX line + count per dismissed id (across every BC the set spans — the one sanctioned
+multi-BC-index exception), every dismissed id stripped from surviving tasks'
+`depends_on`/`blocks`/`prior_art` and any ADR `related_tasks`, and one bare `Modeling / Dismissed`
+protocol entry. Dismissed IDs are retired, never reused (consistent with never-renumber). The
+dashboard's per-card trash-can (agentic-workflow-048) only *seeds and fires* the
+`/agentheim:modeling dismiss <id>` command through the bridge. See ADR-0022, ADR-0017, ADR-0007.
 
 **Dashboard** launches the local web UI over the project's `.agentheim/` folder — a flat Kanban
 board of every BC's tasks, a task-only slide-over for board cards, and a main-pane reader for

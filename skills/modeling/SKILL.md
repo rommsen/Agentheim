@@ -3,11 +3,11 @@ name: modeling
 description: Use whenever the user wants to capture an idea, bug, feature request, refinement, or change to an existing bounded context — anything from "the button should be green" to "we need a whole new subscription subsystem". Also use when the user wants to refine existing backlog items or promote refined items to ready-to-work. Triggers on phrases like "I have an idea", "let's model this", "let's do some modeling", "capture this", "add this to the backlog", "refine the auth backlog", "promote X to todo", "we should also", "what if we added", "there's a bug", "change the color of", "the domain needs to handle". Creates task markdown files in the appropriate bounded context with the right status, and can spawn deeper modeling sessions via the orchestrator. Supports six switchable conversational modes (Interrogator [default], Suggestor, Challenger, Storyteller, Facilitator, Synthesizer) during CAPTURE and REFINE — see references/modes.md.
 ---
 
-# Modeling — Capture, Refine, Promote
+# Modeling — Capture, Refine, Promote, Dismiss
 
-The `modeling` skill is the main entry point for the user's stream of ideas. Every thought — from a one-line bug to a cross-context architectural shift — enters the system here and ends up as a task file in a bounded context.
+The `modeling` skill is the main entry point for the user's stream of ideas. Every thought — from a one-line bug to a cross-context architectural shift — enters the system here and ends up as a task file in a bounded context. It also owns the *removal* of a task that will never be worked (DISMISS), since the dashboard is read-only by design (ADR-0017) and all task-lifecycle changes belong to the skills.
 
-## The three actions
+## The four actions
 
 Decide which action applies based on what the user said and the current state of `.agentheim/`:
 
@@ -16,13 +16,15 @@ Decide which action applies based on what the user said and the current state of
 | **CAPTURE** | User is describing something new | Turns the idea into one or more task files. Places them in `backlog/` if under-refined, or `todo/` if the idea is already concrete enough to work on. |
 | **REFINE** | User wants to work through an existing backlog item, OR the user invoked model with no new idea and backlog items exist | Picks a backlog task, deepens it via the orchestrator, splits it if needed, updates acceptance criteria and dependencies. May move to `todo/` if it becomes ready. |
 | **PROMOTE** | User explicitly wants a task ready for work | Moves a task from `backlog/` to `todo/`, verifying it has enough detail to be picked up by a worker. |
+| **DISMISS** | User wants to drop a `backlog/`/`todo/` task that will never be worked — a stray capture, a duplicate, a since-abandoned idea | Hard-deletes the named task **and its entire transitive dependent subtree** under one confirmation, then reconciles all the bookkeeping (INDEX lines + counts, surviving backlinks, one protocol entry). Refuses if any task in the set is in `doing/` or `done/`. |
 
 ### Disambiguating intent
 
 - If the user gives a concrete idea ("add dark mode") → CAPTURE directly. Don't make them wade through the backlog first when they already know what they want to add.
 - If the user invoked `modeling` with **no concrete new idea** ("let's model", "let's do some modeling", "what's in the backlog?", or a bare invocation) → run the **Opening flow** below: show the backlog, offer to refine, fall through to capture.
 - If the user says "promote X" / "X is ready" → PROMOTE
-- If ambiguous, ask once. Don't guess wrong and then have to undo.
+- If the user says "dismiss X" / "delete X" / "drop X" / "remove X" / "X is dead" / "we won't do X" → DISMISS (resolve X per "Identifying which task the user means", then run the DISMISS flow). DISMISS is also the verb the dashboard's per-card trash-can fires as `/agentheim:modeling dismiss <id>`.
+- If ambiguous, ask once. Don't guess wrong and then have to undo. **Be especially careful before DISMISS** — it hard-deletes files (and possibly a whole subtree). Never infer DISMISS from a soft phrase; require an explicit drop/delete/dismiss intent or the literal command.
 
 ### Opening flow (bare invocation)
 
@@ -54,7 +56,7 @@ This runs only when the user opened `modeling` without handing you a concrete ne
    - User says "no" / "new" / "capture" / starts describing something fresh → **CAPTURE** (see CAPTURE flow).
    - User is vague → ask once which they meant; don't assume.
 
-### Identifying which task the user means (REFINE / PROMOTE)
+### Identifying which task the user means (REFINE / PROMOTE / DISMISS)
 
 When the user references an existing task, support all of these:
 
@@ -64,6 +66,8 @@ When the user references an existing task, support all of these:
 - **No argument** — list all backlog (and todo, for PROMOTE context) tasks grouped by BC and let the user pick
 
 When there are multiple matches, show a compact summary (id, title, status, BC) and ask which one — don't silently pick the first.
+
+DISMISS resolves its target by the exact same rules (exact id / number / keyword, list-on-ambiguity). It additionally scans `doing/` and `done/` while resolving so it can refuse early with a clear message when the named task is already in flight or shipped — only `backlog/` and `todo/` tasks are dismissable.
 
 ## Before acting
 
@@ -98,7 +102,7 @@ Full mode definitions and switching protocol live in `references/modes.md`. The 
 - **Facilitator** — scribe stance; minimal interjection, captures and structures what the room says. CAPTURE default.
 - **Synthesizer** — reflect back tensions and emergent themes across the backlog or a refinement thread. Best as a periodic switch-into.
 
-PROMOTE is mostly mechanical (readiness check + file move) and runs the same regardless of mode. Task file format, ID conventions, the styleguide gate, protocol logging, and orchestrator handoffs are all mode-agnostic.
+PROMOTE and DISMISS are mechanical (readiness check + file move; resolve + cascade + confirm + bookkeeping) and run the same regardless of mode. Task file format, ID conventions, the styleguide gate, protocol logging, and orchestrator handoffs are all mode-agnostic.
 
 ## CAPTURE flow
 
@@ -158,6 +162,42 @@ PROMOTE is mostly mechanical (readiness check + file move) and runs the same reg
 3. If ready, move the file from `backlog/` to `todo/`. Update its frontmatter `status` field.
 
 4. If not ready, tell the user what's missing and offer to switch to the REFINE action on this task.
+
+## DISMISS flow
+
+DISMISS hard-deletes a task that will never be worked, **plus its entire transitive dependent subtree**, and then reconciles every record that pointed at the deleted ids. The contract is frozen by **ADR-0022** — follow it precisely. The disposition is a hard delete (no archive folder, no `status: dismissed` flag): these are unstarted ideas, little history is lost, and the protocol entry preserves the record that they were dropped.
+
+The boundary mirrors ADR-0007: the raw `.md` deletes are the mechanical core; the skill owns the INDEX / protocol / backlink reconciliation layered around them. (DISMISS is a delete, not a move, so it does **not** call `applyTaskMove` — but it follows the same side-effect-ownership rule.)
+
+1. **Resolve the named task** X (exact id / number / keyword — see "Identifying which task the user means"; list matches on ambiguity). Confirm X is in `backlog/` or `todo/`. **Refuse** with a clear message if X is in `doing/` or `done/` — you don't dismiss work in flight or shipped.
+
+2. **Compute the cascade set.** Start with `{X}`. Repeatedly add every task T (in any BC) whose `depends_on` transitively contains a member of the set — equivalently, follow `blocks` edges forward — until the set stops growing (fixed point). This pulls in **upstream dependents only**: a task queued *behind* X, never a task X itself depends on.
+   - **Only `depends_on`/`blocks` edges drive the cascade.** `prior_art`, `related_adrs`, and `related_tasks` are **not** traversed — references through those fields are *stripped* during bookkeeping (step 6), never followed to delete another task.
+   - To find dependents cheaply, prefer the per-BC `INDEX.md` lists already loaded; scan task frontmatter (`depends_on`/`blocks`) across all BCs only as needed, since the subtree can span BCs.
+
+3. **In-flight / shipped guard — refuse the whole operation.** If **any** member of the cascade set is in `doing/` or `done/`, abort before deleting anything and name the offending in-flight/shipped task. Cascade only ever deletes unstarted (`backlog`/`todo`) tasks; the builder resolves the in-flight edge by hand. (X itself being in `doing/`/`done/` is the same refusal from step 1.)
+
+4. **Surface the full cascade set and confirm once.** Present the complete set — id + title for every task, grouped by BC, so the blast radius is visible — and take a **single** confirm/cancel. If the set is just `{X}`, say so plainly. **Cancel changes nothing on disk.** Never split this into per-task confirmations, and never delete more than the set you showed.
+
+   ```
+   Dismissing aw-046 will also remove every task queued behind it:
+
+   | ID        | Title                                  | BC               | Status  |
+   |-----------|----------------------------------------|------------------|---------|
+   | aw-046    | Modeling DISMISS verb                  | agentic-workflow | backlog |
+   | aw-048    | Dashboard per-card trash-can           | agentic-workflow | backlog |
+
+   This hard-deletes 2 task files. Confirm? (yes / cancel)
+   ```
+
+5. **On confirm, hard-delete every `.md` file in the set** from disk.
+
+6. **Reconcile bookkeeping for the whole set** (layered around the raw deletes):
+   - **INDEX.md** — for each dismissed id, remove its line from its BC `INDEX.md` and decrement the matching Backlog/Todo count at the `<!-- task-counts:start -->` markers (no full-file rewrite — edit only at the markers, like every other index update). The set may span BCs, so **editing several BCs' `INDEX.md` in one DISMISS is legitimate here** — this is the one sanctioned exception to "don't edit the index across multiple BCs in one invocation".
+   - **Surviving backlinks** — strip every dismissed id from any *surviving* task's `depends_on` / `blocks` / `prior_art`, and from any ADR's `related_tasks`. References *within* the set vanish with their files, so only survivors need editing — no dangling references left behind.
+   - **Protocol** — prepend **one** bare `Modeling / Dismissed` entry to `.agentheim/knowledge/protocol.md` listing the whole cascade set (ids + titles). No builder-typed reason — id + title + timestamp is the record (see "Protocol logging").
+
+7. **IDs are gone, never reused.** A dismissed number is retired, consistent with "never renumber" — a future capture takes the next free number, never a dismissed one.
 
 ## Task file format
 
@@ -301,11 +341,12 @@ After writing or moving a task file, update the BC's `INDEX.md` so other skills 
 - **CAPTURE writing directly to `todo/`:** insert under `<!-- todo-list:start -->`. Increment Todo count.
 - **PROMOTE (backlog → todo):** remove the line from the backlog list, insert at the top of the todo list. Decrement Backlog, increment Todo.
 - **REFINE that splits a task:** remove the parent line, insert child task lines. Update counts.
+- **DISMISS:** for each id in the cascade set, remove its line from its BC `INDEX.md` and decrement the matching Backlog/Todo count at the markers. The set may span BCs — editing several BCs' indexes in one DISMISS is the sanctioned exception below.
 
 If the BC's `INDEX.md` doesn't exist yet, create it from `references/index-template.md` with the BC name filled in. Do not invent sections — only the templated markers are append targets.
 
 **What not to do:**
-- Do not edit the index across multiple BCs in one skill invocation unless a single capture genuinely lands in multiple BCs.
+- Do not edit the index across multiple BCs in one skill invocation unless a single capture genuinely lands in multiple BCs, **or a DISMISS cascade set spans BCs** (ADR-0022 — the sanctioned exception).
 - Do not auto-rewrite the entire file — only insert/remove at the markers. Preserve any human-added prose elsewhere.
 - Do not append duplicate entries — if the line is already present (same task-id), skip.
 
@@ -354,6 +395,15 @@ Then prepend the appropriate entry right after the `---` on line 4:
 **From → To:** backlog → todo
 
 ---
+
+## YYYY-MM-DD HH:MM -- Modeling / Dismissed: <id-or-id-list>
+
+**Type:** Modeling / Dismiss
+**Dismissed:** [one line per task in the cascade set — `<task-id> - <title> (<bc>)`]
+
+---
 ```
+
+The DISMISS entry is **bare** — it records the cascade set (ids + titles) and the timestamp, no builder-typed reason. One entry per dismiss regardless of how many tasks the cascade removed.
 
 If the action is non-trivial (multiple tasks created from one capture, refinement that produced ADRs, batch promotion), one entry per "thing the user asked for" is enough — don't prepend five entries for a single conversation turn.
