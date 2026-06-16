@@ -5,6 +5,33 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 16:05 -- Batch started: [agentic-workflow-050]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-050 - GET /api/search read endpoint — content search across BC READMEs, ADRs, research & tasks
+**Parallel:** no (1 worker) — single ready task; depends_on empty.
+
+---
+
+## 2026-06-16 16:00 -- Modeling / Promoted: agentic-workflow-050 - GET /api/search read endpoint
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-16 15:55 -- Modeling / Refined: agentic-workflow-050 - Dashboard global search (split backend ⁄ UI)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog (both halves)
+**Summary:** Refined the global-search capture. Builder settled three semantics — match **title + body only** (not frontmatter), rank **title-hits-first then fixed category order** (Bounded contexts → Decisions → Research → Tickets), and **split** the task per its own Notes. aw-050 becomes the pure, separately-testable **`GET /api/search` read endpoint** (no styleguide dep — promotable now); a new **agentic-workflow-052** is the **topbar search UI** (consumes ds-016 + the backend). The architect designed the endpoint and wrote **ADR-0023** (the read-only server's first content-search endpoint: pure `dashboard/search.mjs` walk/rank/excerpt seam mirroring `tree.mjs`, results carrying the existing open-intent shapes so routing reuses `isTaskIntent`/aw-039 unchanged). Reconciled ds-016's `blocks` edge (aw-050 → aw-052) and its consumer references.
+**Split into:** agentic-workflow-052
+**ADRs written:** ADR-0023
+
+---
+
 ## 2026-06-16 15:51 -- Work session ended
 
 **Type:** Work / Session end

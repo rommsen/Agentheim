@@ -73,6 +73,24 @@ separate BC, but today the whole tool lives in this one.
   `GET /api/doc?path=<in-root path>`, a validated raw-markdown carrier (rendering is
   client-side). Both endpoints are pure reads and reuse the root-resolution `startsWith(root)`
   guard; neither writes nor interprets a lifecycle move. See ADR-0002.
+- **Content search** — `GET /api/search?q=<term>` (agentic-workflow-050, ADR-0023) is the
+  read-only server's **first** endpoint that opens document *bodies* in bulk: a pure walk/rank/
+  excerpt core in `dashboard/search.mjs` (mirroring `tree.mjs` — stdlib-only, DOM-free,
+  `node --test`-able, loss-tolerant) behind a thin `handleSearch` route. It returns
+  `{ query, results: [...] }`; each result is `{ category, title, excerpt, path, ...intent }`.
+  **Match scope is title + body only** — frontmatter (ids, tags, type, dates) is **not** searched
+  — case-insensitive substring. **Corpus is single-sourced from the tree projection**
+  (`buildTree`): Bounded contexts (READMEs) → Decisions (ADRs) → Research → Tickets (tasks), so a
+  new artifact kind added to the tree becomes searchable for free. **Ranking is title-hits-first,
+  then fixed category order** (BCs → Decisions → Research → Tickets). The `excerpt` is a
+  whitespace-collapsed ~60-char window around the *first* occurrence (original-case slice, matched
+  case-insensitively; title-only matches excerpt from the title). Results carry the *existing*
+  open-intent shapes (ADR-0021) so the client routes with no new code — non-task docs
+  library-data-compatible (`{ type, title, path }`), tasks board-data-compatible
+  (`{ status, id, title, path, context }`). An empty/whitespace `q` or `q.length < 2` returns
+  `{ query, results: [] }` **with no walk**. Pure read, reuses the same `startsWith(root)` guard,
+  writes nothing (read-only contract, ADR-0017). The topbar search UI that consumes it is a
+  separate task (aw-052).
 - **Dashboard frontend app** — the live dashboard UI, owned by this BC, living in
   `dashboard/app/` (entry `dashboard/app/app.js`). It *consumes* the design-system styleguide
   source across the BC boundary (imports `Column`/`TicketCard`/`ColumnHeader`/`EmptyColumn`/

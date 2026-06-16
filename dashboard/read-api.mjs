@@ -10,6 +10,7 @@ import { createReadStream, existsSync, statSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { resolveInRoot } from './discovery.mjs';
 import { buildTree } from './tree.mjs';
+import { searchCorpus } from './search.mjs';
 
 /** GET /api/tree — serialize the read projection of the discovered root. */
 export function handleTree(req, res, root) {
@@ -59,6 +60,34 @@ export function handleDoc(req, res, root, requestUrl) {
     return;
   }
   createReadStream(target).pipe(res);
+}
+
+/**
+ * GET /api/search?q=<term> — the read-only server's first CONTENT search
+ * (agentic-workflow-050, ADR-0023). A pure corpus walk reads bodies, ranks
+ * title-first, returns body-excerpted matches as `{ query, results: [...] }`.
+ *
+ * This route is THIN: it reads `q`, then delegates the walk/rank/excerpt to the
+ * pure searchCorpus core, which itself reuses the in-root guard so the walk can
+ * never traverse out. An empty/whitespace/short `q` returns `{ query, results: []
+ * }` with no walk (searchCorpus short-circuits). Pure read: no file written.
+ */
+export function handleSearch(req, res, root, requestUrl) {
+  const query = requestUrl.searchParams.get('q') || '';
+  let body;
+  try {
+    body = JSON.stringify({ query, results: searchCorpus(root, query) });
+  } catch (err) {
+    res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end(`Failed to search corpus: ${err.message}`);
+    return;
+  }
+  res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+  if (req.method === 'HEAD') {
+    res.end();
+    return;
+  }
+  res.end(body);
 }
 
 /**

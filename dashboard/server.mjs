@@ -11,7 +11,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveStatic, serveIndexHtml } from './static.mjs';
 import { handleEvents } from './events.mjs';
-import { handleTree, handleDoc, handleBridge } from './read-api.mjs';
+import { handleTree, handleDoc, handleSearch, handleBridge } from './read-api.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -72,6 +72,16 @@ export function createDashboardServer({ root, assetRoot = defaultAssetRoot(root)
     if (pathname === '/api/doc') {
       const requestUrl = new URL(req.url, 'http://localhost');
       handleDoc(req, res, root, requestUrl);
+      return;
+    }
+
+    // Content search across the corpus (aw-050, ADR-0023). The first read that
+    // opens bodies in bulk — kept off /api/tree (pointers/metadata only) so the
+    // tree contract stays intact. Pure read; q-guard + in-root walk live in the
+    // pure core. Empty/short q returns { results: [] } with no walk.
+    if (pathname === '/api/search') {
+      const requestUrl = new URL(req.url, 'http://localhost');
+      handleSearch(req, res, root, requestUrl);
       return;
     }
 
