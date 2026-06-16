@@ -42,12 +42,13 @@ import { RailItem, TreeGroup } from "../../.agentheim/contexts/design-system/sty
 import { Collapsible } from "../../.agentheim/contexts/design-system/styleguide/app/collapsible.js";
 import { Menu, MenuItem, MenuDivider } from "../../.agentheim/contexts/design-system/styleguide/app/menu.js";
 import { ThemeToggle } from "../../.agentheim/contexts/design-system/styleguide/app/live.js";
+import { ConfirmDialog } from "../../.agentheim/contexts/design-system/styleguide/app/confirm-dialog.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { loadSkipPermissions, saveSkipPermissions } from "./skip-permissions-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { refineCommandFor, promoteCommandFor, quickCaptureCommandFor, modelingCommandFor, researchCommandFor, WORK_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
+import { refineCommandFor, promoteCommandFor, dismissCommandFor, quickCaptureCommandFor, modelingCommandFor, researchCommandFor, WORK_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
@@ -583,6 +584,106 @@ function BacklogCardLaunchPair({ id, skipPermissions = false }) {
 // former board-local section header (a token-matched clone) is retired — the
 // header look now lives once, in the styleguide, consumed unforked (ADR-0003).
 
+// The per-card DISMISS affordance (agentic-workflow-048): a hover-revealed red
+// trash can in the card's TOP-RIGHT corner. It does NOT delete anything itself —
+// the board is read-only over disk (ADR-0017). Clicking opens the shared styleguide
+// ConfirmDialog (ds-018, consumed UNFORKED — ADR-0003) with destructive=true; on
+// confirm it fires `/agentheim:modeling dismiss <id>` (dismissCommandFor) through the
+// existing VS Code bridge (launchOrCopy, ADR-0018), with the silent clipboard
+// fallback. The agent then runs the CASCADE dismiss (ADR-0022): the spawned session
+// LISTS and RE-CONFIRMS the full transitive dependent subtree before deleting
+// anything, so this button — which can only name the card it sits on — makes that
+// explicit in the dialog body and is a seed-and-fire, never the final say.
+//
+// Placement is a board-local OVERLAY (the styleguide TicketCard exposes no top-right
+// slot — `cornerAction` is its BOTTOM-right meta row, where the backlog
+// Refine/Promote pair lives, aw-022): BoardCard wraps the card in its own
+// `position: relative` host and absolutely positions this button at the host's
+// top-right, OUTSIDE the card's overflow, as a SIBLING. So the styleguide card is
+// consumed unforked, no new prop, no styleguide edit for placement.
+//
+// REVEAL: the card's own hover state lives inside TicketCard and does not surface to
+// the board, so the host wrapper drives the reveal via its own
+// onMouseEnter/onMouseLeave (`hostHover`); the button is ALWAYS in the DOM at
+// opacity 0 and rises to opacity 1 on host hover OR its own keyboard focus, so it is
+// keyboard-reachable without a pointer. On its OWN hover it highlights (intensified
+// --obligation fill). Like the Stop button (aw-028) it deliberately does NOT thread
+// skipPermissions — a dismiss keeps its normal permission prompt.
+//
+// The click is propagation-isolated (stopPropagation on the button) so dismissing
+// never opens the slide-over; the dialog (rendered as a sibling) likewise stops
+// propagation on its host so confirm/cancel clicks never bubble to the card.
+function CardTrashCan({ ticket, hostHover }) {
+  const [open, setOpen] = useState(false);
+  const [hover, setHover] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const shown = hostHover || focused || open;
+
+  const fire = useCallback(() => {
+    const fetchImpl = typeof window !== "undefined" && typeof window.fetch === "function"
+      ? window.fetch.bind(window)
+      : undefined;
+    // No skipPermissions threaded — a dismiss keeps its normal permission prompt
+    // (mirrors the Stop button, aw-028). The clipboard fallback copies the same
+    // command silently when the bridge is absent (launchOrCopy never throws).
+    launchOrCopy({ prompt: dismissCommandFor(ticket.id), fetchImpl, copy: copyToClipboard });
+    setOpen(false);
+  }, [ticket.id]);
+
+  const onTrashClick = useCallback((e) => {
+    if (e && typeof e.stopPropagation === "function") e.stopPropagation();
+    setOpen(true);
+  }, []);
+
+  const title = ticket && ticket.title ? ticket.title : ticket.id;
+
+  return html`
+    <span
+      onClick=${(e) => { if (e && typeof e.stopPropagation === "function") e.stopPropagation(); }}>
+      <button
+        type="button"
+        className="focusable"
+        aria-label=${`Dismiss ${title}`}
+        title=${`Dismiss ${title} — fires /agentheim:modeling dismiss ${ticket.id} (the agent lists + re-confirms the full cascade set before deleting)`}
+        onClick=${onTrashClick}
+        onFocus=${() => setFocused(true)}
+        onBlur=${() => setFocused(false)}
+        onMouseEnter=${() => setHover(true)}
+        onMouseLeave=${() => setHover(false)}
+        style=${{
+          position: "absolute", top: 6, right: 6, zIndex: 2,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          padding: 5, cursor: "pointer",
+          borderRadius: "var(--radius-sm)",
+          color: "var(--obligation)",
+          background: hover ? "var(--obligation-soft)" : "transparent",
+          border: `1px solid ${hover ? "var(--obligation)" : "transparent"}`,
+          opacity: shown ? 1 : 0,
+          pointerEvents: shown ? "auto" : "none",
+          transition: "opacity var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
+        }}>
+        <${Icon} name="trash-2" size=${13} color="var(--obligation)" />
+      </button>
+      <${ConfirmDialog}
+        open=${open}
+        title=${`Dismiss '${title}'?`}
+        onClose=${() => setOpen(false)}
+        onConfirm=${fire}
+        confirmLabel="Dismiss"
+        destructive=${true}>
+        <p style=${{ margin: "0 0 10px" }}>
+          This fires the <code style=${{ fontFamily: "var(--font-mono)" }}>modeling</code> <strong>dismiss</strong> on
+          <code style=${{ fontFamily: "var(--font-mono)" }}>${ticket.id}</code>.
+        </p>
+        <p style=${{ margin: 0 }}>
+          Dismiss <strong>cascades</strong>: it can delete this task and everything queued behind it (its
+          dependent subtree). The spawned session will <strong>list and re-confirm the full set</strong> before
+          deleting anything — and refuses entirely if any task in the set is already in progress or done.
+        </p>
+      </${ConfirmDialog}>
+    </span>`;
+}
+
 // A read-only lifecycle column that COMPOSES the approved styleguide
 // sub-components (ColumnHeader, TicketCard, EmptyColumn) exactly as the styleguide
 // `Column` does — same pattern, no fork. The board carries NO drag affordances
@@ -606,10 +707,30 @@ function BoardCard({ ticket, status, selectedId, onOpen, skipPermissions = false
   const cornerAction = status === "backlog"
     ? () => html`<${BacklogCardLaunchPair} id=${ticket.id} skipPermissions=${skipPermissions} />`
     : undefined;
-  return html`
+  // The TOP-RIGHT dismiss trash can (aw-048) sits on BACKLOG + TODO cards only —
+  // doing/done never show it (DISMISS itself refuses those states, ADR-0022). It is a
+  // board-local OVERLAY (the styleguide TicketCard has no top-right slot), so the card
+  // is wrapped in a `position: relative` host and the trash is absolutely positioned
+  // at the host's top-right as a SIBLING of the card (outside the card's overflow).
+  // The host drives the hover reveal (the card's own hover stays inside TicketCard and
+  // does not surface to the board). On backlog cards the trash (top-right) coexists
+  // cleanly with the Refine/Promote cornerAction pair (bottom-right); on todo cards it
+  // stands alone (todo passes no cornerAction). No TicketCard prop is added.
+  const showTrash = status === "backlog" || status === "todo";
+  const [hostHover, setHostHover] = useState(false);
+  const card = html`
     <${TicketCard} key=${ticket.id} ticket=${ticket} variant="rail"
       selected=${selectedId === ticket.id} onClick=${() => onOpen(ticket)}
       cornerAction=${cornerAction} />`;
+  if (!showTrash) return card;
+  return html`
+    <div
+      style=${{ position: "relative" }}
+      onMouseEnter=${() => setHostHover(true)}
+      onMouseLeave=${() => setHostHover(false)}>
+      ${card}
+      <${CardTrashCan} ticket=${ticket} hostHover=${hostHover} />
+    </div>`;
 }
 
 function BoardColumn({

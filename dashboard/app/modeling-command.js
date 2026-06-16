@@ -166,3 +166,23 @@ export function promoteCommandFor(id) {
   const base = `${MODELING_COMMAND} promote`;
   return trimmed ? `${base} ${trimmed}` : base;
 }
+
+/**
+ * Build the per-card DISMISS command — what the board card's hover-revealed red
+ * trash can seeds (aw-048). Dismiss hard-deletes an unstarted backlog/todo task
+ * together with its entire transitive dependent subtree (ADR-0022); the spawned
+ * `modeling` session LISTS and RE-CONFIRMS the full cascade set before deleting
+ * anything, so this command only seeds-and-fires the one id (the board is
+ * read-only over disk, ADR-0017 — it does not compute the cascade itself).
+ * Mirrors refineCommandFor / promoteCommandFor exactly (shared safeId helper,
+ * same explicit-verb + degrade-on-empty contract).
+ * @param {string} [id] — the card's ticket id.
+ * @returns {string} `"/agentheim:modeling dismiss <id>"` for a real id, else the
+ *   bare verb command `"/agentheim:modeling dismiss"`. Pure: no DOM, no I/O,
+ *   never throws.
+ */
+export function dismissCommandFor(id) {
+  const trimmed = safeId(id);
+  const base = `${MODELING_COMMAND} dismiss`;
+  return trimmed ? `${base} ${trimmed}` : base;
+}

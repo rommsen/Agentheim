@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 3
+- **Backlog:** 2
 - **Todo:** 0
-- **Doing:** 0
-- **Done:** 40
+- **Doing:** 1
+- **Done:** 47
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,10 +22,18 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
+- **agentic-workflow-048** — Board card dismiss — hover-revealed red trash can with a confirmation dialog (feature) — `doing/agentic-workflow-048-board-card-dismiss-trash-can.md`
 <!-- doing-list:end -->
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-046** — Modeling DISMISS verb — hard-delete a backlog/todo task with bookkeeping (feature) — `done/agentic-workflow-046-modeling-dismiss-verb.md`
+- **agentic-workflow-049** — Topbar settings menu — collapse Stop dashboard / theme / skip-permissions into a gear dropdown (feature) — `done/agentic-workflow-049-topbar-settings-menu-dropdown.md`
+- **agentic-workflow-047** — Both detail surfaces lead with the item title, not the file path (feature) — `done/agentic-workflow-047-detail-surfaces-lead-with-title-not-path.md`
+- **agentic-workflow-045** — Folded frontmatter glues onto the body so a task's first heading renders as literal "## Why" (bug) — `done/agentic-workflow-045-frontmatter-section-glues-to-body-first-heading-literal.md`
+- **agentic-workflow-044** — Remove the temporary "Replay celebration" button (chore) — `done/agentic-workflow-044-remove-replay-celebration-button.md`
+- **agentic-workflow-043** — Dashboard hides document frontmatter behind a collapsible, structured "Front matter" section (slide-over + main pane) (feature) — `done/agentic-workflow-043-frontmatter-collapsible-structured-section.md`
+- **agentic-workflow-039** — Slide-over "Open in full screen" renders the task in the main content pane (feature) — `done/agentic-workflow-039-slide-over-open-in-full-screen-main-pane.md`
 - **agentic-workflow-042** — Confetti uses canvas-confetti's realistic multi-fire preset, centered on screen (feature) — `done/agentic-workflow-042-confetti-realistic-multi-fire-centered.md`
 - **agentic-workflow-041** — Armed skip-permissions per-launch cue becomes a red icon, not a separate dot (feature) — `done/agentic-workflow-041-armed-cue-red-icon-not-dot.md`
 - **agentic-workflow-040** — Main-pane document reader centers its reading column in the content area (bug) — `done/agentic-workflow-040-main-pane-reader-center-content-column.md`
@@ -71,13 +79,13 @@ research touching this BC, and concept synthesis pages.
 ### Backlog
 <!-- backlog-list:start -->
 - **agentic-workflow-031** — Next-steps overview when work is done — `backlog/agentic-workflow-031-next-steps-overview-when-work-done.md`
-- **agentic-workflow-039** — Slide-over "Open in full screen" renders the task in the main content pane (feature) — `backlog/agentic-workflow-039-slide-over-open-in-full-screen-main-pane.md`
-- **agentic-workflow-043** — Slide-over hides task frontmatter behind a collapsible, structured "Front matter" section (feature) — `backlog/agentic-workflow-043-frontmatter-collapsible-structured-section.md`
+- **agentic-workflow-050** — Dashboard global search — search field replaces the breadcrumb; grouped results across BCs, ADRs, research & tickets (feature) — `backlog/agentic-workflow-050-dashboard-global-search.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0022** — DISMISS cascades the whole dependent subtree; refuses if it touches doing/ or done/ (proposed) — `../../knowledge/decisions/0022-dismiss-cascades-dependent-subtree.md`
 - **ADR-0021** — The dashboard open-intent splits on artifact kind: tasks → slide-over, non-task documents → main pane (accepted; reshapes ADR-0010 & ADR-0011 §5) — `../../knowledge/decisions/0021-open-intent-split-task-slide-over-doc-main-pane.md`
 - **ADR-0020** — Board prompt-bar confetti is a board-local transient ACK, not a styleguide motion primitive (accepted) — `../../knowledge/decisions/0020-board-confetti-board-local-transient-ack.md`
 - **ADR-0019** — Armed skip-permissions launch reuses the existing `--obligation` token as its danger hue, unforked (accepted) — `../../knowledge/decisions/0019-dashboard-armed-launch-danger-token.md`

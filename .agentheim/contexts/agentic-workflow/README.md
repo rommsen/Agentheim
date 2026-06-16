@@ -238,6 +238,34 @@ separate BC, but today the whole tool lives in this one.
   you don't *add* tickets to those columns from here. Launching a session is an **external
   side-effect**, not a lifecycle write: the board stays a projection of disk. See ADR-0018, ADR-0003,
   ADR-0009, ADR-0001.
+- **Board card dismiss (hover-revealed trash can)** -- a **backlog** or **todo** ticket sometimes just
+  needs to go away (a duplicate, a stray capture, an abandoned idea). Each backlog/todo card carries a
+  **red trash-can button** in its **top-right corner** (agentic-workflow-048): hidden at `opacity: 0`,
+  revealed on **card hover** *or* the button's **own keyboard focus**, and highlighting (intensified
+  `--obligation` fill) on its own hover. **Backlog + todo only** -- doing/done never show it (DISMISS
+  refuses those states, ADR-0022). Placement is a **board-local overlay**, *not* the `cornerAction`
+  slot: `cornerAction` is the card's **bottom-right** meta row (where Refine/Promote sit), so the board
+  wraps each card in a `position: relative` host and absolutely positions the trash at the host's
+  **top-right** as a **sibling** of the card -- the styleguide `TicketCard` is consumed **unforked**, no
+  new prop, no styleguide edit for placement. On backlog cards the trash (top-right) coexists with the
+  Refine/Promote pair (bottom-right); on todo cards it stands alone. The trash glyph is the shared
+  `Icon name="trash-2"` (design-system-017) tinted with the `--obligation` danger token (ADR-0016),
+  consumed unforked -- never the reserved selection accent `--accent-ochre-soft`. Clicking opens the
+  shared styleguide **`ConfirmDialog`** (design-system-018, consumed **unforked** -- ADR-0003) with
+  `destructive=true`, naming the card; **Confirm** fires `/agentheim:modeling dismiss <id>`
+  (`dismissCommandFor`, the pure explicit-verb builder beside `refineCommandFor`/`promoteCommandFor`,
+  unit-tested under `node --test`) through the existing `launchOrCopy` bridge path (silent clipboard
+  fallback when the bridge is absent), and **Cancel / Esc / scrim-click** (all the dialog's own
+  `onClose`) close it with no effect. The board is **read-only** (ADR-0017): the button only
+  *seeds-and-fires* -- the spawned `modeling` session runs the **cascade** dismiss and **lists +
+  re-confirms the full dependent subtree** before deleting anything (ADR-0022), so the dialog body says
+  so (the card can only name itself). The card disappears via the existing SSE live-update once the
+  agent deletes the file -- **no** dashboard write path. Unlike the launch buttons, the dismiss
+  deliberately does **not** thread `skipPermissions` (a destructive intent keeps its normal permission
+  prompt -- mirrors the Stop button, aw-028). The click is propagation-isolated so dismissing never
+  opens the slide-over. The dashboard `dist/` was rebuilt (esbuild) so the deployed app imports
+  `ConfirmDialog` (ds-018 shipped `dist/` unbuilt; aw-048 is its first consumer). See ADR-0022,
+  ADR-0017, ADR-0018, ADR-0003, ADR-0016.
 - **Board prompt bar (Quick Capture / Modeling / Research)** -- the backlog column's former single
   add-ticket **`+`** first became **two** labelled launch buttons inside the backlog column
   (agentic-workflow-020), then those two buttons were **relocated** (agentic-workflow-023) out of the

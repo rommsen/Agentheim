@@ -25,6 +25,7 @@ import {
   RESEARCH_COMMAND,
   refineCommandFor,
   promoteCommandFor,
+  dismissCommandFor,
   quickCaptureCommandFor,
   modelingCommandFor,
   researchCommandFor,
@@ -149,6 +150,53 @@ test('a whitespace-padded id is trimmed before appending', () => {
 test('an all-whitespace id collapses to the bare verb command (treated as no id)', () => {
   assert.equal(refineCommandFor('   '), '/agentheim:modeling refine');
   assert.equal(promoteCommandFor('   '), '/agentheim:modeling promote');
+});
+
+// agentic-workflow-048: the per-card DISMISS launch — what the board's hover-revealed
+// red trash can fires. It seeds `/agentheim:modeling dismiss <id>`, an explicit-verb
+// command mirroring refineCommandFor / promoteCommandFor exactly (same shared safeId
+// helper, same degrade-on-empty contract). The agent then runs the cascade dismiss
+// (ADR-0022), listing + re-confirming the full set in the spawned session; the board
+// button only seeds and fires this one id.
+
+test('dismissCommandFor appends the explicit `dismiss <id>` verb+id to the fully-qualified command', () => {
+  assert.equal(
+    dismissCommandFor('agentic-workflow-048'),
+    '/agentheim:modeling dismiss agentic-workflow-048',
+  );
+});
+
+test('dismiss is distinct from refine and promote for the same id and carries its own verb', () => {
+  const d = dismissCommandFor('agentic-workflow-048');
+  const r = refineCommandFor('agentic-workflow-048');
+  const p = promoteCommandFor('agentic-workflow-048');
+  assert.notEqual(d, r);
+  assert.notEqual(d, p);
+  assert.match(d, /^\/agentheim:modeling dismiss /);
+});
+
+test('dismissCommandFor with no id yields the bare verb command with no trailing id or space', () => {
+  assert.equal(dismissCommandFor(), '/agentheim:modeling dismiss');
+  assert.equal(dismissCommandFor(undefined), '/agentheim:modeling dismiss');
+  assert.equal(dismissCommandFor(null), '/agentheim:modeling dismiss');
+  assert.equal(dismissCommandFor(''), '/agentheim:modeling dismiss');
+});
+
+test('dismissCommandFor with a non-string id degrades to the bare verb command — never "[object Object]", never a throw', () => {
+  assert.equal(dismissCommandFor(42), '/agentheim:modeling dismiss');
+  assert.equal(dismissCommandFor({}), '/agentheim:modeling dismiss');
+  assert.equal(dismissCommandFor([]), '/agentheim:modeling dismiss');
+});
+
+test('dismissCommandFor trims a whitespace-padded id before appending', () => {
+  assert.equal(
+    dismissCommandFor('  agentic-workflow-048  '),
+    '/agentheim:modeling dismiss agentic-workflow-048',
+  );
+});
+
+test('dismissCommandFor collapses an all-whitespace id to the bare verb command', () => {
+  assert.equal(dismissCommandFor('   '), '/agentheim:modeling dismiss');
 });
 
 // agentic-workflow-023: the board-level prompt bar. The relocated column buttons
