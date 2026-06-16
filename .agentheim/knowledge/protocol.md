@@ -5,6 +5,24 @@ Newest entries on top.
 
 ---
 
+## 2026-06-16 15:00 -- Release shipped: v0.8.6
+
+**Type:** Release
+**Version:** 0.8.5 → 0.8.6 (patch — dashboard UX overhaul, shared design-system primitives, sticky/deterministic dashboard port & opt-in skip-permissions bridge)
+**Manifest:** `.claude-plugin/plugin.json` bumped, committed `4989b19`
+**Pushed to main:** yes (`0b60669..4989b19` on `origin/main`)
+**Tag:** `v0.8.6` (annotated) → `4989b19`, pushed to origin
+**GitHub Release:** deferred (gh unavailable — notes handed to builder)
+
+---
+
+## 2026-06-16 14:30 -- Modeling / Dismissed: design-system-012
+
+**Type:** Modeling / Dismiss
+**Dismissed:** design-system-012 - Make the colors prettier (design-system)
+
+---
+
 ## 2026-06-16 13:54 -- Work session ended
 
 **Type:** Work / Session end
