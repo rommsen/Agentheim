@@ -274,7 +274,7 @@ export function SearchField({
                   <div key=${group.label} role="group" aria-label=${group.label}>
                     <div style=${{
                       padding: "8px 8px 4px", fontFamily: "var(--font-ui)", fontSize: 10.5, fontWeight: 600,
-                      letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--fg-4)",
+                      letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--fg-2)",
                     }}>${group.label}</div>
                     ${rows.map((row) => {
                       const isActive = row.index === active;

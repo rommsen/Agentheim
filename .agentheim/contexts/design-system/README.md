@@ -475,6 +475,18 @@ the pattern in **section 11** (`SearchSpecimen` — type *design*, *adr*, or *zz
 > reviewed the live Search & grouped-results pattern in the canvas (section 11) and
 > confirmed it ("styleguide looks good"). The gate stands open against the source that
 > includes the search-field combobox; `agentic-workflow-052` may now consume it.
+>
+> **Gate re-review reopened by the search category-header contrast bump
+> (`design-system-019`).** The grouped-results **category header** colour was raised
+> from `--fg-4` (the dimmest foreground, below the `--fg-3` excerpts) to `--fg-2` — a
+> stronger organising label that out-reads the excerpts yet stays quieter than the
+> `--fg-1` result-row titles. Size/weight/uppercase/letter-spacing are unchanged; this
+> is a colour-token-only, presentation change. It is a visible styleguide change that
+> reopens the design-system gate per the `design-system-005` / `007` / `009` / `014` /
+> `015` / `017` / `018` precedent. The served `dist/` was rebuilt (`node build.mjs`) so
+> the live `agentic-workflow-052` topbar search picks up the stronger headers.
+> **Builder confirmation PENDING** — re-review the canvas (`styleguide/index.html` →
+> section 11, Search & grouped-results specimen) and re-confirm the gate OPEN.
 
 > Live-board note: the served dashboard `dist/` is a derived artifact (ADR-0003) and
 > was rebuilt here (`node build.mjs`), but the bundle is byte-identical — the

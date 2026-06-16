@@ -319,7 +319,7 @@ Please report this to https://github.com/markedjs/marked.`,t){let o="<p>An error
           style=${{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,zIndex:20,maxHeight:360,overflowY:"auto",padding:6,boxSizing:"border-box",background:"var(--surface-1)",border:"1px solid var(--hairline)",borderRadius:"var(--radius-md)",boxShadow:"var(--shadow-md)",transformOrigin:"top",opacity:b?1:0,transform:b?"translateY(0)":"translateY(-4px)",transition:C?"none":"opacity var(--duration-fast) var(--ease-base), transform var(--duration-fast) var(--ease-base)",...f}}>
           ${T==="no-results"?k`<div style=${{padding:"12px 10px",fontFamily:"var(--font-ui)",fontSize:12.5,color:"var(--fg-3)"}}>${tn}</div>`:e.map(B=>{let Ve=w.filter(he=>he.groupLabel===B.label);return Ve.length===0?null:k`
                   <div key=${B.label} role="group" aria-label=${B.label}>
-                    <div style=${{padding:"8px 8px 4px",fontFamily:"var(--font-ui)",fontSize:10.5,fontWeight:600,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--fg-4)"}}>${B.label}</div>
+                    <div style=${{padding:"8px 8px 4px",fontFamily:"var(--font-ui)",fontSize:10.5,fontWeight:600,letterSpacing:"0.05em",textTransform:"uppercase",color:"var(--fg-2)"}}>${B.label}</div>
                     ${Ve.map(he=>{let nn=he.index===c,vo=i(he.item);return k`
                         <div
                           key=${he.id}
