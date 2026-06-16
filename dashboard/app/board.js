@@ -43,6 +43,7 @@ import { Collapsible } from "../../.agentheim/contexts/design-system/styleguide/
 import { Menu, MenuItem, MenuDivider } from "../../.agentheim/contexts/design-system/styleguide/app/menu.js";
 import { ThemeToggle } from "../../.agentheim/contexts/design-system/styleguide/app/live.js";
 import { ConfirmDialog } from "../../.agentheim/contexts/design-system/styleguide/app/confirm-dialog.js";
+import { SearchField } from "../../.agentheim/contexts/design-system/styleguide/app/search.js";
 
 import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
@@ -58,6 +59,7 @@ import { treeToLibrary } from "./library-data.js";
 import { resolveConfettiColors } from "./confetti-palette.js";
 import { confettiFireSequence } from "./confetti-launch.js";
 import { isTaskIntent } from "./intent-route.js";
+import { searchResultsToGroups } from "./search-results.js";
 import { createLiveUpdate } from "./live-update.js";
 
 /**
@@ -1172,6 +1174,101 @@ function SettingsMenu({ theme, setTheme, skipPermissions = false, setSkipPermiss
 }
 
 // The main-column TOPBAR (agentic-workflow-026) — the styleguide §05 board topbar.
+// The topbar GLOBAL SEARCH (agentic-workflow-052). Replaces the dead breadcrumb
+// (aw-049's `Board` label + the mono project/tickets path line, which carried no function — the
+// project name lives in the rail brand). It is the wiring half over two shipped
+// dependencies: the content-search backend GET /api/search (aw-050 / ADR-0023) and
+// the reviewed styleguide search-field + grouped-results combobox (design-system-016,
+// SearchField), CONSUMED UNFORKED across the BC boundary (ADR-0003). This forks NO
+// search chrome and does NO corpus walking/ranking/excerpting — both live in the
+// dependencies. Its job is the wiring:
+//
+//   - SearchField is a CONTROLLED combobox: this owns the raw query `value` + the
+//     `onChange` handler, and feeds `groups` + `onSelect`; ds-016 owns the input
+//     chrome, the floating panel, the keyboard mechanics (active-descendant up/down +
+//     Enter), and the no-results panel. ds-016's getTitle/getExcerpt DEFAULTS read
+//     item.title/item.excerpt and markMatches marks the term against `value`, so NO
+//     custom getters and NO board-side term-marking are written here.
+//   - The query is DEBOUNCED ~200ms and GATED at min length 2 BEFORE the
+//     /api/search fetch — the field still displays every typed char (the gate
+//     suppresses the network call, not the input). An empty/whitespace query clears
+//     the result groups and runs no fetch (ds-016's panelState "closed" — no panel).
+//     A sub-min (1-char) query the backend never walks shows ds-016's honest "No
+//     matches" line (REFINE 2026-06-16: ds-016 has no force-closed prop, so the
+//     consumer accepts the styleguide no-results panel rather than forking it).
+//   - The FLAT → GROUPED transform is the pure searchResultsToGroups (search-results.js):
+//     aw-050 returns a flat ranked `results: [{ category, title, excerpt, path,
+//     ...intent }]`; ds-016 wants `groups: [{ label, items }]` in fixed order
+//     (Bounded contexts → Decisions → Research → Tickets), within-category order
+//     preserved (so aw-050's title-hits-first ranking survives).
+//   - SELECTION routing: ds-016's onSelect hands back the full aw-050 result row
+//     (carrying `...intent`, ADR-0023), which is handed UP to the shell's open-intent
+//     sink (onOpen) UNCHANGED. The shell already routes on the unchanged isTaskIntent
+//     (ADR-0021): non-task docs → setSelectedDoc (main pane, aw-027); tickets → the
+//     aw-039 full-screen path (setSelectedDoc + setOpenIntent(null)), NOT the
+//     slide-over. Esc closes + clears (ds-016's close() fires onChange("")).
+//
+// READ-ONLY (ADR-0017): the search performs no write; /api/search is a pure read.
+const SEARCH_DEBOUNCE_MS = 200;
+const SEARCH_MIN_LENGTH = 2;
+
+function TopbarSearch({ onOpen }) {
+  const [value, setValue] = useState("");
+  const [groups, setGroups] = useState([]);
+  // The debounce timer + an alive guard so a stale in-flight fetch never clobbers a
+  // newer query's results (the field re-fires on every keystroke past the gate).
+  const timer = useRef(null);
+  const seq = useRef(0);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
+  // onChange owns the controlled value + the debounce + the min-length-2 FETCH gate.
+  // The field always displays the typed value; the gate only suppresses the network
+  // call. An empty/whitespace query clears the groups and runs no fetch (panelState
+  // "closed"); a 1-char query clears the groups too (ds-016 then shows "No matches"
+  // for the non-empty value — accepted unforked, REFINE 2026-06-16).
+  const onChange = useCallback((next) => {
+    setValue(next);
+    if (timer.current) clearTimeout(timer.current);
+    const trimmed = (next || "").trim();
+    if (trimmed.length < SEARCH_MIN_LENGTH) {
+      // Below the gate (incl. empty/whitespace): clear results, run no fetch.
+      setGroups([]);
+      return;
+    }
+    const mySeq = ++seq.current;
+    timer.current = setTimeout(() => {
+      fetch(`/api/search?q=${encodeURIComponent(trimmed)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (mySeq !== seq.current) return; // a newer query superseded this one
+          const results = data && Array.isArray(data.results) ? data.results : [];
+          setGroups(searchResultsToGroups(results));
+        })
+        .catch(() => { if (mySeq === seq.current) setGroups([]); });
+    }, SEARCH_DEBOUNCE_MS);
+  }, []);
+
+  // ds-016 hands back the full aw-050 result row (carrying `...intent`); route it
+  // through the shell's open-intent sink UNCHANGED, then close + clear the field.
+  const onSelect = useCallback((item) => {
+    if (typeof onOpen === "function") onOpen(item);
+    if (timer.current) clearTimeout(timer.current);
+    seq.current++;            // invalidate any in-flight fetch
+    setValue("");
+    setGroups([]);
+  }, [onOpen]);
+
+  return html`
+    <${SearchField}
+      value=${value}
+      onChange=${onChange}
+      groups=${groups}
+      onSelect=${onSelect}
+      placeholder="Search everything…"
+      ariaLabel="Search the project"
+      style=${{ flex: 1, maxWidth: 520 }} />`;
+}
+
 // A ~52px strip over the scrollable board carrying a board title / breadcrumb and a
 // single primary action that FOLLOWS the active theme (aw-033 — the primary emphasis,
 // light fill+dark text in light mode and dark fill+light text in dark mode; it earlier
@@ -1183,25 +1280,26 @@ function SettingsMenu({ theme, setTheme, skipPermissions = false, setSkipPermiss
 //
 // aw-049 COLLAPSED the three utility controls (Stop dashboard, theme, skip-permissions)
 // behind a single settings GEAR (SettingsMenu) that sits immediately LEFT of the Work
-// launch — the topbar now reads, left → right: [ breadcrumb ] … [ ⚙ ] [ Work ]. The
+// launch — the topbar read, left → right: [ breadcrumb ] … [ ⚙ ] [ Work ]. The
 // three controls are no longer rendered inline; they live only inside the gear's
 // dropdown. Work remains the sole STANDING action (the one primary worth permanent bar
 // real estate). The toggles + Stop keep all their existing behavior + persistence —
 // SettingsMenu just relocates them into a popover (relocation, not rewrite).
-function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissions, onStopped }) {
+//
+// aw-052 REPLACES the dead breadcrumb (`Board` label + the mono project/tickets path, which
+// carried no function — the project name lives in the rail brand) with the topbar
+// GLOBAL SEARCH (TopbarSearch over the ds-016 SearchField, ADR-0003). The topbar now
+// reads, left → right: [ search field ] … [ ⚙ ] [ Work ]. The settings gear + Work
+// launch are untouched. The shell threads its open-intent sink down as `onOpen` so a
+// selected result routes through the unchanged isTaskIntent (ADR-0021).
+function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissions, onStopped, onOpen }) {
   return html`
     <div style=${{
       display: "flex", alignItems: "center", gap: 12,
       padding: "0 18px", minHeight: 52, flexShrink: 0,
       borderBottom: "1px solid var(--hairline)", background: "var(--surface-0)",
     }}>
-      <span style=${{ fontFamily: "var(--font-ui)", fontSize: 14, fontWeight: 600, color: "var(--fg-1)" }}>
-        Board
-      </span>
-      <span style=${{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--fg-3)" }}>
-        agentheim / tickets
-      </span>
-      <div style=${{ flex: 1 }} />
+      <${TopbarSearch} onOpen=${onOpen} />
       <!-- The settings gear (collapsing Stop / theme / skip-perms) then the standing
            Work launch, left → right: [ ⚙ ][ Work ] (aw-049). -->
       <div style=${{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -1320,6 +1418,28 @@ export function DashboardApp() {
   const onClose = useCallback(() => setOpenIntent(null), []);
   // The Board RailItem returns the main pane to the board: clear the selected doc.
   const onSelectBoard = useCallback(() => setSelectedDoc(null), []);
+
+  // The TOPBAR SEARCH open-intent sink (aw-052). A search result is loaded into the
+  // MAIN content pane for BOTH kinds (builder's choice, ADR-0023): non-task docs as
+  // aw-027 does, AND tickets via the aw-039 "open in full screen" path (NOT the
+  // slide-over). The result already carries the existing intent shape from
+  // /api/search (ADR-0023), so this routes on the UNCHANGED isTaskIntent (ADR-0021):
+  //   - non-task doc → setSelectedDoc (main pane reader), close any slide-over;
+  //   - ticket → setSelectedDoc + setOpenIntent(null) — the aw-039 full-screen path.
+  // Both branches land in the main pane and close the slide-over, so structurally
+  // they collapse to one move; the isTaskIntent split is kept explicit for parity
+  // with the documented routing. No write (ADR-0017).
+  const onOpenSearch = useCallback((item) => {
+    if (typeof window !== "undefined") window.__agentheimLastOpen = item;
+    if (isTaskIntent(item)) {
+      // aw-039 full-screen path: promote the ticket into the main pane, not the slide-over.
+      setOpenIntent(null);
+      setSelectedDoc(item);
+    } else {
+      setOpenIntent(null);
+      setSelectedDoc(item);
+    }
+  }, []);
   // "Open in full screen" (slide-over header, ds-009 callback): promote the OPEN TASK
   // out of the cramped slide-over and into the main content pane — the same surface
   // non-task docs render in (MainPaneReader, aw-027). A deliberate per-action override
@@ -1361,7 +1481,7 @@ export function DashboardApp() {
           <${BoardTopbar}
             theme=${theme} setTheme=${onThemeChange}
             skipPermissions=${skipPermissions} setSkipPermissions=${onSkipPermissionsChange}
-            onStopped=${onStopped} />
+            onStopped=${onStopped} onOpen=${onOpenSearch} />
           <div style=${{ flex: 1, minHeight: 0, position: "relative", display: "flex", flexDirection: "column" }}>
             <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "22px 24px 40px" }}>
               ${selectedDoc

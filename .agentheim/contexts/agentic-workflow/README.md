@@ -89,8 +89,8 @@ separate BC, but today the whole tool lives in this one.
   library-data-compatible (`{ type, title, path }`), tasks board-data-compatible
   (`{ status, id, title, path, context }`). An empty/whitespace `q` or `q.length < 2` returns
   `{ query, results: [] }` **with no walk**. Pure read, reuses the same `startsWith(root)` guard,
-  writes nothing (read-only contract, ADR-0017). The topbar search UI that consumes it is a
-  separate task (aw-052).
+  writes nothing (read-only contract, ADR-0017). The **topbar search UI** that consumes it
+  shipped in **agentic-workflow-052** (see *Global search (topbar)* below).
 - **Dashboard frontend app** — the live dashboard UI, owned by this BC, living in
   `dashboard/app/` (entry `dashboard/app/app.js`). It *consumes* the design-system styleguide
   source across the BC boundary (imports `Column`/`TicketCard`/`ColumnHeader`/`EmptyColumn`/
@@ -108,7 +108,8 @@ separate BC, but today the whole tool lives in this one.
   **settings gear** (`SettingsMenu`, the reused `settings-2` glyph) that opens a dropdown built
   on the shared styleguide `Menu`/`Popover` primitive (design-system-015, consumed unforked —
   ADR-0003); the gear sits immediately **left** of the standing theme-following
-  **Work** launch, so the topbar reads `[breadcrumb] … [⚙] [Work]`. (Earlier: aw-029 put the
+  **Work** launch, so the topbar reads `[search field] … [⚙] [Work]` (the leading slot was the
+  dead breadcrumb until **aw-052** replaced it with the global search field). (Earlier: aw-029 put the
   theme + skip-perms toggles inline in the topbar and aw-028 added a far-left Stop launch;
   aw-049 supersedes both by tucking all three into the gear. Work stays the only standing
   action.) The **closed gear carries no armed cue** — the skip-permissions `--obligation`
@@ -313,21 +314,23 @@ separate BC, but today the whole tool lives in this one.
   builders read this sanitized value, so the seeded-command contract and the empty/whitespace bare
   fallback are unchanged.
 - **Shell layout (aw-026, styleguide §05)** -- the live shell is the styleguide "Components in context"
-  full-height **left rail** beside a **main column**. The main column is a ~52px **topbar** (board
-  title / breadcrumb + a single **primary** action that **follows the active theme**) over the scrollable
+  full-height **left rail** beside a **main column**. The main column is a ~52px **topbar** (the global
+  **search field** — aw-052; was a dead breadcrumb until then — plus a single **primary** action that
+  **follows the active theme**) over the scrollable
   board. That button **is the Work launch**: a read-only launch of the bare `/agentheim:work` (`WORK_COMMAND`) via
   `launchOrCopy` -- `emphasis="primary"` (`idleBg: var(--surface-2)`, `idleColor: var(--fg-1)`,
   `idleBorder: var(--hairline-strong)` — light fill+dark text in light mode, dark fill+light text in dark
   mode; aw-033 switched it off the §05 `inverse` opposite-scheme treatment, which read as the wrong theme),
   threading `skipPermissions` (aw-021 / ADR-0019), passing **no**
-  `onResult`. **No Search box** is rendered (read-only dashboard, no search backend). The rail is composed
+  `onResult`. The topbar's leading slot now hosts the **global search field** (aw-052, see *Global search
+  (topbar)* below). The rail is composed
   from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo
   `AppRail`, and its tree is the **live** `treeToLibrary(/api/tree)` projection (re-fetched on every SSE
   frame, ADR-0011). See ADR-0009, ADR-0003, ADR-0017, ADR-0018.
 - **Topbar settings menu (aw-049; consumes the shared primitive as of design-system-015)** -- a
   **dropdown** (`SettingsMenu`) behind a single **settings gear** (the reused `settings-2` glyph from the
   styleguide icon set — consumed **unforked**, no styleguide edit, no new glyph) that sits immediately
-  **left** of the standing Work launch, so the topbar reads `[breadcrumb] … [⚙] [Work]`. It collapses the
+  **left** of the standing Work launch, so the topbar reads `[search field] … [⚙] [Work]` (aw-052). It collapses the
   three utility controls — the **Stop dashboard** launch, the **theme** toggle and the **skip-permissions**
   armed toggle — that aw-029 (toggles) and aw-028 (Stop) had spread across the topbar; only Work stays
   standing. aw-049 first shipped this as a **board-local** token-matched dropdown (the sort-`<select>` /
@@ -447,6 +450,23 @@ separate BC, but today the whole tool lives in this one.
   agentic-workflow-039) — a deliberate per-action override of the ADR-0021 split, not a change to
   the default `isTaskIntent` routing. The **Board** rail item returns to the board.
   See ADR-0010, ADR-0021, ADR-0009.
+- **Global search (topbar)** — the dashboard's search surface (agentic-workflow-052): the topbar's
+  leading slot (the former dead breadcrumb) is the **global search field** that, as you type, queries
+  `GET /api/search` (aw-050) and opens a floating panel of **category-grouped** results
+  (Bounded contexts → Decisions → Research → Tickets), each row a title + a matched-text excerpt with
+  the term marked. It **consumes the design-system `SearchField` combobox unforked** (design-system-016,
+  ADR-0003): ds-016 owns the input chrome, the floating panel, and the active-descendant keyboard model
+  (up/down across all rows, Enter opens, Esc closes + clears); the dashboard owns the controlled query
+  `value`, the **~200ms debounce**, the **min-length-2 fetch gate** (the field still shows every typed
+  char — the gate only suppresses the network call), and the one pure transform
+  (`dashboard/app/search-results.js` → `searchResultsToGroups`) that buckets aw-050's **flat** ranked
+  `results` into ds-016's `groups: [{label, items}]` in fixed order, preserving the within-category
+  ranking. Selecting a result loads the document into the **main content pane** (`MainPaneReader`) for
+  **both** kinds — non-task docs as aw-027 does **and** tickets via the aw-039 "open in full screen"
+  path (not the slide-over) — routed through the unchanged `isTaskIntent` (ADR-0021) over the intent
+  shape the result already carries. An empty/whitespace query shows no panel; any non-empty query with
+  no matches (incl. a sub-min query the backend never walks) shows ds-016's honest "No matches" line.
+  Read-only (ADR-0017). See ADR-0023, ADR-0021, ADR-0017, ADR-0009, ADR-0003.
 - **Main-pane reader** — the dashboard's reading surface for a non-task **document**
   (agentic-workflow-027): vision, context map, BC README, ADR, research. Selecting a rail row
   opens its document in the **main content area** (where the board otherwise sits), not the

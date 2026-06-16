@@ -108,14 +108,16 @@ test('the theme + skip-permissions toggles moved into the settings menu, left of
   assert.ok(menuAt < workAt, 'the settings gear must render left of the Work launch');
 });
 
-test('a main-column topbar renders the theme-following Work launch and no Search box', () => {
+test('a main-column topbar renders the theme-following Work launch and the global SEARCH field (aw-052)', () => {
   const top = fn('BoardTopbar');
   // The Work launch FOLLOWS the active theme (aw-033): the primary emphasis
   // (idleBg --surface-2, idleColor --fg-1) — NOT the inverse §05 treatment that
   // reads as the opposite scheme. It must not be rendered with emphasis="inverse".
   assert.doesNotMatch(top, /emphasis="inverse"/, 'the topbar Work launch must not use the inverse (opposite-theme) treatment');
-  // No Search affordance (read-only dashboard, no search backend).
-  assert.doesNotMatch(top, /Search/, 'no Search box may be rendered');
+  // aw-052: the dead breadcrumb is replaced by the global search field (TopbarSearch
+  // over the ds-016 SearchField, wired to GET /api/search). The earlier "no Search box"
+  // guard predated the search backend (aw-050) + styleguide pattern (ds-016).
+  assert.match(top, /<\$\{TopbarSearch\}/, 'the topbar must render the global search field');
 });
 
 test('the topbar Work button IS the Work launch: bare WORK_COMMAND, skipPermissions threaded, no onResult', () => {

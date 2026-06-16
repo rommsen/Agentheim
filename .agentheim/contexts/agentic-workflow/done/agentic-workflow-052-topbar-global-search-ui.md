@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-052
 title: Topbar global search UI — search field replaces the breadcrumb; grouped-results popover routing to the main pane
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-16
-completed:
+completed: 2026-06-16
 commit:
 depends_on: [design-system-001, design-system-016, agentic-workflow-049, agentic-workflow-050]
 blocks: []
@@ -111,3 +111,42 @@ a grouped-results popover:
 - **Prior art to reuse:** the main-pane reader (aw-027) + ticket-in-main-pane (aw-039); open-intent
   routing `isTaskIntent` (aw-027 / ADR-0021); the library category grouping (aw-008,
   `treeToLibrary`) for the group labels/order.
+
+## Outcome
+The topbar breadcrumb is replaced by the global search field; selecting a result opens
+the document in the main content pane.
+
+- **Pure transform (TDD red→green):** `dashboard/app/search-results.js` →
+  `searchResultsToGroups(results)` buckets aw-050's flat ranked `results` into ds-016's
+  `groups: [{label, items}]` in fixed order (Bounded contexts → Decisions → Research →
+  Tickets), preserving within-category order, loss-tolerant (malformed/empty → all-empty
+  groups, never throws; unknown-category rows dropped). Unit-tested in
+  `dashboard/test/search-results.test.mjs` (7 tests, `node --test`, no DOM).
+- **Wiring (`dashboard/app/board.js`):** new `TopbarSearch` component consumes the ds-016
+  `SearchField` **unforked** (imported from `design-system/styleguide/app/search.js`,
+  ADR-0003). It owns the controlled `value` + `onChange`, the **~200ms debounce**
+  (`SEARCH_DEBOUNCE_MS`), the **min-length-2 fetch gate** (`SEARCH_MIN_LENGTH`, suppresses
+  the network call, not the input), and feeds `groups` (via `searchResultsToGroups`) +
+  `onSelect`. No custom getters / no board-side term-marking — ds-016's defaults read
+  `item.title`/`item.excerpt` and `markMatches` marks against `value`. A monotonic `seq`
+  ref discards stale in-flight fetches. `BoardTopbar` now renders `[search field] … [⚙]
+  [Work]`; the settings gear + Work launch are untouched.
+- **Routing:** `DashboardApp` gained `onOpenSearch`, threaded into `BoardTopbar` as
+  `onOpen`. A selected result (carrying the existing intent shape, ADR-0023) routes through
+  the unchanged `isTaskIntent` (ADR-0021): docs → `setSelectedDoc` (main pane, aw-027);
+  tickets → the aw-039 full-screen path (`setSelectedDoc` + `setOpenIntent(null)`), NOT the
+  slide-over. Both land in `MainPaneReader`.
+- **Empty/no-results:** empty/whitespace → groups cleared, no fetch (ds-016 panelState
+  "closed", no panel); a sub-min/no-match non-empty query shows ds-016's honest "No matches"
+  line (relaxed per the REFINE note — ds-016 stays unforked).
+- **Tests:** new `dashboard/test/topbar-search.test.mjs` (8 static-guard tests) locks the
+  wiring criteria. Updated the now-obsolete `shell-relayout.test.mjs` guard (its "no Search
+  box" assertion predated aw-050/ds-016) to assert the search field is present. `dist/`
+  rebuilt via `node build.mjs`. Full dashboard suite green: **467 tests, 0 fail**.
+- **Docs:** BC README updated (new *Global search (topbar)* capability entry; topbar-layout
+  references updated to `[search field] … [⚙] [Work]`; the aw-050 entry now points at the
+  shipped UI). No ADR written — the decisions (ticket→main-pane routing, relaxed sub-min
+  panel) were already fixed by ADR-0023 + the REFINE notes, not introduced here.
+
+Key files: `dashboard/app/search-results.js`, `dashboard/app/board.js`,
+`dashboard/test/search-results.test.mjs`, `dashboard/test/topbar-search.test.mjs`.
