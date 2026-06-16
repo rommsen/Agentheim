@@ -6,7 +6,7 @@ type: bug
 context: agentic-workflow
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 4e6f537
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, topbar, theme, work-button]

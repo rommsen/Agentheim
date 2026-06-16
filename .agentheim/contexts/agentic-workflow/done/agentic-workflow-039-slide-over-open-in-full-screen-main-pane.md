@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-15
 completed: 2026-06-16
-commit:
+commit: f289c29
 depends_on: [design-system-009, design-system-001]
 blocks: []
 tags: [dashboard, frontend, ui, slide-over, main-pane]

@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-15
 completed: 2026-06-16
-commit:
+commit: 62625b8
 depends_on: [design-system-001-styleguide]
 blocks: []
 tags: [dashboard, slide-over, main-pane, markdown, frontmatter]

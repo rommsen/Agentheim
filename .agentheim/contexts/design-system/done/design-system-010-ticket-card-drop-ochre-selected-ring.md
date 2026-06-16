@@ -6,7 +6,7 @@ type: refactor
 context: design-system
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 5ba2524
 depends_on: [design-system-001]
 blocks: []
 tags: [styleguide, ticket-card, selection, focus]

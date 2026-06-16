@@ -6,7 +6,7 @@ type: refactor
 context: agentic-workflow
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 0ab1f34
 depends_on: [design-system-001]
 blocks: [agentic-workflow-027]
 tags: [dashboard, frontend, ui, shell, styleguide]

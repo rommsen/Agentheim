@@ -6,7 +6,7 @@ type: chore
 context: agentic-workflow
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: c3b77a4
 depends_on: []
 blocks: []
 tags: [dashboard, frontend, temporary, cleanup]

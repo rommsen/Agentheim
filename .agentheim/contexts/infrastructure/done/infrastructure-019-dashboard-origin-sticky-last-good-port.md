@@ -6,7 +6,7 @@ type: feature
 context: infrastructure
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: a47d31a
 depends_on: [infrastructure-018]
 blocks: []
 tags: [dashboard, transport, port, runfile, persistence, origin]

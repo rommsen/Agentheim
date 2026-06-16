@@ -6,7 +6,7 @@ type: chore
 context: design-system
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 4956ff2
 depends_on: [design-system-001]
 blocks: []
 tags: [styleguide, drawer, icons, slide-over, ui]

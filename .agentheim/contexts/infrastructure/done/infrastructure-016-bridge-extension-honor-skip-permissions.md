@@ -6,7 +6,7 @@ type: feature
 context: infrastructure
 created: 2026-06-14
 completed: 2026-06-15
-commit: f7348a2
+commit: 1ad7d46
 depends_on: [infrastructure-015]
 blocks: []
 tags: [bridge, extension, permissions, dashboard]

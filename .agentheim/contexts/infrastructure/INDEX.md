@@ -13,7 +13,7 @@ research touching this BC, and concept synthesis pages.
 - **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 19
+- **Done:** 20
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-020** — Bridge mangles prompts containing quotes — POSIX escaping breaks the Windows shell (bug) — `done/infrastructure-020-bridge-prompt-quote-escaping-cross-shell.md`
 - **infrastructure-019** — Dashboard origin sticks to its last-good port so an intermittent collision can't flap it (feature) — `done/infrastructure-019-dashboard-origin-sticky-last-good-port.md`
 - **infrastructure-018** — Dashboard binds a deterministic project-root port so the origin survives relaunch (decision) — `done/infrastructure-018-dashboard-deterministic-port-stable-origin.md`
 - **infrastructure-017** — Re-package & version the bridge .vsix carrying the skip-permissions change (chore) — `done/infrastructure-017-repackage-bridge-vsix-with-skip-permissions.md`

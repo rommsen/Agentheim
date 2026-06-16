@@ -8,7 +8,7 @@ created: 2026-06-16
 completed: 2026-06-16
 commit: 29482ee
 depends_on: [design-system-001-styleguide]
-blocks: []
+blocks: [agentic-workflow-048]
 tags: [styleguide, modal, dialog, confirm, overlay, button]
 related_adrs: [0003, 0005, 0014, 0016]
 related_research: []

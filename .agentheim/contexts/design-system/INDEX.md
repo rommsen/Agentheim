@@ -10,7 +10,7 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
+- **Backlog:** 1
 - **Todo:** 0
 - **Doing:** 0
 - **Done:** 16
@@ -46,7 +46,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **design-system-012** — Make the colors prettier — `backlog/design-system-012-prettier-colors.md`
 - **design-system-016** — Search field + grouped-results popover/listbox styleguide pattern (feature) — `backlog/design-system-016-search-field-grouped-results-pattern.md`
 <!-- backlog-list:end -->
 

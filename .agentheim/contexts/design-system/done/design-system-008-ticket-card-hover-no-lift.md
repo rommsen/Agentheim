@@ -6,7 +6,7 @@ type: refactor
 context: design-system
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 44476fc
 depends_on: [design-system-001]
 blocks: []
 tags: [styleguide, ticket-card, hover, motion]

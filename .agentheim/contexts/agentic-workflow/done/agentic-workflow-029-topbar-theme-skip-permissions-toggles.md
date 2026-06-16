@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 39447ec
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, shell, topbar, theme, skip-permissions]

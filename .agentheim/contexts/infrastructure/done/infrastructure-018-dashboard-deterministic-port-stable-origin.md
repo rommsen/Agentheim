@@ -6,7 +6,7 @@ type: decision
 context: infrastructure
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 398dee2
 depends_on: []
 blocks: [infrastructure-019]
 tags: [dashboard, transport, port, localstorage, persistence, origin]

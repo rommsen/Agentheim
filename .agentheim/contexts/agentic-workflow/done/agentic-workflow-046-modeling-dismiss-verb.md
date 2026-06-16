@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 60d31ac
 depends_on: []
 blocks: [agentic-workflow-048]
 tags: [modeling, lifecycle, dismiss, bookkeeping]

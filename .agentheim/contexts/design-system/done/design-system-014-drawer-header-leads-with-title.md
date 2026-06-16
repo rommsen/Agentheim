@@ -6,7 +6,7 @@ type: feature
 context: design-system
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 2a07ec9
 depends_on: [design-system-001]
 blocks: [agentic-workflow-047]
 tags: [styleguide, drawer, slide-over, typography, ui]

@@ -6,11 +6,11 @@ type: decision
 context: agentic-workflow
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 5210581
 depends_on: [agentic-workflow-026, design-system-001]
 blocks: []
 tags: [dashboard, frontend, ui, slide-over, library, decision]
-related_adrs: [0010, 0011, 0009, 0017, 0003]
+related_adrs: [0021, 0010, 0011, 0009, 0017, 0003]
 related_research: []
 prior_art: [agentic-workflow-007, agentic-workflow-008, agentic-workflow-009]
 ---

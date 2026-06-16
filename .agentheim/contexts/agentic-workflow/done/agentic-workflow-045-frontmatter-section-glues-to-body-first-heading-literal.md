@@ -6,7 +6,7 @@ type: bug
 context: agentic-workflow
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: bac8a0b
 depends_on: [design-system-001]
 blocks: []
 tags: [bug, dashboard, frontmatter, markdown]

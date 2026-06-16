@@ -6,7 +6,7 @@ type: chore
 context: infrastructure
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 2ff0add
 depends_on: [infrastructure-016]
 blocks: []
 tags: [bridge, extension, packaging, release]

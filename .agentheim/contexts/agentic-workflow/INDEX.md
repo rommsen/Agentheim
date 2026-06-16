@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 2
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 48
+- **Doing:** 0
+- **Done:** 49
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,12 +22,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **agentic-workflow-048** — Board card dismiss — hover-revealed red trash can with a confirmation dialog (feature) — `doing/agentic-workflow-048-board-card-dismiss-trash-can.md`
 <!-- doing-list:end -->
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
 - **agentic-workflow-051** — Dismiss (trash-can) button threads the armed skip-permissions signal like the launch buttons (feature) — `done/agentic-workflow-051-dismiss-button-threads-armed-skip-permissions.md`
+- **agentic-workflow-048** — Board card dismiss — hover-revealed red trash can with a confirmation dialog (feature) — `done/agentic-workflow-048-board-card-dismiss-trash-can.md`
 - **agentic-workflow-046** — Modeling DISMISS verb — hard-delete a backlog/todo task with bookkeeping (feature) — `done/agentic-workflow-046-modeling-dismiss-verb.md`
 - **agentic-workflow-049** — Topbar settings menu — collapse Stop dashboard / theme / skip-permissions into a gear dropdown (feature) — `done/agentic-workflow-049-topbar-settings-menu-dropdown.md`
 - **agentic-workflow-047** — Both detail surfaces lead with the item title, not the file path (feature) — `done/agentic-workflow-047-detail-surfaces-lead-with-title-not-path.md`

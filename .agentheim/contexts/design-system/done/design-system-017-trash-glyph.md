@@ -6,7 +6,7 @@ type: feature
 context: design-system
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 984d317
 depends_on: [design-system-001-styleguide]
 blocks: [agentic-workflow-048]
 tags: [styleguide, icons, glyph]

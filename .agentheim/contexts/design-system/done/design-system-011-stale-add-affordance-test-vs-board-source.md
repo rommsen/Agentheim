@@ -6,7 +6,7 @@ type: bug
 context: design-system
 created: 2026-06-15
 completed: 2026-06-16
-commit:
+commit: 076870b
 depends_on: []
 blocks: []
 tags: [styleguide, test, dashboard, tech-debt]

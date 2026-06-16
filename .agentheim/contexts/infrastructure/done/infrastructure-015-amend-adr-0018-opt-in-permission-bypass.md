@@ -6,7 +6,7 @@ type: decision
 context: infrastructure
 created: 2026-06-14
 completed: 2026-06-14
-commit:
+commit: 54c242a
 depends_on: []
 blocks: [infrastructure-016, agentic-workflow-021]
 tags: [bridge, security, permissions, adr, dashboard]

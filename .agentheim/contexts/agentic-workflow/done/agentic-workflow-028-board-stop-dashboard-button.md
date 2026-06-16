@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-15
 completed: 2026-06-15
-commit:
+commit: 77e9c41
 depends_on: [design-system-001, agentic-workflow-029]
 blocks: []
 tags: [dashboard, topbar, stop, bridge-launch, frontend]

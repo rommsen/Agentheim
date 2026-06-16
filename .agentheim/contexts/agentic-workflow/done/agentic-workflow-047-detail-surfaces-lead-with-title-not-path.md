@@ -6,6 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-16
 completed: 2026-06-16
+commit: fe4d6b4
 depends_on: [design-system-001, design-system-014]
 blocks: []
 tags: [dashboard, slide-over, main-pane-reader, typography]

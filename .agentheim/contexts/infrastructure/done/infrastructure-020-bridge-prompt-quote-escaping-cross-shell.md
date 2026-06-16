@@ -6,7 +6,7 @@ type: bug
 context: infrastructure
 created: 2026-06-16
 completed: 2026-06-16
-commit:
+commit: 4533d39
 depends_on: []
 blocks: []
 tags: [bridge, extension, shell, quoting, windows, dashboard]
