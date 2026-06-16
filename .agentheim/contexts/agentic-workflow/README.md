@@ -87,8 +87,9 @@ separate BC, but today the whole tool lives in this one.
   label → the **live** library tree (`treeToLibrary`, the always-visible tree *is* the
   library). As of **aw-049** the three utility controls — **Stop dashboard**, the **theme
   toggle** and the **skip-permissions armed toggle** — are collapsed behind a single
-  **settings gear** (`SettingsMenu`, the reused `settings-2` glyph) that opens a board-local
-  token-matched dropdown; the gear sits immediately **left** of the standing theme-following
+  **settings gear** (`SettingsMenu`, the reused `settings-2` glyph) that opens a dropdown built
+  on the shared styleguide `Menu`/`Popover` primitive (design-system-015, consumed unforked —
+  ADR-0003); the gear sits immediately **left** of the standing theme-following
   **Work** launch, so the topbar reads `[breadcrumb] … [⚙] [Work]`. (Earlier: aw-029 put the
   theme + skip-perms toggles inline in the topbar and aw-028 added a far-left Stop launch;
   aw-049 supersedes both by tucking all three into the gear. Work stays the only standing
@@ -269,15 +270,16 @@ separate BC, but today the whole tool lives in this one.
   from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo
   `AppRail`, and its tree is the **live** `treeToLibrary(/api/tree)` projection (re-fetched on every SSE
   frame, ADR-0011). See ADR-0009, ADR-0003, ADR-0017, ADR-0018.
-- **Topbar settings menu (aw-049)** -- a board-local, token-matched **dropdown** (`SettingsMenu`) behind a
-  single **settings gear** (the reused `settings-2` glyph from the styleguide icon set — consumed
-  **unforked**, no styleguide edit, no new glyph) that sits immediately **left** of the standing Work
-  launch, so the topbar reads `[breadcrumb] … [⚙] [Work]`. It collapses the three utility controls — the
-  **Stop dashboard** launch, the **theme** toggle and the **skip-permissions** armed toggle — that aw-029
-  (toggles) and aw-028 (Stop) had spread across the topbar; only Work stays standing. The styleguide
-  exposes **no** Menu/Popover primitive, so this is built from tokens (the sort-`<select>` / group-by
-  precedent, ADR-0003); the shared `Menu`/`Popover` primitive is the **design-system-015** follow-up, which
-  retires this board-local control later (the aw-014 → ds-005 sequencing). The three relocated controls
+- **Topbar settings menu (aw-049; consumes the shared primitive as of design-system-015)** -- a
+  **dropdown** (`SettingsMenu`) behind a single **settings gear** (the reused `settings-2` glyph from the
+  styleguide icon set — consumed **unforked**, no styleguide edit, no new glyph) that sits immediately
+  **left** of the standing Work launch, so the topbar reads `[breadcrumb] … [⚙] [Work]`. It collapses the
+  three utility controls — the **Stop dashboard** launch, the **theme** toggle and the **skip-permissions**
+  armed toggle — that aw-029 (toggles) and aw-028 (Stop) had spread across the topbar; only Work stays
+  standing. aw-049 first shipped this as a **board-local** token-matched dropdown (the sort-`<select>` /
+  group-by precedent); **design-system-015** then extracted the shared styleguide `Menu`/`Popover` primitive
+  and retired the board-local machinery, so the gear dropdown now **consumes that primitive unforked**
+  (ADR-0003) — the aw-014 → ds-005 sequencing, completed. The three relocated controls
   keep their behavior + persistence **as-is** (relocation, not rewrite). **Dismissal:** Esc, outside click,
   and selecting Stop dashboard close the menu; flipping the **theme** or **skip-permissions** toggle **keeps
   it open** (so both can be adjusted in one visit; inside clicks are scoped by a container ref). The
