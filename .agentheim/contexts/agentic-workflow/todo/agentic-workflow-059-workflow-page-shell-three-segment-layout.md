@@ -1,7 +1,7 @@
 ---
 id: agentic-workflow-059
 title: Workflow page shell + three-segment layout
-status: backlog
+status: todo
 type: feature
 context: agentic-workflow
 created: 2026-06-17
@@ -74,5 +74,14 @@ primitives consumed **unforked** (ADR-0003), no new bundled dependency.
   refinement found the original capture copy understated Preparation and the gates.
 - Layout is **board-local** under `dashboard/app/`; the diagram primitives are also
   board-local (decided in refinement — no design-system child task; aw-060 authors them).
-- Depends on aw-058 (the routing scaffold must exist first).
+- Depends on aw-058 (the routing scaffold must exist first) — now **done** (commit `ad4a6f0`).
+  The placeholder `WorkflowPage` lives in `dashboard/app/board.js`; replace its body, keep
+  the function name and the `onSelectWorkflow` / `mainView === "workflow"` wiring untouched
+  (that is aw-058's routing, governed by ADR-0025 — do not re-touch the rail or the handlers).
+- **Keep aw-058's routing tests green.** `dashboard/test/workflow-rail-routing.test.mjs` asserts
+  the page exists and carries a "Workflow" heading; the real page must still satisfy that (a
+  Workflow/"Workflow guide" heading). Update only the placeholder-specific assertion if the
+  exact heading text changes — do not weaken the routing/precedence/mutual-exclusivity guards.
+- Diagram slots are **placeholders only** in this task — empty, clearly-marked slots that
+  aw-060 fills with the hand-authored visuals. Do not author diagrams here (that is aw-060).
 - Frontend gate met: `design-system-001` (styleguide) is in `done/`.

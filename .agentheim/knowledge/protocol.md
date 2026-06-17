@@ -5,6 +5,35 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 13:15 -- Modeling / Captured: agentic-workflow-064 + agentic-workflow-065 - dashboard button redesign from screenshot mock
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Captured a builder-supplied screenshot mock (`Screenshot 2026-06-17 112241.png`) reshaping the dashboard's buttons, split by surface into two tasks. aw-064 — topbar right group gains a "What's next" launch button (seeded session via the bridge, like Work) and restyles Work as an accent-filled `Work ↗` (trailing up-right arrow). aw-065 — the prompt-bar Quick Capture / Modeling / Research chips become icon-tile + title/subtitle cards (Quick Capture emphasised in accent) with a decorative "Type a prompt to begin · ⌘↵" hint; interaction stays restyle-only (still click-to-launch, no Enter-to-launch). Both flag the open token tension: the accent fill leans on `--accent-ochre-soft`, reserved for selection by ADR-0016 — refinement must settle reuse-and-reconcile vs. a new token. aw-064 also relates to aw-031 (the undefined "what next" command).
+
+---
+
+## 2026-06-17 13:10 -- Modeling / Refined + Promoted: agentic-workflow-059 - Workflow page shell + three-segment layout
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Confirmed aw-059 already carries the refinement the umbrella split (aw-057) produced — the three named segments (Preparation / Capturing / Promote & Work) with skill-accurate copy that names the `verifier` correctly, shows quick-capture vs modeling as two distinct intake doors, includes DISMISS, and marks the human-in-the-loop gates. Both predecessors are done (design-system-001, aw-058 `ad4a6f0`), so the routing home exists. Tightened the Notes only: replace the aw-058 placeholder `WorkflowPage` body while keeping its function name + `onSelectWorkflow`/`mainView` routing untouched; keep aw-058's `workflow-rail-routing.test.mjs` guards green (adjust only the placeholder-heading assertion); diagram slots stay empty placeholders for aw-060. No specialist round needed — the task was already worker-ready. Promoted backlog → todo. aw-060 (diagrams) stays in backlog, promotes when aw-059 lands.
+**Split into:** none (split already done at aw-057 refinement)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 12:00 -- Capture / Captured: agentic-workflow-063 - Analyze and optimize the committing pattern
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Committing pattern produces too many fine-grained commits and still often leaves files uncommitted — analyze and optimize.
+
+---
+
 ## 2026-06-17 12:55 -- Work session ended
 
 **Type:** Work / Session end

@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 4
-- **Todo:** 0
+- **Backlog:** 6
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 58
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-059** — Workflow page shell + three-segment layout (feature) — `todo/agentic-workflow-059-workflow-page-shell-three-segment-layout.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -88,8 +89,10 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **agentic-workflow-064** — Topbar "What's next" launch button + Work button restyle (accent fill, trailing ↗) (feature) — `backlog/agentic-workflow-064-topbar-whats-next-button-work-restyle.md`
+- **agentic-workflow-065** — Prompt-bar buttons redesign — icon tile + title/subtitle cards, Quick Capture emphasised, ⌘↵ hint (feature) — `backlog/agentic-workflow-065-prompt-bar-buttons-icon-tile-subtitle-redesign.md`
+- **agentic-workflow-063** — Analyze and optimize the committing pattern — `backlog/agentic-workflow-063-optimize-committing-pattern.md`
 - **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella → aw-058/059/060) — `backlog/agentic-workflow-057-workflow-guide-page.md`
-- **agentic-workflow-059** — Workflow page shell + three-segment layout (feature) — `backlog/agentic-workflow-059-workflow-page-shell-three-segment-layout.md`
 - **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `backlog/agentic-workflow-060-workflow-guide-diagrams.md`
 - **agentic-workflow-031** — Next-steps overview when work is done — `backlog/agentic-workflow-031-next-steps-overview-when-work-done.md`
 <!-- backlog-list:end -->
