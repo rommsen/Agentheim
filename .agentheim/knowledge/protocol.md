@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 22:42 -- Modeling / Refined: agentic-workflow-074 - Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Second refinement pass. Cross-checked the consumed interface against the split child **design-system-020** — `expanded` / `onToggleExpand` / consumer-supplied `expandedWidth`, the body-top chevron + `panel-right-open`/`panel-right-close` glyph pair, and the deferred-to-consumer `dist/` rebuild all line up; backlinks bidirectional. Tightened AC#3 so the chevron reads as the **ds-020 primitive's** (aw-074 wires + verifies the seam, never renders a board-local glyph). **Held in `backlog` — dependency-blocked:** ds-020 (the primitive) is still in backlog, and a pure consumer cannot be worked or promoted ahead of the primitive it imports. Path forward: promote + work ds-020, then promote aw-074.
+**Split into:** —
+**ADRs written:** —
+
+---
+
 ## 2026-06-17 22:40 -- Modeling / Refined: agentic-workflow-075 - Concepts are a first-class artifact kind — left-rail nav group + searchable category
 
 **Type:** Modeling / Refine

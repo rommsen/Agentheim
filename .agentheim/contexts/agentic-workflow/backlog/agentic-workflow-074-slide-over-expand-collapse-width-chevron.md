@@ -55,10 +55,12 @@ collapse affordance).
       `onToggleExpand`, and a **rail-aware `expandedWidth`** (`calc(100vw - 248px)`
       / the rail-width constant — rail-awareness lives in the dashboard, not the
       primitive).
-- [ ] An **expand chevron** sits at the **top-left of the ticket description body**;
-      clicking it widens the drawer to **fill the main content area** (rail still
-      visible) and flips the glyph to a **collapse chevron**; clicking the collapse
-      chevron returns the drawer to its default narrow width.
+- [ ] The **ds-020 body-top chevron** (rendered by the `Drawer` primitive — **not**
+      a board-local glyph) appears at the **top-left of the ticket description body**
+      once the expand seam is wired; clicking it widens the drawer to **fill the main
+      content area** (rail still visible) and flips the glyph to **collapse**; clicking
+      again returns the drawer to its default narrow width. aw-074 **wires and verifies**
+      this seam (`expanded` / `onToggleExpand`), it does **not** render the chevron.
 - [ ] Reopening the slide-over starts **collapsed** (no persisted expand state).
 - [ ] **Esc closes the slide-over outright** when expanded (no collapse-then-close
       two-step).
@@ -74,6 +76,16 @@ collapse affordance).
       unforked Drawer change.
 
 ## Notes
+**Second refine (2026-06-17):** cross-checked the consumed interface against the
+shipped **design-system-020** task — `expanded` / `onToggleExpand` / consumer-supplied
+`expandedWidth`, the body-top chevron + `panel-right-open`/`panel-right-close` glyph
+pair, and the deferred-to-consumer `dist/` rebuild all line up. Tightened AC#3 so the
+chevron reads as the **ds-020 primitive's** (aw-074 wires + verifies the seam, never
+renders a board-local glyph). **Stays in `backlog`: dependency-blocked** — ds-020 (the
+primitive) is still in `backlog`, and a pure consumer cannot be worked or promoted ahead
+of the primitive it imports. The path to working aw-074 runs through ds-020 first
+(promote + work ds-020, then promote aw-074).
+
 **Split in refine (2026-06-17):** the expandable-width capability landed in a new
 **design-system-020** child (controlled expand seam + body-top chevron + the
 `panel-right-open` / `panel-right-close` glyph pair). aw-074 depends on it and is now
