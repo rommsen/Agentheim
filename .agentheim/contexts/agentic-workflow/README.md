@@ -318,6 +318,20 @@ separate BC, but today the whole tool lives in this one.
   `Board` title (same `--font-ui` / 15px / 600 / `--fg-1`) so the capture region and the board below
   read as two labelled zones; vertical whitespace above the `Board` title separates them. Both are
   board-local, token-matched elements -- the styleguide stays unforked (ADR-0003).
+  **The three launch buttons are icon-tile + title/subtitle cards (aw-065):** a visual restyle of the
+  former flat chips into a board-local **`PromptLaunchCard`** -- a square **neutral** icon tile
+  (`plus` / `compass` / `search` from the registry, `--surface-2` fill, never a coloured fill) over a
+  bold **title** and a quiet **subtitle** (Quick Capture / "File it fast", Modeling / "Shape into
+  structure", Research / "Dig deeper"). **Quick Capture carries the emphasised treatment via the
+  primary surface** -- the aw-033 Work chrome (`--surface-2` fill, `--fg-1` text, `--hairline-strong`
+  border); Modeling and Research stay **quiet/secondary** on a plain `--hairline` border. This is
+  *emphasis*, not a selected state (no selection model), and it deliberately **does not use ochre** --
+  the reserved `--accent-ochre-soft` selection accent is untouched (**ADR-0016**), so the restyle is
+  intentionally off-mock on colour. The card's interaction is **byte-identical** to the former chips:
+  the same `launchOrCopy`, per-button seeded commands, armed `skipPermissions` threading and the
+  `onResult` clear-textarea + confetti success path. A **decorative** right-of-row helper ("Type a
+  prompt to begin" + a `⌘↵` chip) hints the flow but **fires nothing** -- aw-038's swallowed Enter is
+  untouched (no Enter-to-launch). This decision is shared with aw-064 (the Work-button restyle).
 - **Shell layout (aw-026, styleguide §05)** -- the live shell is the styleguide "Components in context"
   full-height **left rail** beside a **main column**. The main column is a ~52px **topbar** (the global
   **search field** — aw-052; was a dead breadcrumb until then — plus a single **primary** action that

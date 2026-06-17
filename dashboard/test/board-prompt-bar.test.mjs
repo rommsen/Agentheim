@@ -400,3 +400,92 @@ test('colors are resolved at fire time off the four status bases (theme-aware), 
   assert.doesNotMatch(fire[0], /var\(--st-/, 'fireConfetti must not hold a static var(--st-*) color literal (resolved at fire time now)');
   assert.doesNotMatch(boardSrc, /CONFETTI_TOKENS\s*=\s*\[/, 'the old in-board CONFETTI_TOKENS var(--st-*) array is gone (moved to the palette resolver)');
 });
+
+// agentic-workflow-065: the three launch buttons are restyled from flat chips into
+// icon-tile + title/subtitle CARDS. Interaction is unchanged (launchOrCopy, the
+// per-button seeded commands, the armed skipPermissions threading, the onResult
+// clear+confetti all preserved — locked by the aw-023/036/038 guards above). This is
+// a VISUAL restyle: each button becomes a card with a square icon tile, a bold title,
+// and a quiet subtitle. Quick Capture carries the aw-033 PRIMARY-SURFACE emphasis
+// (--surface-2 fill / --fg-1 text / --hairline-strong border); Modeling & Research
+// stay quiet on a plain --hairline border. NO ochre — the reserved --accent-ochre-soft
+// selection accent is untouched (ADR-0016). A decorative right-of-row helper renders
+// "Type a prompt to begin" + a ⌘↵ chip that fires nothing (aw-038's swallowed Enter
+// is untouched). The board's React glue has no DOM render harness — these are static
+// source guards, the established idiom for this suite.
+test('the three launch buttons render as cards with a title and a quiet subtitle', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  assert.ok(bar, 'BoardPromptBar component must exist');
+  // Each button now carries a subtitle prop (two-line label) and an icon tile.
+  const qc = bar[0].match(/label="Quick Capture"[\s\S]{0,320}?\/>/);
+  const mo = bar[0].match(/label="Modeling"[\s\S]{0,320}?\/>/);
+  const re = bar[0].match(/label="Research"[\s\S]{0,320}?\/>/);
+  assert.ok(qc && mo && re, 'all three card buttons must be present');
+  assert.match(qc[0], /subtitle="File it fast"/, 'Quick Capture subtitle must be "File it fast"');
+  assert.match(mo[0], /subtitle="Shape into structure"/, 'Modeling subtitle must be "Shape into structure"');
+  assert.match(re[0], /subtitle="Dig deeper"/, 'Research subtitle must be "Dig deeper"');
+});
+
+test('each card carries its icon tile glyph (plus / compass / search) from the registry', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  const qc = bar[0].match(/label="Quick Capture"[\s\S]{0,320}?\/>/);
+  const mo = bar[0].match(/label="Modeling"[\s\S]{0,320}?\/>/);
+  const re = bar[0].match(/label="Research"[\s\S]{0,320}?\/>/);
+  assert.match(qc[0], /icon="plus"/, 'Quick Capture tile is the plus glyph');
+  assert.match(mo[0], /icon="compass"/, 'Modeling tile is the compass (concentric) glyph');
+  assert.match(re[0], /icon="search"/, 'Research tile is the magnifier glyph');
+});
+
+test('the card variant renders an icon TILE + a two-line label (title over subtitle)', () => {
+  // The card layout lives in a board-local component that renders the icon inside a
+  // square tile and the label/subtitle stacked beside it. The card branch is keyed by
+  // the subtitle prop.
+  const card = boardSrc.match(/function PromptLaunchCard[\s\S]*?\n}/);
+  assert.ok(card, 'a board-local PromptLaunchCard component must own the card layout');
+  // A square icon tile (equal width/height) wraps the Icon.
+  assert.match(card[0], /<\$\{Icon\}/, 'the card must render an Icon inside its tile');
+  // The subtitle is rendered as a quiet second line, de-emphasised via a fg token.
+  assert.match(card[0], /subtitle/, 'the card must render the subtitle');
+});
+
+test('Quick Capture wears the aw-033 primary-surface emphasis; Modeling & Research stay quiet', () => {
+  const card = boardSrc.match(/function PromptLaunchCard[\s\S]*?\n}/);
+  assert.ok(card, 'PromptLaunchCard must exist');
+  // The emphasised card uses the primary-surface chrome: --surface-2 fill, --fg-1
+  // text, --hairline-strong border (the aw-033 Work treatment).
+  assert.match(card[0], /var\(--surface-2\)/, 'the emphasised card fill must be --surface-2');
+  assert.match(card[0], /var\(--hairline-strong\)/, 'the emphasised card border must be --hairline-strong');
+  // The quiet cards sit on a plain --hairline border.
+  assert.match(card[0], /var\(--hairline\)/, 'quiet cards must use the plain --hairline border');
+  // Quick Capture is the emphasised card; the others are not.
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  const qc = bar[0].match(/label="Quick Capture"[\s\S]{0,320}?\/>/);
+  const mo = bar[0].match(/label="Modeling"[\s\S]{0,320}?\/>/);
+  const re = bar[0].match(/label="Research"[\s\S]{0,320}?\/>/);
+  assert.match(qc[0], /emphasis="primary"/, 'Quick Capture must carry emphasis="primary"');
+  assert.doesNotMatch(mo[0], /emphasis="primary"/, 'Modeling must NOT be primary-emphasised');
+  assert.doesNotMatch(re[0], /emphasis="primary"/, 'Research must NOT be primary-emphasised');
+});
+
+test('NO ochre anywhere in the prompt bar / card — the reserved selection accent is untouched (ADR-0016)', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  const card = boardSrc.match(/function PromptLaunchCard[\s\S]*?\n}/);
+  // The reserved selection accent token must never be APPLIED here — guard against the
+  // var(--accent-ochre...) token usage, not the word "ochre" in a no-ochre code comment.
+  assert.doesNotMatch(bar[0], /var\(--accent-ochre/, 'the prompt bar must not apply the reserved ochre accent token');
+  assert.doesNotMatch(card[0], /var\(--accent-ochre/, 'the card must not apply the reserved ochre accent token');
+});
+
+test('a decorative "Type a prompt to begin" + ⌘↵ hint renders to the right of the row and fires nothing', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  // The helper copy and the keyboard chip render.
+  assert.match(bar[0], /Type a prompt to begin/, 'the decorative helper copy must render');
+  assert.match(bar[0], /⌘↵/, 'a ⌘↵ keyboard-shortcut chip must render');
+  // It is purely decorative: aw-038's swallowed Enter is untouched and nothing in the
+  // bar wires Enter/⌘↵ to a launch — the only keydown handler still just prevents the
+  // newline. The hint must NOT be a <button> or carry an onClick that launches.
+  const hint = bar[0].match(/Type a prompt to begin[\s\S]{0,200}/);
+  assert.doesNotMatch(hint[0], /onClick/, 'the decorative hint must not be clickable');
+  // aw-038 swallow guard still intact (no submit-on-Enter introduced).
+  assert.doesNotMatch(bar[0], /onKeyDown[\s\S]{0,120}launchOrCopy/, 'no Enter-to-launch wiring may be introduced');
+});

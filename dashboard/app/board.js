@@ -473,6 +473,117 @@ function autoGrowField(el, maxPx) {
 const PROMPT_FIELD_MIN_PX = 40;
 const PROMPT_FIELD_MAX_PX = 168;
 
+// A board-local PROMPT-BAR LAUNCH CARD (agentic-workflow-065). A VISUAL restyle of the
+// three flat prompt-bar chips (aw-023/aw-036) into richer icon-tile + title/subtitle
+// cards, so the "type a prompt, then choose how to file it" intent reads at a glance.
+// The INTERACTION is byte-identical to LaunchButton: it runs the same pure
+// `launchOrCopy` (bridge-launch.js) with the silent clipboard fallback, threads the
+// armed `skipPermissions` flag (aw-021), hands the raw result to `onResult` (the bar's
+// clear-textarea + confetti path, aw-023), and shows the same transient launched/copied
+// flash. It deliberately stays a board-LOCAL token-styled composite beside the
+// styleguide primitives (the sort <select>, the prompt textarea precedent) — the
+// styleguide is consumed UNFORKED (ADR-0003), no primitive forked, no new token minted.
+//
+// Layout: a square icon TILE on the left (a registry glyph — `plus` / `compass` /
+// `search`) over a two-line label (bold title + quiet subtitle). The tile is NEUTRAL
+// (token --surface-2 / --fg, never a coloured fill).
+//
+// `emphasis` (the settled aw-065/aw-064 decision): "primary" wears the aw-033 Work
+// chrome — `--surface-2` fill, `--fg-1` text, `--hairline-strong` border (theme-
+// following: light fill+dark text in light mode, the inverse in dark). "default" stays
+// quiet/secondary — `--surface-1` on a plain `--hairline` border. This is EMPHASIS, not
+// a selected state (there is no selection model here), and it deliberately leaves the
+// reserved selection accent `--accent-ochre-soft` UNTOUCHED — NO ochre anywhere
+// (ADR-0016). The armed `skipPermissions` cue reuses LaunchButton's law: the icon hue
+// shifts to `--obligation` while armed (consumed unforked, never the reserved accent).
+function PromptLaunchCard({ label, subtitle, command, icon, emphasis = "default", skipPermissions = false, onResult }) {
+  const [feedback, setFeedback] = useState("idle");
+  const timer = useRef(null);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+
+  const onClick = useCallback(() => {
+    const fetchImpl = typeof window !== "undefined" && typeof window.fetch === "function"
+      ? window.fetch.bind(window)
+      : undefined;
+    launchOrCopy({ prompt: command, fetchImpl, copy: copyToClipboard, skipPermissions: skipPermissions === true }).then((res) => {
+      // Same contract as LaunchButton: hand the raw result to onResult first (the bar
+      // clears + celebrates off it), then flash launched/copied; stay silent if the
+      // clipboard was blocked too. Never an error (absence is normal).
+      if (typeof onResult === "function") onResult(res);
+      if (res.via === "bridge") setFeedback("launched");
+      else if (res.copied) setFeedback("copied");
+      else return;
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setFeedback("idle"), 1100);
+    });
+  }, [command, skipPermissions, onResult]);
+
+  const flashed = feedback !== "idle";
+  const primary = emphasis === "primary";
+  const armed = skipPermissions === true && !flashed;
+
+  // Idle card chrome by emphasis — all token-styled, NO ochre (ADR-0016):
+  //   primary -> the aw-033 Work treatment: --surface-2 fill, --fg-1 text, --hairline-strong border;
+  //   default -> quiet/secondary: --surface-1 fill, --fg-2 text, plain --hairline border.
+  const idleBg = primary ? "var(--surface-2)" : "var(--surface-1)";
+  const idleColor = primary ? "var(--fg-1)" : "var(--fg-2)";
+  const idleBorder = `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
+  // The icon tile is NEUTRAL on both card variants — a quiet --surface-2 square, never
+  // a coloured (ochre) fill. The glyph hue follows the card emphasis, and turns
+  // --obligation while armed (the aw-021/aw-041 per-launch skip-permissions cue).
+  const tileGlyphColor = flashed
+    ? "var(--st-done)"
+    : armed
+      ? "var(--obligation)"
+      : (primary ? "var(--fg-1)" : "var(--fg-2)");
+
+  const titleText = flashed ? (feedback === "launched" ? "Launched" : "Copied") : label;
+  return html`
+    <button
+      type="button"
+      className="focusable"
+      title=${armed
+        ? `${label} — launch ${command} with --dangerously-skip-permissions (armed; copies to clipboard if the bridge is unavailable — the clipboard copy does NOT skip permissions)`
+        : `${label} — launch ${command} (copies to clipboard if the bridge is unavailable)`}
+      aria-label=${armed
+        ? `${label} — ${subtitle} — launch ${command} (skips permissions)`
+        : `${label} — ${subtitle} — launch ${command}`}
+      onClick=${onClick}
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 10, textAlign: "left",
+        color: flashed ? "var(--st-done)" : idleColor,
+        background: flashed ? "var(--surface-1)" : idleBg,
+        border: flashed ? "1px solid var(--st-done)" : idleBorder,
+        borderRadius: "var(--radius-md)", padding: "9px 12px", cursor: "pointer",
+        boxShadow: "none",
+        transition: "color var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base)",
+      }}
+      onMouseEnter=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "var(--shadow-md)"; } }}
+      onMouseLeave=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "none"; } }}>
+      ${/* Square NEUTRAL icon tile — token --surface-2, never ochre. */ ""}
+      <span aria-hidden="true" style=${{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        width: 30, height: 30, flexShrink: 0,
+        background: "var(--surface-2)", border: "1px solid var(--hairline)",
+        borderRadius: "var(--radius-sm)",
+      }}>
+        <${Icon} name=${icon} size=${15} color=${tileGlyphColor} />
+      </span>
+      ${/* Two-line label: bold title over a quiet (--fg-3) subtitle. */ ""}
+      <span style=${{ display: "inline-flex", flexDirection: "column", gap: 1, lineHeight: 1.25 }}>
+        <span style=${{
+          fontFamily: "var(--font-ui)", fontSize: 12.5,
+          fontWeight: primary ? 600 : 550,
+          color: flashed ? "var(--st-done)" : idleColor,
+        }}>${titleText}</span>
+        <span style=${{
+          fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 400,
+          color: "var(--fg-3)",
+        }}>${subtitle}</span>
+      </span>
+    </button>`;
+}
+
 function BoardPromptBar({ skipPermissions = false }) {
   const [prompt, setPrompt] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
@@ -540,14 +651,31 @@ function BoardPromptBar({ skipPermissions = false }) {
         onBlur=${(e) => { e.currentTarget.style.borderColor = "var(--hairline)"; }} />
       <div role="group" aria-label="Start a session seeded with the prompt above" style=${{
         position: "relative",
-        display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+        display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
       }}>
-        <${LaunchButton} label="Quick Capture" command=${quickCaptureCommandFor(prompt)}
-          icon="plus" skipPermissions=${skipPermissions} onResult=${onResult} />
-        <${LaunchButton} label="Modeling" command=${modelingCommandFor(prompt)}
-          icon="compass" skipPermissions=${skipPermissions} onResult=${onResult} />
-        <${LaunchButton} label="Research" command=${researchCommandFor(prompt)}
-          icon="search" skipPermissions=${skipPermissions} onResult=${onResult} />
+        <${PromptLaunchCard} label="Quick Capture" subtitle="File it fast"
+          command=${quickCaptureCommandFor(prompt)} icon="plus" emphasis="primary"
+          skipPermissions=${skipPermissions} onResult=${onResult} />
+        <${PromptLaunchCard} label="Modeling" subtitle="Shape into structure"
+          command=${modelingCommandFor(prompt)} icon="compass"
+          skipPermissions=${skipPermissions} onResult=${onResult} />
+        <${PromptLaunchCard} label="Research" subtitle="Dig deeper"
+          command=${researchCommandFor(prompt)} icon="search"
+          skipPermissions=${skipPermissions} onResult=${onResult} />
+        ${/* Decorative right-of-row helper (aw-065): "Type a prompt to begin" + a ⌘↵
+              chip. PURELY decorative — it is not a control, wires no Enter/⌘↵ launch
+              (aw-038's swallowed Enter is untouched), and just hints the flow. */ ""}
+        <span style=${{
+          marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 8,
+          fontFamily: "var(--font-ui)", fontSize: 11.5, color: "var(--fg-3)",
+        }}>
+          <span>Type a prompt to begin</span>
+          <kbd style=${{
+            fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--fg-2)",
+            background: "var(--surface-2)", border: "1px solid var(--hairline)",
+            borderRadius: "var(--radius-sm)", padding: "2px 7px",
+          }}>⌘↵</kbd>
+        </span>
         <${BoardConfetti} fireKey=${confettiKey} />
       </div>
     </section>`;
