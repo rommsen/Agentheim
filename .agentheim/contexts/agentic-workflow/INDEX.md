@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 78
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-q7m4k** — What's Next card drops the front matter and lays its three sections out as columns (feature) — `todo/agentic-workflow-q7m4k-whats-next-card-three-columns-no-frontmatter.md`
 <!-- todo-list:end -->
 
 ### Doing

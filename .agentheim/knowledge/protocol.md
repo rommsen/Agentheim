@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 10:30 -- Modeling / Captured: agentic-workflow-q7m4k - What's Next card drops the front matter and lays its three sections out as columns
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Refinement of the aw-073 What's Next dashboard panel — stop rendering the folded "Front matter" section, and lay the three advisory sections (where things stand / recommended move / next) out as three side-by-side columns instead of one stacked markdown stream.
+
+---
+
 ## 2026-06-18 10:08 -- Work session ended
 
 **Type:** Work / Session end
