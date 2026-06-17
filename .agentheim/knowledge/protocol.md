@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 21:42 -- Task verified and completed: agentic-workflow-072 - Done column should be hideable (it can grow infinitely large)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-072 - Done column should be hideable (it can grow infinitely large)
+**Summary:** The Done column is now hideable — a Done-only board-local Hide control drops the column from the layout (the three live columns reflow), a "Show Done (N)" chip restores it, and the choice persists via an additive `hidden` boolean on the ADR-0015 view-state store with no version bump; hiding is presentation-only (no /api write).
+**Verification:** PASS (iteration 1)
+**Files changed:** 5
+**Tests added:** 6 (dashboard suite 558/558 green)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 21:35 -- Batch started: [agentic-workflow-072]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-072 - Done column should be hideable (it can grow infinitely large)
+**Parallel:** no (1 worker)
+**Note:** aw-076 held for the next wave — same BC as aw-072, so both could touch the agentic-workflow BC README (one-worker-per-BC-README rule).
+
+---
+
 ## 2026-06-17 21:26 -- Modeling / Refined: agentic-workflow-074 - Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
 
 **Type:** Modeling / Refine

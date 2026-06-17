@@ -33,23 +33,34 @@ const SORT_VALUES = new Set(SORT_OPTIONS.map((o) => o.value));
 
 /**
  * The state a column with NO stored preference falls back to: flat (not grouped),
- * the default sort, and every section expanded. A brand-new bounded context, or a
- * fresh column, lands here.
+ * the default sort, every section expanded, and SHOWN (not hidden). A brand-new
+ * bounded context, or a fresh column, lands here.
+ *
+ * `hidden` (agentic-workflow-072) is the Done-column hide affordance: when true the
+ * column is dropped from the board layout entirely (the live columns reflow to
+ * share the width) and a "Show Done (N)" chip brings it back. It defaults to
+ * `false` so a column with no stored preference is VISIBLE — "shown by default" is
+ * the AC. Today only the Done column renders the control, but the field lives on
+ * the generic per-column shape (the cleanest fit with the existing store); the UI
+ * wires the affordance for Done alone.
  */
 export function defaultColumnState() {
-  return { grouped: false, sort: DEFAULT_SORT, collapsed: [] };
+  return { grouped: false, sort: DEFAULT_SORT, collapsed: [], hidden: false };
 }
 
 // Coerce one stored (untrusted) column blob into a well-formed column state.
 // grouped → boolean; sort → a known sort value or the default; collapsed → an
-// array of strings. Never NaN, never undefined, never a throw.
+// array of strings; hidden → boolean. An OLD blob that predates `hidden` (written
+// before aw-072) simply lacks the field, which coerces to `false` (shown) — an
+// ADDITIVE, back-compatible field, so the VIEW_STATE_VERSION is NOT bumped. Never
+// NaN, never undefined, never a throw.
 function normalizeColumn(raw) {
   const r = raw && typeof raw === 'object' ? raw : {};
   const sort = SORT_VALUES.has(r.sort) ? r.sort : DEFAULT_SORT;
   const collapsed = Array.isArray(r.collapsed)
     ? r.collapsed.filter((bc) => typeof bc === 'string')
     : [];
-  return { grouped: !!r.grouped, sort, collapsed };
+  return { grouped: !!r.grouped, sort, collapsed, hidden: !!r.hidden };
 }
 
 /**
@@ -108,4 +119,30 @@ export function saveViewState(storage, state) {
   } catch {
     /* preference persistence is best-effort; never throw. */
   }
+}
+
+/**
+ * The pure column-FILTERING that drops every hidden column from the rendered set
+ * (agentic-workflow-072). Given the board's column order and the per-column view
+ * map, return the columns to actually render, in board order, with any column whose
+ * view-state is `hidden: true` removed — so the remaining lifecycle columns reflow
+ * to share the full width.
+ *
+ * This is presentation-only (ADR-0017): hiding suppresses RENDERING, never the data
+ * on disk. The hidden column's tasks still exist; only their column is dropped from
+ * the layout. Derived at render time (like sort / group / collapse), so it survives
+ * every SSE re-projection — a task completing into a hidden Done just bumps the
+ * chip's count, it never reveals the column.
+ *
+ * Defensive: a missing/garbage view map, or a column absent from it, is treated as
+ * SHOWN (defaults → visible) rather than throwing — a corrupt preference must never
+ * blank the board.
+ *
+ * @param {string[]} order — the board's column order (COLUMN_ORDER).
+ * @param {Object<string, { hidden?: boolean }>} [view] — column → view-state map.
+ * @returns {string[]} the columns to render, in `order`, minus the hidden ones.
+ */
+export function visibleColumns(order, view) {
+  const v = view && typeof view === 'object' ? view : {};
+  return (Array.isArray(order) ? order : []).filter((col) => !(v[col] && v[col].hidden === true));
 }

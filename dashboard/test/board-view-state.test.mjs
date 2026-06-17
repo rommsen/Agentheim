@@ -17,7 +17,9 @@ import {
   defaultColumnState,
   loadViewState,
   saveViewState,
+  visibleColumns,
 } from '../app/board-view-state.js';
+import { COLUMN_ORDER } from '../app/board-data.js';
 import { DEFAULT_SORT } from '../app/board-sort.js';
 
 // A minimal in-memory localStorage stub: just getItem/setItem over one key.
@@ -31,11 +33,14 @@ function memoryStorage(initial) {
   };
 }
 
-test('defaultColumnState is flat + default sort + all-expanded', () => {
+test('defaultColumnState is flat + default sort + all-expanded + NOT hidden', () => {
   const d = defaultColumnState();
   assert.equal(d.grouped, false);
   assert.equal(d.sort, DEFAULT_SORT);
   assert.deepEqual(d.collapsed, []);
+  // aw-072: the hide affordance defaults OFF — a column with no stored preference
+  // is shown. "Visible by default" is the AC: no stored state resolves to shown.
+  assert.equal(d.hidden, false);
 });
 
 test('loadViewState on an empty store returns an empty object (every column defaults)', () => {
@@ -46,8 +51,8 @@ test('loadViewState on an empty store returns an empty object (every column defa
 test('a saved view-state round-trips through load', () => {
   const storage = memoryStorage(null);
   const state = {
-    done: { grouped: true, sort: 'title-asc', collapsed: ['infrastructure'] },
-    todo: { grouped: false, sort: DEFAULT_SORT, collapsed: [] },
+    done: { grouped: true, sort: 'title-asc', collapsed: ['infrastructure'], hidden: true },
+    todo: { grouped: false, sort: DEFAULT_SORT, collapsed: [], hidden: false },
   };
   saveViewState(storage, state);
   assert.deepEqual(loadViewState(storage), state);
@@ -96,4 +101,74 @@ test('a stored column with partial/garbage fields is normalized on load (never N
   assert.deepEqual(loaded.done.collapsed, []);
   assert.equal(loaded.todo.grouped, false);
   assert.equal(loaded.todo.sort, DEFAULT_SORT);
+});
+
+// ---- aw-072: the `hidden` field (Done column hideable) ----------------------
+
+test('a stored column with hidden: true round-trips as hidden', () => {
+  const storage = memoryStorage(null);
+  saveViewState(storage, { done: { ...defaultColumnState(), hidden: true } });
+  assert.equal(loadViewState(storage).done.hidden, true);
+});
+
+test('hidden is coerced to a boolean (garbage / partial values never throw)', () => {
+  const blob = JSON.stringify({
+    version: VIEW_STATE_VERSION,
+    columns: {
+      done: { hidden: 'yes' },     // truthy non-boolean → true
+      todo: { hidden: 0 },         // falsy non-boolean → false
+      doing: {},                   // absent → false
+    },
+  });
+  const storage = memoryStorage(blob);
+  const loaded = loadViewState(storage);
+  assert.equal(loaded.done.hidden, true);
+  assert.equal(loaded.todo.hidden, false);
+  assert.equal(loaded.doing.hidden, false);
+});
+
+test('an OLD stored blob that predates `hidden` loads as hidden: false (back-compat, no version bump)', () => {
+  // A v1 blob written before aw-072 carries grouped/sort/collapsed but NO hidden
+  // field. It must still load (same VIEW_STATE_VERSION — additive field, no bump)
+  // and every column must resolve to hidden: false (shown).
+  const oldBlob = JSON.stringify({
+    version: VIEW_STATE_VERSION,
+    columns: {
+      done: { grouped: true, sort: 'title-asc', collapsed: ['infrastructure'] },
+      todo: { grouped: false, sort: DEFAULT_SORT, collapsed: [] },
+    },
+  });
+  const storage = memoryStorage(oldBlob);
+  const loaded = loadViewState(storage);
+  // The pre-existing fields survive untouched...
+  assert.equal(loaded.done.grouped, true);
+  assert.equal(loaded.done.sort, 'title-asc');
+  assert.deepEqual(loaded.done.collapsed, ['infrastructure']);
+  // ...and the missing hidden field back-fills to false (shown).
+  assert.equal(loaded.done.hidden, false);
+  assert.equal(loaded.todo.hidden, false);
+});
+
+// ---- aw-072: visibleColumns — the pure column-filtering that drops Done -------
+
+test('visibleColumns drops a column whose view-state is hidden', () => {
+  const view = {};
+  for (const c of COLUMN_ORDER) view[c] = defaultColumnState();
+  view.done = { ...defaultColumnState(), hidden: true };
+  assert.deepEqual(visibleColumns(COLUMN_ORDER, view), ['backlog', 'todo', 'doing']);
+});
+
+test('visibleColumns keeps every column when none is hidden (shown by default)', () => {
+  const view = {};
+  for (const c of COLUMN_ORDER) view[c] = defaultColumnState();
+  assert.deepEqual(visibleColumns(COLUMN_ORDER, view), COLUMN_ORDER);
+});
+
+test('visibleColumns preserves board order and is defensive about missing per-column state', () => {
+  // A column absent from the view map is treated as shown (defaults → visible).
+  const view = { done: { hidden: true } };
+  assert.deepEqual(visibleColumns(COLUMN_ORDER, view), ['backlog', 'todo', 'doing']);
+  // Missing/garbage view map → every column shown, never a throw.
+  assert.deepEqual(visibleColumns(COLUMN_ORDER, null), COLUMN_ORDER);
+  assert.deepEqual(visibleColumns(COLUMN_ORDER, undefined), COLUMN_ORDER);
 });

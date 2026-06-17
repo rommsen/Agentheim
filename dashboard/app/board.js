@@ -52,7 +52,7 @@ import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
 import { refineCommandFor, promoteCommandFor, dismissCommandFor, quickCaptureCommandFor, modelingCommandFor, researchCommandFor, WORK_COMMAND, WHATS_NEXT_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
-import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
+import { loadViewState, saveViewState, defaultColumnState, visibleColumns } from "./board-view-state.js";
 import { SlideOver } from "./slide-over.js";
 import { MainPaneReader } from "./main-pane-reader.js";
 import { treeToLibrary } from "./library-data.js";
@@ -100,6 +100,38 @@ function BoardHeader({ count }) {
         fontFeatureSettings: '"tnum"',
       }}>${count} ${count === 1 ? "task" : "tasks"}</span>
     </header>`;
+}
+
+// The "Show Done (N)" RESTORE chip (agentic-workflow-072). Shown above the board —
+// in the board's count-strip region — ONLY while the Done column is hidden; N is the
+// live done-task count and tracks every SSE re-projection (it is read from the
+// re-fetched columns, not stored). Clicking it clears `hidden`, restoring the column.
+// A board-local, token-matched control (the sort <select> / group-toggle precedent),
+// styleguide consumed UNFORKED (ADR-0003). Presentation-only: restoring is a
+// view-state flip, never an /api write (ADR-0017/0001). Glyph: the existing
+// `square-kanban` board icon, consumed unforked.
+function ShowColumnChip({ status, count, onShow }) {
+  const label = status.charAt(0).toUpperCase() + status.slice(1);
+  return html`
+    <button
+      type="button"
+      className="focusable"
+      aria-label=${`Show the ${status} column (${count} ${count === 1 ? "task" : "tasks"})`}
+      title=${`Show the ${status} column again`}
+      onClick=${() => onShow()}
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 6,
+        fontFamily: "var(--font-ui)", fontSize: 11.5, fontWeight: 500,
+        color: "var(--fg-2)", background: "var(--surface-1)",
+        border: "1px solid var(--hairline)",
+        borderRadius: "var(--radius-sm)", padding: "4px 9px", cursor: "pointer",
+        transition: "color var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base)",
+      }}
+      onMouseEnter=${(e) => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--fg-1)"; }}
+      onMouseLeave=${(e) => { e.currentTarget.style.background = "var(--surface-1)"; e.currentTarget.style.color = "var(--fg-2)"; }}>
+      <${Icon} name="square-kanban" size=${12.5} color="var(--fg-3)" />
+      <span>Show ${label} (<span style=${{ fontFamily: "var(--font-mono)", fontFeatureSettings: '"tnum"' }}>${count}</span>)</span>
+    </button>`;
 }
 
 function LoadState({ children }) {
@@ -170,10 +202,44 @@ function ColumnGroupToggle({ status, grouped, onToggle }) {
     </button>`;
 }
 
+// The per-column HIDE control (agentic-workflow-072). A board-only affordance,
+// SIBLING of the sort / group controls — same precedent (aw-012/aw-014): the
+// styleguide kanban.js is consumed UNFORKED (ADR-0003), the control is native and
+// token-styled, no new design-system primitive. It is rendered ONLY when the column
+// opts in (the `onHide` prop is supplied) — today that is the Done column alone
+// (Done is the one column that grows unbounded). Clicking it lifts the column's
+// `hidden: true` into persisted board view-state (ADR-0015); the pure
+// `visibleColumns` drops it from the layout at render time, so a live SSE
+// re-projection re-applies the choice rather than resetting it. Presentation-only:
+// no /api write, no lifecycle move (ADR-0017/0001). Glyph: the existing `x` registry
+// icon (design-system-017), consumed unforked — the registry has no `eye-off`.
+function ColumnHideButton({ status, onHide }) {
+  return html`
+    <button
+      type="button"
+      className="focusable"
+      aria-label=${`Hide ${status} column`}
+      title=${`Hide the ${status} column — it drops out of the board; a "Show ${status}" chip brings it back`}
+      onClick=${() => onHide()}
+      style=${{
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        gap: 5,
+        fontFamily: "var(--font-ui)", fontSize: 11.5, color: "var(--fg-2)",
+        background: "var(--surface-1)", border: "1px solid var(--hairline)",
+        borderRadius: "var(--radius-sm)", padding: "3px 7px", cursor: "pointer",
+        transition: "background var(--duration-fast) var(--ease-base)",
+      }}>
+      <${Icon} name="x" size=${12.5} color="var(--fg-3)" />
+      <span>Hide</span>
+    </button>`;
+}
+
 // The board-only control strip beneath the styleguide ColumnHeader: sort + group,
-// laid out as siblings. Both are board view-state affordances; neither forks the
-// styleguide (ADR-0003).
-function ColumnControls({ status, sort, onSortChange, grouped, onGroupToggle }) {
+// laid out as siblings, plus (Done only) a hide control. All are board view-state
+// affordances; none forks the styleguide (ADR-0003). `onHide` is OPTIONAL — when
+// absent the hide button is not rendered (the aw-018 "affordance keyed off a prop,
+// default OFF" precedent), so backlog / todo / doing carry no hide control.
+function ColumnControls({ status, sort, onSortChange, grouped, onGroupToggle, onHide }) {
   return html`
     <div style=${{
       display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
@@ -181,6 +247,9 @@ function ColumnControls({ status, sort, onSortChange, grouped, onGroupToggle }) 
     }}>
       <${ColumnSortControl} status=${status} value=${sort} onChange=${onSortChange} />
       <${ColumnGroupToggle} status=${status} grouped=${grouped} onToggle=${onGroupToggle} />
+      ${typeof onHide === "function"
+        ? html`<${ColumnHideButton} status=${status} onHide=${onHide} />`
+        : null}
     </div>`;
 }
 
@@ -927,7 +996,7 @@ function BoardCard({ ticket, status, selectedId, onOpen, skipPermissions = false
 
 function BoardColumn({
   status, tickets, sort, onSortChange, grouped, onGroupToggle,
-  collapsed, onToggleSection,
+  collapsed, onToggleSection, onHide,
   selectedId, onOpen, skipPermissions = false,
 }) {
   // Pipeline: tickets arrive ALREADY sorted (the board sorts before passing them
@@ -946,7 +1015,7 @@ function BoardColumn({
     }}>
       <${ColumnHeader} status=${status} count=${tickets.length} />
       <${ColumnControls} status=${status} sort=${sort} onSortChange=${onSortChange}
-        grouped=${grouped} onGroupToggle=${onGroupToggle} />
+        grouped=${grouped} onGroupToggle=${onGroupToggle} onHide=${onHide} />
       ${tickets.length === 0
         ? html`<div style=${{ paddingBottom: 8 }}><${EmptyColumn} status=${status} /></div>`
         : grouped
@@ -1019,6 +1088,15 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree", skipPermissions 
       : { ...prev, [status]: { ...prev[status], grouped } }));
   }, []);
 
+  // Hide / show one column (aw-072). Presentation-only: it flips persisted view-state
+  // `hidden`, which `visibleColumns` reads to drop the column from the layout. No
+  // /api write, no lifecycle move (ADR-0017/0001).
+  const setColumnHidden = useCallback((status, hidden) => {
+    setView((prev) => (prev[status].hidden === hidden
+      ? prev
+      : { ...prev, [status]: { ...prev[status], hidden } }));
+  }, []);
+
   // Toggle one (column, BC) section's collapse state. Stored as the list of
   // COLLAPSED BC names per column — absent = expanded (the all-expanded default).
   const toggleSection = useCallback((status, bc) => {
@@ -1077,21 +1155,33 @@ export function DashboardBoard({ onOpen, treeUrl = "/api/tree", skipPermissions 
     return html`<${LoadState}><${Icon} name="triangle-alert" size=${15} color="var(--st-doing)" /> Could not load the board. Is the dashboard server running?</${LoadState}>`;
   }
 
+  // aw-072: drop every hidden column from the rendered set (the pure visibleColumns,
+  // derived at render time so it survives every SSE re-projection). Today only Done
+  // carries the hide control; a hidden Done shows a "Show Done (N)" chip above the
+  // board, N tracking the live count. The chip region renders for any hidden column,
+  // but only Done is ever wired to hide.
+  const shown = visibleColumns(COLUMN_ORDER, view);
+  const hiddenColumns = COLUMN_ORDER.filter((status) => !shown.includes(status));
+
   return html`
     <div>
       <${BoardPromptBar} skipPermissions=${skipPermissions} />
-      <div style=${{ paddingTop: 18 }}>
+      <div style=${{ paddingTop: 18, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <${BoardHeader} count=${total} />
+        ${hiddenColumns.map((status) => html`
+          <${ShowColumnChip} key=${status} status=${status} count=${columns[status].length}
+            onShow=${() => setColumnHidden(status, false)} />`)}
       </div>
       <div className="scroll-quiet" style=${{ overflowX: "auto", paddingBottom: 8 }}>
         <div style=${{ minWidth: 880 }}>
           <div style=${{ display: "flex", gap: 20, alignItems: "flex-start" }}>
-            ${COLUMN_ORDER.map((status) => html`
+            ${shown.map((status) => html`
               <${BoardColumn} key=${status} status=${status}
                 tickets=${sortTickets(columns[status], view[status].sort)}
                 sort=${view[status].sort} onSortChange=${(v) => setColumnSort(status, v)}
                 grouped=${view[status].grouped} onGroupToggle=${(g) => setColumnGrouped(status, g)}
                 collapsed=${view[status].collapsed} onToggleSection=${(bc) => toggleSection(status, bc)}
+                onHide=${status === "done" ? () => setColumnHidden(status, true) : undefined}
                 selectedId=${selectedId} onOpen=${handleOpen} skipPermissions=${skipPermissions} />`)}
           </div>
         </div>

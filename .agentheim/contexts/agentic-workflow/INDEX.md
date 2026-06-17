@@ -11,15 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 4
-- **Todo:** 2
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 69
+- **Done:** 70
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
 - **agentic-workflow-076** — What's next persists its recommendation as a single-latest advisory artifact (advisory write) — `todo/agentic-workflow-076-whats-next-persists-advisory-recommendation.md`
-- **agentic-workflow-072** — Done column should be hideable (it can grow infinitely large) (feature) — `todo/agentic-workflow-072-hideable-done-column.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-072** — Done column should be hideable (it can grow infinitely large) (feature) — `done/agentic-workflow-072-hideable-done-column.md`
 - **agentic-workflow-071** — Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe (bug) — `done/agentic-workflow-071-confetti-keyframes-test-trips-on-aboutrise.md`
 - **agentic-workflow-070** — About-page Ko-fi button uses a solid colour, not a gradient (refactor) — `done/agentic-workflow-070-kofi-button-solid-colour.md`
 - **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella — delivered via aw-058/059/060) — `done/agentic-workflow-057-workflow-guide-page.md`

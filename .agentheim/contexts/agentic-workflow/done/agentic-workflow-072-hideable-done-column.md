@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-072
 title: Done column should be hideable (it can grow infinitely large)
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 depends_on: [design-system-001]
 blocks: []
 tags: []
@@ -77,3 +77,31 @@ view-state only — never a disk write; the tasks and their lifecycle are untouc
 - **Prior art / precedent:** aw-014 (persisted per-column view-state + collapsible sections — the
   store this extends), aw-012 (per-column sort control as a board-local `ColumnHeader` sibling),
   aw-018 (optional per-column affordance keyed off a prop, default OFF).
+
+## Outcome
+The Done column is now hideable. A board-local **Hide** button (the existing `x` registry glyph —
+the registry has no `eye-off` — consumed unforked, ADR-0003) renders on the Done column **only**,
+wired off an optional `onHide` prop (the aw-018 default-OFF precedent); backlog / todo / doing carry
+no such control. Clicking it sets the column's persisted `hidden: true`; the pure
+`visibleColumns(COLUMN_ORDER, view)` drops it from the rendered set at render time, so the three live
+columns reflow to share the width and the choice survives every SSE re-projection (it never resets).
+While Done is hidden a **"Show Done (N)"** chip (the `square-kanban` glyph) renders in the board's
+count-strip region, N being the live done count read from the re-fetched columns; clicking it clears
+`hidden`. Hiding is **presentation-only** — no `/api` write, no lifecycle move (ADR-0017 / ADR-0001).
+
+Persistence rides the existing ADR-0015 versioned store: `defaultColumnState` and `normalizeColumn`
+gained a `hidden` boolean defaulting to `false`; an old blob that predates the field loads as
+`hidden: false` (shown) with **no `VIEW_STATE_VERSION` bump** (additive, back-compatible). Shown by
+default.
+
+Key files:
+- `dashboard/app/board-view-state.js` — `hidden` in `defaultColumnState` / `normalizeColumn`; new pure
+  `visibleColumns` export.
+- `dashboard/app/board.js` — `ColumnHideButton` + `ShowColumnChip` components, `setColumnHidden`
+  callback, `visibleColumns` filtering of the rendered columns, Done-only `onHide` wiring.
+- `dashboard/test/board-view-state.test.mjs` — 6 new `node --test` cases (hidden normalization,
+  old-blob → `false` back-compat, `visibleColumns` drop/keep/defensive).
+- `dashboard/dist/app.js` — rebuilt via esbuild so the deployed bundle carries the change.
+- BC README — hideable-Done bullet + `hidden` in the persisted view-state bullet.
+
+Full dashboard suite: **558/558** green (was 552; +6).

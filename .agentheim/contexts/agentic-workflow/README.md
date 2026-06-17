@@ -175,14 +175,31 @@ separate BC, but today the whole tool lives in this one.
   open state — it does not fit a board section rendering `TicketCard`s with externally-persisted
   collapse state); a `design-system` capture (design-system-005) is filed for the shared primitive. See
   ADR-0015, ADR-0009, ADR-0003.
-- **Persisted board view-state** — the per-column **view lens** — grouped/flat, sort choice, and each
-  `(column, BC)` collapse state — is persisted across reloads in a **single versioned `localStorage`
-  store** (`dashboard/app/board-view-state.js`, key `agentheim.board.viewState`; agentic-workflow-014,
-  ADR-0015). This deliberately **reverses** ADR-0009's "in-session view-state only — no `localStorage`"
-  clause, but the reversal is bounded to **presentation view-state**: the store never records lifecycle
-  truth — which task is in which column stays a pure projection of disk (`/api/tree`), re-fetched on
-  every SSE frame. A stale-version / malformed / absent blob degrades to "every column defaults" rather
-  than throwing — a corrupt preference can never blank the board. See ADR-0015, ADR-0001.
+- **Hideable Done column** — the **Done** column (and *only* Done — it is the one column that grows
+  unbounded as completed tasks accumulate) carries a board-only **hide** control (agentic-workflow-072),
+  a *sibling* of the sort `<select>` / group toggle (same board-column precedent — the styleguide
+  `kanban.js` is consumed unforked, ADR-0003; the affordance is keyed off an `onHide` prop, default OFF,
+  so backlog / todo / doing render no such control — the aw-018 precedent). Clicking it drops the Done
+  column **out of the board layout entirely**, so the three live lifecycle columns reflow to share the
+  full width; while it is hidden a **"Show Done (N)"** chip — N the live done count, tracking every SSE
+  re-projection — appears above the board (in the **count-strip** region) to bring it back. **Shown by
+  default.** The choice **persists across reloads** via the board view-state store (the additive `hidden`
+  boolean, below). Hiding is **presentation-only**: it suppresses *rendering* only — no `/api` write, no
+  lifecycle move, Done's tasks still exist on disk (ADR-0017 / ADR-0001). The drop is derived at render by
+  the pure `visibleColumns` (`board-view-state.js`, unit-tested under `node --test`), so a task completing
+  into a hidden Done just bumps the chip's count — it never reveals the column. See ADR-0015, ADR-0017,
+  ADR-0003.
+- **Persisted board view-state** — the per-column **view lens** — grouped/flat, sort choice, each
+  `(column, BC)` collapse state, and the per-column **`hidden`** flag (the Done hide control, aw-072) — is
+  persisted across reloads in a **single versioned `localStorage` store**
+  (`dashboard/app/board-view-state.js`, key `agentheim.board.viewState`; agentic-workflow-014, ADR-0015).
+  This deliberately **reverses** ADR-0009's "in-session view-state only — no `localStorage`" clause, but
+  the reversal is bounded to **presentation view-state**: the store never records lifecycle truth — which
+  task is in which column stays a pure projection of disk (`/api/tree`), re-fetched on every SSE frame.
+  The `hidden` field is **additive and back-compatible** — an old stored blob that predates it loads as
+  `hidden: false` (shown), so **no `VIEW_STATE_VERSION` bump**. A stale-version / malformed / absent blob
+  degrades to "every column defaults" rather than throwing — a corrupt preference can never blank the
+  board. See ADR-0015, ADR-0001.
 - **Persisted theme choice (light/dark toggle)** — the dashboard consumes the styleguide's "dark-first
   with a light toggle" theme switch **unforked** (ADR-0003): the `ThemeToggle` Dark/Light control (from
   `styleguide/app/live.js`) lives in the topbar **settings menu** (the gear dropdown, aw-049;
