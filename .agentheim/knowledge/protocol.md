@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 21:26 -- Modeling / Refined: agentic-workflow-074 - Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Refined the slide-over expand-chevron task to a pure-consumer framing and **split** the Drawer expandable-width capability into a new design-system child. aw-074 now stops passing `onOpenFullScreen` (header drops to Close-only, aw-039/aw-052 main-pane promote path retained in board.js) and consumes a new controlled expand seam, supplying the rail-aware `expandedWidth`. Decided: reopening resets to collapsed (no persisted state); Esc closes outright. No ADR needed (ADR-0003/0010/0014 + ds-005/006 controlled-seam pattern cover it).
+**Split into:** design-system-020 (Drawer in-place expandable width — controlled expand seam + body-top chevron + `panel-right-open`/`panel-right-close` glyph pair; `blocks: [agentic-workflow-074]`)
+**ADRs written:** none
+
+---
+
 ## 2026-06-17 21:25 -- Modeling / Captured: agentic-workflow-077 - Collision-resistant task IDs for multi-user / multi-branch work
 
 **Type:** Modeling / Capture
