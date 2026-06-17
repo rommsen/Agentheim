@@ -5,6 +5,23 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 19:30 -- Capture / Captured: agentic-workflow-072 - Done column should be hideable (it can grow infinitely large)
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** The done column should be hideable because it might grow infinitely large.
+
+---
+
+## 2026-06-17 19:24 -- Batch started: [agentic-workflow-071]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-071 - Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe
+**Parallel:** no (1 worker) — sole ready task; depends_on empty. Test-only change (board-prompt-bar.test.mjs).
+
+---
+
 ## 2026-06-17 18:40 -- Modeling / Refined: agentic-workflow-071 - Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe
 
 **Type:** Modeling / Refine
