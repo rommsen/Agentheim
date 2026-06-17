@@ -30,13 +30,18 @@ const dashboardDir = path.join(here, '..');
 const boardSrc = readFileSync(path.join(dashboardDir, 'app', 'board.js'), 'utf8');
 const slideOverSrc = readFileSync(path.join(dashboardDir, 'app', 'slide-over.js'), 'utf8');
 
-test('SlideOver accepts an onOpenFullScreen prop and threads it to the styleguide Drawer (ds-009 callback)', () => {
-  // The wrapper destructures the prop from its props object.
+test('SlideOver still ACCEPTS an onOpenFullScreen prop but (aw-074) no longer forwards it to the Drawer', () => {
+  // The wrapper still destructures the prop — board.js keeps passing its promote handler so
+  // the aw-039/aw-052 main-pane path stays live for global search (the shell wiring below is
+  // unchanged). aw-074 only stops FORWARDING it to the Drawer, so the ds-009 callback-guard
+  // hides the header maximize button (Close-only header); in-place widening (the ds-020
+  // body-top chevron) replaces "promote out" as the slide-over's enlargement affordance.
   assert.match(slideOverSrc, /function SlideOver\(\{[^}]*\bonOpenFullScreen\b[^}]*\}\)/,
-    'SlideOver must accept an onOpenFullScreen prop');
-  // It forwards the SAME prop to the imported Drawer (consumed unforked, ADR-0003).
-  assert.match(slideOverSrc, /<\$\{Drawer\}[\s\S]*?onOpenFullScreen=\$\{onOpenFullScreen\}/,
-    'SlideOver must forward onOpenFullScreen to the Drawer');
+    'SlideOver must still accept an onOpenFullScreen prop (board.js keeps passing it)');
+  // The Drawer mount must NOT receive onOpenFullScreen — that is what hides the maximize button.
+  const drawerCall = slideOverSrc.match(/<\$\{Drawer\}[\s\S]*?\/>/)[0];
+  assert.doesNotMatch(drawerCall, /onOpenFullScreen/,
+    'SlideOver must NOT forward onOpenFullScreen to the Drawer (aw-074: maximize button hidden)');
 });
 
 test('the shell wires an onOpenFullScreen handler that promotes openIntent into the main pane and closes the slide-over', () => {

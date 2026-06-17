@@ -23,7 +23,7 @@
    out of scope; this builds only the panel and wires it to the board's
    existing open-intent seam.
    ============================================================ */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { html } from "../../.agentheim/contexts/design-system/styleguide/app/html.js";
 import { Drawer } from "../../.agentheim/contexts/design-system/styleguide/app/drawer.js";
@@ -43,20 +43,37 @@ const OVERLAY_STYLE = {
   pointerEvents: "none",
 };
 
+// Rail-aware expanded width (aw-074). The expand chevron widens the slide-over to
+// FILL THE MAIN CONTENT AREA — everything right of the fixed-width ShellRail (248px,
+// board.js). Rail-awareness is a DASHBOARD fact, not the Drawer primitive's (ds-020
+// keeps no `248` / `calc(100vw - …)`): the consumer supplies the value, the primitive
+// only selects it. The collapsed-width default stays inside the Drawer primitive.
+const RAIL_WIDTH_PX = 248;
+const EXPANDED_WIDTH = `calc(100vw - ${RAIL_WIDTH_PX}px)`;
+
 /**
  * The universal detail slide-over.
  *
  * @param {object|null} intent — the open-intent (clicked task/artifact). Null = closed.
  * @param {() => void} onClose — close sink; the parent clears `intent`.
- * @param {() => void} [onOpenFullScreen] — optional "Open in full screen" action
- *   (ds-009's bare Drawer callback). When supplied the Drawer header renders the action;
- *   the shell owns the open task, so the callback takes no argument (aw-039). Threaded
- *   to the styleguide Drawer UNFORKED (ADR-0003).
+ * @param {() => void} [onOpenFullScreen] — ACCEPTED but no longer forwarded to the Drawer
+ *   (aw-074). board.js still passes its promote handler (the aw-039/aw-052 main-pane path
+ *   stays live for global search), but the slide-over header's "Open in full screen"
+ *   maximize button is GONE: with the callback absent on the Drawer, the ds-009 callback-
+ *   guard hides the action, leaving a Close-only header. In-place widening (the ds-020
+ *   body-top chevron) replaces "promote out" as the slide-over's enlargement affordance.
  * @param {(path: string) => Promise<string>} [fetchDoc] — overridable doc fetcher (tests).
  */
 export function SlideOver({ intent, onClose, onOpenFullScreen, fetchDoc = defaultFetchDoc }) {
   // `phase` drives the body the Drawer shows while the markdown is in flight.
   const [item, setItem] = useState(null);
+  // In-place expand state (aw-074), driving the ds-020 controlled seam. The slide-over
+  // OWNS the truth (controlled) and resets it to COLLAPSED on every (re)open below — no
+  // persisted expand state (decided in refine: reopening a task always starts narrow; no
+  // view-state store, no ADR-0015). Esc still closes the slide-over outright (inherited
+  // from the Drawer's keydown handler — the chevron is the only collapse affordance).
+  const [expanded, setExpanded] = useState(false);
+  const onToggleExpand = useCallback(() => setExpanded((v) => !v), []);
 
   useEffect(() => {
     if (!intent) {
@@ -64,6 +81,8 @@ export function SlideOver({ intent, onClose, onOpenFullScreen, fetchDoc = defaul
       setItem(null);
       return;
     }
+    // (Re)opening on a task always starts collapsed — no persisted expand state.
+    setExpanded(false);
     let alive = true;
     // Show an immediate, quiet loading body so the panel opens without waiting
     // on the network — the Drawer animates in, then the body swaps to the doc.
@@ -87,7 +106,13 @@ export function SlideOver({ intent, onClose, onOpenFullScreen, fetchDoc = defaul
   return html`
     <div style=${OVERLAY_STYLE}>
       <div style=${{ position: "absolute", inset: 0, pointerEvents: item ? "auto" : "none" }}>
-        <${Drawer} item=${item} headerVariant="contextual" onClose=${onClose} onOpenFullScreen=${onOpenFullScreen} />
+        <${Drawer}
+          item=${item}
+          headerVariant="contextual"
+          onClose=${onClose}
+          expanded=${expanded}
+          onToggleExpand=${onToggleExpand}
+          expandedWidth=${EXPANDED_WIDTH} />
       </div>
     </div>`;
 }

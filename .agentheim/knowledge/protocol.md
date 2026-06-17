@@ -5,6 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 09:50 -- Task verified and completed: agentic-workflow-074 - Slide-over expand/collapse-width chevron
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-074 - Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
+**Summary:** The slide-over header's "Open in full screen" maximize button is replaced by the ds-020 in-place expand chevron — readers widen a ticket where they are (to fill the main content area right of the 248px rail) and collapse it back, no main-pane promotion; the aw-039 promote path stays live, reached only via global search.
+**Verification:** PASS (iteration 2 — iteration 1 failed on a stale `dist/` bundle; source AC#1–#8 were correct from iteration 1, the rebuild closed AC#9)
+**Files changed:** 7 (incl. regenerated `dist/`)
+**Tests added:** 1 new (`slide-over-expand.test.mjs`) + 2 adapted (`slide-over-full-screen.test.mjs`, `frontmatter.test.mjs`)
+**ADRs written:** none
+
+---
+
+## 2026-06-18 09:46 -- Verification failed: agentic-workflow-074 - Slide-over expand/collapse-width chevron
+
+**Type:** Work / Verification failure
+**Task:** agentic-workflow-074 - Slide-over expand/collapse-width chevron
+**Iteration:** 1 of 3
+**Reasons:** AC#9 unmet — `dashboard/dist/` was not rebuilt; the shipped bundle still carries the old maximize button and lacks the in-place expand wiring (source AC#1–#8 all correct)
+**Iteration hint:** likely-fixable
+**Next:** re-dispatched worker (iteration 2 — rebuild dist + restore frontmatter.test.mjs edit the verifier's git-checkout reverted)
+
+---
+
 ## 2026-06-18 09:44 -- Task verified and completed: agentic-workflow-080 - Duplicate task-id guard
 
 **Type:** Work / Task completion

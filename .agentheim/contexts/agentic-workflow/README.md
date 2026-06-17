@@ -534,12 +534,20 @@ separate BC, but today the whole tool lives in this one.
   sub-line — `intentToDrawerItem` threads `intent.title` onto the doc item (agentic-workflow-047).
   Lives in `dashboard/app/slide-over.js`
   over the pure, unit-tested `dashboard/app/slide-over-data.js`. Esc and scrim-click close it.
-  Its header carries an **"Open in full screen"** action (the styleguide `Drawer`'s bare
-  `onOpenFullScreen` callback, design-system-009): clicking it promotes the open task **out of the
-  cramped slide-over and into the main pane** (`setSelectedDoc(openIntent); setOpenIntent(null)`,
-  agentic-workflow-039) — a deliberate per-action override of the ADR-0021 split, not a change to
-  the default `isTaskIntent` routing. The **Board** rail item returns to the board.
-  See ADR-0010, ADR-0021, ADR-0009.
+  To get more reading room the header's old "Open in full screen" maximize button was **replaced
+  (agentic-workflow-074)** by an **in-place expand chevron** (the styleguide `Drawer`'s ds-020
+  body-top chevron): clicking it **widens the drawer where it is** to fill the main content area —
+  everything right of the 248px `ShellRail` — and clicking again collapses it back. The slide-over
+  **owns the controlled expand state** (`expanded` / `onToggleExpand`) and supplies the only
+  rail-aware fact, `expandedWidth = calc(100vw - 248px)`; the chevron, the collapsed default, the
+  animated width transition and its reduced-motion strip all live in the unforked `Drawer` (ds-020,
+  ADR-0003 / ADR-0014). Reopening a task **resets to collapsed** (no persisted expand state); Esc
+  still closes the slide-over outright. Reopening starts narrow because the expand flag resets on
+  every open-intent change. The slide-over **no longer forwards `onOpenFullScreen`** to the `Drawer`,
+  so the maximize button is gone — but the **aw-039 "promote out → main pane" path itself stays**
+  (`setSelectedDoc(openIntent); setOpenIntent(null)`, board.js); it is now reached from **global
+  search** (aw-052) routing tickets through the main pane, not from the slide-over header. The
+  **Board** rail item returns to the board. See ADR-0010, ADR-0021, ADR-0009, ADR-0003, ADR-0014.
 - **Global search (topbar)** — the dashboard's search surface (agentic-workflow-052): the topbar's
   leading slot (the former dead breadcrumb) is the **global search field** that, as you type, queries
   `GET /api/search` (aw-050) and opens a floating panel of **category-grouped** results

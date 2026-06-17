@@ -219,9 +219,13 @@ test('the slide-over folds the fetched body through withFrontmatterSection befor
   // The transform wraps the FETCHED markdown (the success path), not the loading/error bodies.
   assert.match(src, /withFrontmatterSection\(\s*md\s*\)/,
     'the fetched markdown (md) must pass through withFrontmatterSection before intentToDrawerItem');
-  // aw-039's onOpenFullScreen prop thread must remain undisturbed.
-  assert.match(src, /onOpenFullScreen=\$\{onOpenFullScreen\}/,
-    'the aw-039 onOpenFullScreen Drawer thread must stay intact');
+  // aw-074 replaced the aw-039 header maximize button with the ds-020 in-place expand
+  // chevron: the slide-over no longer forwards onOpenFullScreen to the Drawer (the
+  // callback-guard then hides the maximize action). The frontmatter folding above is
+  // unaffected — it is verified independently of the expand seam.
+  const drawerCall = src.match(/<\$\{Drawer\}[\s\S]*?\/>/)[0];
+  assert.doesNotMatch(drawerCall, /onOpenFullScreen/,
+    'aw-074: the Drawer mount no longer carries onOpenFullScreen (maximize button hidden)');
 });
 
 test('the main-pane reader folds the fetched body through withFrontmatterSection before <Markdown>', () => {
