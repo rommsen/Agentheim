@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 3
-- **Todo:** 0
+- **Backlog:** 2
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 64
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-063** — Analyze and optimize the committing pattern (refactor) — `todo/agentic-workflow-063-optimize-committing-pattern.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -94,7 +95,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-063** — Analyze and optimize the committing pattern — `backlog/agentic-workflow-063-optimize-committing-pattern.md`
 - **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella → aw-058/059/060) — `backlog/agentic-workflow-057-workflow-guide-page.md`
 - **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `backlog/agentic-workflow-060-workflow-guide-diagrams.md`
 <!-- backlog-list:end -->

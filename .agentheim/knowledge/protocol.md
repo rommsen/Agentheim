@@ -5,6 +5,25 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 16:32 -- Modeling / Promoted: agentic-workflow-063 - Analyze and optimize the committing pattern
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-17 16:30 -- Modeling / Refined: agentic-workflow-063 - Analyze and optimize the committing pattern
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Diagnosed both reported symptoms and scoped the fix. Primary pain: `modeling`/`quick-capture`/`brainstorm` write `.md` artifacts (task files, INDEX, protocol) but never commit them, leaving them in the working tree. Secondary: `work` writes the SHA-frontmatter, INDEX, and protocol *after* the task commit (the SHA chicken-and-egg), leaking bookkeeping that then needs a separate per-session commit. Refined plan: fold bookkeeping into the task commit + drop the `commit:` field; markdown-producing skills commit their own scoped `.md`; keep one-commit-per-task with a trivial-squash carve-out; record the doctrine as an ADR (cross-linking ADR-0007 / ADR-0017). Stays in backlog — offered for promotion.
+**Split into:** none (may split along the work / modeling seam when worked)
+**ADRs written:** none (committing-doctrine ADR expected when the task is worked)
+
+---
+
 ## 2026-06-17 16:27 -- Work session ended
 
 **Type:** Work / Session end
