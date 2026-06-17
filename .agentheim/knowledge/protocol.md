@@ -5,6 +5,18 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 21:05 -- Modeling / Refined: agentic-workflow-073 - What's next renders on the dashboard (split → aw-073 + aw-076)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** aw-073 backlog, aw-076 todo
+**Summary:** Architect round (via orchestrator) resolved the keystone read-only tension. Builder decisions: (1) advisory write by the skill — a narrow non-lifecycle write, carved out by new **ADR-0027** so ADR-0017 and the skill's read-only stance both stay intact; (2) the skill emits structured data, the dashboard owns rendering (not raw HTML); (3) dismiss/collapse in scope. Artifact is `.agentheim/state/whats-next.md` (single-latest, git-ignored, frontmatter `generated` timestamp + three markdown sections), read via the existing `/api/doc` + SSE, rendered through the aw-043 frontmatter-fold path. **Split** into the skill half (**aw-076**, advisory write — no frontend gate, promoted to todo) and the dashboard half (**aw-073** retitled, render + staleness + dismiss-persistence — gated on design-system-001 + aw-076, stays backlog). ADR-0027's artifact shape is the frozen interface between them.
+**Split into:** agentic-workflow-076 (skill half; aw-073 retained as the dashboard half)
+**ADRs written:** ADR-0027 (proposed)
+**Note:** Concurrent capture session took ids 074 + 075 mid-refine; the skill half landed on aw-076 (ids never reused).
+
+---
+
 ## 2026-06-17 20:55 -- Modeling / Captured: agentic-workflow-075 - Concepts are a first-class artifact kind — left-rail nav group + searchable category
 
 **Type:** Modeling / Capture

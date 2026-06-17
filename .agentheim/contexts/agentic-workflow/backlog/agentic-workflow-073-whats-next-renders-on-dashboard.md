@@ -1,88 +1,84 @@
 ---
 id: agentic-workflow-073
-title: What's next renders its recommendation as structured HTML above the dashboard prompt (not just terminal text)
+title: Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar
 status: backlog
 type: feature
 context: agentic-workflow
 created: 2026-06-17
 completed:
-depends_on: [design-system-001]
+depends_on: [design-system-001, agentic-workflow-076]
 blocks: []
-tags: [dashboard, frontend, whats-next, ui, captured]
-related_adrs: [0017, 0021, 0009, 0003]
+tags: [dashboard, frontend, whats-next, ui]
+related_adrs: [0027, 0017, 0023, 0021, 0009, 0003]
 related_research: [work-session-presence-lock-2026-06-15, work-terminal-completion-signal-2026-06-15]
 prior_art: [agentic-workflow-069, agentic-workflow-064, agentic-workflow-043, agentic-workflow-065]
 ---
 
 ## Why
-Today the `whats-next` skill answers only in the terminal where it ran. The recommendation
-evaporates with that session — you can't glance at it later, and it isn't visible on the
-dashboard where the builder actually decides what to do next. The builder wants the
-recommendation to **surface on the dashboard, above the prompt bar**, so that it serves two
-moments:
-
-- **End of a session** — a persisted overview of where things stand and what to do next.
-- **Start of the next session** — open the dashboard and immediately see the recommended
-  next steps, without re-running anything.
-
-This makes the topbar **What's next** button (aw-069) pay off visually: press it, and a few
-moments later the recommendation appears *in* the dashboard rather than only in whatever
-terminal the bridge spawned.
+The `whats-next` recommendation should be visible on the dashboard — where the builder
+actually decides what to do next — not only in whatever terminal the bridge spawned. Press
+the topbar **What's next** button (aw-069); a few moments later the recommendation appears
+*in* the dashboard, above the prompt bar, and is still there when the dashboard is reopened
+in a later session. This is the **dashboard half** of the feature; the skill half (writing
+the artifact) is **agentic-workflow-074**, which this task depends on.
 
 ## What
-When the `whats-next` skill runs, in addition to (or instead of) its terminal prose, it
-emits a **structured recommendation** that the dashboard renders as a panel **above the
-board prompt bar**. The panel shows the latest "what's next" recommendation — where things
-stand, the recommended next move(s) and why, and the concrete next action — and persists so
-it's still there when the dashboard is reopened in a later session.
+The dashboard reads the single-latest recommendation artifact the `whats-next` skill writes
+(`.agentheim/state/whats-next.md`, defined by ADR-0027 and produced by aw-074) and renders it
+as a **structured panel above the board prompt bar** — styleguide-consumed (unforked,
+ADR-0003), light/dark aware, refreshing live over the existing SSE consumer. The panel is
+**dismissible**; the dismissed state persists across reloads and a *newer* recommendation
+re-shows it.
 
-The shape spans two halves that need to meet:
-1. **`whats-next` skill** writes its recommendation to a known location under `.agentheim/`
-   (e.g. a single latest-recommendation artifact) when it runs.
-2. **Dashboard** reads that artifact and renders it as a structured panel above the prompt
-   bar on the board view, refreshing live (via the existing SSE consumer) when a new
-   recommendation lands.
+The artifact is ordinary frontmattered markdown (a `generated` ISO-8601 timestamp + three
+sections: where things stand / recommended move / next), so it flows through the existing
+`withFrontmatterSection` (aw-043) + unforked `Markdown` primitive with **no new render code**.
+The dashboard does **not** receive raw HTML — the skill emits structured data and the
+dashboard owns the pixels (refinement decision).
 
 ## Acceptance criteria
-- [ ] To be defined during refinement. (Behaviour the builder asked for, to be sharpened:)
-- [ ] Running the `whats-next` skill produces a persisted, structured recommendation the
-      dashboard can render — not only terminal prose.
-- [ ] The dashboard renders the latest recommendation as a panel **above the board prompt
-      bar**, styleguide-consumed (unforked, ADR-0003), light/dark aware.
-- [ ] The panel survives a dashboard reload / new session (persisted, not ephemeral) and
-      updates live when a newer recommendation is written.
+- [ ] On the **board view only**, the dashboard renders the recommendation as a panel
+      **above** the prompt bar's `Prompt` title, composing cleanly with the prompt field and
+      the three `PromptLaunchCard`s; styleguide consumed **unforked** (ADR-0003), light/dark
+      aware.
+- [ ] The panel fetches the body via the existing `GET /api/doc?path=.agentheim/state/whats-next.md`
+      (reusing the `startsWith(root)` in-root guard); **no** body enters `/api/tree` (ADR-0023
+      — tree stays pointers/metadata only).
+- [ ] **Absent artifact** → the panel renders nothing (no empty shell, no error). A
+      **malformed / partial** artifact renders what is parseable and never throws.
+- [ ] The panel updates **live**: a newer write triggers the existing SSE `tree-changed` frame
+      (ADR-0006), the panel re-fetches `/api/doc` and re-renders.
+- [ ] The panel shows a **staleness cue** derived from the artifact's `generated` timestamp;
+      nothing else keys behaviour off it (ADR-0027 §4).
+- [ ] A **dismiss/collapse** affordance hides the panel; the dismissed state persists across
+      reload in a new versioned `localStorage` store `dashboard/app/whats-next-state.js`
+      (mirroring `theme-state.js` / board-view-state.js), **keyed by `generated`** so a newer
+      recommendation re-shows. Every degraded path (malformed / stale-version / absent /
+      non-boolean / no backend) resolves to **"not dismissed"**, never throws.
+- [ ] Pure helpers are unit-tested under `node --test` (the dismiss store + all degraded paths
+      + the newer-timestamp re-show; any pure staleness formatter). Dashboard `dist/` rebuilt
+      via esbuild; existing tests stay green.
 
 ## Notes
-Captured via `/agentheim:modeling` on 2026-06-17 — raw on the *how*, clear on the *what*.
-Needs a `modeling` **refine** pass (likely an `architect` round) before it can be promoted.
-The open design forks the refine pass must resolve:
+Refined via `/agentheim:modeling refine agentic-workflow-073` on 2026-06-17. The original
+single capture was **split** into the skill half (aw-076, the advisory write) and this
+dashboard half; **ADR-0027's artifact shape is the frozen interface** between them so they
+cannot drift. Architect round routed through the orchestrator.
 
-- **Read-only tension (the keystone).** The `whats-next` skill is currently *strictly
-  read-only* — `SKILL.md` states it "never moves a task, never promotes, never commits,
-  never edits the protocol." This feature requires it to **write** a recommendation artifact.
-  And the dashboard is read-only over `.agentheim/` (ADR-0017). Decide how to reconcile:
-  is the recommendation an allowed *advisory write* (not a lifecycle/disk-truth write, so the
-  read-only-over-*lifecycle* contract is intact), where does it live, and does it get its own
-  ADR? This is the decision that gates the whole task.
-- **HTML vs structured data.** The builder said "structured HTML." Decide whether the skill
-  emits **raw HTML** (rendered through `marked` like the frontmatter-folding precedent does,
-  aw-043 — `marked` passes raw HTML through, ADR-0003) or **structured data** (markdown / JSON)
-  that the dashboard renders into its own styleguide components. The latter is safer and keeps
-  rendering owned by the dashboard; the former is closer to what was asked. Architect's call.
-- **Persistence & staleness.** It must survive into the next session, so it's a persisted
-  single-latest artifact (overwritten each run), not a log. Consider a timestamp + staleness
-  cue so a recommendation written before a big board change reads as possibly-outdated — the
-  `work-session-presence-lock` / `work-terminal-completion-signal` research already worked
-  through the "skill writes an on-disk signal, dashboard reasons about its freshness" pattern.
-- **Where it renders.** "Above the prompt" = above the board prompt bar (aw-023/038/054/065),
-  which only shows on the **board** view. Confirm scope (board view only) and how it composes
-  with the `Prompt` title and the three launch cards.
-- **How the dashboard learns of it.** The SSE live-update consumer (aw-009) already re-fetches
-  on any `.agentheim/` change — a new recommendation file would trigger it for free, needing a
-  read endpoint (or folding into the tree/doc projection) rather than new transport.
-- **Dismissable?** Decide whether the builder can dismiss/collapse the panel (it could become
-  noise once read) — possibly a follow-up.
+- **Frontend gate** — depends on the approved styleguide (`design-system-001`), consumed
+  unforked (ADR-0003). Not promotable ahead of the styleguide, and not workable until aw-076
+  ships the artifact it reads.
+- **Read path** — reuse `/api/doc`, **not** a new endpoint and **not** a fold into `/api/tree`
+  (ADR-0027 §3); the recommendation is a document *body* and `/api/doc` already carries bodies
+  behind the in-root guard, exactly as the main-pane reader and slide-over do (ADR-0021).
+- **Render precedent** — the markdown flows through the same `withFrontmatterSection` (aw-043)
+  + `Markdown` path both detail surfaces already use, so the frontmatter folds to a quiet
+  collapsed section and the three body sections render with no bespoke renderer.
+- **Dismiss persistence** — the versioned-localStorage view-state precedent (aw-014 / ADR-0015,
+  `theme-state.js` aw-017); keyed by `generated` so dismissing one recommendation doesn't
+  permanently suppress the next.
+- **Scope** — board view only; the panel sits above the `Prompt` title (aw-054) and the three
+  launch cards (aw-065). No ochre (ADR-0016); the danger token is irrelevant here.
 
-Frontend task → depends on the approved styleguide (`design-system-001`); styleguide consumed
-unforked (ADR-0003). Prior art: aw-069 (button fires the skill), aw-064 (button created),
-aw-043 (structured-HTML-through-`marked` precedent), aw-065 (prompt-bar layout it sits above).
+Prior art: aw-069 (button fires the skill), aw-064 (button created), aw-043 (frontmatter-folding
+render path it reuses), aw-065 (prompt-bar layout it sits above).

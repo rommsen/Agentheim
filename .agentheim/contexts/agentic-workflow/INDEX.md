@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 4
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 69
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-076** — What's next persists its recommendation as a single-latest advisory artifact (advisory write) — `todo/agentic-workflow-076-whats-next-persists-advisory-recommendation.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -101,13 +102,14 @@ research touching this BC, and concept synthesis pages.
 <!-- backlog-list:start -->
 - **agentic-workflow-075** — Concepts are a first-class artifact kind — left-rail nav group + searchable category (feature) — `backlog/agentic-workflow-075-concepts-first-class-rail-and-search.md`
 - **agentic-workflow-074** — Slide-over gets an expand/collapse-width chevron, replacing the full-screen button (feature) — `backlog/agentic-workflow-074-slide-over-expand-collapse-width-chevron.md`
-- **agentic-workflow-073** — What's next renders its recommendation as structured HTML above the dashboard prompt (not just terminal text) — `backlog/agentic-workflow-073-whats-next-renders-on-dashboard.md`
+- **agentic-workflow-073** — Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar — `backlog/agentic-workflow-073-whats-next-renders-on-dashboard.md`
 - **agentic-workflow-072** — Done column should be hideable (it can grow infinitely large) — `backlog/agentic-workflow-072-hideable-done-column.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0027** — Advisory writes are distinct from lifecycle writes; the `whats-next` recommendation is an advisory write (`.agentheim/state/whats-next.md`, single-latest, git-ignored, read via `/api/doc`) (proposed) — `../../knowledge/decisions/0027-advisory-writes-distinct-from-lifecycle-writes.md`
 - **ADR-0026** — Committing doctrine: every artifact-producing skill commits its own scoped `.md`; `work` folds bookkeeping into the task commit, `commit:` field dropped, trivial-squash carve-out (accepted) — `../../knowledge/decisions/0026-committing-doctrine-bookkeeping-in-task-commit.md`
 - **ADR-0025** — The dashboard main pane gains a third view state (`mainView`) for built-in static pages, beside the task/document split; reshapes ADR-0021 (proposed) — `../../knowledge/decisions/0025-dashboard-main-pane-third-view-state-builtin-static-page.md`
 - **ADR-0023** — The dashboard's `/api/search` is the read-only server's first content-search endpoint — pure corpus walk, title-first ranking, body excerpts (proposed) — `../../knowledge/decisions/0023-dashboard-search-read-endpoint.md`
