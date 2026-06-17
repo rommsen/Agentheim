@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 09:05 -- Modeling / Promoted: agentic-workflow-078 - deriveContext dual-shape token regex
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
 ## 2026-06-18 00:08 -- Modeling / Promoted: agentic-workflow-075 - Concepts are a first-class artifact kind — left-rail nav group + searchable category
 
 **Type:** Modeling / Promote

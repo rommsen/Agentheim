@@ -1,7 +1,7 @@
 ---
 id: agentic-workflow-078
 title: deriveContext resolves both legacy NNN and new token id shapes (dual-shape regex) + tests
-status: backlog
+status: todo
 type: refactor
 context: agentic-workflow
 created: 2026-06-17
