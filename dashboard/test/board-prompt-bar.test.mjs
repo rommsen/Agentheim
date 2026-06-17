@@ -339,7 +339,7 @@ test('the celebration is rendered by canvas-confetti, not the old CSS keyframes 
     'board.js must import the bundled canvas-confetti dependency',
   );
   // The old CSS-keyframe implementation is removed.
-  assert.doesNotMatch(boardSrc, /@keyframes/, 'no @keyframes injection (CSS burst removed)');
+  assert.doesNotMatch(boardSrc, /@keyframes[^{]*confetti/i, 'no confetti-named @keyframes (the old agentheim-confetti-rise CSS burst removed)');
   assert.doesNotMatch(boardSrc, /agentheim-confetti-piece/, 'no .agentheim-confetti-piece DOM spans (CSS burst removed)');
   assert.doesNotMatch(boardSrc, /ensureConfettiStyle/, 'ensureConfettiStyle (the keyframe injector) is gone');
 });

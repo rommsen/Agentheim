@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-071
 title: Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe
-status: todo
+status: done
 type: bug
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 depends_on: []
 blocks: []
 tags: [dashboard, test, confetti, about, regression]
@@ -64,3 +64,14 @@ Do not remove or alter the legitimate `aboutRise` keyframe — it is intended Ab
 - Old confetti keyframe name (for the tripwire): `agentheim-confetti-rise` (aw-034 commit `bb953cd`).
 - Test-only change — no UI/rendering touched, so the design-system styleguide gate does not apply
   (`depends_on` stays empty).
+
+## Outcome
+Tightened the aw-034 confetti regression assertion in `dashboard/test/board-prompt-bar.test.mjs:342`
+from the over-broad `assert.doesNotMatch(boardSrc, /@keyframes/, …)` to a confetti-scoped tripwire
+`assert.doesNotMatch(boardSrc, /@keyframes[^{]*confetti/i, …)`. This still trips if the old
+`agentheim-confetti-rise` CSS burst (or any confetti-named keyframe) is reintroduced, while
+permitting the unrelated, intentional `@keyframes aboutRise` About-page entrance reveal (aw-062).
+The two sibling assertions (`agentheim-confetti-piece`, `ensureConfettiStyle`) are unchanged.
+Dashboard suite is now 552/552 green. No production code touched; `board.js` untouched.
+
+Key file: `dashboard/test/board-prompt-bar.test.mjs`.

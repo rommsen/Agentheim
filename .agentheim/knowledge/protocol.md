@@ -5,6 +5,18 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 19:34 -- Task verified and completed: agentic-workflow-071 - Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-071 - Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe
+**Summary:** Tightened the aw-034 confetti regression guard from a blanket `/@keyframes/` check to a confetti-scoped `/@keyframes[^{]*confetti/i` tripwire — still catches the removed `agentheim-confetti-rise` CSS burst while permitting the unrelated, intentional About-page `aboutRise` keyframe. Dashboard suite back to 552/552 green.
+**Verification:** PASS (iteration 1)
+**Files changed:** 1
+**Tests added:** 0 (tightened an existing assertion)
+**ADRs written:** none
+
+---
+
 ## 2026-06-17 19:30 -- Capture / Captured: agentic-workflow-072 - Done column should be hideable (it can grow infinitely large)
 
 **Type:** Capture
