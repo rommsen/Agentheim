@@ -1,7 +1,7 @@
 ---
 id: agentic-workflow-074
 title: Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
-status: backlog
+status: todo
 type: feature
 context: agentic-workflow
 created: 2026-06-17

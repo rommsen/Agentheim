@@ -43,6 +43,11 @@ id shapes, end-anchored on the bare id, per ADR-0028 §4. Add tests covering bot
 - [ ] `resolveTaskFile` resolves a token-tailed `<id>-<slug>.md` file via its existing
       trailing-`-` anchor with no code change — covered by a new test that creates a fixture
       file `agentic-workflow-k3f9q-some-slug.md` and asserts it resolves from the bare id.
+- [ ] The no-match fallback is preserved: the new regex is **stricter** (end-anchored) than the
+      old unanchored `/^(.*)-\d+/`, so an id matching **neither** shape — a malformed
+      leading-digit "token" (`agentic-workflow-3f9qx`), or an id with no recognizable tail —
+      must still return the id unchanged via the `m ? m[1] : id` fallback (never `undefined`,
+      never a throw). A test pins this.
 - [ ] No legacy id behavior regresses: existing `deriveContext` / `resolveTaskFile` tests stay
       green.
 - [ ] No id rewrite, no migration — go-forward coexistence (ADR-0028).
@@ -51,5 +56,12 @@ id shapes, end-anchored on the bare id, per ADR-0028 §4. Add tests covering bot
 
 - Touch point: `lib/task-lifecycle.mjs`, `deriveContext` (~line 240) only. `resolveTaskFile`
   (~line 64) is unchanged but gains a token-shape test.
+- **Caller confirmed safe for end-anchoring:** `deriveContext` has exactly **one** caller —
+  `applyTaskMove` (`lib/task-lifecycle.mjs:147`, `options.context ?? deriveContext(id)`) — and it
+  is always passed the **bare** `id`, never the `<id>-<slug>` filename. So the ADR-0028 §4 claim
+  "the slug is not in scope" holds at the only call site; end-anchoring the regex on the bare id
+  cannot regress a real caller.
 - Grammar and disambiguation tell are fixed by ADR-0028 §1–§3; do not re-litigate them here —
-  this task implements the ratified grammar.
+  this task implements the ratified grammar. The regex in the AC is the **`u`-excluding** form
+  (`[a-hjkmnp-tv-z]` / `[0-9a-hjkmnp-tv-z]`) reconciled during aw-077's verification — do not
+  reintroduce the `p-z` span that re-admits the look-alike `u`.

@@ -5,6 +5,35 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 09:00 -- Modeling / Refined: agentic-workflow-078 - deriveContext dual-shape token regex
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Hardened the edges of the already-ratified split task (no reshaping — grammar is fixed by ADR-0028). Added two ACs/notes from reading the code: (1) a **no-match fallback** criterion — the new end-anchored regex is stricter than the old `/^(.*)-\d+/`, so a neither-shape id must still return the id unchanged via `m ? m[1] : id` (test pinned); (2) a **caller-confirmation note** — `deriveContext` has exactly one caller, `applyTaskMove` (line 147), always passed the bare id, so end-anchoring is safe. Restated the `u`-excluding regex guard from aw-077's verification. Verified implementable against `lib/task-lifecycle.mjs`. Task is ready for `todo`.
+**Split into:** —
+**ADRs written:** —
+
+---
+
+## 2026-06-18 00:08 -- Modeling / Promoted: agentic-workflow-075 - Concepts are a first-class artifact kind — left-rail nav group + searchable category
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-18 09:00 -- Modeling / Promoted: agentic-workflow-074 - Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+Unblocked: both dependencies (design-system-001-styleguide, design-system-020) are now in `done/` — ds-020 (the Drawer expandable-width primitive) shipped this session, clearing the pure-consumer block the second refine flagged. Acceptance criteria concrete and dependency-met; ready to work.
+
+---
+
 ## 2026-06-18 00:06 -- Work session ended
 
 **Type:** Work / Session end
