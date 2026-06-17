@@ -1516,25 +1516,36 @@ function WorkflowPage() {
     </section>`;
 }
 
-// A small external link (agentic-workflow-062). Every off-app destination on the
-// About page (contact links, the GitHub link) opens in a NEW TAB with a safe
-// `rel="noopener noreferrer"` — never in-app navigation (ADR-0021's routing is for
-// on-disk docs/tasks only; the About page is static chrome). Token-styled, no fork
-// (ADR-0003). It carries the styleguide's existing "leaves the app" affordance icon.
-function AboutLink({ href, label }) {
+// A token-styled external-link CHIP (agentic-workflow-062; About-page visual polish).
+// Every off-app destination on the About page (contact links, the GitHub link) opens in
+// a NEW TAB with a safe `rel="noopener noreferrer"` — never in-app navigation (ADR-0021's
+// routing is for on-disk docs/tasks only; the About page is static chrome). It is a
+// bordered pill drawn entirely from neutral surface / hairline / fg tokens — consumed
+// UNFORKED (ADR-0003), no ochre (ADR-0016) — that lifts on hover (border + fg darken, a
+// 1px rise, shadow-sm). It carries the styleguide's existing "leaves the app" icon.
+function AboutLink({ href, label, icon = "square-arrow-out-up-right" }) {
+  const [hover, setHover] = useState(false);
   return html`
     <a
       className="focusable"
       href=${href}
       target="_blank"
       rel="noopener noreferrer"
+      onMouseEnter=${() => setHover(true)}
+      onMouseLeave=${() => setHover(false)}
       style=${{
-        display: "inline-flex", alignItems: "center", gap: 7,
+        display: "inline-flex", alignItems: "center", gap: 8,
+        padding: "9px 13px", borderRadius: "var(--radius-md)",
+        border: "1px solid",
+        borderColor: hover ? "var(--hairline-strong)" : "var(--hairline)",
+        background: "var(--surface-0)",
         fontFamily: "var(--font-ui)", fontSize: 13, fontWeight: 500,
-        color: "var(--fg-1)", textDecoration: "none",
-        transition: "color var(--duration-fast) var(--ease-base)",
+        color: hover ? "var(--fg-1)" : "var(--fg-2)", textDecoration: "none",
+        transform: hover ? "translateY(-1px)" : "none",
+        boxShadow: hover ? "var(--shadow-sm)" : "none",
+        transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base), transform var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)",
       }}>
-      <${Icon} name="square-arrow-out-up-right" size=${13.5} color="var(--fg-3)" />
+      <${Icon} name=${icon} size=${13.5} color=${hover ? "var(--fg-2)" : "var(--fg-3)"} />
       <span>${label}</span>
     </a>`;
 }
@@ -1572,87 +1583,147 @@ function KofiButton() {
     </a>`;
 }
 
-// A token-styled About card surface (agentic-workflow-062). Both cards share the
-// styleguide's surface + hairline + radius tokens — consumed UNFORKED (ADR-0003),
-// honoring light/dark by construction.
-function AboutCard({ children }) {
+// A token-styled About card surface (agentic-workflow-062; About-page visual polish).
+// Cards share the styleguide's surface + hairline tokens — consumed UNFORKED (ADR-0003),
+// honoring light/dark by construction — now with the REAL --radius-md (the original
+// --radius-lg is undefined in the token set, so the corners rendered square) and a quiet
+// shadow-sm lift. Each card carries the shared `about-rise` entrance reveal (defined in
+// AboutPage's board-local <style>) and accepts a `style` override so the page can stagger
+// each card's animation-delay; the reveal is stripped under prefers-reduced-motion.
+function AboutCard({ children, style }) {
   return html`
-    <div style=${{
+    <div className="about-rise" style=${{
       background: "var(--surface-1)", border: "1px solid var(--hairline)",
-      borderRadius: "var(--radius-lg)", padding: 28,
+      borderRadius: "var(--radius-md)", padding: 32,
+      boxShadow: "var(--shadow-sm)",
+      animation: "aboutRise 0.5s var(--ease-base) both",
+      ...style,
     }}>${children}</div>`;
 }
 
 // The built-in About page (agentic-workflow-062, the second built-in static page
-// ADR-0025 anticipated). It gives Agentheim a face — who built it and how to support
-// it — mirroring the TOP TWO cards of WhisperHeim's About page:
-//   1. Profile & contact — a circular profile photo beside a three-paragraph bio,
-//      plus a "Get in touch" list of external contact links.
-//   2. Support & GitHub — a "buy me a coffee" line, the board-local Ko-fi gradient
-//      button, a closing thank-you, and a "View on GitHub" link to the Agentheim repo.
+// ADR-0025 anticipated; About-page visual polish). It gives Agentheim a face — who built
+// it and how to support it. Layout: a masthead (eyebrow + title + subtitle over a hairline
+// rule), a profile card (an identity row of framed photo + name + role; a full-width bio
+// with a pull-quote callout; a divider; a wrap of "Get in touch" link chips), and a
+// support card (the board-local Ko-fi gradient button between a pitch and a thank-you,
+// plus the GitHub chip).
 //
 // It is a built-in STATIC view, NOT an open-intent: it carries no lifecycle `status`
 // and no on-disk `path`, so it never enters isTaskIntent (ADR-0021, byte-unchanged)
 // and never fetches /api/doc. It is read-only over .agentheim/ (ADR-0017) and composed
 // from styleguide tokens consumed UNFORKED (ADR-0003) — no styleguide edit, no new
-// bundled dependency. The shell selects it via the dedicated onSelectAbout handler
+// bundled dependency, and deliberately NO ochre (the reserved selection accent, ADR-0016)
+// and no content-type / status hues repurposed as decoration: the page draws only on the
+// neutral surface / fg / hairline / shadow / radius / type tokens, leaving the Ko-fi
+// gradient (itself built from status tokens) as the single splash of color. The page's
+// one motion is a gentle staggered entrance reveal, defined in a board-local <style>
+// (ADR-0020: "board-local" is ownership, not footprint) and stripped under
+// prefers-reduced-motion. The shell selects it via the dedicated onSelectAbout handler
 // (NOT the rail's onOpen machinery) and renders it per the workflow → about → document
 // → board precedence. The profile photo is a committed served asset (/heimeshoff.jpg),
 // referenced by URL, never a filesystem path.
 function AboutPage() {
+  // Eyebrow label — the styleguide .t-label role (uppercase, tracked, --fg-3) inlined.
+  const eyebrow = (text) => html`
+    <span style=${{
+      fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 500,
+      letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--fg-3)",
+    }}>${text}</span>`;
+
   return html`
     <section aria-label="About Agentheim" style=${{
-      display: "flex", flexDirection: "column", gap: 24,
-      maxWidth: 760, margin: "0 auto", padding: "0 4px",
+      display: "flex", flexDirection: "column", gap: 28,
+      maxWidth: 760, margin: "0 auto", padding: "8px 4px 16px",
     }}>
-      <h1 style=${{
-        margin: 0, fontFamily: "var(--font-ui)", fontSize: 22, fontWeight: 600,
-        letterSpacing: "-0.01em", color: "var(--fg-1)",
-      }}>About</h1>
+      <!-- Board-local entrance motion. A single gentle rise, staggered per surface,
+           stripped entirely under prefers-reduced-motion (the quiet-by-default law). -->
+      <style>${`
+        @keyframes aboutRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) {
+          .about-rise { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
+      `}</style>
+
+      <!-- Masthead -->
+      <header className="about-rise" style=${{
+        display: "flex", flexDirection: "column", gap: 10,
+        animation: "aboutRise 0.5s var(--ease-base) both",
+      }}>
+        ${eyebrow("About")}
+        <h1 style=${{
+          margin: 0, fontFamily: "var(--font-ui)", fontSize: 30, fontWeight: 600,
+          letterSpacing: "-0.02em", lineHeight: 1.1, color: "var(--fg-1)",
+        }}>Agentheim</h1>
+        <p style=${{
+          margin: 0, maxWidth: 520, fontFamily: "var(--font-ui)", fontSize: 15,
+          lineHeight: 1.6, color: "var(--fg-3)",
+        }}>
+          A domain-driven agentic harness for Claude Code — and the person who built it.
+        </p>
+        <div style=${{
+          marginTop: 6, height: 1,
+          background: "linear-gradient(90deg, var(--hairline-strong), transparent)",
+        }} />
+      </header>
 
       <!-- Card 1: Profile & contact -->
-      <${AboutCard}>
-        <div style=${{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+      <${AboutCard} style=${{ animationDelay: "80ms" }}>
+        <!-- Identity row: framed photo + name + role -->
+        <div style=${{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
           <img
             src="/heimeshoff.jpg"
             alt="Marco Heimeshoff"
-            width=${128} height=${128}
+            width=${108} height=${108}
             style=${{
-              width: 128, height: 128, borderRadius: "50%", objectFit: "cover",
-              flexShrink: 0, border: "2px solid var(--hairline-strong)",
+              width: 108, height: 108, borderRadius: "50%", objectFit: "cover",
+              flexShrink: 0, border: "1px solid var(--hairline-strong)",
+              boxShadow: "var(--shadow-md)",
             }} />
-          <div style=${{ flex: "1 1 320px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style=${{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+            <h2 style=${{
+              margin: 0, fontFamily: "var(--font-ui)", fontSize: 22, fontWeight: 600,
+              letterSpacing: "-0.01em", color: "var(--fg-1)",
+            }}>Marco Heimeshoff</h2>
             <p style=${{
-              margin: 0, fontFamily: "var(--font-ui)", fontSize: 15, lineHeight: 1.6, color: "var(--fg-1)",
-            }}>
-              Hi, I'm <strong>Marco Heimeshoff</strong> — trainer, consultant, and conference
-              organiser focused on <strong>Domain-Driven Design</strong> and
-              <strong>collaborative modeling</strong>.
-            </p>
-            <p style=${{
-              margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)",
-            }}>
-              DDD is all about creating a <em>ubiquitous language</em> within
-              <em>bounded contexts</em> — and Agentheim brings that same discipline to
-              building software with Claude Code, so the model corners ambiguity instead
-              of producing plausible-looking mush.
-            </p>
-            <p style=${{
-              margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)",
-            }}>
-              When I'm not helping teams design meaningful software, I enjoy building
-              open-source tools like this one to make life a little smoother.
-            </p>
+              margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, color: "var(--fg-3)",
+            }}>Trainer · consultant · conference organiser</p>
           </div>
+        </div>
+
+        <!-- Bio -->
+        <div style=${{ display: "flex", flexDirection: "column", gap: 14, marginTop: 22 }}>
+          <p style=${{
+            margin: 0, fontFamily: "var(--font-ui)", fontSize: 15, lineHeight: 1.65, color: "var(--fg-2)",
+          }}>
+            Hi, I'm Marco — focused on
+            <strong style=${{ color: "var(--fg-1)", fontWeight: 600 }}>Domain-Driven Design</strong>
+            and <strong style=${{ color: "var(--fg-1)", fontWeight: 600 }}>collaborative modeling</strong>.
+          </p>
+          <p style=${{
+            margin: 0, paddingLeft: 16, borderLeft: "2px solid var(--hairline-strong)",
+            fontFamily: "var(--font-ui)", fontSize: 14.5, fontStyle: "italic",
+            lineHeight: 1.6, color: "var(--fg-2)",
+          }}>
+            DDD is all about creating a <em>ubiquitous language</em> within
+            <em>bounded contexts</em> — and Agentheim brings that same discipline to
+            building software with Claude Code, so the model corners ambiguity instead
+            of producing plausible-looking mush.
+          </p>
+          <p style=${{
+            margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)",
+          }}>
+            When I'm not helping teams design meaningful software, I enjoy building
+            open-source tools like this one to make life a little smoother.
+          </p>
         </div>
 
         <div style=${{ height: 1, background: "var(--hairline)", margin: "24px 0" }} />
 
+        <!-- Get in touch -->
         <div style=${{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <h2 style=${{
-            margin: 0, fontFamily: "var(--font-ui)", fontSize: 15, fontWeight: 600, color: "var(--fg-1)",
-          }}>Get in touch</h2>
-          <div style=${{ display: "flex", flexDirection: "column", gap: 10 }}>
+          ${eyebrow("Get in touch")}
+          <div style=${{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             <${AboutLink} href="https://heimeshoff.de" label="heimeshoff.de" />
             <${AboutLink} href="https://bsky.app/profile/heimeshoff.de" label="Bluesky · @Heimeshoff.de" />
             <${AboutLink} href="https://linkedin.com/in/heimeshoff" label="linkedin.com/in/heimeshoff" />
@@ -1661,22 +1732,29 @@ function AboutPage() {
       </${AboutCard}>
 
       <!-- Card 2: Support & GitHub -->
-      <${AboutCard}>
+      <${AboutCard} style=${{ animationDelay: "160ms" }}>
         <div style=${{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center" }}>
+          ${eyebrow("Support")}
+          <h2 style=${{
+            margin: 0, fontFamily: "var(--font-ui)", fontSize: 18, fontWeight: 600, color: "var(--fg-1)",
+          }}>Enjoying Agentheim?</h2>
           <p style=${{
-            margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)", maxWidth: 460,
+            margin: 0, fontFamily: "var(--font-ui)", fontSize: 14, lineHeight: 1.6, color: "var(--fg-3)", maxWidth: 440,
           }}>
-            If you enjoy Agentheim and want to support my open-source work, you can buy
-            me a coffee!
+            If it's making your work with Claude Code a little smoother and you'd like to
+            support my open-source work, you can buy me a coffee.
           </p>
           <${KofiButton} />
           <p style=${{
-            margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)", maxWidth: 460,
+            margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)", maxWidth: 440,
           }}>
-            Otherwise, just <strong>enjoy using Agentheim for free</strong> — and thanks
-            for giving it a try!
+            Otherwise, just
+            <strong style=${{ color: "var(--fg-2)", fontWeight: 600 }}>enjoy using Agentheim for free</strong>
+            — and thanks for giving it a try!
           </p>
-          <${AboutLink} href="https://github.com/heimeshoff/Agentheim" label="View on GitHub" />
+          <div style=${{ marginTop: 4 }}>
+            <${AboutLink} href="https://github.com/heimeshoff/Agentheim" label="View on GitHub" />
+          </div>
         </div>
       </${AboutCard}>
     </section>`;
