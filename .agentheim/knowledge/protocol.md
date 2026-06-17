@@ -5,6 +5,21 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 19:40 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — aw-071 (8613a07)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (8613a07 aw-071)
+**Notes:**
+- One ready task this run (aw-071 — confetti "no @keyframes" guard regression). depends_on empty; test-only change, no styleguide gate. Worker tightened the aw-034 assertion from a blanket `/@keyframes/` to a confetti-scoped `/@keyframes[^{]*confetti/i` tripwire; PASS on the first verifier pass (dashboard suite 552/552 green, the unrelated About-page `aboutRise` keyframe now permitted, all three aw-034 vectors still tripped).
+- **Concurrent modeling race (benign):** while the worker ran, a parallel modeling session captured aw-072 (Done column hideable) and committed it (3973e28), sweeping in this session's own uncommitted work-bookkeeping (the aw-071 todo→doing INDEX edit + batch-start protocol entry) along with its capture. Content was correct and the tree was clean afterward, so no rework — the PASS bookkeeping (doing→done) applied cleanly on top.
+- Pre-existing working-tree noise (deleted `Screenshot ….png`, untracked `dashboard.png`) left untouched — never `git add`ed. No bounces, failures, escalations, new backlog items, or concept candidates.
+
+---
+
 ## 2026-06-17 19:34 -- Task verified and completed: agentic-workflow-071 - Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe
 
 **Type:** Work / Task completion
