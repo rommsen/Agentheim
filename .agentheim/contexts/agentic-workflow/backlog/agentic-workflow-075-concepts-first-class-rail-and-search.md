@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-17
 completed:
-depends_on: [design-system-001-styleguide]
+depends_on: [design-system-001-styleguide, design-system-021-concept-content-type]
 blocks: []
 tags: [dashboard, navigation, search, concepts]
 related_adrs: [0011, 0023, 0021, 0003]
@@ -31,18 +31,32 @@ surfaces, drawing from the `bc.concepts` locations the tree projection already c
 unforked, ADR-0003).
 
 1. **Left rail (library nav).** `dashboard/app/library-data.js` → `treeToLibrary` gains a
-   **Concepts** group positioned **between Bounded contexts and Research** —
-   `Product → Bounded contexts → Concepts → Research → Decisions`. It lists every BC's
-   concept pages, each a row opening in the **main-pane reader** via the existing non-task
-   open-intent shape (`{ id, type: 'concept', title, path }`, routed by `isTaskIntent`,
-   ADR-0021). Note concepts are **per-BC** (`tree.contexts[].concepts`), unlike the
-   top-level `locations.adrs` / `locations.research` — the transform must iterate contexts.
+   **Concepts** group positioned **immediately after Bounded contexts** —
+   `Product → Bounded contexts → Concepts → Research → Decisions` (this preserves the rail's
+   own aw-056/aw-066 order: Research above Decisions). It lists every BC's concept pages, each
+   a row opening in the **main-pane reader** via the existing non-task open-intent shape
+   (`{ id, type: 'concept', title, path }`, routed by `isTaskIntent`, ADR-0021). Note concepts
+   are **per-BC** (`tree.contexts[].concepts`), unlike the top-level `locations.adrs` /
+   `locations.research` — the transform must iterate contexts. **Title = `baseName`** (last
+   path segment minus `.md`), exactly as ADRs and research are titled today (refine decision —
+   see Notes; the tree carries `bc.concepts` as **paths only**, so reading a frontmatter title
+   would require new server data, which this task forbids).
 2. **Search.** `dashboard/search.mjs` → `enumerateCorpus` gains a **Concepts** category
    (title + body searchable, frontmatter excluded per ADR-0023), and the topbar search
-   panel groups results under a **Concepts** label. The fixed orders in `search.mjs`
-   (`CATEGORY_ORDER`) and `dashboard/app/search-results.js` (`GROUP_ORDER`) stay **mirrored**
-   to each other and consistent with the rail — proposed: `Bounded contexts → Concepts →
-   Decisions → Research → Tickets`.
+   panel groups results under a **Concepts** label, positioned **immediately after Bounded
+   contexts** (confirmed in refine) — `Bounded contexts → Concepts → Decisions → Research →
+   Tickets`. The two **search** orderings — `search.mjs` (`CATEGORY_ORDER`) and
+   `dashboard/app/search-results.js` (`GROUP_ORDER`) — must stay **byte-identical to each
+   other** (they are today). They are **not** mirrored to the rail and never have been: the
+   rail puts Research above Decisions (aw-056), search puts Decisions above Research. The one
+   invariant common to all three surfaces is **Concepts immediately after Bounded contexts**.
+3. **`type: 'concept'` plumbing (in this BC).** The styleguide `TreeItem` looks the type up in
+   `CONTENT_TYPES` and would throw on an unknown `concept` — closed by the **design-system-021**
+   dependency (adds the `concept` registry entry + glyph + `--ct-concept` tokens). In *this* BC,
+   `dashboard/app/slide-over-data.js`'s `CONTENT_TYPE_KEYS` allow-list (`ticket | context |
+   vision | map | research | adr`) must also gain `'concept'` so the type pill resolves on the
+   "open in full screen" / search→main-pane paths (aw-039/aw-052) — an in-scope edit, not a
+   separate task.
 
 ## Acceptance criteria
 - [ ] The left rail shows a **Concepts** group between **Bounded contexts** and **Research**
@@ -52,28 +66,51 @@ unforked, ADR-0003).
 - [ ] An empty Concepts group is **omitted** (no 0-item heading) — consistent with the other
       groups' `.filter(items.length > 0)`.
 - [ ] `/api/search` matches concept page titles + bodies; results appear under a **Concepts**
-      group in the topbar search panel, positioned right after Bounded contexts.
-- [ ] `library-data.js`, `search.mjs` (`CATEGORY_ORDER`) and `search-results.js`
-      (`GROUP_ORDER`) orderings stay mirrored.
+      group in the topbar search panel, positioned immediately after Bounded contexts.
+- [ ] The two **search** orderings stay byte-identical to each other — `search.mjs`
+      (`CATEGORY_ORDER`) === `search-results.js` (`GROUP_ORDER`) === `Bounded contexts →
+      Concepts → Decisions → Research → Tickets`. The rail (`library-data.js`) keeps its own
+      order (`Product → Bounded contexts → Concepts → Research → Decisions`, aw-056); the
+      cross-surface invariant is only **Concepts immediately after Bounded contexts**.
+- [ ] A concept row opens in the main-pane reader with a resolving type pill — `'concept'` is
+      added to `slide-over-data.js`'s `CONTENT_TYPE_KEYS` allow-list (in-scope, this BC).
+- [ ] Concept rows are titled by `baseName` (last path segment minus `.md`), like ADRs/research.
 - [ ] The pure transforms keep their `node --test` coverage — new cases for the Concepts
       group/category; loss-tolerant (missing/empty `concepts` → no group, never a throw).
 - [ ] `dashboard/dist/` rebuilt via esbuild so the deployed app carries the change.
 - [ ] Styleguide consumed **unforked** (ADR-0003): reuse the existing `TreeGroup`/`TreeItem`
-      and `SearchField`. If a `type: 'concept'` row needs a distinct icon the styleguide's
-      TreeItem icon map lacks, file a **design-system** child task rather than forking.
+      and `SearchField`. The `type: 'concept'` icon need is **confirmed** — `CONTENT_TYPES`
+      lacks a `concept` entry and the registry lacks a fitting glyph — so it is met by the
+      **design-system-021** dependency (registry entry + glyph + `--ct-concept` tokens), not by
+      forking. aw-075 cannot ship before ds-021 (a `concept` row throws in `TreeItem` until then).
 
 ## Notes
-Open questions for a quick refine pass (the *what* is clear; these are small decisions):
-- **Concept title source** — filename `baseName` (mirrors ADR/research titling today) vs the
-  page's frontmatter `title`. Default to `baseName` unless refine decides the synthesis pages
-  carry meaningful titles worth reading from frontmatter.
-- **Search category exact position / ranking tier** — proposed right after Bounded contexts
-  (before Decisions) to mirror the rail; confirm in refine.
-- **Styleguide icon for `type: 'concept'`** — check the library TreeItem icon map; a distinct
-  glyph may need a `design-system` child task (ADR-0003), or reuse an existing one.
+**Refined 2026-06-17** — the three open questions are resolved (all code-checked against the
+real transforms), and one hard dependency was split out:
+
+- **Concept title source → `baseName`** (RESOLVED). The tree projection carries `bc.concepts`
+  as **paths only** (`tree.mjs:157` — `concepts: listMarkdown(conceptsDir).map(relPointer)`),
+  and this task forbids new server data. Reading a frontmatter title would require either
+  server-side parsing or a client fetch in a pure transform — neither acceptable. ADRs and
+  research already title by `baseName`, so concepts follow suit. Consistent and zero new data.
+- **Search category position → right after Bounded contexts** (CONFIRMED). `Bounded contexts →
+  Concepts → Decisions → Research → Tickets`, matching the rail's "Concepts right after BC"
+  insertion point. The two search orderings (`search.mjs` / `search-results.js`) stay identical;
+  see the corrected acceptance criterion — they are **not** mirrored to the rail (Research and
+  Decisions are deliberately flipped between rail and search since aw-056).
+- **Styleguide icon → design-system-021** (RESOLVED — a hard dependency, not optional). Checked
+  the registry: `CONTENT_TYPES` (`styleguide/app/data.js`) has only `ticket | context | vision |
+  map | research | adr` — **no `concept`** — and `TreeItem` dereferences `CONTENT_TYPES[item.type]
+  .icon`, so a `concept` row **throws** until the entry exists. The icon set (`icons.js`) also has
+  no fitting glyph. So **design-system-021** was split off (registry entry + glyph + `--ct-concept`
+  tokens) and added to `depends_on`. This is the ds-009→aw-039 / ds-016→aw-052 / ds-020→aw-074
+  styleguide-capability-first precedent; aw-075 stays in **backlog** until ds-021 ships.
+- **In-scope plumbing (this BC):** `slide-over-data.js`'s `CONTENT_TYPE_KEYS` allow-list also
+  lacks `'concept'` and needs it (so the type pill resolves on the open-in-full-screen / search
+  → main-pane paths). That's an edit inside this task, not a separate one.
 - This project currently has **zero** concept pages (the BC INDEX `concepts` list is empty),
-  so both surfaces will render empty until a concept is synthesized — but the rail group and
-  search category become first-class regardless, ready the moment a concept page lands.
+  so both surfaces render empty until a concept is synthesized — but the rail group and search
+  category become first-class regardless, ready the moment a concept page lands.
 
 Prior art (all shipped, related, none the same): aw-008 (library nav transform), aw-056 /
 aw-066 (rail group ordering), aw-050 (`/api/search` corpus), aw-052 (topbar search grouping).

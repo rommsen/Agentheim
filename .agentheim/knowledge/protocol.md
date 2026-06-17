@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 22:40 -- Modeling / Refined: agentic-workflow-075 - Concepts are a first-class artifact kind — left-rail nav group + searchable category
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Resolved the three "small decisions" the task flagged, all checked against the real transforms. (1) **Title source → `baseName`**: the tree carries `bc.concepts` as paths only (`tree.mjs:157`), so a frontmatter title would mean new server data the task forbids — concepts title like ADRs/research do. (2) **Search position → confirmed** immediately after Bounded contexts. (3) **Icon → decisive & a hard dependency**: `CONTENT_TYPES` (`data.js`) has no `concept` key and `TreeItem` dereferences `CONTENT_TYPES[type].icon`, so a `concept` row would throw; the registry also has no fitting glyph. Split off **design-system-021** (concept content-type entry + glyph + `--ct-concept` tokens) and added it to `depends_on` — aw-075 stays in backlog until it ships. Also corrected a wrong acceptance criterion: the rail and search orderings are **not** mirrored (Research/Decisions deliberately flipped since aw-056); the real invariant is the two *search* orderings being byte-identical and Concepts sitting right after Bounded contexts on all three surfaces. Flagged the in-scope `slide-over-data.js` `CONTENT_TYPE_KEYS` allow-list addition.
+**Split into:** design-system-021 (dependency)
+**ADRs written:** —
+
+---
+
 ## 2026-06-17 22:05 -- Modeling / Refined: agentic-workflow-073 - Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar
 
 **Type:** Modeling / Refine
