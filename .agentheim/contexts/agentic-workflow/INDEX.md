@@ -10,15 +10,14 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
-- **Todo:** 1
+- **Backlog:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 67
+- **Done:** 68
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-070** — About-page Ko-fi button uses a solid colour, not a gradient (refactor) — `todo/agentic-workflow-070-kofi-button-solid-colour.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-070** — About-page Ko-fi button uses a solid colour, not a gradient (refactor) — `done/agentic-workflow-070-kofi-button-solid-colour.md`
 - **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella — delivered via aw-058/059/060) — `done/agentic-workflow-057-workflow-guide-page.md`
 - **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `done/agentic-workflow-060-workflow-guide-diagrams.md`
 - **agentic-workflow-063** — Analyze and optimize the committing pattern (refactor) — `done/agentic-workflow-063-optimize-committing-pattern.md`
@@ -98,6 +98,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **agentic-workflow-071** — Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe (bug) — `backlog/agentic-workflow-071-confetti-keyframes-test-trips-on-aboutrise.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

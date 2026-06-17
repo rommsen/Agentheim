@@ -5,6 +5,35 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 18:20 -- Task verified and completed: agentic-workflow-070 - About-page Ko-fi button uses a solid colour, not a gradient
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-070 - About-page Ko-fi button uses a solid colour, not a gradient
+**Summary:** The About-page Ko-fi support button now reads as a flat, opaque fill of the styleguide status token `var(--st-doing)` instead of a linear gradient; board-local, token-based, unforked (ADR-0003), no ochre (ADR-0016), everything else unchanged.
+**Verification:** PASS (iteration 1) — dashboard suite 551 pass / 1 fail; the sole failure (board-prompt-bar.test.mjs "no @keyframes" aw-034 guard) is PRE-EXISTING and unrelated, introduced by the earlier About-page visual-polish commit (5fa4cbd) which added the `aboutRise` keyframe to board.js — confirmed reproducible on HEAD with aw-070 stashed. Tracked by new backlog item aw-071; aw-070 adds zero keyframes and introduces no new failures.
+**Files changed:** 3 (board.js, dist/app.js, about-rail-routing.test.mjs)
+**Tests added:** 1 (KofiButton solid-fill assertion)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 18:18 -- Modeling / Captured: agentic-workflow-071 - Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe
+
+**Type:** Work / New backlog item (filed by worker mid-task)
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** The aw-034 "no @keyframes in board.js" guard in `board-prompt-bar.test.mjs` now fails because the About-page visual-polish commit (5fa4cbd) added an `@keyframes aboutRise` entrance animation to board.js. The guard's intent (prove the old CSS-burst confetti is gone) needs narrowing so a legitimate unrelated keyframe doesn't trip it. Surfaced during aw-070; unrelated to the Ko-fi change.
+
+---
+
+## 2026-06-17 18:15 -- Batch started: [agentic-workflow-070]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-070 - About-page Ko-fi button uses a solid colour, not a gradient
+**Parallel:** no (1 worker) — sole ready task; dep design-system-001 in done/. Working tree cleaned first: the builder's unrelated About-page visual polish (board.js + dist/app.js) was committed on its own (5fa4cbd) so this task's verification diff starts clean.
+
+---
+
 ## 2026-06-17 18:05 -- Modeling / Captured: agentic-workflow-070 - About-page Ko-fi button uses a solid colour, not a gradient
 
 **Type:** Modeling / Capture

@@ -169,10 +169,17 @@ test('the About page honors theme tokens (no hardcoded fg/bg hex outside the boa
   // The card surface resolves through a surface token (the shared AboutCard host).
   const card = fn('AboutCard');
   assert.match(card, /var\(--surface/, 'card surface resolves through a surface token');
-  // The Ko-fi gradient is the one board-local color treatment — and even it draws
-  // from styleguide status tokens (no raw hex), so it tracks the active theme.
+  // The Ko-fi fill is the one board-local color treatment — and even it draws
+  // from a styleguide status token (no raw hex), so it tracks the active theme.
   const kofi = fn('KofiButton');
-  assert.doesNotMatch(kofi, /#[0-9a-fA-F]{3,8}\b/, 'the Ko-fi gradient must use tokens, not raw hex');
+  assert.doesNotMatch(kofi, /#[0-9a-fA-F]{3,8}\b/, 'the Ko-fi fill must use tokens, not raw hex');
+});
+
+test('the Ko-fi button is a solid var(--st-doing) fill, not a gradient (aw-070)', () => {
+  const kofi = fn('KofiButton');
+  // The fill is a flat, opaque styleguide token — no gradient.
+  assert.doesNotMatch(kofi, /linear-gradient/, 'the Ko-fi button must not use a gradient fill');
+  assert.match(kofi, /background:\s*["']var\(--st-doing\)["']/, 'the Ko-fi button fills with a solid var(--st-doing)');
 });
 
 test('isTaskIntent (ADR-0021 discriminator) is BYTE-UNCHANGED', () => {

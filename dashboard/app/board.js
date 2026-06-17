@@ -1555,8 +1555,8 @@ function AboutLink({ href, label, icon = "square-arrow-out-up-right" }) {
 // / board-control precedent (ADR-0003) — this is a board-local, token-matched control
 // composed BESIDE the styleguide, never a styleguide fork. WhisperHeim's Ko-fi button
 // uses a blue gradient (#25abfe → #005FAA); here it is adapted to the Agentheim palette
-// by drawing the gradient from the styleguide's own status-accent tokens
-// (--st-doing → --st-todo), so it tracks the active light/dark theme. It is an external
+// as a flat, opaque fill drawn from the styleguide's own status-accent token
+// (--st-doing), so it tracks the active light/dark theme. It is an external
 // link (an <a>, not a write) that opens Ko-fi in a new tab with a safe rel.
 function KofiButton() {
   const [hover, setHover] = useState(false);
@@ -1573,7 +1573,7 @@ function KofiButton() {
         padding: "11px 22px", borderRadius: "var(--radius-md)",
         fontFamily: "var(--font-ui)", fontSize: 14.5, fontWeight: 600,
         color: "var(--surface-0)", textDecoration: "none",
-        background: "linear-gradient(90deg, var(--st-doing) 0%, var(--st-todo) 100%)",
+        background: "var(--st-doing)",
         opacity: hover ? 0.88 : 1,
         boxShadow: hover ? "var(--shadow-md)" : "none",
         transition: "opacity var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)",

@@ -734,7 +734,7 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{l=!1}},[e,r]),v`
       rel="noopener noreferrer"
       onMouseEnter=${()=>t(!0)}
       onMouseLeave=${()=>t(!1)}
-      style=${{display:"inline-flex",alignItems:"center",gap:8,padding:"11px 22px",borderRadius:"var(--radius-md)",fontFamily:"var(--font-ui)",fontSize:14.5,fontWeight:600,color:"var(--surface-0)",textDecoration:"none",background:"linear-gradient(90deg, var(--st-doing) 0%, var(--st-todo) 100%)",opacity:e?.88:1,boxShadow:e?"var(--shadow-md)":"none",transition:"opacity var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)"}}>
+      style=${{display:"inline-flex",alignItems:"center",gap:8,padding:"11px 22px",borderRadius:"var(--radius-md)",fontFamily:"var(--font-ui)",fontSize:14.5,fontWeight:600,color:"var(--surface-0)",textDecoration:"none",background:"var(--st-doing)",opacity:e?.88:1,boxShadow:e?"var(--shadow-md)":"none",transition:"opacity var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)"}}>
       <${W} name="box" size=${15} color="var(--surface-0)" />
       <span>Buy me a coffee on Ko-fi</span>
     </a>`}function dl({children:e,style:t}){return v`
