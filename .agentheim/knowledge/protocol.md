@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 20:30 -- Modeling / Captured: agentic-workflow-074 - Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Replace the slide-over header's "Open in full screen" button (aw-039) with an expand chevron at the top-left of the ticket description that widens the `Drawer` in place to fill the main content area (left rail stays visible); a collapse chevron returns it to the default narrow width. The main-pane full-screen render path is retained (global search aw-052 still uses it) — only the slide-over's button is removed. Clear on the what; backlog pending a refine pass to decide whether the expandable-width mode is a design-system `Drawer` primitive change (likely a ds child task) per ADR-0003.
+
+---
+
 ## 2026-06-17 20:05 -- Modeling / Captured: agentic-workflow-073 - What's next renders its recommendation as structured HTML above the dashboard prompt
 
 **Type:** Modeling / Capture

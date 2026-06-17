@@ -10,7 +10,7 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
+- **Backlog:** 3
 - **Todo:** 0
 - **Doing:** 0
 - **Done:** 69
@@ -99,6 +99,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **agentic-workflow-074** — Slide-over gets an expand/collapse-width chevron, replacing the full-screen button (feature) — `backlog/agentic-workflow-074-slide-over-expand-collapse-width-chevron.md`
 - **agentic-workflow-073** — What's next renders its recommendation as structured HTML above the dashboard prompt (not just terminal text) — `backlog/agentic-workflow-073-whats-next-renders-on-dashboard.md`
 - **agentic-workflow-072** — Done column should be hideable (it can grow infinitely large) — `backlog/agentic-workflow-072-hideable-done-column.md`
 <!-- backlog-list:end -->
