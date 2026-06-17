@@ -1,7 +1,7 @@
 ---
 id: agentic-workflow-075
 title: Concepts are a first-class artifact kind — left-rail nav group + searchable category
-status: backlog
+status: todo
 type: feature
 context: agentic-workflow
 created: 2026-06-17

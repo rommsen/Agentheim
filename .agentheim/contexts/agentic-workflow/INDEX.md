@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 4
-- **Todo:** 1
+- **Backlog:** 3
+- **Todo:** 2
 - **Doing:** 0
 - **Done:** 73
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-075** — Concepts are a first-class artifact kind — left-rail nav group + searchable category (feature) — `todo/agentic-workflow-075-concepts-first-class-rail-and-search.md`
 - **agentic-workflow-074** — Slide-over gets an expand/collapse-width chevron, replacing the full-screen button (feature) — `todo/agentic-workflow-074-slide-over-expand-collapse-width-chevron.md`
 <!-- todo-list:end -->
 
@@ -107,7 +108,6 @@ research touching this BC, and concept synthesis pages.
 - **agentic-workflow-078** — `deriveContext` dual-shape token regex in `lib/task-lifecycle.mjs` + tests (refactor) — `backlog/agentic-workflow-078-derivecontext-dual-shape-token-regex.md`
 - **agentic-workflow-079** — Minting call-site token sweep across the three live skills (chore) — `backlog/agentic-workflow-079-minting-call-site-token-sweep.md`
 - **agentic-workflow-080** — Duplicate task-id CI lint (chore, optional insurance) — `backlog/agentic-workflow-080-duplicate-task-id-ci-lint.md`
-- **agentic-workflow-075** — Concepts are a first-class artifact kind — left-rail nav group + searchable category (feature) — `backlog/agentic-workflow-075-concepts-first-class-rail-and-search.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
