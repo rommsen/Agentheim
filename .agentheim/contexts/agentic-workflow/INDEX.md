@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 0
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 77
+- **Doing:** 0
+- **Done:** 78
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,11 +22,11 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **agentic-workflow-079** — Minting call-site token sweep across the three live skills (chore) — `doing/agentic-workflow-079-minting-call-site-token-sweep.md`
 <!-- doing-list:end -->
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-079** — Minting call-site token sweep across the three live skills (chore) — `done/agentic-workflow-079-minting-call-site-token-sweep.md`
 - **agentic-workflow-075** — Concepts are a first-class artifact kind — left-rail nav group + searchable category (feature) — `done/agentic-workflow-075-concepts-first-class-rail-and-search.md`
 - **agentic-workflow-074** — Slide-over gets an expand/collapse-width chevron, replacing the full-screen button (feature) — `done/agentic-workflow-074-slide-over-expand-collapse-width-chevron.md`
 - **agentic-workflow-080** — Duplicate task-id guard across the tree (chore, node --test, optional insurance) — `done/agentic-workflow-080-duplicate-task-id-guard.md`

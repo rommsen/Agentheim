@@ -166,6 +166,8 @@ For each significant area the architect surfaced, create a `type: decision` task
 
 The test: *"if any single BC didn't exist, would this decision still need to be made?"* If yes, it's globally true. If no, it's BC-local.
 
+These decision tasks are **ordinary captures**, not foundation tasks — they get random token ids, not `-001`-style ids. Mint each one fresh: emit a fresh id `<bc>-<token>`, where `<token>` is **exactly 5 characters** from the alphabet `0123456789abcdefghjkmnpqrstvwxyz` (Crockford base32, lowercase, minus the look-alikes `i l o u`); the **first character is a letter** (`[a-hjkmnp-tv-z]`), the remaining four are any token character. Generate it randomly — **never scan existing files for a "next number".** See ADR-0028 §1. The only ids `brainstorm` mints deterministically are the two reserved foundation ids below (the walking skeleton and the styleguide, ADR-0028 §7).
+
 Drop the architect's ADR draft into the task's `Notes` section so the worker has it ready. Place these in `todo/` — foundation choices the architect just refined are by definition ready enough to act on. Acceptance criteria: "ADR committed, justification matches the architect's draft (or user-amended version), no code change required".
 
 ### Emit the walking-skeleton spike
@@ -174,7 +176,7 @@ Create one `type: spike` task that delivers a thin end-to-end slice through the 
 
 The walking skeleton is inherently globally true (it proves the *whole* stack runs), so it always lives in the infrastructure BC:
 
-- File: `contexts/infrastructure/todo/infrastructure-XXX-walking-skeleton.md`
+- File: `contexts/infrastructure/todo/infrastructure-001-walking-skeleton.md` — the walking skeleton is a **reserved foundation id** (`infrastructure-001-walking-skeleton`), one of the closed set of deterministic ids `brainstorm` mints (ADR-0028 §7); it keeps a digit-tailed literal so downstream references resolve consistently with the styleguide gate. It is **not** a random token.
 - `depends_on:` every decision task you just emitted (both global and BC-local ones)
 - Acceptance criteria are observable, not architectural: "the app boots, hits its DB, returns a response from each BC's entry point", not "architecture works"
 
@@ -183,7 +185,7 @@ The walking skeleton is inherently globally true (it proves the *whole* stack ru
 If the vision implies any UI — even a single admin dashboard — create a `type: feature` task for the design system before any BC builds its frontend.
 
 - Create `contexts/design-system/` with a README seeding its purpose: tokens, components, patterns, review process.
-- File: `contexts/design-system/todo/design-system-001-styleguide.md`
+- File: `contexts/design-system/todo/design-system-001-styleguide.md` — like the walking skeleton, this is a **reserved foundation id** (`design-system-001-styleguide`, ADR-0028 §7): a deterministic digit-tailed literal, not a random token, because the styleguide *gate* references it by hard-coded id from every frontend-bearing BC README and skill. The reserved set is closed at exactly these two foundation ids.
 - `depends_on:` the walking-skeleton task (so the styleguide is built on the running app, not in a vacuum)
 - Acceptance criteria includes a human-in-the-loop checkpoint: "user has reviewed and signed off on the design system before any frontend feature task is promoted". This is a gate, not just a deliverable.
 

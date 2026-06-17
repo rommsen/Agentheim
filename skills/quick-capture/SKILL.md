@@ -151,11 +151,16 @@ may mention it in one line when reporting — but never block the capture on it.
 
 ### ID convention
 
-`<bc-short>-<NNN>`, zero-padded. Determine the next number by scanning **all four**
-lifecycle folders (`backlog/ todo/ doing/ done/`) of the target BC for the highest existing
-`<bc>-NNN` and adding one. IDs are stable and never reused — never renumber, even after a
-deletion. When capturing several tasks into the same BC at once, increment sequentially
-(`-012`, `-013`, …).
+Emit a fresh id `<bc>-<token>`, where `<token>` is **exactly 5 characters** from the alphabet
+`0123456789abcdefghjkmnpqrstvwxyz` (Crockford base32, lowercase, minus the look-alikes
+`i l o u`); the **first character is a letter** (`[a-hjkmnp-tv-z]`), the remaining four are any
+token character. Generate it randomly — **never scan existing files for a "next number".** See
+ADR-0028 §1.
+
+IDs are stable and never reused — never renumber. With a random token this holds **by
+construction**: the generator never consults history, so there is no counter to advance or
+collide. When capturing several tasks into the same BC at once, mint an independent fresh token
+for each. Legacy `<bc>-NNN` ids already on disk are kept as-is — never rewrite them.
 
 ## Updating the index
 

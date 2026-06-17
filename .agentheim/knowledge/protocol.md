@@ -5,6 +5,18 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 10:07 -- Task verified and completed: agentic-workflow-079 - Minting call-site token sweep
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-079 - Sweep id-minting prose in the three live skills from next-number to random token
+**Summary:** The id-minting prose in quick-capture, modeling, and brainstorm now mints ADR-0028 random `<bc>-<token>` ids via a byte-identical grammar clause citing ADR-0028 §1; DISMISS retirement restated per §5; the two reserved foundation ids (`design-system-001-styleguide`, `infrastructure-001-walking-skeleton`) pinned per §7. Prose-only, no code; `capture-workspace/` fixtures untouched.
+**Verification:** PASS (iteration 1)
+**Files changed:** 3 (skills/quick-capture, skills/modeling, skills/brainstorm SKILL.md)
+**Tests added:** 0 (documentation/prose only)
+**ADRs written:** none
+
+---
+
 ## 2026-06-18 10:05 -- Task verified and completed: agentic-workflow-075 - Concepts first-class rail group + searchable category
 
 **Type:** Work / Task completion

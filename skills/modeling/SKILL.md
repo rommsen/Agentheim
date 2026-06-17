@@ -203,7 +203,7 @@ The boundary mirrors ADR-0007: the raw `.md` deletes are the mechanical core; th
    - **Surviving backlinks** — strip every dismissed id from any *surviving* task's `depends_on` / `blocks` / `prior_art`, and from any ADR's `related_tasks`. References *within* the set vanish with their files, so only survivors need editing — no dangling references left behind.
    - **Protocol** — prepend **one** bare `Modeling / Dismissed` entry to `.agentheim/knowledge/protocol.md` listing the whole cascade set (ids + titles). No builder-typed reason — id + title + timestamp is the record (see "Protocol logging").
 
-7. **IDs are gone, never reused.** A dismissed number is retired, consistent with "never renumber" — a future capture takes the next free number, never a dismissed one.
+7. **IDs are gone, never reused.** For new token ids this holds **by construction** (ADR-0028 §5): the generator emits a random token and never consults history, so a dismissed token is simply one of ~23M points the generator will, with overwhelming probability, never emit again — there is no counter to advance or rewind. For legacy `<bc>-NNN` ids the original rule is retained verbatim: a dismissed number is retired, consistent with "never renumber" — a future capture takes the next free number, never a dismissed one.
 
 8. **Commit the dismissal** (ADR-0026). Scoped `git add` of exactly the files the cascade touched — the deleted task file paths (a delete is staged with `git add`/`git rm`), every `INDEX.md` the set spanned, every surviving task file or ADR whose backlinks were stripped, and `protocol.md` — then **one** commit for the whole cascade: `chore(<bc>): dismiss <id-or-cascade-set>` (name the lead id, or the set if small). **Never `git add -A`** — even though a DISMISS legitimately spans multiple BCs, the add stays an explicit enumeration of only the cascade's files, so a concurrent `work`/`modeling` session's in-flight markdown is never swept in (the scoped-add rule is load-bearing for concurrency, ADR-0026).
 
@@ -260,7 +260,13 @@ field legend lives here instead:
 
 ### ID convention
 
-`<bc-short>-<zero-padded-number>`, e.g., `auth-003`, `billing-017`. Look at existing task files in the BC to determine the next number. Keep IDs stable — never renumber, even after deletions.
+Emit a fresh id `<bc>-<token>`, where `<token>` is **exactly 5 characters** from the alphabet
+`0123456789abcdefghjkmnpqrstvwxyz` (Crockford base32, lowercase, minus the look-alikes
+`i l o u`); the **first character is a letter** (`[a-hjkmnp-tv-z]`), the remaining four are any
+token character. Generate it randomly — **never scan existing files for a "next number".** See
+ADR-0028 §1.
+
+Example: `agentic-workflow-k3f9q`. Keep IDs stable — never renumber. With a random token this holds **by construction** (the generator never consults history). Legacy `<bc>-NNN` ids (e.g. `auth-003`) already on disk are kept as-is — never rewrite them.
 
 ## Decisions as tasks
 

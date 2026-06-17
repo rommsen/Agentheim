@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-079
 title: Sweep id-minting prose in the three live skills from next-number to random token
-status: todo
+status: done
 type: chore
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-18
 depends_on: [agentic-workflow-078]
 blocks: []
 tags: [identity, ids, skills, modeling, quick-capture, brainstorm]
@@ -98,5 +98,32 @@ The exact grammar clause (ADR-0028 §1) to inline verbatim in each skill:
   three skills is the cheap structural defense against repeating that here.
 - The optional duplicate-id CI lint is aw-080 (the belt-and-braces against the residual collision
   tail) — out of scope for this prose sweep.
+
+## Outcome
+
+Swept the id-minting prose in the three live skills from the abolished single-writer
+next-number counter to ADR-0028's random-token scheme, and resolved the foundation-id
+reservation in `brainstorm`.
+
+- `skills/quick-capture/SKILL.md` (ID convention, ~line 154) — next-number scan replaced with
+  the canonical token-emit clause (verbatim grammar + ADR-0028 §1 cite); never-reuse restated
+  as holding by construction for tokens, legacy `<bc>-NNN` kept as-is.
+- `skills/modeling/SKILL.md` — ID convention (~line 263) replaced with the **byte-identical**
+  grammar clause; DISMISS step 7 (~line 206) retirement prose restated per ADR-0028 §5
+  (never-reuse by construction for tokens; legacy next-free-number clause retained verbatim for
+  legacy ids only).
+- `skills/brainstorm/SKILL.md` — walking-skeleton placeholder pinned to the reserved literal
+  `infrastructure-001-walking-skeleton` (~line 179); styleguide kept literal
+  `design-system-001-styleguide` (~line 188) with a reserved-id note; the closed reserved set of
+  exactly two foundation ids spelled out; the **non-foundation** decision-task minting step
+  (~line 167) made explicit with the same canonical token-emit clause so the default is
+  unambiguous.
+
+Drift guard satisfied: the token grammar (alphabet `0123456789abcdefghjkmnpqrstvwxyz`,
+look-alike exclusion `i l o u`, leading-letter class `[a-hjkmnp-tv-z]`, exactly 5 chars) and the
+single **ADR-0028 §1** cite are identical across all three live skills (one cite each). Gate
+literals (`depends_on: design-system-001-styleguide`) and the relative walking-skeleton reference
+are intact. No `capture-workspace/` fixture touched. No code change (runtime tolerance was
+aw-078). BC README already documented the token scheme (aw-077) — no README change needed.
 </content>
 </invoke>
