@@ -348,10 +348,10 @@ separate BC, but today the whole tool lives in this one.
   unchanged, ADR-0003) and became the up-right diagonal `square-arrow-out-up-right`. Work keeps its
   primary-surface fill — **no ochre** (ADR-0016 untouched). Beside it, **What's next** (aw-064) is a
   second standing launch (the bordered secondary chip, the `sun` glyph consumed unforked) that fires the
-  interim **raw natural-language** `WHATS_NEXT_COMMAND` prompt (not a slash command — no skill backs it
-  yet; aw-031 is the future process) through the same `launchOrCopy` path, threading `skipPermissions`,
-  passing no `onResult`, writing no lifecycle state (read-only, ADR-0017). When aw-031 lands a real skill
-  the constant swaps to that invocation — a one-line change, no UI/bridge rework. The topbar's leading slot now hosts the **global search field** (aw-052, see *Global search
+  bare slash command `/agentheim:whats-next` (`WHATS_NEXT_COMMAND`) — the read-only `whats-next` skill
+  (aw-069 swapped it from the interim raw prompt aw-064 shipped) — through the same `launchOrCopy` path,
+  threading `skipPermissions`, passing no `onResult`, writing no lifecycle state (read-only, ADR-0017).
+  The topbar's leading slot now hosts the **global search field** (aw-052, see *Global search
   (topbar)* below). The rail is composed
   from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo
   `AppRail`, and its tree is the **live** `treeToLibrary(/api/tree)` projection (re-fetched on every SSE
@@ -443,9 +443,10 @@ separate BC, but today the whole tool lives in this one.
   (the bare `QUICK_CAPTURE_COMMAND` / `MODELING_COMMAND` / `WORK_COMMAND` constants, plus the prompt-taking
   `quickCaptureCommandFor(prompt)` / `modelingCommandFor(prompt)` builders that append a single space +
   the trimmed prompt or degrade to the bare command -- aw-023; `WORK_COMMAND` is a bare constant with no
-  builder, since Work never appends the prompt -- aw-024; `WHATS_NEXT_COMMAND` -- aw-064 -- is likewise a
-  bare constant, but an interim **raw natural-language** prompt rather than a slash command, since no
-  skill backs the topbar's What's next launch yet) -- one source of truth for both paths.
+  builder, since Work never appends the prompt -- aw-024; `WHATS_NEXT_COMMAND` -- aw-064 button, aw-069
+  swap -- is likewise a bare constant, the fully-qualified `/agentheim:whats-next` slash command firing
+  the read-only `whats-next` skill, since the topbar's What's next launch ignores the prompt-bar too)
+  -- one source of truth for both paths.
   Launching a
   session is an **external side-effect** (like the clipboard copy), **not** a lifecycle write: the board
   stays a projection of disk (ADR-0001). See ADR-0018, ADR-0003, ADR-0001, ADR-0009.

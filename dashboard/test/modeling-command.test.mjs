@@ -65,25 +65,19 @@ test('WORK_COMMAND is distinct from the authoring commands and fully-qualified',
   assert.match(WORK_COMMAND, /^\/agentheim:/);
 });
 
-// agentic-workflow-064: the main-column topbar gains a standing "What's next" launch
-// (between the gear and Work). No skill backs it yet (aw-031 is the future process,
-// still raw), so the seeded text is an INTERIM RAW NATURAL-LANGUAGE prompt — NOT a
-// slash command. The bridge wraps any prompt as `claude "<prompt>"` (ADR-0018), so a
-// raw prompt launches a real session; the clipboard fallback copies the same text.
-// Like WORK_COMMAND it ignores the prompt-bar textarea, so it is a bare CONSTANT (no
-// `*CommandFor(prompt)` builder). The contract is read-only + a next-steps overview.
-test('WHATS_NEXT_COMMAND is a raw natural-language prompt, NOT a slash command', () => {
-  assert.equal(typeof WHATS_NEXT_COMMAND, 'string');
-  assert.ok(WHATS_NEXT_COMMAND.length > 0, 'must be non-empty');
-  assert.doesNotMatch(WHATS_NEXT_COMMAND, /^\//, 'must NOT begin with a slash (no slash command)');
+// agentic-workflow-064 / aw-069: the main-column topbar's standing "What's next" launch
+// (between the gear and Work). aw-064 seeded an interim raw prompt because no skill
+// backed it yet; aw-069 swaps it to the real `/agentheim:whats-next` skill (created
+// directly, aw-031 dismissed). It is now a fully-qualified bare slash command mirroring
+// WORK_COMMAND — the bridge launches it as a session; the clipboard fallback copies the
+// same. Like WORK_COMMAND it ignores the prompt-bar textarea, so it is a bare CONSTANT
+// (no `*CommandFor(prompt)` builder). The contract stays read-only (ADR-0017).
+test('WHATS_NEXT_COMMAND is the fully-qualified bare whats-next command (slash command, like WORK_COMMAND)', () => {
+  assert.equal(WHATS_NEXT_COMMAND, '/agentheim:whats-next');
 });
 
-test('WHATS_NEXT_COMMAND states the read-only + next-steps contract', () => {
-  assert.match(WHATS_NEXT_COMMAND, /read-only/i, 'the prompt must declare it is read-only');
-  assert.match(WHATS_NEXT_COMMAND, /next step/i, 'the prompt must ask for next steps');
-});
-
-test('WHATS_NEXT_COMMAND is distinct from the other launch commands', () => {
+test('WHATS_NEXT_COMMAND is distinct from the other launch commands and fully-qualified', () => {
+  assert.match(WHATS_NEXT_COMMAND, /^\/agentheim:/, 'must be a fully-qualified `/agentheim:` slash command');
   assert.notEqual(WHATS_NEXT_COMMAND, WORK_COMMAND);
   assert.notEqual(WHATS_NEXT_COMMAND, MODELING_COMMAND);
   assert.notEqual(WHATS_NEXT_COMMAND, QUICK_CAPTURE_COMMAND);

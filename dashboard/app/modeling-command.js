@@ -60,19 +60,17 @@ export const RESEARCH_COMMAND = '/agentheim:research';
 // regardless of the builder's alias setup (ADR-0018 launch / clipboard fallback).
 export const WORK_COMMAND = '/agentheim:work';
 
-// The "What's next" prompt (agentic-workflow-064) — what the main-column topbar's
-// standing "What's next" button (between the gear and Work) launches to generate a
-// concise overview of the most sensible next steps. Unlike WORK_COMMAND this is NOT a
-// slash command: no skill backs it yet (aw-031, "Next-steps overview when work is
-// done", is the future process and still raw/unrefined). It is an INTERIM RAW
-// NATURAL-LANGUAGE prompt — the bridge wraps any prompt as `claude "<prompt>"`
-// (ADR-0018), so this launches a real session; the clipboard fallback copies the same
-// pasteable text. Like WORK_COMMAND it ignores the prompt-bar textarea, so it is a
-// bare CONSTANT (no `*CommandFor(prompt)` builder). The contract is READ-ONLY (no disk
-// write, ADR-0017) + a grouped next-steps overview. When aw-031 lands a real skill
-// (e.g. `/agentheim:whats-next`), a later one-line change swaps this constant to that
-// invocation — no rework of the button's UI or bridge wiring.
-export const WHATS_NEXT_COMMAND = "Review this project's `.agentheim/` backlog, the recent protocol entries, and the git state, then give me a concise overview of the most sensible next steps — grouped by what's ready now vs. what's blocked, one-line rationale each. Read-only: change no files.";
+// The fully-qualified, bare WHAT'S-NEXT command (agentic-workflow-064 button,
+// agentic-workflow-069 swap) — what the main-column topbar's standing "What's next"
+// button (between the gear and Work) launches to get a concise overview of the most
+// sensible next steps. It invokes the `whats-next` skill (skills/whats-next/SKILL.md):
+// read-only over `.agentheim/` (reads vision / boards / protocol / open questions,
+// recommends the next step, never moves or commits — ADR-0017). Like WORK_COMMAND it
+// IGNORES the prompt-bar textarea, so it is a plain constant rather than a
+// `*CommandFor(prompt)` builder. Bare and fully-qualified for the same reason the others
+// are — it resolves regardless of the builder's alias setup (ADR-0018 launch / clipboard
+// fallback; the extension wraps a slash command the same way it wraps any prompt).
+export const WHATS_NEXT_COMMAND = '/agentheim:whats-next';
 
 // The fully-qualified, bare DASHBOARD-STOP command (agentic-workflow-028) — what the
 // main-column topbar's quiet "Stop dashboard" button launches to stop the running

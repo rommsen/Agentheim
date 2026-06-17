@@ -5,6 +5,36 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 16:25 -- Task verified and completed: agentic-workflow-069 - Topbar "What's next" button fires the /agentheim:whats-next skill
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-069 - Topbar "What's next" button fires the /agentheim:whats-next skill (replaces the interim raw prompt)
+**Summary:** Swapped `WHATS_NEXT_COMMAND` from aw-064's interim raw NL prompt to the bare fully-qualified slash command `/agentheim:whats-next` (mirroring `WORK_COMMAND`), now that the real read-only `whats-next` skill exists (76b0e9c) and aw-031 was dismissed. Rewrote the constant's doc comment (drops interim/aw-031 framing), updated the two assertion suites, rebuilt dist via esbuild, and refreshed the BC README's two What's-next descriptions. No UI or bridge rework — the launch (ADR-0018) and read-only contract (ADR-0017) are byte-unchanged.
+**Verification:** PASS (iteration 1) — verifier confirmed the constant value + rewritten comment, the topbar wiring/glyph/skipPermissions/no-onResult unchanged, the genuine dist rebuild (`nh="/agentheim:whats-next"` in the bundle), both README descriptions updated, styleguide unforked (ADR-0003); the lone `events.test.mjs` failure is a pre-existing flaky SSE-watcher timing race (passes 4/4 in isolation, file untouched).
+**Commit:** <pending-sha>
+**Files changed:** 5 (modeling-command.js, modeling-command.test.mjs, topbar-right-align.test.mjs, dist/app.js, BC README)
+**Tests added:** net −0 (2 raw-prompt asserts replaced by 2 slash-command asserts)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 16:20 -- Batch started: [agentic-workflow-069]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-069 - Topbar "What's next" button fires the /agentheim:whats-next skill
+**Parallel:** no (1 worker) — sole ready task. Preceded by committing a pre-existing unrelated dashboard bundle (larger topbar buttons + de-inverted press) as 1ecd469 so aw-069's dist rebuild stays a clean incremental diff.
+
+---
+
+## 2026-06-17 16:10 -- Modeling / Captured: agentic-workflow-069 - Topbar "What's next" button fires the /agentheim:whats-next skill
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Swap the topbar What's-next button's `WHATS_NEXT_COMMAND` from aw-064's interim raw NL prompt to the fully-qualified `/agentheim:whats-next` slash command (a bare constant like `WORK_COMMAND`), now that the real `whats-next` skill exists (commit 76b0e9c) and the placeholder aw-031 was dismissed. The "one-line change" the code comment and README already anticipate — no UI/bridge rework; update docs, tests, dist, and the BC README. Filed straight to todo: small, fully specified, styleguide gate satisfied.
+
+---
+
 ## 2026-06-17 16:00 -- Modeling / Dismissed: agentic-workflow-031
 
 **Type:** Modeling / Dismiss

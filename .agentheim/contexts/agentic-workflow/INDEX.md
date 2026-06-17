@@ -13,7 +13,7 @@ research touching this BC, and concept synthesis pages.
 - **Backlog:** 3
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 63
+- **Done:** 64
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-069** — Topbar "What's next" button fires the /agentheim:whats-next skill (replaces the interim raw prompt) (feature) — `done/agentic-workflow-069-whats-next-button-fires-whats-next-skill.md`
 - **agentic-workflow-067** — Topbar stays fixed at the top of the viewport when the board or a document scrolls (bug) — `done/agentic-workflow-067-topbar-sticky-stays-fixed-on-scroll.md`
 - **agentic-workflow-066** — Left rail — Research group opens by default, Decisions collapses by default (feature) — `done/agentic-workflow-066-rail-research-open-decisions-collapsed-by-default.md`
 - **agentic-workflow-064** — Topbar "What's next" launch button + Work button restyle (trailing ↗, primary-surface fill) (feature) — `done/agentic-workflow-064-topbar-whats-next-button-work-restyle.md`

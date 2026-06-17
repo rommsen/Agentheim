@@ -65,7 +65,7 @@ test('the right group renders the three actions in order: gear, What\'s next, Wo
     'order must read left → right: gear, What\'s next, Work');
 });
 
-test('What\'s next launches the interim raw WHATS_NEXT_COMMAND prompt, not a slash command', () => {
+test('What\'s next launches the WHATS_NEXT_COMMAND slash command (the /agentheim:whats-next skill, aw-069)', () => {
   const topbar = fn(boardSrc, 'BoardTopbar');
   const block = topbar.slice(topbar.indexOf('label="What\'s next"'), topbar.indexOf('label="Work"'));
   assert.match(block, /command=\$\{WHATS_NEXT_COMMAND\}/,
