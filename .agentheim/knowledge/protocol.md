@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 18:40 -- Modeling / Refined: agentic-workflow-071 - Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Confirmed the pre-existing failure (551/552; assertion at `board-prompt-bar.test.mjs:342`) and decided the fix: replace the over-broad `/@keyframes/` check with a confetti-scoped `/@keyframes[^{]*confetti/i` tripwire that still catches the old `agentheim-confetti-rise` burst (name verified in aw-034 commit `bb953cd`) while permitting the unrelated `aboutRise` keyframe; keep the `agentheim-confetti-piece` / `ensureConfettiStyle` siblings. Sharpened acceptance criteria and promoted to todo (test-only change, no styleguide gate).
+**Split into:** —
+**ADRs written:** —
+
+---
+
 ## 2026-06-17 18:22 -- Work session ended
 
 **Type:** Work / Session end

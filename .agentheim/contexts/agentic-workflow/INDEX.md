@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 68
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-071** — Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe (bug) — `todo/agentic-workflow-071-confetti-keyframes-test-trips-on-aboutrise.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -98,7 +99,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-071** — Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe (bug) — `backlog/agentic-workflow-071-confetti-keyframes-test-trips-on-aboutrise.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
