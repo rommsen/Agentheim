@@ -5,6 +5,23 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 00:06 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 4 (first-try PASS: 3 — aw-073, ds-020, ds-021; re-dispatched: 1 — aw-077 passed iteration 2; skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 5 (1fd313f aw-073, 75f6261 ds-020, c4f45bc ds-021, 8a3c538 aw-077, + this session-end line)
+**Notes:**
+- Two waves, both 2-worker parallel batches. **Wave 1:** aw-073 (dashboard) + ds-020 (styleguide) — disjoint BCs/files, both PASS first try. **Wave 2:** aw-077 (decision/ADR) + ds-021 (styleguide) — held from wave 1 on conflicts (aw-077↔aw-073 same-BC README; ds-021↔ds-020 shared icons.js/index.html/README).
+- **aw-077 failed verification on iteration 1** — the verifier caught a real, load-bearing defect: the ratified token grammar regex `[a-hjkmnp-z]` spans `p-z` and so re-admitted the look-alike `u` that the Crockford alphabet deliberately excludes, and the §2 collision math ("28 letters → 29.4M") matched neither the alphabet nor the regex; the defect propagated into child task aw-078. Re-dispatched worker (iteration 2) reconciled everything to one `u`-excluding definition (`[a-hjkmnp-tv-z]`, 22 letters → ~23.1M, ~0.005%). PASS on iteration 2.
+- aw-077 spawned **3 backlog children** (aw-078 deriveContext dual-shape regex + tests; aw-079 minting-call-site sweep; aw-080 duplicate-id CI lint) — not work-eligible until refined/promoted. ADR-0028 (scope: global) recorded in the global index.
+- Backlog now holds aw-074 / aw-075 (dependency-blocked consumers, unblocked by ds-020 / ds-021 respectively) and the three new ID-scheme children. Nothing left in todo/doing.
+- No bounces, failures, escalations, or concept candidates. Pre-existing working-tree noise (deleted `Screenshot ….png`, untracked `dashboard.png`) left untouched.
+
+---
+
 ## 2026-06-18 00:05 -- Task verified and completed: agentic-workflow-077 - Collision-resistant task IDs
 
 **Type:** Work / Task completion
