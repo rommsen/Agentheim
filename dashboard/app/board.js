@@ -2032,7 +2032,7 @@ export function DashboardApp() {
     <${ThemeCtx.Provider} value=${theme}>
       <div style=${{
         display: "flex", flexDirection: "row",
-        minHeight: "100vh", background: "var(--surface-0)",
+        height: "100dvh", overflow: "hidden", background: "var(--surface-0)",
       }}>
         <${ShellRail} projectName=${projectName}
           selectedId=${selectedDoc ? selectedDoc.id : null}

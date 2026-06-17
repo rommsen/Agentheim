@@ -355,7 +355,12 @@ separate BC, but today the whole tool lives in this one.
   (topbar)* below). The rail is composed
   from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo
   `AppRail`, and its tree is the **live** `treeToLibrary(/api/tree)` projection (re-fetched on every SSE
-  frame, ADR-0011). See ADR-0009, ADR-0003, ADR-0017, ADR-0018.
+  frame, ADR-0011). The outer shell frame is **bounded to the viewport** (`height: 100dvh`,
+  `overflow: hidden`; aw-067) so the **rail and topbar stay fixed** and the inner `scroll-quiet` content
+  region (`flex: 1`, `minHeight: 0`, `overflowY: auto` — holding the board / main-pane reader / workflow /
+  about page) is the **sole vertical scroll container** — the window itself never scrolls. The topbar is a
+  sibling **above** that scroll region, so its search-results popover (ds-016) is not clipped.
+  See ADR-0009, ADR-0003, ADR-0017, ADR-0018.
 - **Topbar settings menu (aw-049; consumes the shared primitive as of design-system-015)** -- a
   **dropdown** (`SettingsMenu`) behind a single **settings gear** (the reused `settings-2` glyph from the
   styleguide icon set — consumed **unforked**, no styleguide edit, no new glyph) that sits immediately

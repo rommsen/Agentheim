@@ -141,6 +141,34 @@ test('LaunchButton supports an "inverse" emphasis filled with --fg-1 / --surface
   assert.match(lb, /var\(--surface-0\)/, 'inverse text colour must be --surface-0');
 });
 
+test('the shell frame is bounded to the viewport height so the topbar stays fixed (aw-067)', () => {
+  // The outer DashboardApp frame must CAP its height to the viewport and clip its own
+  // overflow, so the WINDOW never scrolls. Previously it was minHeight: "100vh" with no
+  // cap, so a tall main column grew the whole frame (rail + topbar + content) and the
+  // window scrolled the topbar off-screen.
+  const app = boardSrc.match(/export function DashboardApp[\s\S]*$/)[0];
+  const frame = app.match(/display:\s*"flex",\s*flexDirection:\s*"row",[\s\S]{0,160}?\}\}>/);
+  assert.ok(frame, 'the flex-row shell frame must be present');
+  assert.match(frame[0], /height:\s*"100dvh"|height:\s*"100vh"/, 'the shell frame must cap its height to the viewport (100dvh/100vh)');
+  assert.match(frame[0], /overflow:\s*"hidden"/, 'the shell frame must clip overflow so the window itself never scrolls');
+  assert.doesNotMatch(frame[0], /minHeight:\s*"100vh"/, 'the uncapped minHeight: 100vh that let the window grow must be gone');
+});
+
+test('the inner content region is the sole vertical scroll container, not the window (aw-067)', () => {
+  // The scroll-quiet wrapper under the topbar must own the vertical scroll (flex:1,
+  // minHeight:0, overflowY:auto) so it — not the window — scrolls when content is tall.
+  const app = boardSrc.match(/export function DashboardApp[\s\S]*$/)[0];
+  const scrollRegion = app.match(/className="scroll-quiet"\s+style=\$\{\{[^}]*overflowY:\s*"auto"[^}]*\}\}/g) || [];
+  assert.ok(scrollRegion.length >= 1, 'a scroll-quiet content region with overflowY: auto must own the scroll');
+  // The scroll region (and its flex parent) sit BELOW the topbar, so the topbar — a
+  // sibling above it — is not carried by the scroll and is not clipped by the frame's
+  // overflow: hidden (the popover floats out of the topbar row, above the scroll region).
+  const topbarAt = app.indexOf('${BoardTopbar}');
+  const scrollAt = app.indexOf('className="scroll-quiet"');
+  assert.ok(topbarAt > -1 && scrollAt > -1, 'topbar and scroll region must both be present');
+  assert.ok(topbarAt < scrollAt, 'the topbar must be a sibling ABOVE the scroll region (so it stays fixed and its popover is not clipped)');
+});
+
 test('no styleguide file is modified — the dashboard composes the unforked primitives', () => {
   // The styleguide AppRail still demos LIBRARY (proves we did not gut it to feed live data).
   assert.match(styleguideRail, /export function AppRail/, 'styleguide AppRail must remain intact');
