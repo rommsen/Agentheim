@@ -5,6 +5,50 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 17:02 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — aw-063 (6e6d9d6)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (43e6ca4 pre-existing aw-063 modeling artifacts; 6e6d9d6 aw-063 task work)
+**Notes:**
+- One ready task this run (aw-063, the committing-pattern doctrine refactor). Before dispatch, the working tree carried the modeling session's leftover capture+refine+promote artifacts for aw-063 — committed first on their own (43e6ca4) so the worker's verification diff started clean.
+- aw-063 PASS on the first verifier pass. It writes ADR-0026 (committing doctrine) and applies it across `work` + `modeling` + `quick-capture` + `brainstorm`: skills self-commit their own scoped `.md`, `work` folds bookkeeping into the task commit before committing, the `commit:` frontmatter field is dropped, scoped `git add` (never `git add -A`) is mandated for concurrency safety.
+- **Concurrency collision (the very scenario ADR-0026 addresses):** a `modeling` session ran CONCURRENTLY, refining + promoting aw-060 (Workflow guide diagrams) into `INDEX.md` and `protocol.md` during aw-063's commit. Honouring ADR-0026's scoped-add rule, the aw-063 commit (6e6d9d6) was scoped to its own uncontested files (4 skills + ADR-0026 + BC README + task move); the contested `INDEX.md`/`protocol.md` aw-063 bookkeeping was left on the tree for the modeling session to reconcile rather than bundling modeling's in-flight aw-060 artifacts. INDEX.md on disk already reflects both (aw-063 done + aw-060 todo).
+- **aw-060 NOT claimed this run:** it was promoted to todo by the concurrent modeling session but is still actively edited/uncommitted on the working tree. Claiming it would race the modeling session's live edits — left for the next `work` invocation once modeling settles and commits.
+- No bounces, failures, escalations, new backlog items, or concept candidates this run.
+
+---
+
+## 2026-06-17 17:00 -- Modeling / Promoted: agentic-workflow-060 - Workflow guide diagrams (hand-authored flow visuals)
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
+## 2026-06-17 16:55 -- Modeling / Refined: agentic-workflow-060 - Workflow guide diagrams (hand-authored flow visuals)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** `refine agentic-workflow-057` resolved to its one open child — aw-057 is a tracking umbrella, 2/3 done (aw-058 routing scaffold + aw-059 page shell shipped), with only aw-060 (the diagrams) left. Refined aw-060's *form* (the constraints were already settled): (1) **honest topology per segment** — Preparation fans out to the four foundation outputs, Capturing is a backlog hub with refine/research/dismiss loops, Promote & Work is a pipeline with the verifier FAIL→×2→escalate retry loop; (2) **skills + artifacts as nodes only** — gates/human checks render as marked checkpoints on edges, never as orchestrator/specialist/verifier/research-reviewer boxes; (3) **HTML + CSS boxes with CSS connectors** (no inline SVG, no library), token-driven so theme-tracking is automatic. Added a per-segment diagram spec, named the exact slot to fill (`WorkflowSegment`'s dashed `role="img"` div in `dashboard/app/board.js`), and tightened acceptance criteria + the keep-aw-058/059-green guard. Ready to promote.
+**Split into:** none
+**ADRs written:** none (stays under ADR-0003 unforked / ADR-0017 read-only / ADR-0025 routing; no new decision)
+
+---
+
+## 2026-06-17 16:40 -- Batch started: [agentic-workflow-063]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-063 - Analyze and optimize the committing pattern
+**Parallel:** no (1 worker) — sole ready task. Preceded by committing the modeling session's leftover capture+refine+promote artifacts for aw-063 (43e6ca4) so the worker's diff starts from a clean tree.
+
+---
+
 ## 2026-06-17 16:32 -- Modeling / Promoted: agentic-workflow-063 - Analyze and optimize the committing pattern
 
 **Type:** Modeling / Promote

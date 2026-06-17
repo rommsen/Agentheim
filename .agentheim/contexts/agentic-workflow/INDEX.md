@@ -10,15 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
+- **Backlog:** 1
 - **Todo:** 1
 - **Doing:** 0
-- **Done:** 64
+- **Done:** 65
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-063** — Analyze and optimize the committing pattern (refactor) — `todo/agentic-workflow-063-optimize-committing-pattern.md`
+- **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `todo/agentic-workflow-060-workflow-guide-diagrams.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-063** — Analyze and optimize the committing pattern (refactor) — `done/agentic-workflow-063-optimize-committing-pattern.md`
 - **agentic-workflow-069** — Topbar "What's next" button fires the /agentheim:whats-next skill (replaces the interim raw prompt) (feature) — `done/agentic-workflow-069-whats-next-button-fires-whats-next-skill.md`
 - **agentic-workflow-067** — Topbar stays fixed at the top of the viewport when the board or a document scrolls (bug) — `done/agentic-workflow-067-topbar-sticky-stays-fixed-on-scroll.md`
 - **agentic-workflow-066** — Left rail — Research group opens by default, Decisions collapses by default (feature) — `done/agentic-workflow-066-rail-research-open-decisions-collapsed-by-default.md`
@@ -96,12 +97,12 @@ research touching this BC, and concept synthesis pages.
 ### Backlog
 <!-- backlog-list:start -->
 - **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella → aw-058/059/060) — `backlog/agentic-workflow-057-workflow-guide-page.md`
-- **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `backlog/agentic-workflow-060-workflow-guide-diagrams.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0026** — Committing doctrine: every artifact-producing skill commits its own scoped `.md`; `work` folds bookkeeping into the task commit, `commit:` field dropped, trivial-squash carve-out (accepted) — `../../knowledge/decisions/0026-committing-doctrine-bookkeeping-in-task-commit.md`
 - **ADR-0025** — The dashboard main pane gains a third view state (`mainView`) for built-in static pages, beside the task/document split; reshapes ADR-0021 (proposed) — `../../knowledge/decisions/0025-dashboard-main-pane-third-view-state-builtin-static-page.md`
 - **ADR-0023** — The dashboard's `/api/search` is the read-only server's first content-search endpoint — pure corpus walk, title-first ranking, body excerpts (proposed) — `../../knowledge/decisions/0023-dashboard-search-read-endpoint.md`
 - **ADR-0022** — DISMISS cascades the whole dependent subtree; refuses if it touches doing/ or done/ (proposed) — `../../knowledge/decisions/0022-dismiss-cascades-dependent-subtree.md`
