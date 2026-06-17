@@ -5,6 +5,23 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 21:47 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 2 (first-try PASS: 2, re-dispatched: 0, skipped: 0) — aw-072 (8e32542), aw-076 (4953fb9)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (8e32542 aw-072, 4953fb9 aw-076)
+**Notes:**
+- Two ready tasks, both in the agentic-workflow BC. **Serialized into two single-task waves** rather than dispatched in parallel: both could touch the agentic-workflow BC README, and only one worker updates a BC's memory per batch (one-worker-per-BC-README rule). Both did in fact update the README, so the serialization avoided a working-tree race on it.
+- aw-072 (Done column hideable): additive `hidden` boolean on the ADR-0015 view-state store (old blobs → false, no version bump), Done-only board-local hide control + "Show Done (N)" chip, presentation-only per ADR-0017. PASS first try; dashboard suite 558/558 green, 6 new tests, dist rebuilt.
+- aw-076 (whats-next advisory write): skill-doctrine + .gitignore change per ADR-0027 — the skill now writes `.agentheim/state/whats-next.md` (single-latest, git-ignored) as its single advisory write; runtime artifact, not created by the task. PASS first try.
+- No bounces, failures, escalations, new backlog items, or concept candidates.
+- Pre-existing working-tree noise (deleted `Screenshot ….png`, untracked `dashboard.png`) left untouched — never `git add`ed.
+
+---
+
 ## 2026-06-17 21:46 -- Task verified and completed: agentic-workflow-076 - What's next persists its recommendation as a single-latest advisory artifact (advisory write)
 
 **Type:** Work / Task completion
