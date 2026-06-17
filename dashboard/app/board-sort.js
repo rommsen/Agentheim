@@ -46,10 +46,24 @@ function idOf(ticket) {
   return ticket && typeof ticket.id === 'string' ? ticket.id : '';
 }
 
-// A defined title for name ordering (always a string; case-insensitive compare).
+// A defined title for name ordering (always a string; never NaN/throw for a
+// missing or non-string title — it degrades to "").
 function titleKey(ticket) {
-  const t = ticket && typeof ticket.title === 'string' ? ticket.title : '';
-  return t.toLocaleLowerCase();
+  return ticket && typeof ticket.title === 'string' ? ticket.title : '';
+}
+
+// Locale-aware alphabetical collation for the Name orderings (agentic-workflow-061).
+// Code-point comparison (`<`/`>`) is NOT "what a human calls alphabetical": it
+// sorts leading digits oddly ("10" before "2"), leading symbols before letters,
+// and accented/umlaut letters AFTER "z". A shared Intl.Collator on the host
+// default locale fixes all three:
+//   sensitivity:'base' — ignore case AND accents for ordering (à ≈ a ≈ A),
+//   numeric:true        — read digit runs as numbers (2 before 10).
+const titleCollator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+
+// Collate two tickets' titles alphabetically (ascending). title-desc negates this.
+function byTitleCollated(a, b) {
+  return titleCollator.compare(titleKey(a), titleKey(b));
 }
 
 function byIdAsc(a, b) {
@@ -64,16 +78,8 @@ function byIdAsc(a, b) {
 const COMPARATORS = {
   'mtime-desc': (a, b) => (mtimeOf(b) - mtimeOf(a)) || byIdAsc(a, b),
   'mtime-asc': (a, b) => (mtimeOf(a) - mtimeOf(b)) || byIdAsc(a, b),
-  'title-asc': (a, b) => {
-    const ka = titleKey(a);
-    const kb = titleKey(b);
-    return (ka < kb ? -1 : ka > kb ? 1 : 0) || byIdAsc(a, b);
-  },
-  'title-desc': (a, b) => {
-    const ka = titleKey(a);
-    const kb = titleKey(b);
-    return (ka < kb ? 1 : ka > kb ? -1 : 0) || byIdAsc(a, b);
-  },
+  'title-asc': (a, b) => byTitleCollated(a, b) || byIdAsc(a, b),
+  'title-desc': (a, b) => -byTitleCollated(a, b) || byIdAsc(a, b),
 };
 
 /**

@@ -60,6 +60,72 @@ test('title-desc orders by title Z→A', () => {
   assert.deepEqual(out.map((t) => t.title), ['Cherry', 'Banana', 'Apple']);
 });
 
+test('title-asc collates case-insensitively (not all-capitals-first)', () => {
+  const input = [
+    { id: 'c-1', title: 'cherry', mtimeMs: 1 },
+    { id: 'b-1', title: 'Banana', mtimeMs: 1 },
+    { id: 'a-1', title: 'apple', mtimeMs: 1 },
+  ];
+  // Code-point order would put the capital 'Banana' before lowercase 'apple';
+  // locale collation orders them alphabetically regardless of case.
+  assert.deepEqual(
+    sortTickets(input, 'title-asc').map((t) => t.title),
+    ['apple', 'Banana', 'cherry'],
+  );
+});
+
+test('title-asc collates accented/umlaut letters near their base letter, not after z', () => {
+  const input = [
+    { id: 'z-1', title: 'Zebra', mtimeMs: 1 },
+    { id: 'ae-1', title: 'Ärger', mtimeMs: 1 },
+    { id: 'a-1', title: 'Apple', mtimeMs: 1 },
+  ];
+  // Code-point order would push 'Ärger' after 'Zebra' (ä > z in UTF-16);
+  // collation keeps it next to the base 'A'.
+  assert.deepEqual(
+    sortTickets(input, 'title-asc').map((t) => t.title),
+    ['Apple', 'Ärger', 'Zebra'],
+  );
+});
+
+test('title-asc collates leading-number titles naturally (2 before 10)', () => {
+  const input = [
+    { id: 'b-1', title: '10 things', mtimeMs: 1 },
+    { id: 'a-1', title: '2 things', mtimeMs: 1 },
+  ];
+  // Code-point order would put '10…' before '2…' (the char '1' < '2');
+  // numeric collation reads the run as numbers, so 2 sorts before 10.
+  assert.deepEqual(
+    sortTickets(input, 'title-asc').map((t) => t.title),
+    ['2 things', '10 things'],
+  );
+});
+
+test('title-desc is the exact reverse of the collated order', () => {
+  const input = [
+    { id: 'c-1', title: 'cherry', mtimeMs: 1 },
+    { id: 'b-1', title: 'Banana', mtimeMs: 1 },
+    { id: 'a-1', title: 'apple', mtimeMs: 1 },
+  ];
+  assert.deepEqual(
+    sortTickets(input, 'title-desc').map((t) => t.title),
+    ['cherry', 'Banana', 'apple'],
+  );
+});
+
+test('a missing/non-string title degrades to empty and never throws', () => {
+  const input = [
+    { id: 'b-1', title: 'Apple', mtimeMs: 1 },
+    { id: 'a-1', mtimeMs: 1 }, // title absent
+    { id: 'c-1', title: 42, mtimeMs: 1 }, // non-string title
+  ];
+  // The two degraded titles sort as "" (before any letter), then break by id asc.
+  assert.deepEqual(
+    sortTickets(input, 'title-asc').map((t) => t.id),
+    ['a-1', 'c-1', 'b-1'],
+  );
+});
+
 test('title ties break by id ascending', () => {
   const input = [
     { id: 'ctx-002', title: 'Same', mtimeMs: 10 },
