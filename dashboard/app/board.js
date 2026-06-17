@@ -968,6 +968,35 @@ function SkipPermissionsToggle({ armed, onToggle }) {
     </button>`;
 }
 
+// The built-in WORKFLOW guide page (agentic-workflow-058, governed by ADR-0025).
+// A PLACEHOLDER in this task — it proves the ROUTING (a third main-pane state beside
+// the board and the document reader), not the content; aw-059 supplies the real
+// layout and aw-060 the diagrams. It is a STATIC page built into the bundle: NOT an
+// open-intent (no lifecycle `status`, no on-disk `path`), so it never enters
+// isTaskIntent (ADR-0021, byte-unchanged) and never fetches /api/doc. It is
+// read-only over .agentheim/ (ADR-0017) and composed from styleguide tokens consumed
+// UNFORKED (ADR-0003) — no styleguide edit, no new bundled dependency. The shell
+// selects it via the dedicated onSelectWorkflow handler (NOT the rail's onOpen
+// machinery) and renders it ahead of the document reader and the board.
+function WorkflowPage() {
+  return html`
+    <section aria-label="Workflow guide" style=${{
+      display: "flex", flexDirection: "column", gap: 12, padding: "0 4px",
+    }}>
+      <h1 style=${{
+        margin: 0, fontFamily: "var(--font-ui)", fontSize: 22, fontWeight: 600,
+        letterSpacing: "-0.01em", color: "var(--fg-1)",
+      }}>Workflow</h1>
+      <p style=${{
+        margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6,
+        color: "var(--fg-3)", maxWidth: 560,
+      }}>
+        The Agentheim workflow guide lives here. This built-in page is a placeholder —
+        its layout and diagrams arrive in a later pass.
+      </p>
+    </section>`;
+}
+
 // The full-height LEFT RAIL (agentic-workflow-026). It replaces aw-008's horizontal
 // top header with the styleguide §05 "Components in context" layout: a vertical,
 // full-height nav composed from styleguide PRIMITIVES (Glyph / RailItem / TreeGroup
@@ -990,7 +1019,7 @@ function SkipPermissionsToggle({ armed, onToggle }) {
 // edge follows the selected DOCUMENT (`selectedId`, fed from selectedDoc), and the
 // Board RailItem returns the main pane to the board (onSelectBoard) and is `active`
 // exactly when no document is selected.
-function ShellRail({ projectName, selectedId, onOpen, onSelectBoard }) {
+function ShellRail({ projectName, selectedId, onOpen, onSelectBoard, mainView, onSelectWorkflow }) {
   const [groups, setGroups] = useState([]);
 
   // Re-project the rail tree from /api/tree (the non-task half, treeToLibrary). A
@@ -1030,11 +1059,20 @@ function ShellRail({ projectName, selectedId, onOpen, onSelectBoard }) {
         </span>
       </div>
 
-      <!-- Primary nav: the single Board item (the tree below IS the library) -->
+      <!-- Primary nav: the Board item and, directly below it, the built-in Workflow
+           guide item (aw-058, ADR-0025). The tree below IS the library, so there is
+           still no separate Library item. Board is active only when neither the
+           workflow page nor a document is selected; Workflow is active when the third
+           main-pane state is on. The two are mutually exclusive by construction
+           (onSelectWorkflow clears selectedDoc + openIntent; every board/doc handler
+           resets mainView to "board"), so at most one rail row highlights at once. -->
       <div style=${{ padding: "4px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
         <${RailItem} icon="square-kanban" label="Board"
-          active=${!selectedId}
+          active=${mainView !== "workflow" && !selectedId}
           onClick=${() => onSelectBoard && onSelectBoard()} />
+        <${RailItem} icon="compass" label="Workflow"
+          active=${mainView === "workflow"}
+          onClick=${() => onSelectWorkflow && onSelectWorkflow()} />
       </div>
 
       <div style=${{ height: 1, background: "var(--hairline)", margin: "12px 16px" }} />
@@ -1426,8 +1464,20 @@ export function DashboardApp() {
   // selection ring and the rail edge never both show.
   const [openIntent, setOpenIntent] = useState(null);
   const [selectedDoc, setSelectedDoc] = useState(null);
+  // The THIRD main-pane view state (aw-058, ADR-0025): "board" | "workflow", default
+  // "board". A built-in STATIC page (the Workflow guide) is neither a task nor a
+  // disk-fetched document, so it does not fit openIntent or selectedDoc — it gets its
+  // own shell flag, NOT a fourth field on any intent shape. Main-pane render
+  // precedence is workflow → document → board. The three are mutually exclusive BY
+  // CONSTRUCTION: onSelectWorkflow clears BOTH selectedDoc and openIntent, and every
+  // handler that lands something else in the main pane (onSelectBoard, onOpen task +
+  // doc branches, onOpenSearch, onOpenFullScreen) resets mainView to "board" — so the
+  // workflow page can never linger under a later board/doc click. The mainView enum is
+  // deliberately easy to extend (aw-062 adds an "about" page as a one-liner).
+  const [mainView, setMainView] = useState("board");
   const onOpen = useCallback((item) => {
     if (typeof window !== "undefined") window.__agentheimLastOpen = item;
+    setMainView("board");     // a task or doc takes the main pane/slide-over; leave the workflow page.
     if (isTaskIntent(item)) {
       setSelectedDoc(null);   // a task takes the slide-over; clear any open doc.
       setOpenIntent(item);
@@ -1437,8 +1487,18 @@ export function DashboardApp() {
     }
   }, []);
   const onClose = useCallback(() => setOpenIntent(null), []);
-  // The Board RailItem returns the main pane to the board: clear the selected doc.
-  const onSelectBoard = useCallback(() => setSelectedDoc(null), []);
+  // The Board RailItem returns the main pane to the board: clear the selected doc and
+  // leave the workflow page (ADR-0025 reset obligation).
+  const onSelectBoard = useCallback(() => { setSelectedDoc(null); setMainView("board"); }, []);
+  // The Workflow RailItem selects the built-in static page (aw-058, ADR-0025). It is
+  // its OWN handler, not the rail's onOpen machinery: it sets the third main-pane
+  // state and clears BOTH the selected doc and the open task so no two surfaces (or
+  // two rail rows) show at once.
+  const onSelectWorkflow = useCallback(() => {
+    setMainView("workflow");
+    setSelectedDoc(null);
+    setOpenIntent(null);
+  }, []);
 
   // The TOPBAR SEARCH open-intent sink (aw-052). A search result is loaded into the
   // MAIN content pane for BOTH kinds (builder's choice, ADR-0023): non-task docs as
@@ -1452,6 +1512,7 @@ export function DashboardApp() {
   // with the documented routing. No write (ADR-0017).
   const onOpenSearch = useCallback((item) => {
     if (typeof window !== "undefined") window.__agentheimLastOpen = item;
+    setMainView("board");     // a search result lands in the main pane; leave the workflow page (ADR-0025).
     if (isTaskIntent(item)) {
       // aw-039 full-screen path: promote the ticket into the main pane, not the slide-over.
       setOpenIntent(null);
@@ -1469,6 +1530,7 @@ export function DashboardApp() {
   // The Drawer callback is bare; the shell already owns the open task in `openIntent`,
   // so this is just the two mutually-exclusive states swapping. No write (ADR-0017).
   const onOpenFullScreen = useCallback(() => {
+    setMainView("board");        // the promoted task takes the main pane; leave the workflow page (ADR-0025).
     setSelectedDoc(openIntent);  // promote the open task into the main pane
     setOpenIntent(null);         // and close the slide-over
   }, [openIntent]);
@@ -1494,7 +1556,8 @@ export function DashboardApp() {
       }}>
         <${ShellRail} projectName=${projectName}
           selectedId=${selectedDoc ? selectedDoc.id : null}
-          onOpen=${onOpen} onSelectBoard=${onSelectBoard} />
+          onOpen=${onOpen} onSelectBoard=${onSelectBoard}
+          mainView=${mainView} onSelectWorkflow=${onSelectWorkflow} />
         <div style=${{
           flex: 1, minWidth: 0, display: "flex", flexDirection: "column",
           background: "var(--surface-0)",
@@ -1505,9 +1568,11 @@ export function DashboardApp() {
             onStopped=${onStopped} onOpen=${onOpenSearch} />
           <div style=${{ flex: 1, minHeight: 0, position: "relative", display: "flex", flexDirection: "column" }}>
             <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "22px 24px 40px" }}>
-              ${selectedDoc
-                ? html`<${MainPaneReader} doc=${selectedDoc} />`
-                : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
+              ${mainView === "workflow"
+                ? html`<${WorkflowPage} />`
+                : selectedDoc
+                  ? html`<${MainPaneReader} doc=${selectedDoc} />`
+                  : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
             </div>
             ${stopped ? html`<${StoppedOverlay} />` : null}
           </div>

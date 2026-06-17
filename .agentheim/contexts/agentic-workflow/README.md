@@ -101,7 +101,8 @@ separate BC, but today the whole tool lives in this one.
   and **library/navigation** (aw-008) — all built, compose into this one app shell. As of
   **aw-026** the shell is the styleguide §05 "Components in context" layout: a full-height
   **left rail** (`ShellRail`) beside a **main column** (a ~52px topbar over the scrollable
-  board). The rail carries brand → a single **Board** `RailItem` → divider → "Workspace"
+  board). The rail carries brand → a **Board** `RailItem` → (as of **aw-058**) a
+  **Workflow** `RailItem` directly below it → divider → "Workspace"
   label → the **live** library tree (`treeToLibrary`, the always-visible tree *is* the
   library). As of **aw-049** the three utility controls — **Stop dashboard**, the **theme
   toggle** and the **skip-permissions armed toggle** — are collapsed behind a single
@@ -500,8 +501,16 @@ separate BC, but today the whole tool lives in this one.
   (agentic-workflow-027): an intent carrying a lifecycle `status` is a **task** → slide-over; an
   intent carrying a content `type` and no `status` is a **non-task document** → main pane. No
   new intent field is needed — the discriminator falls out of the data the board and the rail
-  already emit. The shell holds two mutually-exclusive selection states: `openIntent` (task →
-  slide-over) and `selectedDoc` (doc → main pane). See ADR-0021.
+  already emit. The shell holds two open-intent states: `openIntent` (task →
+  slide-over) and `selectedDoc` (doc → main pane). See ADR-0021. As of **aw-058**
+  (**ADR-0025**) a **third main-pane view state** `mainView` (`"board" | "workflow"`,
+  default `"board"`) sits beside them for **built-in static pages** — a page that is
+  neither a task (no `status`) nor a disk-fetched document (no `path`), selected by its
+  own `onSelectWorkflow` handler, **not** the `onOpen`/`isTaskIntent` machinery
+  (which stays byte-unchanged). Main-pane render precedence is **workflow → document →
+  board**; the three are mutually exclusive *by construction* (`onSelectWorkflow` clears
+  both `selectedDoc` and `openIntent`; every board/doc handler resets `mainView` to
+  `"board"`). The `mainView` enum is built to extend (aw-062 adds an `"about"` page).
 - **Library / navigation** — the dashboard's discovery surface (agentic-workflow-008): makes the
   *non-task* knowledge base browsable — vision, context map, every BC README, ADRs, research —
   drawn from the **artifact-location half** of the same tree projection the board uses (`tree.locations`

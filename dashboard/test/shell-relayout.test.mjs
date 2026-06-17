@@ -63,10 +63,13 @@ test('ShellRail is a vertical full-height nav composed from styleguide primitive
   assert.match(rail, /<\$\{TreeGroup\}/, 'rail must render the live tree via styleguide TreeGroup');
 });
 
-test('the rail has a SINGLE nav RailItem (Board) — no separate Library RailItem', () => {
+test('the rail nav RailItems are Board + Workflow only — no separate Library RailItem (aw-058 added Workflow, ADR-0025)', () => {
+  // aw-026 shipped a single Board nav item (the tree below IS the library, ADR-0011).
+  // aw-058 (ADR-0025) added a second nav item, the built-in Workflow guide, BESIDE
+  // Board. There is still NO separate Library RailItem — the Workspace tree is it.
   const rail = fn('ShellRail');
   const railItems = rail.match(/<\$\{RailItem\}/g) || [];
-  assert.equal(railItems.length, 1, 'exactly one RailItem (Board) — the tree below is the library');
+  assert.equal(railItems.length, 2, 'exactly two nav RailItems (Board + Workflow) — the tree below is the library');
   assert.doesNotMatch(rail, /label="Library"/, 'there must be no separate Library RailItem');
 });
 
