@@ -1131,6 +1131,16 @@ function SettingsMenu({ theme, setTheme, skipPermissions = false, setSkipPermiss
     if (res && res.via === "bridge" && typeof onStopped === "function") onStopped();
   }, [onStopped]);
 
+  // The shared Menu panel has symmetric padding, but each MenuItem is a left-aligned
+  // flex row that does NOT stretch in the panel's flex column, so a content-sized
+  // control hugs the LEFT and the slack collects on the RIGHT (off-center, aw-055).
+  // CENTER each item's content so the left/right whitespace reads equal. One shared
+  // style applied to every MenuItem keeps the fix UNIFORM across all three controls
+  // (theme / skip-permissions / Stop), and keeps the shared Menu/MenuItem primitive a
+  // body-agnostic, left-aligning generic — centering is THIS consumer's choice
+  // (ADR-0003, consumed unforked), not a styleguide default.
+  const centeredItem = { justifyContent: "center" };
+
   return html`
     <${Menu}
       ariaLabel="Dashboard settings"
@@ -1158,7 +1168,7 @@ function SettingsMenu({ theme, setTheme, skipPermissions = false, setSkipPermiss
           <${Icon} name="settings-2" size=${14.5} color=${isOpen ? "var(--fg-1)" : "var(--fg-2)"} />
         </button>`}>
       <!-- Theme (light/dark) — keeps the menu open (decision 4). -->
-      <${MenuItem}>
+      <${MenuItem} style=${centeredItem}>
         <${ThemeToggle} value=${theme} onChange=${setTheme} options=${[
           { value: "dark", label: "Dark", icon: "moon" },
           { value: "light", label: "Light", icon: "sun" },
@@ -1166,13 +1176,13 @@ function SettingsMenu({ theme, setTheme, skipPermissions = false, setSkipPermiss
       </${MenuItem}>
       <!-- Skip-permissions armed toggle — keeps its --obligation armed/danger hue
            INSIDE the menu (decision 3); keeps the menu open (decision 4). -->
-      <${MenuItem}>
+      <${MenuItem} style=${centeredItem}>
         <${SkipPermissionsToggle} armed=${skipPermissions} onToggle=${setSkipPermissions} />
       </${MenuItem}>
       <${MenuDivider} />
       <!-- Stop dashboard — selecting it CLOSES the menu (controlled), then shows the
            stopped overlay on a bridge dispatch. -->
-      <${MenuItem}>
+      <${MenuItem} style=${centeredItem}>
         <${LaunchButton} label="Stop dashboard" command=${STOP_DASHBOARD_COMMAND}
           icon="x" emphasis="quiet" onResult=${onStopResult} />
       </${MenuItem}>

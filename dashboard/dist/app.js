@@ -565,12 +565,12 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{l=!1}},[e,r]),k`
         The dashboard server is shutting down. Reopen it any time with
         <span style=${{fontFamily:"var(--font-mono)",color:"var(--fg-2)"}}> /dashboard</span> from a session.
       </div>
-    </div>`}function Qy({theme:e,setTheme:t,skipPermissions:n=!1,setSkipPermissions:r,onStopped:o}){let[i,l]=(0,_.useState)(!1),a=(0,_.useCallback)(s=>{l(!1),s&&s.via==="bridge"&&typeof o=="function"&&o()},[o]);return k`
+    </div>`}function Qy({theme:e,setTheme:t,skipPermissions:n=!1,setSkipPermissions:r,onStopped:o}){let[i,l]=(0,_.useState)(!1),a=(0,_.useCallback)(u=>{l(!1),u&&u.via==="bridge"&&typeof o=="function"&&o()},[o]),s={justifyContent:"center"};return k`
     <${js}
       ariaLabel="Dashboard settings"
       open=${i}
       onOpenChange=${l}
-      trigger=${({open:s,toggle:u})=>k`
+      trigger=${({open:u,toggle:f})=>k`
         <!-- The settings GEAR — the reused settings-2 glyph. Neutral at all times: the
              closed gear carries NO armed cue (decision 3). -->
         <button
@@ -578,25 +578,25 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{l=!1}},[e,r]),k`
           className="focusable"
           aria-label="Settings"
           aria-haspopup="menu"
-          aria-expanded=${s}
+          aria-expanded=${u}
           title="Settings — theme, skip-permissions, stop dashboard"
-          onClick=${u}
-          style=${{display:"inline-flex",alignItems:"center",justifyContent:"center",color:s?"var(--fg-1)":"var(--fg-2)",background:s?"var(--surface-2)":"transparent",border:`1px solid ${s?"var(--hairline-strong)":"var(--hairline)"}`,borderRadius:"var(--radius-sm)",padding:"5px 7px",cursor:"pointer",transition:"color var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)"}}>
-          <${U} name="settings-2" size=${14.5} color=${s?"var(--fg-1)":"var(--fg-2)"} />
+          onClick=${f}
+          style=${{display:"inline-flex",alignItems:"center",justifyContent:"center",color:u?"var(--fg-1)":"var(--fg-2)",background:u?"var(--surface-2)":"transparent",border:`1px solid ${u?"var(--hairline-strong)":"var(--hairline)"}`,borderRadius:"var(--radius-sm)",padding:"5px 7px",cursor:"pointer",transition:"color var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)"}}>
+          <${U} name="settings-2" size=${14.5} color=${u?"var(--fg-1)":"var(--fg-2)"} />
         </button>`}>
       <!-- Theme (light/dark) — keeps the menu open (decision 4). -->
-      <${bn}>
+      <${bn} style=${s}>
         <${vp} value=${e} onChange=${t} options=${[{value:"dark",label:"Dark",icon:"moon"},{value:"light",label:"Light",icon:"sun"}]} />
       </${bn}>
       <!-- Skip-permissions armed toggle — keeps its --obligation armed/danger hue
            INSIDE the menu (decision 3); keeps the menu open (decision 4). -->
-      <${bn}>
+      <${bn} style=${s}>
         <${Uy} armed=${n} onToggle=${r} />
       </${bn}>
       <${gp} />
       <!-- Stop dashboard — selecting it CLOSES the menu (controlled), then shows the
            stopped overlay on a bridge dispatch. -->
-      <${bn}>
+      <${bn} style=${s}>
         <${Rn} label="Stop dashboard" command=${Yp}
           icon="x" emphasis="quiet" onResult=${a} />
       </${bn}>
