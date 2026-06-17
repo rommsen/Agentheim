@@ -13,7 +13,7 @@ research touching this BC, and concept synthesis pages.
 - **Backlog:** 1
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 53
+- **Done:** 54
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-055** — Settings menu content is off-center — equal whitespace left and right (bug) — `done/agentic-workflow-055-settings-menu-content-off-center.md`
 - **agentic-workflow-054** — Board prompt bar gets a "Prompt" title; whitespace separates it from the "Board" title (feature) — `done/agentic-workflow-054-prompt-title-and-board-spacing.md`
 - **agentic-workflow-053** — Topbar layout — search on the left, settings gear + Work flush right (bug) — `done/agentic-workflow-053-topbar-right-align-settings-work.md`
 - **agentic-workflow-052** — Topbar global search UI — search field replaces the breadcrumb; grouped-results popover routing to the main pane (feature) — `done/agentic-workflow-052-topbar-global-search-ui.md`

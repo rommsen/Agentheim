@@ -5,6 +5,52 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 09:12 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — agentic-workflow-055 (e653580)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (1 work + 1 chore bookkeeping)
+**Notes:**
+- Single ready task this run. Dependency `design-system-001` (styleguide gate) already in done/, so aw-055 was unblocked from the start.
+- Fix landed board-local in `SettingsMenu` (not a styleguide fork): one shared `justifyContent: center` style on all three MenuItem rows. The board-local-vs-shared-primitive seam flagged at modeling resolved to board-local as the smallest correct change — no `design-system` child task needed.
+- **Standing open human gate (carried over, unrelated to this run):** design-system-019 still awaits a builder canvas re-review to re-confirm the design-system styleguide gate OPEN.
+- No new backlog items, no ADRs, no concept candidates.
+
+---
+
+## 2026-06-17 09:10 -- Task verified and completed: agentic-workflow-055 - Settings menu content is off-center
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-055 - Settings menu content is off-center — equal whitespace left and right
+**Summary:** Centered the top-right settings dropdown's content by giving each of the three MenuItem rows (theme, skip-permissions, Stop dashboard) one shared board-local `justifyContent: center` style, so left/right whitespace reads equal. Smallest correct change — the shared Menu/MenuItem primitive stays a left-aligning generic (ADR-0003 unforked), presentation-only (ADR-0017); dist rebuilt.
+**Verification:** PASS (iteration 1) — verifier confirmed `MenuItem` forwards the incoming `style` onto its flex-row div (so the fix re-centers, not a no-op), all three rows centered uniformly from one constant, open/close/Esc/dismiss/Stop wiring untouched, no styleguide fork; dashboard suite 474 pass / 0 fail; dist carries `justifyContent:"center"`.
+**Commit:** e653580
+**Files changed:** 3 (board.js, dashboard/dist/app.js, settings-menu-center.test.mjs)
+**Tests added:** 3 (settings-menu-center.test.mjs — centering style present, all 3 rows uniform, shared primitive unforked)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 09:00 -- Batch started: [agentic-workflow-055]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-055 - Settings menu content is off-center — equal whitespace left and right
+**Parallel:** no (1 worker) — sole ready task this run.
+
+---
+
+## 2026-06-17 00:00 -- Modeling / Captured: agentic-workflow-055 - Settings menu content is off-center
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** The top-right settings gear dropdown reads off-center — its controls hug the left edge so left/right whitespace is unequal. Captured as a presentation bug to balance the menu content; routed to the originating BC with the board-local-vs-shared-Menu-primitive seam flagged for the worker (depends on the styleguide gate, design-system-001).
+
+---
+
 ## 2026-06-16 17:02 -- Work session ended
 
 **Type:** Work / Session end
