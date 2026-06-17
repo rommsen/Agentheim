@@ -756,7 +756,7 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{l=!1}},[e,r]),y`
         ${a.map(d=>y`
           <${yp} key=${d.group} group=${d.group} items=${d.items}
             selectedId=${t} onOpen=${n}
-            defaultOpen=${d.group!=="Research"} />`)}
+            defaultOpen=${d.group!=="Decisions"} />`)}
       </div>
     </nav>`}function r0(){return y`
     <div

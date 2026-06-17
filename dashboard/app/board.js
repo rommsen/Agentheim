@@ -1536,7 +1536,7 @@ function ShellRail({ projectName, selectedId, onOpen, onSelectBoard, mainView, o
         ${groups.map((g) => html`
           <${TreeGroup} key=${g.group} group=${g.group} items=${g.items}
             selectedId=${selectedId} onOpen=${onOpen}
-            defaultOpen=${g.group !== "Research"} />`)}
+            defaultOpen=${g.group !== "Decisions"} />`)}
       </div>
     </nav>`;
 }
