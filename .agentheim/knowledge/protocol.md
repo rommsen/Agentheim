@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 23:45 -- Task verified and completed: agentic-workflow-073 - Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-073 - Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar
+**Summary:** The dashboard now renders the What's next advisory recommendation (ADR-0027) as a dismissible, live-refreshing panel above the board prompt bar — reading the artifact via the existing `/api/doc` carrier and the unforked frontmatter-folding `Markdown` path, with a `generated`-keyed dismiss store that re-shows on a newer recommendation.
+**Verification:** PASS (iteration 1)
+**Files changed:** 6
+**Tests added:** 2 (whats-next-state + whats-next-panel suites; dashboard suite 588 green)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 23:39 -- Batch started: [agentic-workflow-073, design-system-020]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-073 - Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar, design-system-020 - Drawer gains in-place expandable width
+**Parallel:** yes (2 workers)
+**Held to next wave:** agentic-workflow-077 (same-BC README conflict with aw-073), design-system-021 (shares icons.js / index.html / README with ds-020)
+
+---
+
 ## 2026-06-17 22:50 -- Modeling / Refined: agentic-workflow-077 - Collision-resistant task IDs for multi-user / multi-branch work (replace sequential integers)
 
 **Type:** Modeling / Refine

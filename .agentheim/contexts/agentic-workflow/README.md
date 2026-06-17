@@ -361,6 +361,22 @@ separate BC, but today the whole tool lives in this one.
   `onResult` clear-textarea + confetti success path. A **decorative** right-of-row helper ("Type a
   prompt to begin" + a `⌘↵` chip) hints the flow but **fires nothing** -- aw-038's swallowed Enter is
   untouched (no Enter-to-launch). This decision is shared with aw-064 (the Work-button restyle).
+  **A `WhatsNextPanel` sits ABOVE the `Prompt` title (aw-073 / ADR-0027):** the **dashboard half** of
+  the What's next feature, the read surface for the skill's *advisory write* (aw-076). It fetches the
+  single-latest recommendation artifact (`.agentheim/state/whats-next.md`) through the **existing
+  `/api/doc` body carrier** (the in-root-guarded transport, **not** `/api/tree`, which stays
+  pointers/metadata only -- ADR-0023) and renders it through the **same `withFrontmatterSection` +
+  styleguide `Markdown` path** the slide-over / main-pane reader use (aw-043), so the frontmatter folds
+  to a quiet collapsed section and the three body sections render with **no bespoke renderer**, consumed
+  **unforked** (ADR-0003), light/dark aware. It **re-fetches on every SSE `tree-changed` frame** (a new
+  advisory write surfaces live, ADR-0006), shows a **staleness cue** derived from the `generated`
+  timestamp (rendering only -- nothing keys behaviour off it, ADR-0027 §4), and is **dismissible**: the
+  dismissed state persists across reload in a new versioned `localStorage` store
+  **`dashboard/app/whats-next-state.js`** (sibling of `theme-state.js` / `board-view-state.js`), **keyed
+  by `generated`** so a *newer* recommendation re-shows. The panel is **read-only over the artifact**
+  (ADR-0017): dismiss touches `localStorage` only, never the file. Every degraded path -- **absent**
+  artifact, **malformed/partial** body, stale-version / non-string / no-backend store -- resolves to
+  "render nothing" or "not dismissed" and **never throws**.
 - **Shell layout (aw-026, styleguide §05)** -- the live shell is the styleguide "Components in context"
   full-height **left rail** beside a **main column**. The main column is a ~52px **topbar** (the global
   **search field** — aw-052; was a dead breadcrumb until then — plus **two standing launches**: the

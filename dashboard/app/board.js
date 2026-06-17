@@ -34,6 +34,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import confetti from "canvas-confetti";
 
 import { html } from "../../.agentheim/contexts/design-system/styleguide/app/html.js";
+import { Markdown } from "../../.agentheim/contexts/design-system/styleguide/app/primitives.js";
 import { ColumnHeader, TicketCard } from "../../.agentheim/contexts/design-system/styleguide/app/kanban.js";
 import { EmptyColumn } from "../../.agentheim/contexts/design-system/styleguide/app/empty.js";
 import { Icon } from "../../.agentheim/contexts/design-system/styleguide/app/icons.js";
@@ -61,6 +62,14 @@ import { confettiFireSequence } from "./confetti-launch.js";
 import { isTaskIntent } from "./intent-route.js";
 import { searchResultsToGroups } from "./search-results.js";
 import { createLiveUpdate } from "./live-update.js";
+import { docUrl } from "./slide-over-data.js";
+import { withFrontmatterSection, parseFrontmatter } from "./frontmatter.js";
+import {
+  WHATS_NEXT_DOC_PATH,
+  isDismissed,
+  saveDismissed,
+  formatStaleness,
+} from "./whats-next-state.js";
 
 /**
  * React hook: subscribe to the SSE live-update stream and call `onResync` on
@@ -702,6 +711,122 @@ function PromptLaunchCard({ label, subtitle, command, icon, skipPermissions = fa
     </button>`;
 }
 
+// Pull the `generated` frontmatter stamp out of a fetched recommendation body.
+// parseFrontmatter is the SAME pure parser the render path uses (aw-043), so the
+// stamp the dismiss store keys off cannot drift from what renders. A body with no
+// (or partial) frontmatter yields "" — the panel then shows no staleness cue and is
+// never dismissible-by-stamp, but still renders what is parseable (never throws).
+function generatedStamp(body) {
+  const { fields } = parseFrontmatter(body);
+  const hit = fields.find(([k]) => k === "generated");
+  return hit ? hit[1] : "";
+}
+
+// The WHAT'S-NEXT advisory recommendation panel (agentic-workflow-073 / ADR-0027).
+//
+// The `whats-next` skill writes a single-latest advisory artifact at
+// `.agentheim/state/whats-next.md` (an ADVISORY write, ADR-0027 — distinct from a
+// lifecycle write; the dashboard stays read-only over it). This panel READS it via
+// the existing GET /api/doc body carrier (ADR-0021/0023 — never /api/tree, which is
+// pointers/metadata only) and renders it through the SAME withFrontmatterSection +
+// styleguide Markdown path the slide-over / main-pane reader use (aw-043), so the
+// frontmatter folds to a quiet collapsed section and the three body sections render
+// with NO bespoke renderer. Consumed unforked (ADR-0003); light/dark aware for free.
+//
+// Behaviour:
+//   - ABSENT artifact (404 / fetch failure) → renders NOTHING (no shell, no error).
+//   - MALFORMED / partial artifact → renders what is parseable, never throws.
+//   - LIVE: it re-fetches on every SSE tree-changed frame (the existing consumer,
+//     ADR-0006) — a new/overwritten artifact triggers a `.agentheim/` mutation frame.
+//   - STALENESS CUE derived from the `generated` stamp (rendering only, ADR-0027 §4).
+//   - DISMISS persists across reload (whats-next-state.js, keyed by `generated`); a
+//     NEWER recommendation re-shows. Read-only over the artifact (ADR-0017): dismiss
+//     touches localStorage only, never the file.
+//
+// fetchDoc is overridable for tests. It sits ABOVE the BoardPromptBar's "Prompt"
+// title on the board view only (composed by BoardPromptBar).
+function WhatsNextPanel({ fetchDoc = defaultFetchWhatsNext }) {
+  const [body, setBody] = useState(null); // null = nothing to show (absent / dismissed-by-fetch)
+  // Bump to force a dismiss re-evaluation after the user dismisses (localStorage is
+  // not reactive). The fetched body is the source of the `generated` stamp.
+  const [, force] = useState(0);
+
+  const reload = useCallback(() => {
+    let alive = true;
+    fetchDoc()
+      .then((md) => { if (alive) setBody(typeof md === "string" ? md : null); })
+      // Absent artifact / any fetch failure → render nothing (absence is normal).
+      .catch(() => { if (alive) setBody(null); });
+    return () => { alive = false; };
+  }, [fetchDoc]);
+
+  useEffect(() => reload(), [reload]);
+  // Re-fetch on every SSE frame (ADR-0006): a newer advisory write surfaces live.
+  useLiveTree(reload);
+
+  if (typeof body !== "string" || body.trim() === "") return null;
+
+  const generated = generatedStamp(body);
+  const storage = typeof window !== "undefined" ? window.localStorage : null;
+  if (isDismissed(storage, generated)) return null;
+
+  const staleness = formatStaleness(generated, Date.now());
+
+  const onDismiss = () => {
+    saveDismissed(storage, generated);
+    force((n) => n + 1); // re-render so the now-dismissed stamp hides the panel.
+  };
+
+  return html`
+    <section aria-label="What's next — the latest advisory recommendation" style=${{
+      display: "flex", flexDirection: "column", gap: 8,
+      margin: "0 4px 18px", padding: "12px 14px 6px",
+      background: "var(--surface-1)", border: "1px solid var(--hairline)",
+      borderRadius: "var(--radius-md)",
+    }}>
+      <header style=${{ display: "flex", alignItems: "baseline", gap: 10 }}>
+        <span style=${{
+          display: "inline-flex", alignItems: "center", gap: 7,
+          fontFamily: "var(--font-ui)", fontSize: 13, fontWeight: 600,
+          letterSpacing: "-0.01em", color: "var(--fg-1)",
+        }}>
+          <${Icon} name="compass" size=${14} color="var(--fg-2)" /> What's next
+        </span>
+        ${staleness && html`<span title=${`Recommendation generated ${generated}`} style=${{
+          fontFamily: "var(--font-ui)", fontSize: 11.5, color: "var(--fg-4)",
+        }}>${staleness}</span>`}
+        <button
+          type="button"
+          className="focusable"
+          aria-label="Dismiss the What's next recommendation"
+          title="Dismiss — a newer recommendation will re-show this panel"
+          onClick=${onDismiss}
+          style=${{
+            marginLeft: "auto", display: "inline-flex", alignItems: "center",
+            color: "var(--fg-3)", background: "transparent",
+            border: "1px solid var(--hairline)", borderRadius: "var(--radius-sm)",
+            padding: "3px 5px", cursor: "pointer",
+            transition: "color var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
+          }}
+          onMouseEnter=${(e) => { e.currentTarget.style.color = "var(--fg-1)"; e.currentTarget.style.borderColor = "var(--hairline-strong)"; }}
+          onMouseLeave=${(e) => { e.currentTarget.style.color = "var(--fg-3)"; e.currentTarget.style.borderColor = "var(--hairline)"; }}>
+          <${Icon} name="x" size=${14} color="currentColor" />
+        </button>
+      </header>
+      ${/* SAME render path as the slide-over / main-pane reader (aw-043): frontmatter
+            folds to a quiet collapsed section, the three body sections render through
+            the unforked styleguide Markdown primitive (ADR-0003). */ ""}
+      <${Markdown} source=${withFrontmatterSection(body)} />
+    </section>`;
+}
+
+/** Default fetch for the advisory artifact: GET /api/doc → raw markdown (client-side). */
+async function defaultFetchWhatsNext() {
+  const res = await fetch(docUrl(WHATS_NEXT_DOC_PATH));
+  if (!res.ok) throw new Error(`/api/doc ${res.status}`);
+  return res.text();
+}
+
 function BoardPromptBar({ skipPermissions = false }) {
   const [prompt, setPrompt] = useState("");
   const [confettiKey, setConfettiKey] = useState(0);
@@ -743,6 +868,11 @@ function BoardPromptBar({ skipPermissions = false }) {
       display: "flex", flexDirection: "column", gap: 10,
       padding: "0 4px 20px",
     }}>
+      ${/* aw-073: the What's next advisory recommendation panel sits ABOVE the
+            "Prompt" title (board view only). It self-suppresses when the artifact is
+            absent or the current recommendation was dismissed, so it composes cleanly
+            with the prompt field + the three PromptLaunchCards below. */ ""}
+      <${WhatsNextPanel} />
       <span style=${{
         fontFamily: "var(--font-ui)", fontSize: 15, fontWeight: 600,
         letterSpacing: "-0.01em", color: "var(--fg-1)",

@@ -11,15 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 2
-- **Todo:** 2
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 71
+- **Done:** 72
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
 - **agentic-workflow-077** — Collision-resistant task IDs for multi-user / multi-branch work (replace sequential integers) (decision) — `todo/agentic-workflow-077-collision-resistant-task-ids.md`
-- **agentic-workflow-073** — Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar (feature) — `todo/agentic-workflow-073-whats-next-renders-on-dashboard.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-073** — Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar (feature) — `done/agentic-workflow-073-whats-next-renders-on-dashboard.md`
 - **agentic-workflow-076** — What's next persists its recommendation as a single-latest advisory artifact (advisory write) (feature) — `done/agentic-workflow-076-whats-next-persists-advisory-recommendation.md`
 - **agentic-workflow-072** — Done column should be hideable (it can grow infinitely large) (feature) — `done/agentic-workflow-072-hideable-done-column.md`
 - **agentic-workflow-071** — Confetti "no @keyframes" test trips on the unrelated About-page aboutRise keyframe (bug) — `done/agentic-workflow-071-confetti-keyframes-test-trips-on-aboutrise.md`
