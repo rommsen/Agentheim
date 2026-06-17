@@ -45,7 +45,7 @@ function sampleTree() {
 
 test('the library groups are in a stable, legible order', () => {
   const groups = treeToLibrary(sampleTree());
-  assert.deepEqual(groups.map((g) => g.group), ['Product', 'Bounded contexts', 'Decisions', 'Research']);
+  assert.deepEqual(groups.map((g) => g.group), ['Product', 'Bounded contexts', 'Research', 'Decisions']);
 });
 
 test('vision and context map land in the Product group', () => {

@@ -18,9 +18,9 @@
    of UI truth (ADR-0003); this shapes DATA for it, never forks it.
    ============================================================ */
 
-// The four legible groups, in display order. Mirrors the styleguide library
-// demo (data.js LIBRARY): Product → Bounded contexts → Decisions → Research.
-const GROUP_ORDER = ['Product', 'Bounded contexts', 'Decisions', 'Research'];
+// The four legible groups, in display order:
+// Product → Bounded contexts → Research → Decisions (aw-056: Research above Decisions).
+const GROUP_ORDER = ['Product', 'Bounded contexts', 'Research', 'Decisions'];
 
 /** Last path segment without its `.md` extension — a stable id seed. */
 function baseName(p) {
