@@ -1,7 +1,7 @@
 ---
 id: design-system-020
 title: Drawer gains in-place expandable width — controlled expand seam + body-top chevron + panel glyph pair
-status: backlog
+status: todo
 type: feature
 context: design-system
 created: 2026-06-17
@@ -72,6 +72,14 @@ is a consumer fact, never primitive knowledge (no `248` / `calc(100vw - …)` in
 ## Notes
 Split off from **agentic-workflow-074** during its refine (2026-06-17): aw-074 is the
 slide-over consumer, this is the Drawer capability it depends on.
+
+- **Chevron placement ratified (builder, 2026-06-17):** body-top-left — a new
+  `IconButton` slot inside the scrollable body, **above `Markdown`**, **not** in the
+  header. The header keeps its existing controls untouched (maximize + Close). "Widen in
+  place" deliberately sits with the content it widens, kept visually distinct from the
+  header's "promote out" (`onOpenFullScreen` maximize). The header-action alternative
+  (chevron grouped left of maximize) was put to the builder and **rejected** — the worker
+  should not relocate the chevron into the header.
 
 - **No ADR** — extends an existing primitive along the ds-005/ds-006 controlled-seam
   pattern under ADR-0003 (unforked) + ADR-0014 (motion-strip). The expand-vs-promote

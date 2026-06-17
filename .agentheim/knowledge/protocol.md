@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 22:45 -- Modeling / Refined: design-system-020 - Drawer gains in-place expandable width
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** todo
+**Summary:** Refined the Drawer expandable-width capability (split off from aw-074 earlier today). The one genuinely open design choice was the **expand-chevron placement** — a new body-top slot vs. grouping it in the header next to maximize/Close. Put it to the builder with side-by-side mockups; builder **ratified the body-top-left slot** (the current spec). Locked the decision into the task Notes (header-action alternative explicitly rejected, so the worker won't relocate it). Everything else was already concrete + testable and the sole dependency (`design-system-001` styleguide gate) is done/open, so **promoted backlog → todo** — clearing the dependency aw-074's refine flagged as the path forward.
+**Split into:** —
+**ADRs written:** —
+
+---
+
 ## 2026-06-17 22:42 -- Modeling / Refined: agentic-workflow-074 - Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
 
 **Type:** Modeling / Refine
