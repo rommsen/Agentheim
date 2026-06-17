@@ -5,13 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 16:27 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — aw-069 (2cad350)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (1ecd469 pre-existing dashboard bundle, 2cad350 aw-069)
+**Notes:**
+- One ready task this run (aw-069). Before dispatch, the working tree carried a second, UNRELATED finished-but-uncommitted dashboard bundle (a `large` LaunchButton size variant + de-inverted liftOnHover press, with a new `topbar-launch-large.test.mjs`) that shared the `dashboard/dist/app.js` artifact with aw-069. Per user decision it was committed first on its own (1ecd469, 543/543 green) so aw-069's esbuild dist rebuild stayed a clean incremental diff — no `git add -A` ever used.
+- aw-069 was the one-line constant swap aw-064 + the code comment already anticipated: `WHATS_NEXT_COMMAND` → `/agentheim:whats-next`. PASS on the first verifier pass.
+- The lone `events.test.mjs` failure under full-suite load is a pre-existing flaky SSE-watcher (`fs.watch` debounce) timing race — passes 4/4 in isolation, file untouched by either commit. Worth a hardening task if it recurs.
+- Remaining backlog (untouched, not promoted): aw-057 (workflow guide umbrella), aw-060 (workflow guide diagrams, now unblocked), aw-063 (optimize committing pattern). No new backlog items, ADRs, or concept candidates this run.
+
+---
+
 ## 2026-06-17 16:25 -- Task verified and completed: agentic-workflow-069 - Topbar "What's next" button fires the /agentheim:whats-next skill
 
 **Type:** Work / Task completion
 **Task:** agentic-workflow-069 - Topbar "What's next" button fires the /agentheim:whats-next skill (replaces the interim raw prompt)
 **Summary:** Swapped `WHATS_NEXT_COMMAND` from aw-064's interim raw NL prompt to the bare fully-qualified slash command `/agentheim:whats-next` (mirroring `WORK_COMMAND`), now that the real read-only `whats-next` skill exists (76b0e9c) and aw-031 was dismissed. Rewrote the constant's doc comment (drops interim/aw-031 framing), updated the two assertion suites, rebuilt dist via esbuild, and refreshed the BC README's two What's-next descriptions. No UI or bridge rework — the launch (ADR-0018) and read-only contract (ADR-0017) are byte-unchanged.
 **Verification:** PASS (iteration 1) — verifier confirmed the constant value + rewritten comment, the topbar wiring/glyph/skipPermissions/no-onResult unchanged, the genuine dist rebuild (`nh="/agentheim:whats-next"` in the bundle), both README descriptions updated, styleguide unforked (ADR-0003); the lone `events.test.mjs` failure is a pre-existing flaky SSE-watcher timing race (passes 4/4 in isolation, file untouched).
-**Commit:** <pending-sha>
+**Commit:** 2cad350
 **Files changed:** 5 (modeling-command.js, modeling-command.test.mjs, topbar-right-align.test.mjs, dist/app.js, BC README)
 **Tests added:** net −0 (2 raw-prompt asserts replaced by 2 slash-command asserts)
 **ADRs written:** none
