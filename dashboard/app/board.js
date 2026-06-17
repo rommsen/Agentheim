@@ -49,7 +49,7 @@ import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { loadSkipPermissions, saveSkipPermissions } from "./skip-permissions-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { refineCommandFor, promoteCommandFor, dismissCommandFor, quickCaptureCommandFor, modelingCommandFor, researchCommandFor, WORK_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
+import { refineCommandFor, promoteCommandFor, dismissCommandFor, quickCaptureCommandFor, modelingCommandFor, researchCommandFor, WORK_COMMAND, WHATS_NEXT_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState } from "./board-view-state.js";
@@ -237,7 +237,7 @@ function copyToClipboard(text) {
 // (clipboard blocked too) passes { via: "clipboard", copied: false } so the caller
 // can stay silent. Default no-op keeps every existing caller (column pair, per-card
 // pair) unchanged.
-function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false, skipPermissions = false, onResult }) {
+function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false, skipPermissions = false, onResult, trailingIcon = false }) {
   // feedback: "idle" | "launched" | "copied". A transient label/colour swap, same
   // quiet treatment as CopyCommandButton — never an error state (absence is normal).
   const [feedback, setFeedback] = useState("idle");
@@ -296,6 +296,16 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
   // flashed). The SkipPermissionsToggle remains the single control wearing the
   // full --obligation danger treatment.
   const armed = skipPermissions === true && !flashed;
+  // aw-064: the glyph is ALWAYS rendered (aw-041) — `trailingIcon` only flips its DOM
+  // order relative to the label <span>. The Icon element is built ONCE here so the
+  // order swap never gates whether it renders.
+  const iconEl = html`<${Icon} name=${icon} size=${12.5}
+        color=${flashed
+          ? "var(--st-done)"
+          : armed
+            ? "var(--obligation)"
+            : (inverse ? "var(--surface-0)" : primary ? "var(--fg-2)" : "var(--fg-3)")} />`;
+  const labelEl = html`<span>${labelText}</span>`;
   return html`
     <button
       type="button"
@@ -326,13 +336,10 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
             The :focus affordance is the focusable class, untouched. */ ""}
       onMouseEnter=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "var(--shadow-md)"; e.currentTarget.style.background = "var(--surface-2)"; } }}
       onMouseLeave=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.background = inverse ? "var(--fg-1)" : idleBg; } }}>
-      <${Icon} name=${icon} size=${12.5}
-        color=${flashed
-          ? "var(--st-done)"
-          : armed
-            ? "var(--obligation)"
-            : (inverse ? "var(--surface-0)" : primary ? "var(--fg-2)" : "var(--fg-3)")} />
-      <span>${labelText}</span>
+      ${/* aw-064: trailingIcon places the glyph AFTER the label (the Work ↗ read).
+            The Icon primitive is consumed unchanged (ADR-0003) — it is always
+            rendered (aw-041); trailingIcon only reorders icon vs. label. */ ""}
+      ${trailingIcon ? [labelEl, iconEl] : [iconEl, labelEl]}
     </button>`;
 }
 
@@ -1797,20 +1804,38 @@ function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissi
       borderBottom: "1px solid var(--hairline)", background: "var(--surface-0)",
     }}>
       <${TopbarSearch} onOpen=${onOpen} />
-      <!-- The settings gear (collapsing Stop / theme / skip-perms) then the standing
-           Work launch, left to right: [ gear ][ Work ] (aw-049). The marginLeft:auto
+      <!-- The settings gear (collapsing Stop / theme / skip-perms), then the standing
+           "What's next" launch, then the standing Work launch — left to right:
+           [ gear ] [ What's next ] [ Work ↗ ] (aw-049 + aw-064). The marginLeft:auto
            pushes this group FLUSH against the topbar's right edge (aw-053): the
            bounded search field stays left-anchored and all unconsumed free space
            collects here, ahead of the group — so the bar reads
-           [ search field ] … [ gear ] [ Work ] across any width, gracefully
-           shrinking the search side first on narrow viewports. -->
+           [ search field ] … [ gear ] [ What's next ] [ Work ↗ ] across any width,
+           gracefully shrinking the search side first on narrow viewports. -->
       <div style=${{ display: "flex", alignItems: "center", gap: 9, marginLeft: "auto" }}>
         <${SettingsMenu}
           theme=${theme} setTheme=${setTheme}
           skipPermissions=${skipPermissions} setSkipPermissions=${setSkipPermissions}
           onStopped=${onStopped} />
+        ${/* aw-064: the "What's next" standing launch — a bordered SECONDARY chip
+              (default LaunchButton emphasis) sitting between the quiet gear and the
+              primary Work. It fires the interim raw WHATS_NEXT_COMMAND prompt through
+              the same launchOrCopy path (bridge → terminal; silent clipboard
+              fallback, ADR-0018), threading the armed skipPermissions cue, passing NO
+              onResult — a read-only next-steps overview, no lifecycle write
+              (ADR-0017). The sun glyph is consumed unforked from the styleguide
+              registry (ADR-0003). NO ochre (ADR-0016). */ ""}
+        <${LaunchButton} label="What's next" command=${WHATS_NEXT_COMMAND}
+          icon="sun" skipPermissions=${skipPermissions} />
+        ${/* aw-064: Work keeps its primary-surface fill (no ochre, ADR-0016 untouched
+              — the aw-033 --surface-2 / --fg-1 / --hairline-strong chrome) and now
+              reads "Work ↗": the glyph moves to the RIGHT of the label (trailingIcon)
+              and becomes the up-right diagonal `square-arrow-out-up-right` (the glyph
+              aw-062 used, present in the registry). Launch behaviour + theme-following
+              are byte-unchanged apart from the glyph + its side. */ ""}
         <${LaunchButton} label="Work" command=${WORK_COMMAND}
-          icon="arrow-right" emphasis="primary" skipPermissions=${skipPermissions} />
+          icon="square-arrow-out-up-right" emphasis="primary" trailingIcon=${true}
+          skipPermissions=${skipPermissions} />
       </div>
     </div>`;
 }

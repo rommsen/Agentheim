@@ -21,6 +21,7 @@ import {
   MODELING_COMMAND,
   QUICK_CAPTURE_COMMAND,
   WORK_COMMAND,
+  WHATS_NEXT_COMMAND,
   STOP_DASHBOARD_COMMAND,
   RESEARCH_COMMAND,
   refineCommandFor,
@@ -62,6 +63,30 @@ test('WORK_COMMAND is distinct from the authoring commands and fully-qualified',
   assert.notEqual(WORK_COMMAND, MODELING_COMMAND);
   assert.notEqual(WORK_COMMAND, QUICK_CAPTURE_COMMAND);
   assert.match(WORK_COMMAND, /^\/agentheim:/);
+});
+
+// agentic-workflow-064: the main-column topbar gains a standing "What's next" launch
+// (between the gear and Work). No skill backs it yet (aw-031 is the future process,
+// still raw), so the seeded text is an INTERIM RAW NATURAL-LANGUAGE prompt — NOT a
+// slash command. The bridge wraps any prompt as `claude "<prompt>"` (ADR-0018), so a
+// raw prompt launches a real session; the clipboard fallback copies the same text.
+// Like WORK_COMMAND it ignores the prompt-bar textarea, so it is a bare CONSTANT (no
+// `*CommandFor(prompt)` builder). The contract is read-only + a next-steps overview.
+test('WHATS_NEXT_COMMAND is a raw natural-language prompt, NOT a slash command', () => {
+  assert.equal(typeof WHATS_NEXT_COMMAND, 'string');
+  assert.ok(WHATS_NEXT_COMMAND.length > 0, 'must be non-empty');
+  assert.doesNotMatch(WHATS_NEXT_COMMAND, /^\//, 'must NOT begin with a slash (no slash command)');
+});
+
+test('WHATS_NEXT_COMMAND states the read-only + next-steps contract', () => {
+  assert.match(WHATS_NEXT_COMMAND, /read-only/i, 'the prompt must declare it is read-only');
+  assert.match(WHATS_NEXT_COMMAND, /next step/i, 'the prompt must ask for next steps');
+});
+
+test('WHATS_NEXT_COMMAND is distinct from the other launch commands', () => {
+  assert.notEqual(WHATS_NEXT_COMMAND, WORK_COMMAND);
+  assert.notEqual(WHATS_NEXT_COMMAND, MODELING_COMMAND);
+  assert.notEqual(WHATS_NEXT_COMMAND, QUICK_CAPTURE_COMMAND);
 });
 
 // agentic-workflow-028: the main-column topbar gains a quiet Stop dashboard button

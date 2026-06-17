@@ -45,3 +45,74 @@ test('the search field stays LEFT-anchored with its bounded width (not stretched
   assert.match(comp, /flex:\s*1/, 'the search field grows within its cap');
   assert.match(comp, /maxWidth:\s*520/, 'the search field keeps its 520px cap');
 });
+
+// agentic-workflow-064: the right group becomes a THREE-action row, left → right:
+// [ ⚙ gear ] [ What's next ] [ Work ↗ ] (still flush-right via the aw-053
+// marginLeft:auto). "What's next" is a new STANDING launch between the quiet gear and
+// the primary Work; Work keeps its primary-surface fill (NO ochre, ADR-0016) and only
+// gains the trailing up-right diagonal glyph. Source-reading static guards (no DOM
+// harness in this project — the aw-049/052/053 idiom).
+
+test('the right group renders the three actions in order: gear, What\'s next, Work', () => {
+  const topbar = fn(boardSrc, 'BoardTopbar');
+  const iGear = topbar.indexOf('SettingsMenu');
+  const iNext = topbar.indexOf('label="What\'s next"');
+  const iWork = topbar.indexOf('label="Work"');
+  assert.ok(iGear >= 0, 'the settings gear must be present');
+  assert.ok(iNext >= 0, 'the What\'s next launch must be present');
+  assert.ok(iWork >= 0, 'the Work launch must be present');
+  assert.ok(iGear < iNext && iNext < iWork,
+    'order must read left → right: gear, What\'s next, Work');
+});
+
+test('What\'s next launches the interim raw WHATS_NEXT_COMMAND prompt, not a slash command', () => {
+  const topbar = fn(boardSrc, 'BoardTopbar');
+  const block = topbar.slice(topbar.indexOf('label="What\'s next"'), topbar.indexOf('label="Work"'));
+  assert.match(block, /command=\$\{WHATS_NEXT_COMMAND\}/,
+    'What\'s next must seed the WHATS_NEXT_COMMAND constant');
+  // It is imported from the command module (the single source of truth).
+  assert.match(boardSrc, /WHATS_NEXT_COMMAND/, 'WHATS_NEXT_COMMAND must be imported');
+  assert.match(boardSrc, /import\s*\{[^}]*WHATS_NEXT_COMMAND[^}]*\}\s*from\s*["']\.\/modeling-command\.js["']/,
+    'WHATS_NEXT_COMMAND must come from the modeling-command module');
+});
+
+test('What\'s next carries the sun glyph and threads skipPermissions, passing no onResult', () => {
+  const topbar = fn(boardSrc, 'BoardTopbar');
+  const block = topbar.slice(topbar.indexOf('label="What\'s next"'), topbar.indexOf('label="Work"'));
+  assert.match(block, /icon="sun"/, 'What\'s next must use the sun glyph');
+  assert.match(block, /skipPermissions=\$\{skipPermissions\}/,
+    'What\'s next must thread the armed skipPermissions signal');
+  assert.doesNotMatch(block, /onResult/, 'What\'s next passes no onResult (read-only, no prompt consumed)');
+});
+
+test('What\'s next is a bordered SECONDARY chip — not the quiet gear, not the primary Work, and never ochre', () => {
+  const topbar = fn(boardSrc, 'BoardTopbar');
+  // Slice the LaunchButton ELEMENT (open tag through its self-close), not the gap up
+  // to the next button — so a neighbouring comment that says "no ochre" never bleeds in.
+  const start = topbar.indexOf('label="What\'s next"');
+  const block = topbar.slice(start, topbar.indexOf('/>', start) + 2);
+  // The default LaunchButton emphasis is the bordered surface-1 chip — secondary,
+  // sitting between the quiet gear and the primary Work. It must NOT be primary/quiet.
+  assert.doesNotMatch(block, /emphasis="primary"/, 'What\'s next is not the primary emphasis (that is Work)');
+  assert.doesNotMatch(block, /emphasis="quiet"/, 'What\'s next is not the quiet emphasis (that is the gear cluster)');
+  // ADR-0016: no ochre anywhere on this button.
+  assert.doesNotMatch(block, /ochre/i, 'What\'s next must not use the reserved ochre accent');
+});
+
+test('Work keeps its primary fill and gains the trailing up-right diagonal glyph (no ochre)', () => {
+  const topbar = fn(boardSrc, 'BoardTopbar');
+  const block = topbar.slice(topbar.indexOf('label="Work"'));
+  assert.match(block, /emphasis="primary"/, 'Work keeps its primary-surface emphasis (no ochre, ADR-0016)');
+  assert.match(block, /command=\$\{WORK_COMMAND\}/, 'Work still launches the bare WORK_COMMAND');
+  assert.match(block, /icon="square-arrow-out-up-right"/,
+    'Work uses the up-right diagonal glyph (the Work ↗ read)');
+  assert.match(block, /trailingIcon/, 'Work renders its icon AFTER the label (trailing)');
+  assert.doesNotMatch(block, /ochre/i, 'Work must not use the reserved ochre accent');
+});
+
+test('LaunchButton supports trailing-icon placement without forking the styleguide primitive', () => {
+  const lb = fn(boardSrc, 'LaunchButton');
+  // A minimal board-local prop/branch renders the icon after the label when set —
+  // the styleguide Icon primitive itself is consumed unchanged (ADR-0003).
+  assert.match(lb, /trailingIcon/, 'LaunchButton must accept a trailingIcon flag');
+});
