@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 21:10 -- Modeling / Refined: agentic-workflow-072 - Done column should be hideable (it can grow infinitely large)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Cornered the three UX forks with the builder. Hide mechanism = **remove the Done column from the board layout** (so backlog/todo/doing reflow to full width) with a **"Show Done (N)" chip** above the board to restore it — chosen over collapse-to-a-thin-strip. Scope = **Done only** (the one column that grows unbounded). Persistence = **yes**, via the existing versioned board view-state store (ADR-0015): an additive `hidden` boolean on the per-column shape, old blobs → `false`, no `VIEW_STATE_VERSION` bump. Wrote concrete acceptance criteria (board-local + token-matched control, styleguide unforked per ADR-0003; presentation-only / read-only per ADR-0017/0001; survives SSE re-projection; pure `node --test` coverage; `dist/` rebuild) and promoted backlog → todo (dependency `design-system-001` already shipped).
+**Split into:** —
+**ADRs written:** —
+
+---
+
 ## 2026-06-17 21:05 -- Modeling / Refined: agentic-workflow-073 - What's next renders on the dashboard (split → aw-073 + aw-076)
 
 **Type:** Modeling / Refine

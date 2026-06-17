@@ -10,8 +10,8 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 4
-- **Todo:** 1
+- **Backlog:** 3
+- **Todo:** 2
 - **Doing:** 0
 - **Done:** 69
 <!-- task-counts:end -->
@@ -19,6 +19,7 @@ research touching this BC, and concept synthesis pages.
 ### Todo
 <!-- todo-list:start -->
 - **agentic-workflow-076** — What's next persists its recommendation as a single-latest advisory artifact (advisory write) — `todo/agentic-workflow-076-whats-next-persists-advisory-recommendation.md`
+- **agentic-workflow-072** — Done column should be hideable (it can grow infinitely large) (feature) — `todo/agentic-workflow-072-hideable-done-column.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -103,7 +104,6 @@ research touching this BC, and concept synthesis pages.
 - **agentic-workflow-075** — Concepts are a first-class artifact kind — left-rail nav group + searchable category (feature) — `backlog/agentic-workflow-075-concepts-first-class-rail-and-search.md`
 - **agentic-workflow-074** — Slide-over gets an expand/collapse-width chevron, replacing the full-screen button (feature) — `backlog/agentic-workflow-074-slide-over-expand-collapse-width-chevron.md`
 - **agentic-workflow-073** — Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar — `backlog/agentic-workflow-073-whats-next-renders-on-dashboard.md`
-- **agentic-workflow-072** — Done column should be hideable (it can grow infinitely large) — `backlog/agentic-workflow-072-hideable-done-column.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
