@@ -5,6 +5,22 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 17:20 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — aw-060 (e764b0d)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (e764b0d aw-060)
+**Notes:**
+- One ready task this run (aw-060 — Workflow guide diagrams), the last open child of umbrella aw-057. Both deps (design-system-001, agentic-workflow-059) were in done/. No conflict batch needed (sole task). It was the task the prior session deliberately left unclaimed while a concurrent modeling session was still editing it — that session has since settled (0b111c9), so the working tree was clean for it.
+- aw-060 PASS on the first verifier pass (551/551 dashboard tests green). Replaced aw-059's three placeholder slots with hand-authored HTML+CSS flow diagrams: board-local token-driven primitives (WNode/WCheckpoint/WArrow/WFanRow), honest per-segment topology, gates as edge checkpoints not agent boxes, no inline SVG / no library / no new runtime dep, dist genuinely rebuilt, aw-058/aw-059 routing wiring byte-unchanged.
+- **Umbrella aw-057 is now fully delivered** (aw-058 routing + aw-059 shell + aw-060 diagrams all done). aw-057 still sits in backlog/ as the tracking umbrella — closing/dismissing it is a `modeling` concern, not work's; surfaced to the user.
+- Pre-existing working-tree noise (a deleted `Screenshot ….png`, an untracked `dashboard.png`) was left untouched — never `git add`ed. No bounces, failures, escalations, new backlog items, or concept candidates.
+
+---
+
 ## 2026-06-17 17:18 -- Task verified and completed: agentic-workflow-060 - Workflow guide diagrams (hand-authored flow visuals)
 
 **Type:** Work / Task completion
