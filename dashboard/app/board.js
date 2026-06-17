@@ -237,7 +237,7 @@ function copyToClipboard(text) {
 // (clipboard blocked too) passes { via: "clipboard", copied: false } so the caller
 // can stay silent. Default no-op keeps every existing caller (column pair, per-card
 // pair) unchanged.
-function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false, skipPermissions = false, onResult, trailingIcon = false }) {
+function LaunchButton({ label, command, icon, emphasis = "default", isolateClick = false, skipPermissions = false, onResult, trailingIcon = false, liftOnHover = false }) {
   // feedback: "idle" | "launched" | "copied". A transient label/colour swap, same
   // quiet treatment as CopyCommandButton — never an error state (absence is normal).
   const [feedback, setFeedback] = useState("idle");
@@ -278,9 +278,22 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
   //   primary -> filled surface-2 + stronger hairline + fg-1 (draws the eye);
   //   quiet   -> transparent, no border, fg-3 (recedes — text-weight);
   //   default -> the column pair's bordered surface-1 chip.
-  const idleColor = inverse ? "var(--surface-0)" : primary ? "var(--fg-1)" : quiet ? "var(--fg-3)" : "var(--fg-2)";
-  const idleBg = inverse ? "var(--fg-1)" : primary ? "var(--surface-2)" : quiet ? "transparent" : "var(--surface-1)";
-  const idleBorder = inverse ? "1px solid var(--fg-1)" : quiet ? "1px solid transparent" : `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
+  let idleColor = inverse ? "var(--surface-0)" : primary ? "var(--fg-1)" : quiet ? "var(--fg-3)" : "var(--fg-2)";
+  let idleBg = inverse ? "var(--fg-1)" : primary ? "var(--surface-2)" : quiet ? "transparent" : "var(--surface-1)";
+  let idleBorder = inverse ? "1px solid var(--fg-1)" : quiet ? "1px solid transparent" : `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
+  // aw-068: liftOnHover NORMALISES the resting chrome to the quiet/default look
+  // (--surface-1 / --fg-2 / plain --hairline) regardless of `emphasis`, then borrows
+  // the former primary highlight (--surface-2 / --fg-1 / --hairline-strong) only on
+  // HOVER (below) plus an inverse PRESS flash (--fg-1 / --surface-0). It lets the
+  // topbar "What's next" + "Work" launches rest like the quiet prompt-bar cards and
+  // light up on interaction — matching PromptLaunchCard. `emphasis` is kept for
+  // call-site/test parity (e.g. Work stays primary) but no longer drives the resting
+  // body when liftOnHover is set. NO ochre (ADR-0016).
+  if (liftOnHover) {
+    idleColor = "var(--fg-2)";
+    idleBg = "var(--surface-1)";
+    idleBorder = "1px solid var(--hairline)";
+  }
   // ARMED per-launch indicator (aw-021, narrowed by aw-030, narrowed again by
   // aw-041; amended ADR-0019). When the toggle is on, each launch button signals
   // "skips permissions" by tinting its EXISTING icon --obligation (red) — the
@@ -334,8 +347,14 @@ function LaunchButton({ label, command, icon, emphasis = "default", isolateClick
             no transform).
             Skipped while flashed (the launched/copied treatment owns the surface).
             The :focus affordance is the focusable class, untouched. */ ""}
-      onMouseEnter=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "var(--shadow-md)"; e.currentTarget.style.background = "var(--surface-2)"; } }}
-      onMouseLeave=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.background = inverse ? "var(--fg-1)" : idleBg; } }}>
+      ${/* aw-068: when liftOnHover is set, hover ALSO brightens the text + border to
+            the Quick-Capture highlight, and a mousedown flashes an inverse fill so the
+            click is unmistakable (mouseup returns to the hover look — the pointer is
+            still over). Non-lift buttons keep the box-shadow + surface-2 hover only. */ ""}
+      onMouseEnter=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "var(--shadow-md)"; e.currentTarget.style.background = "var(--surface-2)"; if (liftOnHover) { e.currentTarget.style.color = "var(--fg-1)"; e.currentTarget.style.borderColor = "var(--hairline-strong)"; } } }}
+      onMouseLeave=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.background = inverse ? "var(--fg-1)" : idleBg; if (liftOnHover) { e.currentTarget.style.color = idleColor; e.currentTarget.style.borderColor = "var(--hairline)"; } } }}
+      onMouseDown=${(e) => { if (!flashed && liftOnHover) { e.currentTarget.style.background = "var(--fg-1)"; e.currentTarget.style.color = "var(--surface-0)"; e.currentTarget.style.borderColor = "var(--fg-1)"; } }}
+      onMouseUp=${(e) => { if (!flashed && liftOnHover) { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.color = "var(--fg-1)"; e.currentTarget.style.borderColor = "var(--hairline-strong)"; } }}>
       ${/* aw-064: trailingIcon places the glyph AFTER the label (the Work ↗ read).
             The Icon primitive is consumed unchanged (ADR-0003) — it is always
             rendered (aw-041); trailingIcon only reorders icon vs. label. */ ""}
@@ -503,8 +522,13 @@ const PROMPT_FIELD_MAX_PX = 168;
 // reserved selection accent `--accent-ochre-soft` UNTOUCHED — NO ochre anywhere
 // (ADR-0016). The armed `skipPermissions` cue reuses LaunchButton's law: the icon hue
 // shifts to `--obligation` while armed (consumed unforked, never the reserved accent).
-function PromptLaunchCard({ label, subtitle, command, icon, emphasis = "default", skipPermissions = false, onResult }) {
+function PromptLaunchCard({ label, subtitle, command, icon, skipPermissions = false, onResult }) {
   const [feedback, setFeedback] = useState("idle");
+  // aw-068: hover + press are React state so the WHOLE card (body, title, subtitle,
+  // and the tile glyph — an Icon prop, not a CSS rule) recolours together. The
+  // earlier emphasis-driven resting variants are gone: every card reads identically.
+  const [hover, setHover] = useState(false);
+  const [pressed, setPressed] = useState(false);
   const timer = useRef(null);
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
@@ -526,23 +550,31 @@ function PromptLaunchCard({ label, subtitle, command, icon, emphasis = "default"
   }, [command, skipPermissions, onResult]);
 
   const flashed = feedback !== "idle";
-  const primary = emphasis === "primary";
   const armed = skipPermissions === true && !flashed;
 
-  // Idle card chrome by emphasis — all token-styled, NO ochre (ADR-0016):
-  //   primary -> the aw-033 Work treatment: --surface-2 fill, --fg-1 text, --hairline-strong border;
-  //   default -> quiet/secondary: --surface-1 fill, --fg-2 text, plain --hairline border.
-  const idleBg = primary ? "var(--surface-2)" : "var(--surface-1)";
-  const idleColor = primary ? "var(--fg-1)" : "var(--fg-2)";
-  const idleBorder = `1px solid ${primary ? "var(--hairline-strong)" : "var(--hairline)"}`;
-  // The icon tile is NEUTRAL on both card variants — a quiet --surface-2 square, never
-  // a coloured (ochre) fill. The glyph hue follows the card emphasis, and turns
-  // --obligation while armed (the aw-021/aw-041 per-launch skip-permissions cue).
+  // aw-068: ONE resting chrome for every card — the former quiet/secondary look
+  // (--surface-1 fill / --fg-2 text / plain --hairline border). On HOVER the card
+  // HIGHLIGHTS to the former Quick-Capture primary treatment (--surface-2 / --fg-1 /
+  // --hairline-strong) + a --shadow-md lift. On PRESS it flips to an inverse fill
+  // (--fg-1 / --surface-0) so a click is unmistakable. Precedence keeps the
+  // launched/copied flash on top. NO ochre (ADR-0016).
+  const highlighted = hover && !pressed && !flashed; // hover lift (Quick-Capture look)
+  const pressing = pressed && !flashed;              // click flash (inverse)
+
+  // Body chrome by state precedence: flashed > pressing > highlighted > rest.
+  const bodyColor = flashed ? "var(--st-done)" : pressing ? "var(--surface-0)" : highlighted ? "var(--fg-1)" : "var(--fg-2)";
+  const bodyBg = flashed ? "var(--surface-1)" : pressing ? "var(--fg-1)" : highlighted ? "var(--surface-2)" : "var(--surface-1)";
+  const bodyBorder = `1px solid ${flashed ? "var(--st-done)" : pressing ? "var(--fg-1)" : highlighted ? "var(--hairline-strong)" : "var(--hairline)"}`;
+  // The icon tile is NEUTRAL — a quiet --surface-2 square, never a coloured (ochre)
+  // fill. The glyph hue follows the card state, and turns --obligation while armed
+  // (the aw-021/aw-041 per-launch skip-permissions cue).
   const tileGlyphColor = flashed
     ? "var(--st-done)"
     : armed
       ? "var(--obligation)"
-      : (primary ? "var(--fg-1)" : "var(--fg-2)");
+      : (highlighted || pressing) ? "var(--fg-1)" : "var(--fg-2)";
+  // The subtitle stays quiet (--fg-3) but must stay legible on the inverse press fill.
+  const subtitleColor = flashed ? "var(--st-done)" : pressing ? "var(--surface-0)" : "var(--fg-3)";
 
   const titleText = flashed ? (feedback === "launched" ? "Launched" : "Copied") : label;
   return html`
@@ -556,17 +588,19 @@ function PromptLaunchCard({ label, subtitle, command, icon, emphasis = "default"
         ? `${label} — ${subtitle} — launch ${command} (skips permissions)`
         : `${label} — ${subtitle} — launch ${command}`}
       onClick=${onClick}
+      onMouseEnter=${() => setHover(true)}
+      onMouseLeave=${() => { setHover(false); setPressed(false); }}
+      onMouseDown=${() => setPressed(true)}
+      onMouseUp=${() => setPressed(false)}
       style=${{
         display: "inline-flex", alignItems: "center", gap: 10, textAlign: "left",
-        color: flashed ? "var(--st-done)" : idleColor,
-        background: flashed ? "var(--surface-1)" : idleBg,
-        border: flashed ? "1px solid var(--st-done)" : idleBorder,
+        color: bodyColor,
+        background: bodyBg,
+        border: bodyBorder,
         borderRadius: "var(--radius-md)", padding: "9px 12px", cursor: "pointer",
-        boxShadow: "none",
-        transition: "color var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base)",
-      }}
-      onMouseEnter=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "var(--shadow-md)"; } }}
-      onMouseLeave=${(e) => { if (!flashed) { e.currentTarget.style.boxShadow = "none"; } }}>
+        boxShadow: highlighted ? "var(--shadow-md)" : "none",
+        transition: "color var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base), background var(--duration-fast) var(--ease-base), border-color var(--duration-fast) var(--ease-base)",
+      }}>
       ${/* Square NEUTRAL icon tile — token --surface-2, never ochre. */ ""}
       <span aria-hidden="true" style=${{
         display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -576,16 +610,16 @@ function PromptLaunchCard({ label, subtitle, command, icon, emphasis = "default"
       }}>
         <${Icon} name=${icon} size=${15} color=${tileGlyphColor} />
       </span>
-      ${/* Two-line label: bold title over a quiet (--fg-3) subtitle. */ ""}
+      ${/* Two-line label: bold title over a quiet subtitle. */ ""}
       <span style=${{ display: "inline-flex", flexDirection: "column", gap: 1, lineHeight: 1.25 }}>
         <span style=${{
           fontFamily: "var(--font-ui)", fontSize: 12.5,
-          fontWeight: primary ? 600 : 550,
-          color: flashed ? "var(--st-done)" : idleColor,
+          fontWeight: 550,
+          color: bodyColor,
         }}>${titleText}</span>
         <span style=${{
           fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 400,
-          color: "var(--fg-3)",
+          color: subtitleColor,
         }}>${subtitle}</span>
       </span>
     </button>`;
@@ -660,8 +694,11 @@ function BoardPromptBar({ skipPermissions = false }) {
         position: "relative",
         display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
       }}>
+        ${/* aw-068: all three cards share ONE resting chrome and HIGHLIGHT on hover +
+              flash on press (the interaction lives in PromptLaunchCard). Quick Capture
+              no longer wears a per-button emphasis — the three read identically. */ ""}
         <${PromptLaunchCard} label="Quick Capture" subtitle="File it fast"
-          command=${quickCaptureCommandFor(prompt)} icon="plus" emphasis="primary"
+          command=${quickCaptureCommandFor(prompt)} icon="plus"
           skipPermissions=${skipPermissions} onResult=${onResult} />
         <${PromptLaunchCard} label="Modeling" subtitle="Shape into structure"
           command=${modelingCommandFor(prompt)} icon="compass"
@@ -669,20 +706,8 @@ function BoardPromptBar({ skipPermissions = false }) {
         <${PromptLaunchCard} label="Research" subtitle="Dig deeper"
           command=${researchCommandFor(prompt)} icon="search"
           skipPermissions=${skipPermissions} onResult=${onResult} />
-        ${/* Decorative right-of-row helper (aw-065): "Type a prompt to begin" + a ⌘↵
-              chip. PURELY decorative — it is not a control, wires no Enter/⌘↵ launch
-              (aw-038's swallowed Enter is untouched), and just hints the flow. */ ""}
-        <span style=${{
-          marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 8,
-          fontFamily: "var(--font-ui)", fontSize: 11.5, color: "var(--fg-3)",
-        }}>
-          <span>Type a prompt to begin</span>
-          <kbd style=${{
-            fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--fg-2)",
-            background: "var(--surface-2)", border: "1px solid var(--hairline)",
-            borderRadius: "var(--radius-sm)", padding: "2px 7px",
-          }}>⌘↵</kbd>
-        </span>
+        ${/* aw-068: the decorative right-of-row helper + keyboard chip (aw-065) is
+              removed — the textarea placeholder already states the flow. */ ""}
         <${BoardConfetti} fireKey=${confettiKey} />
       </div>
     </section>`;
@@ -1826,7 +1851,7 @@ function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissi
               (ADR-0017). The sun glyph is consumed unforked from the styleguide
               registry (ADR-0003). NO ochre (ADR-0016). */ ""}
         <${LaunchButton} label="What's next" command=${WHATS_NEXT_COMMAND}
-          icon="sun" skipPermissions=${skipPermissions} />
+          icon="sun" liftOnHover=${true} skipPermissions=${skipPermissions} />
         ${/* aw-064: Work keeps its primary-surface fill (no ochre, ADR-0016 untouched
               — the aw-033 --surface-2 / --fg-1 / --hairline-strong chrome) and now
               reads "Work ↗": the glyph moves to the RIGHT of the label (trailingIcon)
@@ -1835,7 +1860,7 @@ function BoardTopbar({ theme, setTheme, skipPermissions = false, setSkipPermissi
               are byte-unchanged apart from the glyph + its side. */ ""}
         <${LaunchButton} label="Work" command=${WORK_COMMAND}
           icon="square-arrow-out-up-right" emphasis="primary" trailingIcon=${true}
-          skipPermissions=${skipPermissions} />
+          liftOnHover=${true} skipPermissions=${skipPermissions} />
       </div>
     </div>`;
 }

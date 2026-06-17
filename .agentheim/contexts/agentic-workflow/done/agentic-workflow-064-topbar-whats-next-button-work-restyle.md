@@ -13,7 +13,7 @@ tags: [dashboard, frontend, topbar, ui]
 related_adrs: [0016, 0003, 0018, 0017]
 related_research: []
 prior_art: [agentic-workflow-053, agentic-workflow-033, agentic-workflow-024, agentic-workflow-049]
-related_tasks: [agentic-workflow-031, agentic-workflow-065]
+related_tasks: [agentic-workflow-065]
 ---
 
 ## Why

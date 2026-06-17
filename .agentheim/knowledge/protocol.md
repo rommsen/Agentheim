@@ -5,6 +5,13 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 16:00 -- Modeling / Dismissed: agentic-workflow-031
+
+**Type:** Modeling / Dismiss
+**Dismissed:** agentic-workflow-031 - Next-steps overview when work is done (agentic-workflow)
+
+---
+
 ## 2026-06-17 15:05 -- Work session ended
 
 **Type:** Work / Session end

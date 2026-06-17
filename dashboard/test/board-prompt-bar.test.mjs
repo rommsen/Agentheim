@@ -448,23 +448,35 @@ test('the card variant renders an icon TILE + a two-line label (title over subti
   assert.match(card[0], /subtitle/, 'the card must render the subtitle');
 });
 
-test('Quick Capture wears the aw-033 primary-surface emphasis; Modeling & Research stay quiet', () => {
+// agentic-workflow-068: the per-button emphasis is RETIRED — all three cards share
+// ONE resting chrome (the former quiet look: --surface-1 / --fg-2 / plain --hairline)
+// and HIGHLIGHT on hover to the former Quick-Capture primary treatment (--surface-2 /
+// --fg-1 / --hairline-strong), then FLASH an inverse fill (--fg-1 / --surface-0) on
+// press so a click is unmistakable. NO ochre (ADR-0016).
+test('all three cards share one resting chrome and highlight on hover + flash on press (aw-068)', () => {
   const card = boardSrc.match(/function PromptLaunchCard[\s\S]*?\n}/);
   assert.ok(card, 'PromptLaunchCard must exist');
-  // The emphasised card uses the primary-surface chrome: --surface-2 fill, --fg-1
-  // text, --hairline-strong border (the aw-033 Work treatment).
-  assert.match(card[0], /var\(--surface-2\)/, 'the emphasised card fill must be --surface-2');
-  assert.match(card[0], /var\(--hairline-strong\)/, 'the emphasised card border must be --hairline-strong');
-  // The quiet cards sit on a plain --hairline border.
-  assert.match(card[0], /var\(--hairline\)/, 'quiet cards must use the plain --hairline border');
-  // Quick Capture is the emphasised card; the others are not.
+  // Resting chrome = the quiet default look.
+  assert.match(card[0], /var\(--surface-1\)/, 'the resting fill must be --surface-1');
+  assert.match(card[0], /var\(--fg-2\)/, 'the resting text must be --fg-2');
+  assert.match(card[0], /var\(--hairline\)/, 'the resting border must be the plain --hairline');
+  // Hover HIGHLIGHT = the former Quick-Capture primary chrome.
+  assert.match(card[0], /var\(--surface-2\)/, 'the hover highlight fill must be --surface-2');
+  assert.match(card[0], /var\(--hairline-strong\)/, 'the hover highlight border must be --hairline-strong');
+  // Press FLASH = an inverse fill so the click is obvious.
+  assert.match(card[0], /var\(--surface-0\)/, 'the press flash must use the inverse --surface-0 text');
+  // Hover + press are driven off state (so the whole card recolours together).
+  assert.match(card[0], /onMouseDown=/, 'the card must register a press (mousedown) handler');
+  assert.match(card[0], /onMouseUp=/, 'the card must clear the press (mouseup) handler');
+  // No per-button emphasis survives — the three cards read identically.
   const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
   const qc = bar[0].match(/label="Quick Capture"[\s\S]{0,320}?\/>/);
   const mo = bar[0].match(/label="Modeling"[\s\S]{0,320}?\/>/);
   const re = bar[0].match(/label="Research"[\s\S]{0,320}?\/>/);
-  assert.match(qc[0], /emphasis="primary"/, 'Quick Capture must carry emphasis="primary"');
-  assert.doesNotMatch(mo[0], /emphasis="primary"/, 'Modeling must NOT be primary-emphasised');
-  assert.doesNotMatch(re[0], /emphasis="primary"/, 'Research must NOT be primary-emphasised');
+  assert.ok(qc && mo && re, 'all three card buttons must be present');
+  assert.doesNotMatch(qc[0], /emphasis=/, 'Quick Capture must no longer carry an emphasis (uniform)');
+  assert.doesNotMatch(mo[0], /emphasis=/, 'Modeling must no longer carry an emphasis');
+  assert.doesNotMatch(re[0], /emphasis=/, 'Research must no longer carry an emphasis');
 });
 
 test('NO ochre anywhere in the prompt bar / card — the reserved selection accent is untouched (ADR-0016)', () => {
@@ -476,16 +488,14 @@ test('NO ochre anywhere in the prompt bar / card — the reserved selection acce
   assert.doesNotMatch(card[0], /var\(--accent-ochre/, 'the card must not apply the reserved ochre accent token');
 });
 
-test('a decorative "Type a prompt to begin" + ⌘↵ hint renders to the right of the row and fires nothing', () => {
+// agentic-workflow-068: the decorative "Type a prompt to begin" + ⌘↵ helper (aw-065)
+// is REMOVED — the textarea placeholder already states the flow, and the row now ends
+// with the three cards. aw-038's swallowed Enter (no submit-on-Enter) is untouched.
+test('the decorative "Type a prompt to begin" + ⌘↵ hint is removed (aw-068)', () => {
   const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
-  // The helper copy and the keyboard chip render.
-  assert.match(bar[0], /Type a prompt to begin/, 'the decorative helper copy must render');
-  assert.match(bar[0], /⌘↵/, 'a ⌘↵ keyboard-shortcut chip must render');
-  // It is purely decorative: aw-038's swallowed Enter is untouched and nothing in the
-  // bar wires Enter/⌘↵ to a launch — the only keydown handler still just prevents the
-  // newline. The hint must NOT be a <button> or carry an onClick that launches.
-  const hint = bar[0].match(/Type a prompt to begin[\s\S]{0,200}/);
-  assert.doesNotMatch(hint[0], /onClick/, 'the decorative hint must not be clickable');
-  // aw-038 swallow guard still intact (no submit-on-Enter introduced).
+  assert.ok(bar, 'BoardPromptBar component must exist');
+  assert.doesNotMatch(bar[0], /Type a prompt to begin/, 'the decorative helper copy must be gone');
+  assert.doesNotMatch(bar[0], /⌘↵/, 'the ⌘↵ keyboard-shortcut chip must be gone');
+  // The aw-038 swallow guard stays intact — no Enter-to-launch wiring introduced.
   assert.doesNotMatch(bar[0], /onKeyDown[\s\S]{0,120}launchOrCopy/, 'no Enter-to-launch wiring may be introduced');
 });
