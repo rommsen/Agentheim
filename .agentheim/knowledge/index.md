@@ -19,6 +19,7 @@ For BC-scoped artifacts, see each BC's `INDEX.md`.
 ## Global ADRs (scope: global)
 
 <!-- adr-global:start -->
+- **ADR-0028 — Collision-resistant task IDs: short random token** (2026-06-17, proposed) — replaces sequential-integer task ids with a `<bc>-<token>` scheme (token = 5 chars from Crockford base32 minus look-alikes `i l o u`, leading letter `[a-hjkmnp-tv-z]`), collision-free by construction for zero-coordination multi-branch capture; legacy `<bc>-NNN` ids coexist go-forward (no rewrite). Amends ADR-0022 §5 (retirement), cross-links ADR-0012 (filename-anchored resolution). Implementation split into aw-078/079/080 — `knowledge/decisions/0028-collision-resistant-task-ids-short-random-token.md`
 <!-- adr-global:end -->
 
 ## Cross-BC research

@@ -651,8 +651,12 @@ separate BC, but today the whole tool lives in this one.
 
 - **Task** — protects: status always matches its folder (`backlog/` → `todo/` → `doing/` →
   `done/`); one task = one commit (with a bounded **trivial-squash carve-out**, ADR-0026);
-  IDs (`<bc>-NNN`) are stable and never renumbered — a
-  **dismissed** id (ADR-0022) is retired, not reused; a future capture takes the next free number.
+  IDs are stable and never renumbered. New ids are `<bc>-<token>` — a 5-char random token,
+  leading letter, collision-free by construction for multi-branch capture (ADR-0028); legacy
+  `<bc>-NNN` sequential ids coexist untouched (go-forward, no rewrite). The two shapes are
+  disjoint (token leads with a letter, legacy tail is all digits). A **dismissed** id
+  (ADR-0022) is retired, not reused — by construction for tokens, by the next-free-number
+  rule for legacy ids.
 - **Vision** — protects: a single, two-minute-readable strategic root per project.
 - **Knowledge base** (protocol + ADRs + research + indexes) — protects: every action is
   logged; indexes point rather than duplicate; ADR↔task backlinks stay bidirectional.

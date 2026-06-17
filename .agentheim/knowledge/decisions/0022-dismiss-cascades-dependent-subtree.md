@@ -5,7 +5,7 @@ scope: agentic-workflow
 status: proposed
 date: 2026-06-16
 related_tasks: [agentic-workflow-046, agentic-workflow-048]
-related_adrs: [0017, 0007, 0018]
+related_adrs: [0017, 0007, 0018, 0028]
 ---
 
 # ADR-0022: DISMISS cascades the whole dependent subtree; refuses if it touches `doing/` or `done/`
@@ -79,8 +79,14 @@ member of that set is in `doing/` or `done/`.**
    - Prepend **one** bare `Modeling / Dismissed` entry to `protocol.md` that lists the whole
      cascade set — no builder-typed reason (the bare-record choice, 2026-06-16).
 
-5. **IDs are gone, never reused.** Consistent with "never renumber": a dismissed number is
-   retired, a future capture takes the next free number.
+5. **IDs are gone, never reused.** Consistent with "never renumber": a dismissed *legacy*
+   number is retired, a future legacy-style capture takes the next free number.
+   **Amended by ADR-0028 (2026-06-17):** new ids are random tokens (`<bc>-<token>`), not
+   sequential numbers, so there is no "next free number" for new captures. Never-reuse /
+   never-renumber holds **by construction** — the token generator never consults history, so
+   a dismissed token is simply one of ~23.1M points it will (overwhelmingly) never re-emit,
+   and there is no counter to advance or rewind. The retired-number rule above is **retained
+   verbatim for legacy all-digit ids**; new token ids satisfy it by construction.
 
 ## Consequences
 

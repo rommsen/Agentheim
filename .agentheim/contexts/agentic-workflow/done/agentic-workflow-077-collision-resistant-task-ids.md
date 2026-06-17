@@ -1,15 +1,15 @@
 ---
 id: agentic-workflow-077
 title: Collision-resistant task IDs for multi-user / multi-branch work (replace sequential integers)
-status: todo
+status: done
 type: decision
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 depends_on: []
 blocks: []
 tags: [identity, ids, concurrency, collaboration, git]
-related_adrs: [0012, 0022, 0026]
+related_adrs: [0012, 0022, 0026, 0028]
 related_research: []
 prior_art: []
 ---
@@ -69,7 +69,7 @@ tasks **once the decision lands** (see *Child tasks* below — created at that p
       and never collide on a merge.
 - [ ] New captures mint ids as `<bc>-<token>`, token = **exactly 5 chars** from Crockford
       base32 lowercase minus look-alikes (`0123456789abcdefghjkmnpqrstvwxyz`), **first char
-      a letter** (`[a-hjkmnp-z]`), lowercase only. (Architect proposes 5 chars + leading
+      a letter** (`[a-hjkmnp-tv-z]`), lowercase only. (Architect proposes 5 chars + leading
       letter; the ADR ratifies — 6 chars is the belt-and-braces alternative at one extra
       keystroke. See *Open questions for the ADR*.)
 - [ ] The id stays **human-usable** — short enough to type in `dismiss <id>` / `refine <id>`
@@ -81,7 +81,7 @@ tasks **once the decision lands** (see *Child tasks* below — created at that p
 - [ ] `deriveContext(id)` (`lib/task-lifecycle.mjs`) returns the correct BC for **both** a
       legacy all-digit tail **and** a new leading-letter token tail. The current
       `/^(.*)-\d+/` is replaced with a dual-shape match, e.g.
-      `/^(.*)-(?:\d+|[a-hjkmnp-z][0-9a-hjkmnp-z]{4})$/`, using `m[1]` as the BC. Covered by a
+      `/^(.*)-(?:\d+|[a-hjkmnp-tv-z][0-9a-hjkmnp-tv-z]{4})$/`, using `m[1]` as the BC. Covered by a
       test asserting both `agentic-workflow-077` and `agentic-workflow-k3f9q` derive
       `agentic-workflow`.
 - [ ] `resolveTaskFile` resolves **both** id shapes via its existing trailing-`-` anchor,
@@ -168,3 +168,46 @@ Once ADR-0028 is written, split the implementation out:
 
 Not a frontend task — no styleguide gate. It's a domain/identity decision touching the skills
 and `lib/`, with no dashboard-projection change.
+
+## Outcome (2026-06-17)
+
+Keystone decision landed as **ADR-0028** (`scope: global`,
+`.agentheim/knowledge/decisions/0028-collision-resistant-task-ids-short-random-token.md`):
+new task ids are `<bc>-<token>` — a 5-char Crockford-base32 (minus look-alikes) token, first
+char a letter, lowercase — collision-free by construction (22 leading letters × 32^4 ≈ 23.1M
+tokens/BC, ≈0.005% birthday-collision at a realistic concurrent window of n≈50). Legacy `<bc>-NNN` ids coexist go-forward (no rewrite, commit
+trailers stay valid); the two shapes are disjoint via the leading-letter-vs-all-digit tell.
+
+Resolved in the ADR:
+- **§4** the one code change — `deriveContext` dual-shape end-anchored regex; `resolveTaskFile`
+  unchanged (ADR-0012 anchor already covers both).
+- **§5** retirement restated for both shapes — **amended ADR-0022 §5 in place** and added 0028
+  to its `related_adrs`.
+- **§7** the genuinely open call — well-known foundation ids (`design-system-001-styleguide`
+  gate) are **reserved deterministic ids** owned by `brainstorm` (no two-writer race), so the
+  literal gate references survive in new projects; random tokens are for ordinary captures only.
+- **Cross-linked ADR-0012** (0028 added to its `related_adrs`).
+
+BC README Task-aggregate line updated to the new id scheme.
+
+Implementation splits into child tasks (created here, in `backlog/`):
+- **agentic-workflow-078** (`refactor`) — `deriveContext` dual-shape regex + tests; ships first.
+- **agentic-workflow-079** (`chore`) — minting-prose sweep across the three live skills
+  (modeling, quick-capture, brainstorm) + foundation-id reservation; depends on 078; leaves
+  `capture-workspace/` fixtures untouched.
+- **agentic-workflow-080** (`chore`, optional) — duplicate-id CI lint (insurance).
+
+No migration-rewrite child — go-forward coexistence is fixed.
+
+## Verifier note (iteration 1)
+
+**VERDICT: FAIL** — `likely-fixable`. The decision content is sound but the **token grammar is internally inconsistent** on an explicit acceptance criterion, and the defect propagates into the implementation child tasks.
+
+**REASONS:**
+- ADR-0028 §1 token grammar re-admits a look-alike the scheme exists to exclude. The prose alphabet is "Crockford base32 minus look-alikes i l o u" = `0123456789abcdefghjkmnpqrstvwxyz` (32 symbols, `u` excluded — correct), but the ratified regexes contradict it: the leading-letter class `[a-hjkmnp-z]` and the token-position class `[0-9a-hjkmnp-z]` both span `p-z`, which **includes `u`**. So the grammar as ratified admits `u`, violating the "minus look-alikes" requirement (an explicit acceptance criterion). (§1 lines ~63-67; §4 line ~105 repeats the same `u`-admitting regex.)
+- The §2 collision model is wrong on its own terms. §2 states the leading char is "one of 28 letters" giving `28 × 32^4 ≈ 29.4 million`, but the stated 32-symbol alphabet has only **22 letters** (22 × 32^4 ≈ 23.1M), and the ratified regex's leading class `[a-hjkmnp-z]` has 23 letters over a 33-symbol body (≈27.3M). The headline "29.4M / ~0.004%" figure — propagated verbatim into the README, the task Outcome, and child task aw-080 — rests on a 28-letter count that matches neither the prose alphabet nor the ratified regex.
+- The defect propagates into the children unguarded: **aw-078** AC copies the exact regex `/^(.*)-(?:\d+|[a-hjkmnp-z][0-9a-hjkmnp-z]{4})$/` into `deriveContext`, and **aw-079** AC copies the (correct, `u`-excluding) prose alphabet into the minting prose — so the runtime regex (`u` allowed) and the generator (`u` excluded) would **disagree on the legal token set** the moment the children land.
+
+**SUGGESTED_FIX:** Reconcile the grammar to ONE definition that excludes `u`. The leading-letter class should be `[a-hjkmnp-tv-z]` and the token-position class `[0-9a-hjkmnp-tv-z]` (note `p-t` then `v-z` — matching this task's own line-130 grammar). Correct §2 to "22 leading letters → 22 × 32^4 ≈ 23.1M" (or pick the intended figure and make alphabet, regex, and math all agree), update the README and Outcome figures to match, and fix the same regex in **aw-078's** acceptance criteria. The §5/§7 decisions, the ADR-0022 §5 amendment, the ADR-0012 cross-link, README sync, child-task structure, and no-code-leak are all otherwise sound — keep them.
+
+**ITERATION_HINT:** likely-fixable

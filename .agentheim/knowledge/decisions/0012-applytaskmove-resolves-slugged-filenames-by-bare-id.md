@@ -5,7 +5,7 @@ scope: agentic-workflow
 status: proposed
 date: 2026-06-06
 related_tasks: [agentic-workflow-009, agentic-workflow-003]
-related_adrs: [ADR-0001, ADR-0006, ADR-0007]
+related_adrs: [ADR-0001, ADR-0006, ADR-0007, 0028]
 ---
 
 # ADR-0012: `applyTaskMove` resolves slugged filenames from a bare id; the SSE consumer re-fetches, never interprets

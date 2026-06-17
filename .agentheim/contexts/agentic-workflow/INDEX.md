@@ -10,15 +10,14 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
-- **Todo:** 1
+- **Backlog:** 5
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 72
+- **Done:** 73
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-077** — Collision-resistant task IDs for multi-user / multi-branch work (replace sequential integers) (decision) — `todo/agentic-workflow-077-collision-resistant-task-ids.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-077** — Collision-resistant task IDs for multi-user / multi-branch work (replace sequential integers) (decision) — `done/agentic-workflow-077-collision-resistant-task-ids.md`
 - **agentic-workflow-073** — Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar (feature) — `done/agentic-workflow-073-whats-next-renders-on-dashboard.md`
 - **agentic-workflow-076** — What's next persists its recommendation as a single-latest advisory artifact (advisory write) (feature) — `done/agentic-workflow-076-whats-next-persists-advisory-recommendation.md`
 - **agentic-workflow-072** — Done column should be hideable (it can grow infinitely large) (feature) — `done/agentic-workflow-072-hideable-done-column.md`
@@ -103,6 +103,9 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **agentic-workflow-078** — `deriveContext` dual-shape token regex in `lib/task-lifecycle.mjs` + tests (refactor) — `backlog/agentic-workflow-078-derivecontext-dual-shape-token-regex.md`
+- **agentic-workflow-079** — Minting call-site token sweep across the three live skills (chore) — `backlog/agentic-workflow-079-minting-call-site-token-sweep.md`
+- **agentic-workflow-080** — Duplicate task-id CI lint (chore, optional insurance) — `backlog/agentic-workflow-080-duplicate-task-id-ci-lint.md`
 - **agentic-workflow-075** — Concepts are a first-class artifact kind — left-rail nav group + searchable category (feature) — `backlog/agentic-workflow-075-concepts-first-class-rail-and-search.md`
 - **agentic-workflow-074** — Slide-over gets an expand/collapse-width chevron, replacing the full-screen button (feature) — `backlog/agentic-workflow-074-slide-over-expand-collapse-width-chevron.md`
 <!-- backlog-list:end -->

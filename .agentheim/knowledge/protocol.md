@@ -5,6 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 00:05 -- Task verified and completed: agentic-workflow-077 - Collision-resistant task IDs
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-077 - Collision-resistant task IDs for multi-user / multi-branch work (replace sequential integers)
+**Summary:** Ratified **ADR-0028** (`scope: global`) replacing sequential-integer task ids with a `<bc>-<token>` scheme — token = 5 chars from Crockford base32 minus look-alikes, leading letter `[a-hjkmnp-tv-z]` — collision-free by construction for zero-coordination multi-branch capture; legacy `<bc>-NNN` ids coexist go-forward (no rewrite). Amends ADR-0022 §5, cross-links ADR-0012. Resolved the well-known foundation-id question (reserved deterministic ids owned by `brainstorm`). Implementation split into backlog children aw-078/079/080.
+**Verification:** PASS (iteration 2) — iteration 1 failed on a token-grammar inconsistency (regex re-admitted the look-alike `u`); the re-dispatch reconciled the alphabet, regex, and §2 collision math to one `u`-excluding definition and propagated the fix into aw-078 and aw-080.
+**Files changed:** 4 (ADR-0028 new, ADR-0022 amended, ADR-0012 cross-linked, README aggregate prose) + 3 new backlog child tasks
+**Tests added:** 0 (decision task — no code; implementation deferred to children)
+**ADRs written:** 0028-collision-resistant-task-ids-short-random-token.md (scope: global)
+
+---
+
+## 2026-06-17 23:55 -- Verification failed: agentic-workflow-077 - Collision-resistant task IDs
+
+**Type:** Work / Verification failure
+**Task:** agentic-workflow-077 - Collision-resistant task IDs for multi-user / multi-branch work
+**Iteration:** 1 of 3
+**Reasons:** ADR-0028 token grammar internally inconsistent — ratified regex `[a-hjkmnp-z]` / `[0-9a-hjkmnp-z]` spans `p-z` and so re-admits the look-alike `u` that the "minus look-alikes" alphabet excludes; §2 collision math ("28 letters → 29.4M") matches neither the 22-letter alphabet nor the 23-letter regex; the defective regex propagates into child task aw-078 (runtime regex would admit `u` while the aw-079 generator excludes it)
+**Iteration hint:** likely-fixable
+**Next:** re-dispatched worker (iteration 2)
+
+---
+
 ## 2026-06-17 23:54 -- Task verified and completed: design-system-021 - Concept content-type — registry entry + glyph + --ct-concept tokens
 
 **Type:** Work / Task completion
