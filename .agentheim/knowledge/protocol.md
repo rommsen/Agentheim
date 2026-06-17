@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 20:05 -- Modeling / Captured: agentic-workflow-073 - What's next renders its recommendation as structured HTML above the dashboard prompt
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** The `whats-next` skill should emit a persisted, structured recommendation that the dashboard renders as a panel above the board prompt bar — so the next-steps advice survives the terminal and is visible at session end and at the next session's start. Clear on the what, raw on the how: needs a refine/architect pass to resolve the read-only tension (the skill is strictly read-only today; ADR-0017 makes the dashboard read-only too), HTML-vs-structured-data, and persistence/staleness.
+
+---
+
 ## 2026-06-17 19:40 -- Work session ended
 
 **Type:** Work / Session end
