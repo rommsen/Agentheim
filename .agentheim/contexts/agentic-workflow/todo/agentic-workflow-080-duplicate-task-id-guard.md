@@ -1,7 +1,7 @@
 ---
 id: agentic-workflow-080
 title: Duplicate task-id guard across the lifecycle tree (node --test, optional insurance)
-status: backlog
+status: todo
 type: chore
 context: agentic-workflow
 created: 2026-06-17

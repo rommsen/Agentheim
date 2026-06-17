@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 00:28 -- Modeling / Promoted: agentic-workflow-080 - Duplicate task-id guard across the tree
+
+**Type:** Modeling / Promote
+**BC:** agentic-workflow
+**From → To:** backlog → todo
+
+---
+
 ## 2026-06-18 09:10 -- Modeling / Refined: agentic-workflow-079 - Minting call-site token sweep
 
 **Type:** Modeling / Refine
