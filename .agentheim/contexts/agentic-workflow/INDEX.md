@@ -11,23 +11,23 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 2
-- **Doing:** 0
-- **Done:** 76
+- **Todo:** 0
+- **Doing:** 1
+- **Done:** 77
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-079** — Minting call-site token sweep across the three live skills (chore) — `todo/agentic-workflow-079-minting-call-site-token-sweep.md`
-- **agentic-workflow-075** — Concepts are a first-class artifact kind — left-rail nav group + searchable category (feature) — `todo/agentic-workflow-075-concepts-first-class-rail-and-search.md`
 <!-- todo-list:end -->
 
 ### Doing
 <!-- doing-list:start -->
+- **agentic-workflow-079** — Minting call-site token sweep across the three live skills (chore) — `doing/agentic-workflow-079-minting-call-site-token-sweep.md`
 <!-- doing-list:end -->
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-075** — Concepts are a first-class artifact kind — left-rail nav group + searchable category (feature) — `done/agentic-workflow-075-concepts-first-class-rail-and-search.md`
 - **agentic-workflow-074** — Slide-over gets an expand/collapse-width chevron, replacing the full-screen button (feature) — `done/agentic-workflow-074-slide-over-expand-collapse-width-chevron.md`
 - **agentic-workflow-080** — Duplicate task-id guard across the tree (chore, node --test, optional insurance) — `done/agentic-workflow-080-duplicate-task-id-guard.md`
 - **agentic-workflow-078** — `deriveContext` dual-shape token regex in `lib/task-lifecycle.mjs` + tests (refactor) — `done/agentic-workflow-078-derivecontext-dual-shape-token-regex.md`

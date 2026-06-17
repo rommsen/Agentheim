@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-075
 title: Concepts are a first-class artifact kind — left-rail nav group + searchable category
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-18
 depends_on: [design-system-001-styleguide, design-system-021-concept-content-type]
 blocks: []
 tags: [dashboard, navigation, search, concepts]
@@ -114,5 +114,41 @@ real transforms), and one hard dependency was split out:
 
 Prior art (all shipped, related, none the same): aw-008 (library nav transform), aw-056 /
 aw-066 (rail group ordering), aw-050 (`/api/search` corpus), aw-052 (topbar search grouping).
+
+## Outcome
+**Done 2026-06-18.** Concepts are now a first-class artifact kind across both dashboard
+discovery surfaces, drawing from the per-BC `tree.contexts[].concepts` paths the projection
+already carries (no new server data — purely additive to the consuming pure transforms;
+styleguide consumed unforked, ADR-0003, via the ds-021 `concept` content-type).
+
+- **Left rail** (`dashboard/app/library-data.js`): `treeToLibrary` gains a **Concepts** group
+  between Bounded contexts and Research — rail order `Product → Bounded contexts → Concepts →
+  Research → Decisions` (preserving aw-056's Research-above-Decisions). Iterates contexts
+  (concepts are per-BC, unlike top-level `locations.adrs`/`research`), titles each row by
+  `baseName`, type `'concept'`, id `concept-<baseName>`. Empty/missing/non-array `concepts` →
+  group omitted, never a throw.
+- **Search corpus** (`dashboard/search.mjs`): `enumerateCorpus` gains a **Concepts** category
+  (title + body searchable, frontmatter excluded per ADR-0023); `CATEGORY_ORDER` becomes
+  `Bounded contexts → Concepts → Decisions → Research → Tickets`.
+- **Topbar grouping** (`dashboard/app/search-results.js`): `GROUP_ORDER` updated to the same
+  five-category order — kept **byte-identical** to `search.mjs`'s `CATEGORY_ORDER`.
+- **Type-pill plumbing** (`dashboard/app/slide-over-data.js`): `'concept'` added to the
+  `CONTENT_TYPE_KEYS` allow-list so a concept row's pill resolves on the open-in-full-screen /
+  search→main-pane paths.
+- **`dist/` rebuilt** via `node build.mjs` (esbuild); the committed bundle carries the
+  `Concepts` group, the `concept-` id prefix, and the `--ct-concept` token CSS.
+- **Tests**: 6 new pure-transform cases across `library-data.test.mjs` (Concepts group order,
+  per-BC iteration, omission of empty, loss-tolerance), `search.test.mjs` (concept page
+  searchable + ranking + intent shape), `search-results.test.mjs` (Concepts bucket position),
+  `slide-over-data.test.mjs` (concept type resolves). Full dashboard suite green (601/601).
+
+The cross-surface invariant — **Concepts immediately after Bounded contexts** — holds on all
+three orderings; the rail vs. search Research/Decisions flip (aw-056) is intentionally
+preserved. The project currently has zero concept pages, so both surfaces render empty until
+one is synthesized, but the rail group and search category are first-class regardless.
+
+Key files: `dashboard/app/library-data.js`, `dashboard/search.mjs`,
+`dashboard/app/search-results.js`, `dashboard/app/slide-over-data.js`, rebuilt `dashboard/dist/`,
+BC README (library/search surface descriptions).
 </content>
 </invoke>

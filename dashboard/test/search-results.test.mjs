@@ -30,7 +30,21 @@ test('buckets a flat ranked list into the four fixed-order category groups', () 
   ];
   const groups = searchResultsToGroups(results);
   assert.deepEqual(groups.map((g) => g.label), GROUP_ORDER);
-  assert.deepEqual(GROUP_ORDER, ['Bounded contexts', 'Decisions', 'Research', 'Tickets']);
+  assert.deepEqual(GROUP_ORDER, ['Bounded contexts', 'Concepts', 'Decisions', 'Research', 'Tickets']);
+});
+
+test('concept results bucket under the Concepts group, right after Bounded contexts', () => {
+  const results = [
+    row('Concepts', 'c1', { type: 'concept' }),
+    row('Bounded contexts', 'bc1', { type: 'context' }),
+  ];
+  const groups = searchResultsToGroups(results);
+  const concepts = groups.find((g) => g.label === 'Concepts');
+  assert.equal(concepts.items.length, 1);
+  assert.equal(concepts.items[0].type, 'concept');
+  // Concepts sits immediately after Bounded contexts in the fixed order.
+  const labels = groups.map((g) => g.label);
+  assert.equal(labels.indexOf('Concepts'), labels.indexOf('Bounded contexts') + 1);
 });
 
 test('preserves the within-category order received from the endpoint', () => {

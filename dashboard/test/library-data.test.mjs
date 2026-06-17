@@ -43,9 +43,37 @@ function sampleTree() {
   };
 }
 
-test('the library groups are in a stable, legible order', () => {
+test('the library groups are in a stable, legible order (Concepts right after Bounded contexts)', () => {
   const groups = treeToLibrary(sampleTree());
-  assert.deepEqual(groups.map((g) => g.group), ['Product', 'Bounded contexts', 'Research', 'Decisions']);
+  assert.deepEqual(
+    groups.map((g) => g.group),
+    ['Product', 'Bounded contexts', 'Concepts', 'Research', 'Decisions'],
+  );
+});
+
+test('every BC concept page is listed under Concepts, titled by baseName, type concept', () => {
+  const groups = treeToLibrary(sampleTree());
+  const concepts = groups.find((g) => g.group === 'Concepts');
+  // alpha carries one concept page (widget.md); beta has none.
+  assert.deepEqual(concepts.items.map((i) => i.title), ['widget']);
+  assert.equal(concepts.items[0].type, 'concept');
+  assert.equal(concepts.items[0].path, '.agentheim/contexts/alpha/concepts/widget.md');
+});
+
+test('Concepts iterate across every BC, omitting BCs with no concepts', () => {
+  const tree = sampleTree();
+  tree.contexts[1].concepts = ['.agentheim/contexts/beta/concepts/saga.md'];
+  const groups = treeToLibrary(tree);
+  const concepts = groups.find((g) => g.group === 'Concepts');
+  assert.deepEqual(concepts.items.map((i) => i.title), ['widget', 'saga']);
+});
+
+test('an empty Concepts group is omitted (loss-tolerant: missing/empty concepts → no group)', () => {
+  const tree = sampleTree();
+  tree.contexts[0].concepts = [];
+  delete tree.contexts[1].concepts; // missing entirely
+  const groups = treeToLibrary(tree);
+  assert.equal(groups.some((g) => g.group === 'Concepts'), false);
 });
 
 test('vision and context map land in the Product group', () => {
@@ -100,7 +128,7 @@ test('every item carries a unique id, a styleguide content type, a title and a p
   const groups = treeToLibrary(sampleTree());
   const items = groups.flatMap((g) => g.items);
   const ids = new Set();
-  const CONTENT_TYPES = new Set(['context', 'vision', 'map', 'research', 'adr']);
+  const CONTENT_TYPES = new Set(['context', 'vision', 'map', 'research', 'adr', 'concept']);
   for (const it of items) {
     assert.ok(it.id && !ids.has(it.id), `id present and unique: ${it.id}`);
     ids.add(it.id);
@@ -116,6 +144,15 @@ test('empty groups are omitted so the nav never shows a 0-item heading', () => {
   assert.deepEqual(groups, []);
 });
 
+test('a BC with a null/non-array concepts field never throws (loss-tolerant)', () => {
+  const tree = sampleTree();
+  tree.contexts[0].concepts = null;
+  tree.contexts[1].concepts = 'oops';
+  assert.doesNotThrow(() => treeToLibrary(tree));
+  const groups = treeToLibrary(tree);
+  assert.equal(groups.some((g) => g.group === 'Concepts'), false);
+});
+
 test('a missing/null tree degrades to an empty library (no throw)', () => {
   assert.deepEqual(treeToLibrary(null), []);
   assert.deepEqual(treeToLibrary(undefined), []);
@@ -123,8 +160,8 @@ test('a missing/null tree degrades to an empty library (no throw)', () => {
 });
 
 test('libraryCount totals every artifact across groups (the rail badge)', () => {
-  // 2 product + 2 BC readmes + 2 adrs + 1 research = 7
-  assert.equal(libraryCount(treeToLibrary(sampleTree())), 7);
+  // 2 product + 2 BC readmes + 1 concept + 2 adrs + 1 research = 8
+  assert.equal(libraryCount(treeToLibrary(sampleTree())), 8);
   assert.equal(libraryCount([]), 0);
   assert.equal(libraryCount(null), 0);
 });

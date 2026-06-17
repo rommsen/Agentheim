@@ -16,6 +16,7 @@ import { createDashboardServer } from '../server.mjs';
  *   - in a task title (alpha-001 "Falcon …") → title tier, Tickets
  *   - in a task body (alpha-002)             → body tier, Tickets
  *   - in a BC name (falcon-bc README)        → title tier, Bounded contexts
+ *   - in a concept page body (alpha/falcon-c)→ body tier, Concepts
  *   - in an ADR FRONTMATTER only (0008)      → MUST NOT match (frontmatter excluded)
  */
 function makeProject() {
@@ -51,6 +52,12 @@ function makeProject() {
     mkdirSync(path.join(alpha, f), { recursive: true });
   }
   writeFileSync(path.join(alpha, 'README.md'), '# Alpha\n\nWe deploy via Falcon here.');
+  // Concept page (per-BC, under concepts/) whose BODY matches (body tier, Concepts).
+  mkdirSync(path.join(alpha, 'concepts'), { recursive: true });
+  writeFileSync(
+    path.join(alpha, 'concepts', 'deployment.md'),
+    '# Deployment\n\nThe Falcon rollout strategy lives here.'
+  );
   writeFileSync(
     path.join(alpha, 'backlog', 'alpha-001-falcon-thing.md'),
     '---\nid: alpha-001\ntitle: Falcon migration\nstatus: backlog\ntype: feature\ncontext: alpha\n---\n\nbody only'
@@ -157,14 +164,16 @@ test('searchCorpus: matches title + body across all four categories, case-insens
     const results = searchCorpus(base, 'falcon');
     const paths = results.map((r) => r.path);
     // alpha README (body), 0007 ADR (title), spike-x research (body),
-    // alpha-001 task (title), alpha-002 task (body), falcon-bc README (name/title).
-    assert.equal(results.length, 6);
+    // alpha-001 task (title), alpha-002 task (body), falcon-bc README (name/title),
+    // alpha/concepts/deployment (body).
+    assert.equal(results.length, 7);
     assert.ok(paths.some((p) => p.endsWith('alpha/README.md')));
     assert.ok(paths.some((p) => p.endsWith('0007-falcon-launch.md')));
     assert.ok(paths.some((p) => p.endsWith('spike-x.md')));
     assert.ok(paths.some((p) => p.endsWith('alpha-001-falcon-thing.md')));
     assert.ok(paths.some((p) => p.endsWith('alpha-002-other.md')));
     assert.ok(paths.some((p) => p.endsWith('falcon-bc/README.md')));
+    assert.ok(paths.some((p) => p.endsWith('alpha/concepts/deployment.md')));
   } finally {
     rmSync(base, { recursive: true, force: true });
   }
@@ -185,15 +194,16 @@ test('searchCorpus: ranking is title-tier first, then fixed category order', () 
   try {
     const results = searchCorpus(base, 'falcon');
     // Title tier first: falcon-bc (Bounded contexts), 0007 ADR (Decisions),
-    // alpha-001 (Tickets) — in category order BCs → Decisions → Research → Tickets.
-    // Then body tier: alpha README (Bounded contexts), spike-x (Research),
-    // alpha-002 (Tickets).
+    // alpha-001 (Tickets) — in category order BCs → Concepts → Decisions →
+    // Research → Tickets. Then body tier: alpha README (Bounded contexts),
+    // deployment (Concepts), spike-x (Research), alpha-002 (Tickets).
     const cats = results.map((r) => r.category);
     assert.deepEqual(cats, [
       'Bounded contexts', // falcon-bc (title)
       'Decisions', // 0007 (title)
       'Tickets', // alpha-001 (title)
       'Bounded contexts', // alpha README (body)
+      'Concepts', // alpha/concepts/deployment (body)
       'Research', // spike-x (body)
       'Tickets', // alpha-002 (body)
     ]);
@@ -214,6 +224,21 @@ test('searchCorpus: non-task results carry library-compatible intent (type/title
     const ctx = results.find((r) => r.path.endsWith('falcon-bc/README.md'));
     assert.equal(ctx.type, 'context');
     assert.equal(ctx.title, 'falcon-bc');
+  } finally {
+    rmSync(base, { recursive: true, force: true });
+  }
+});
+
+test('searchCorpus: concept results carry library-compatible intent (type concept, baseName title)', () => {
+  const { base } = makeProject();
+  try {
+    const results = searchCorpus(base, 'falcon');
+    const concept = results.find((r) => r.path.endsWith('alpha/concepts/deployment.md'));
+    assert.ok(concept, 'concept page is searchable');
+    assert.equal(concept.category, 'Concepts');
+    assert.equal(concept.type, 'concept');
+    assert.equal(concept.title, 'deployment'); // baseName, like ADRs/research
+    assert.equal(concept.status, undefined); // not task-shaped
   } finally {
     rmSync(base, { recursive: true, force: true });
   }
@@ -274,7 +299,7 @@ test('GET /api/search returns { query, results } JSON, read-only', async () => {
     const body = await res.json();
     assert.equal(body.query, 'falcon');
     assert.equal(Array.isArray(body.results), true);
-    assert.equal(body.results.length, 6);
+    assert.equal(body.results.length, 7);
   } finally {
     server.close();
     rmSync(base, { recursive: true, force: true });

@@ -29,9 +29,13 @@
    React, no htm — unit-testable under `node --test` without a DOM.
    ============================================================ */
 
-// The four result groups, in display order. Mirrors aw-050's CATEGORY_ORDER
-// (search.mjs / ADR-0023) and the library nav grouping (library-data.js).
-export const GROUP_ORDER = ['Bounded contexts', 'Decisions', 'Research', 'Tickets'];
+// The result groups, in display order. Stays BYTE-IDENTICAL to search.mjs's
+// CATEGORY_ORDER (ADR-0023): Bounded contexts → Concepts → Decisions → Research
+// → Tickets. Concepts sits immediately after Bounded contexts (aw-075). NB this
+// search order is NOT the rail's order (library-data.js puts Research above
+// Decisions, aw-056) — the only cross-surface invariant is Concepts right after
+// Bounded contexts.
+export const GROUP_ORDER = ['Bounded contexts', 'Concepts', 'Decisions', 'Research', 'Tickets'];
 
 /**
  * Bucket aw-050's flat ranked `results` into ds-016's `groups: [{label, items}]`

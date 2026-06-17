@@ -10,7 +10,7 @@
 // new artifact kind added to the tree becomes searchable for free. Match scope
 // is TITLE + BODY only — frontmatter (ids, tags, type, dates) is deliberately
 // NOT searched (ADR-0023). Ranking is title-hits-first, then fixed category
-// order: Bounded contexts → Decisions → Research → Tickets. Results carry the
+// order: Bounded contexts → Concepts → Decisions → Research → Tickets. Results carry the
 // EXISTING open-intent shapes (ADR-0021) so the client routes with no new code:
 // non-task docs library-data-compatible ({ type, title, path }); tasks
 // board-data-compatible ({ status, id, title, path, context }).
@@ -22,8 +22,10 @@ import { resolveInRoot } from './discovery.mjs';
 
 export const MIN_QUERY_LENGTH = 2;
 
-// Fixed category order within each ranking tier (ADR-0023).
-const CATEGORY_ORDER = ['Bounded contexts', 'Decisions', 'Research', 'Tickets'];
+// Fixed category order within each ranking tier (ADR-0023). Concepts sits
+// immediately after Bounded contexts (aw-075) — kept BYTE-IDENTICAL to
+// search-results.js's GROUP_ORDER (the two search orderings must agree).
+const CATEGORY_ORDER = ['Bounded contexts', 'Concepts', 'Decisions', 'Research', 'Tickets'];
 const CATEGORY_RANK = new Map(CATEGORY_ORDER.map((c, i) => [c, i]));
 
 // Excerpt window: ~60 chars of context each side of the first occurrence.
@@ -114,6 +116,23 @@ function enumerateCorpus(root, tree) {
         title: name,
         relPath: bc.readme,
         intent: { type: 'context', title: name, path: bc.readme },
+      });
+    }
+  }
+
+  // Concepts — each BC's synthesis pages (per-BC, paths-only — aw-005), titled
+  // by baseName, library-compatible intent (type 'concept'). Loss-tolerant: a BC
+  // with a missing/empty concepts field contributes nothing.
+  for (const bc of contexts) {
+    const concepts = bc && Array.isArray(bc.concepts) ? bc.concepts : [];
+    for (const p of concepts) {
+      if (!p) continue;
+      const title = baseName(p);
+      entries.push({
+        category: 'Concepts',
+        title,
+        relPath: p,
+        intent: { type: 'concept', title, path: p },
       });
     }
   }

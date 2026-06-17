@@ -91,9 +91,12 @@ separate BC, but today the whole tool lives in this one.
   `{ query, results: [...] }`; each result is `{ category, title, excerpt, path, ...intent }`.
   **Match scope is title + body only** — frontmatter (ids, tags, type, dates) is **not** searched
   — case-insensitive substring. **Corpus is single-sourced from the tree projection**
-  (`buildTree`): Bounded contexts (READMEs) → Decisions (ADRs) → Research → Tickets (tasks), so a
+  (`buildTree`): Bounded contexts (READMEs) → Concepts (per-BC synthesis pages) → Decisions (ADRs)
+  → Research → Tickets (tasks), so a
   new artifact kind added to the tree becomes searchable for free. **Ranking is title-hits-first,
-  then fixed category order** (BCs → Decisions → Research → Tickets). The `excerpt` is a
+  then fixed category order** (BCs → Concepts → Decisions → Research → Tickets; the search order's
+  `search.mjs` `CATEGORY_ORDER` and the topbar `search-results.js` `GROUP_ORDER` stay byte-identical,
+  aw-075). The `excerpt` is a
   whitespace-collapsed ~60-char window around the *first* occurrence (original-case slice, matched
   case-insensitively; title-only matches excerpt from the title). Results carry the *existing*
   open-intent shapes (ADR-0021) so the client routes with no new code — non-task docs
@@ -551,7 +554,7 @@ separate BC, but today the whole tool lives in this one.
 - **Global search (topbar)** — the dashboard's search surface (agentic-workflow-052): the topbar's
   leading slot (the former dead breadcrumb) is the **global search field** that, as you type, queries
   `GET /api/search` (aw-050) and opens a floating panel of **category-grouped** results
-  (Bounded contexts → Decisions → Research → Tickets), each row a title + a matched-text excerpt with
+  (Bounded contexts → Concepts → Decisions → Research → Tickets, aw-075), each row a title + a matched-text excerpt with
   the term marked. It **consumes the design-system `SearchField` combobox unforked** (design-system-016,
   ADR-0003): ds-016 owns the input chrome, the floating panel, and the active-descendant keyboard model
   (up/down across all rows, Enter opens, Esc closes + clears); the dashboard owns the controlled query
@@ -623,13 +626,18 @@ separate BC, but today the whole tool lives in this one.
   carries a real-flow `aria-label`. It keeps the main-pane reader's centered reading measure
   (maxWidth 760, margin `0 auto` — aw-040) and stays static / read-only, styleguide consumed unforked.
 - **Library / navigation** — the dashboard's discovery surface (agentic-workflow-008): makes the
-  *non-task* knowledge base browsable — vision, context map, every BC README, ADRs, research —
+  *non-task* knowledge base browsable — vision, context map, every BC README, **per-BC concept pages**,
+  ADRs, research —
   drawn from the **artifact-location half** of the same tree projection the board uses (`tree.locations`
-  + per-BC `readme`). Tasks are deliberately excluded (the board owns them), so each artifact has
+  + per-BC `readme` + per-BC `concepts`). Tasks are deliberately excluded (the board owns them), so each artifact has
   exactly one home. A pure, unit-tested transform (`dashboard/app/library-data.js` → `treeToLibrary`)
-  pools the locations into fixed, legible groups — Product / Bounded contexts / Decisions / Research —
+  pools the locations into fixed, legible groups — Product / Bounded contexts / **Concepts** / Research /
+  Decisions (Concepts sits immediately after Bounded contexts, aw-075; the rail keeps its own
+  Research-above-Decisions order from aw-056, which is **not** mirrored to search) —
   rendered through the approved styleguide `TreeGroup`/`TreeItem` (imported as-is, never forked —
-  ADR-0003). Selecting any row emits the open-intent shape `{ type, title, path }`, which the
+  ADR-0003; the `concept` content type + glyph + `--ct-concept` tokens are the ds-021 registry entry).
+  Concept rows are per-BC (`tree.contexts[].concepts`, paths-only) and titled by `baseName`, like
+  ADRs/research. Selecting any row emits the open-intent shape `{ type, title, path }`, which the
   shell routes to the **main-pane reader** (aw-027 — non-task documents) rather than the
   slide-over. As of **aw-026** this tree is **always visible in the left rail** (it *is* the
   library — the separate board↔library toggle and the full-pane library surface are retired;

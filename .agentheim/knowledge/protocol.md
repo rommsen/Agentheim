@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 10:05 -- Task verified and completed: agentic-workflow-075 - Concepts first-class rail group + searchable category
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-075 - Concepts are a first-class artifact kind — left-rail nav group + searchable category
+**Summary:** Concepts surface as a first-class group across both dashboard discovery surfaces — a left-rail nav group (immediately after Bounded contexts) and a searchable category — drawing from the per-BC `tree.contexts[].concepts` paths the projection already carries; `concept` type pill resolves via the ds-021 registry. Loss-tolerant, styleguide consumed unforked.
+**Verification:** PASS (iteration 1)
+**Files changed:** 9 source/test + rebuilt dist
+**Tests added:** new Concepts cases across library-data / search / search-results / slide-over-data suites (601/601 green)
+**ADRs written:** none
+
+---
+
+## 2026-06-18 09:52 -- Batch started: [agentic-workflow-075, agentic-workflow-079]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-075 - Concepts first-class rail group + searchable category, agentic-workflow-079 - Minting call-site token sweep across the three live skills
+**Parallel:** yes (2 workers)
+
+---
+
 ## 2026-06-18 09:50 -- Task verified and completed: agentic-workflow-074 - Slide-over expand/collapse-width chevron
 
 **Type:** Work / Task completion

@@ -73,6 +73,18 @@ test('a non-task artifact intent keeps its own content-type and renders uniforml
   assert.equal(item.body, '# ADR-0009');
 });
 
+test('a concept intent keeps its concept content-type so the type pill resolves (aw-075)', () => {
+  // aw-075 surfaces Concepts in the rail + search; a concept row opening in the
+  // main pane must keep type 'concept' so the ds-021 registry pill resolves.
+  const item = intentToDrawerItem(
+    { type: 'concept', title: 'aggregate-lifecycle',
+      path: '.agentheim/contexts/alpha/concepts/aggregate-lifecycle.md' },
+    '# Aggregate lifecycle',
+  );
+  assert.equal(item.type, 'concept');
+  assert.equal(item.meta, '.agentheim/contexts/alpha/concepts/aggregate-lifecycle.md');
+});
+
 test('an intent with an unknown/absent content type falls back to a recognized one (never null pill)', () => {
   // The /api/tree task `type` is feature/bug/chore — not a styleguide content
   // type. A task (has status) maps to `ticket`; a typeless artifact falls back
@@ -83,7 +95,7 @@ test('an intent with an unknown/absent content type falls back to a recognized o
   assert.equal(task.type, 'ticket');
 
   const typeless = intentToDrawerItem({ path: 'q.md' }, 'b');
-  assert.ok(['adr', 'context', 'vision', 'map', 'research', 'ticket'].includes(typeless.type));
+  assert.ok(['adr', 'context', 'vision', 'map', 'research', 'concept', 'ticket'].includes(typeless.type));
 });
 
 test('a null/undefined intent yields null (nothing to open)', () => {

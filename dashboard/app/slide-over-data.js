@@ -27,7 +27,7 @@
 // resolve to one of these. Kept as a local set so this module stays free of any
 // styleguide import (it is pure data shaping, no UI).
 const CONTENT_TYPE_KEYS = new Set([
-  'ticket', 'context', 'vision', 'map', 'research', 'adr',
+  'ticket', 'context', 'vision', 'map', 'research', 'adr', 'concept',
 ]);
 
 /** Build the /api/doc URL for an in-root artifact path (query-encoded). */

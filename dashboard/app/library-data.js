@@ -18,9 +18,11 @@
    of UI truth (ADR-0003); this shapes DATA for it, never forks it.
    ============================================================ */
 
-// The four legible groups, in display order:
-// Product → Bounded contexts → Research → Decisions (aw-056: Research above Decisions).
-const GROUP_ORDER = ['Product', 'Bounded contexts', 'Research', 'Decisions'];
+// The legible rail groups, in display order:
+// Product → Bounded contexts → Concepts → Research → Decisions.
+// Concepts sit immediately after Bounded contexts (aw-075); the rail keeps its
+// own Research-above-Decisions order (aw-056), which is NOT mirrored to search.
+const GROUP_ORDER = ['Product', 'Bounded contexts', 'Concepts', 'Research', 'Decisions'];
 
 /** Last path segment without its `.md` extension — a stable id seed. */
 function baseName(p) {
@@ -53,6 +55,7 @@ export function treeToLibrary(tree) {
   const groups = {
     Product: [],
     'Bounded contexts': [],
+    Concepts: [],
     Decisions: [],
     Research: [],
   };
@@ -70,6 +73,18 @@ export function treeToLibrary(tree) {
     if (bc && bc.readme) {
       const name = bc.name || baseName(bc.readme);
       groups['Bounded contexts'].push(item(`ctx-${name}`, 'context', name, bc.readme));
+    }
+  }
+
+  // ---- Concepts: each BC's synthesis pages, titled by baseName -----------
+  // Concepts are PER-BC (tree.contexts[].concepts is paths-only — aw-005), not a
+  // top-level locations array, so iterate contexts. A BC with a missing/empty/
+  // non-array concepts field contributes nothing (never throws). Titled by
+  // baseName like ADRs/research; type 'concept' (the ds-021 registry entry).
+  for (const bc of contexts) {
+    const concepts = bc && Array.isArray(bc.concepts) ? bc.concepts : [];
+    for (const p of concepts) {
+      if (p) groups.Concepts.push(item(`concept-${baseName(p)}`, 'concept', baseName(p), p));
     }
   }
 
