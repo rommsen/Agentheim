@@ -646,6 +646,16 @@ separate BC, but today the whole tool lives in this one.
   the **bare id** but resolves the real on-disk file `<id>-<slug>.md` (anchored so `alpha-001`
   never collides with `alpha-0010`) and preserves that filename across the move — only the folder
   changes, the id is stable (ADR-0012). See ADR-0017, ADR-0007, ADR-0012.
+- **`findDuplicateTaskIds`** — the duplicate-id guard (`lib/duplicate-id-check.mjs`, BC-owned
+  domain logic, node stdlib only), the ADR-0028 **insurance** against the residual token-collision
+  tail and the legacy-vs-token clash a bug could produce. A pure, side-effect-free, loss-tolerant
+  whole-tree walk (`root` in → data out; one bad file never aborts the scan): it collects each task
+  file's id (frontmatter `id:` first, filename stem fallback) across every BC's four lifecycle
+  folders and returns every id claimed by more than one file, each with all colliding paths.
+  **Shape-agnostic** — ids are compared as whole strings, so it is independent of the ADR-0028
+  grammar and `deriveContext`'s dual-shape regex (no tail parsing). Exercised by `node --test`
+  (the repo has no CI), whose suite also asserts the **live** `.agentheim/` tree has no duplicates;
+  a future `release` preflight can call it unchanged. See ADR-0028, ADR-0022, ADR-0012.
 
 ## Aggregates
 

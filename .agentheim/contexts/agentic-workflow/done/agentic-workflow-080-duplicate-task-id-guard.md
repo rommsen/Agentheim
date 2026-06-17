@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-080
 title: Duplicate task-id guard across the lifecycle tree (node --test, optional insurance)
-status: todo
+status: done
 type: chore
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-18
 depends_on: []
 blocks: []
 tags: [identity, ids, lint, test, insurance]
@@ -83,3 +83,26 @@ release preflight or a CI job without change.
   scanner before tagging — out of scope here, but the side-effect-free shape leaves it open.
 - Promotion-ready after this refinement, but parked in `backlog/` deliberately because it is
   explicitly optional insurance — promote when the builder wants it built.
+
+## Outcome (2026-06-18)
+
+Delivered the ADR-0028 duplicate-id **insurance** as a pure stdlib module, not a CI lint
+(the repo has no CI; the `node --test` suite is the gate).
+
+- **`lib/duplicate-id-check.mjs`** — exports `findDuplicateTaskIds(root)` and a thin
+  `formatDuplicateReport(duplicates)`. The scanner walks every BC's four lifecycle folders
+  under `<root>/.agentheim/contexts/`, collects each task's id (frontmatter `id:` first, with
+  the filename stem as a loss-tolerant fallback), and returns one entry per id claimed by more
+  than one file — each with all colliding absolute paths (sorted, deterministic). Stdlib-only
+  (`node:fs`, `node:path`), side-effect-free (root in → data out), never throws on a single bad
+  file or missing folder. **Whole-id comparison** — no tail parsing, no id/slug split — so it is
+  independent of the ADR-0028 token grammar and of aw-078's `deriveContext` dual-shape regex.
+- **`lib/test/duplicate-id-check.test.mjs`** — 9 `node --test` tests: all-distinct → empty;
+  two files sharing one id → reported with both paths; collision across lifecycle folders and
+  across BCs; mixed legacy+token compared whole-id (prefix-sharing `-001` vs `-z001x` do NOT
+  collide); frontmatter wins over filename; filename fallback when frontmatter absent; absent/
+  empty tree is no-throw; reporter formatting. The final test runs the scanner against the
+  **live** `.agentheim/` tree and asserts **no duplicates** — the recurring insurance.
+- BC README: added a `findDuplicateTaskIds` ubiquitous-language entry next to `applyTaskMove`.
+- No ADR (design fully constrained by ADR-0028 + the refinement note); no new backlog items;
+  no CI introduced. Full `lib/` suite green (31 tests).

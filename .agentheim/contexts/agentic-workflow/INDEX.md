@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 0
 - **Todo:** 2
-- **Doing:** 2
-- **Done:** 74
+- **Doing:** 1
+- **Done:** 75
 <!-- task-counts:end -->
 
 ### Todo
@@ -25,11 +25,11 @@ research touching this BC, and concept synthesis pages.
 ### Doing
 <!-- doing-list:start -->
 - **agentic-workflow-074** — Slide-over gets an expand/collapse-width chevron, replacing the full-screen button (feature) — `doing/agentic-workflow-074-slide-over-expand-collapse-width-chevron.md`
-- **agentic-workflow-080** — Duplicate task-id guard across the tree (chore, node --test, optional insurance) — `doing/agentic-workflow-080-duplicate-task-id-guard.md`
 <!-- doing-list:end -->
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-080** — Duplicate task-id guard across the tree (chore, node --test, optional insurance) — `done/agentic-workflow-080-duplicate-task-id-guard.md`
 - **agentic-workflow-078** — `deriveContext` dual-shape token regex in `lib/task-lifecycle.mjs` + tests (refactor) — `done/agentic-workflow-078-derivecontext-dual-shape-token-regex.md`
 - **agentic-workflow-077** — Collision-resistant task IDs for multi-user / multi-branch work (replace sequential integers) (decision) — `done/agentic-workflow-077-collision-resistant-task-ids.md`
 - **agentic-workflow-073** — Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar (feature) — `done/agentic-workflow-073-whats-next-renders-on-dashboard.md`

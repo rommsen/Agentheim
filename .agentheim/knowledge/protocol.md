@@ -5,6 +5,18 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 09:44 -- Task verified and completed: agentic-workflow-080 - Duplicate task-id guard
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-080 - Duplicate task-id guard across the lifecycle tree
+**Summary:** Pure, stdlib-only, loss-tolerant scanner (`findDuplicateTaskIds` in `lib/duplicate-id-check.mjs`) walks every BC's four lifecycle folders, compares ids whole (shape-agnostic), and reports any id claimed by more than one file with all colliding paths. node --test covers fixtures plus a live-`.agentheim/`-tree no-duplicates assertion.
+**Verification:** PASS (iteration 1)
+**Files changed:** 3
+**Tests added:** 9 (fixtures: duplicate→both paths, all-distinct→empty, mixed legacy+token whole-id, loss-tolerant; live-tree assertion)
+**ADRs written:** none
+
+---
+
 ## 2026-06-18 09:42 -- Task verified and completed: agentic-workflow-078 - deriveContext dual-shape token regex
 
 **Type:** Work / Task completion
