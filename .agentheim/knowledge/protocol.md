@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 22:05 -- Modeling / Refined: agentic-workflow-073 - Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Second refinement pass. Both dependencies have now shipped — `design-system-001` (styleguide gate) and `agentic-workflow-076` (the advisory write this panel reads) — so the one condition holding the task in backlog ("not workable until aw-076 ships") is resolved. Confirmed the frozen ADR-0027 §2/§4 interface against the shipped skill (path `.agentheim/state/whats-next.md`, `generated` timestamp, three sections, `/api/doc` read path); the artifact being absent on disk is git-ignored-and-not-yet-run, which is exactly the absent-artifact acceptance criterion, not a blocker. Corrected a stale cross-reference in *Why* (named the skill half aw-074; it is aw-076). With both gates met and concrete acceptance criteria, **promoted backlog → todo**.
+**Split into:** —
+**ADRs written:** —
+
+---
+
 ## 2026-06-17 21:47 -- Work session ended
 
 **Type:** Work / Session end

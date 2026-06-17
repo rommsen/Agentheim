@@ -1,7 +1,7 @@
 ---
 id: agentic-workflow-073
 title: Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar
-status: backlog
+status: todo
 type: feature
 context: agentic-workflow
 created: 2026-06-17
@@ -20,7 +20,8 @@ actually decides what to do next — not only in whatever terminal the bridge sp
 the topbar **What's next** button (aw-069); a few moments later the recommendation appears
 *in* the dashboard, above the prompt bar, and is still there when the dashboard is reopened
 in a later session. This is the **dashboard half** of the feature; the skill half (writing
-the artifact) is **agentic-workflow-074**, which this task depends on.
+the artifact) is **agentic-workflow-076**, which this task depends on and which has now
+shipped.
 
 ## What
 The dashboard reads the single-latest recommendation artifact the `whats-next` skill writes
@@ -65,9 +66,20 @@ single capture was **split** into the skill half (aw-076, the advisory write) an
 dashboard half; **ADR-0027's artifact shape is the frozen interface** between them so they
 cannot drift. Architect round routed through the orchestrator.
 
+**Second refinement pass (2026-06-17):** both dependencies have now shipped —
+`design-system-001` (styleguide gate) and `agentic-workflow-076` (the advisory write this
+panel reads). The frozen interface (ADR-0027 §2/§4) was confirmed against the shipped skill:
+artifact path `.agentheim/state/whats-next.md`, frontmatter `generated` timestamp, three body
+sections (where things stand / recommended move / next), read via `/api/doc`. The artifact
+isn't on disk yet (git-ignored, written only when `whats-next` next runs) — which is exactly
+the **absent-artifact → render nothing** acceptance criterion, so it does not block work. With
+both gates met and concrete acceptance criteria in place, this task is **ready to promote**.
+(Also corrected a stale cross-reference in *Why* that named the skill half as aw-074 — it is
+aw-076.)
+
 - **Frontend gate** — depends on the approved styleguide (`design-system-001`), consumed
-  unforked (ADR-0003). Not promotable ahead of the styleguide, and not workable until aw-076
-  ships the artifact it reads.
+  unforked (ADR-0003). Both gates now met: the styleguide shipped and aw-076 shipped the
+  artifact it reads.
 - **Read path** — reuse `/api/doc`, **not** a new endpoint and **not** a fold into `/api/tree`
   (ADR-0027 §3); the recommendation is a document *body* and `/api/doc` already carries bodies
   behind the in-root guard, exactly as the main-pane reader and slide-over do (ADR-0021).
