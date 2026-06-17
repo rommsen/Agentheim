@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 1
+- **Backlog:** 0
+- **Todo:** 2
 - **Doing:** 0
 - **Done:** 18
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **design-system-021** — Concept content-type — registry entry + glyph + --ct-concept tokens for the library/search type (feature) — `todo/design-system-021-concept-content-type.md`
 - **design-system-020** — Drawer gains in-place expandable width — controlled expand seam + body-top chevron + panel glyph pair (feature) — `todo/design-system-020-drawer-expandable-width-chevron.md`
 <!-- todo-list:end -->
 
@@ -49,7 +50,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **design-system-021** — Concept content-type — registry entry + glyph + --ct-concept tokens for the library/search type (feature) — `backlog/design-system-021-concept-content-type.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

@@ -1,7 +1,7 @@
 ---
 id: design-system-021
 title: Concept content-type — registry entry + glyph + --ct-concept tokens for the library/search type
-status: backlog
+status: todo
 type: feature
 context: design-system
 created: 2026-06-17
@@ -38,26 +38,34 @@ Make `concept` a first-class **content type** in the styleguide registry, so any
 emitting `{ type: 'concept' }` gets a distinct icon + color at a glance — mirroring the five
 existing non-task types (context / vision / map / research / adr).
 
-1. **Glyph.** Add a concept glyph to the `icons.js` LUCIDE map. **Proposed: `lightbulb`**
-   (concept = idea / insight / synthesis); runner-up `notebook-pen` (a synthesis is a
-   written-up note). Final glyph is a **gate decision** at styleguide review. Worker verifies
-   the Lucide path geometry against the pinned Lucide version when adding (the ds-017/ds-020
-   discipline).
+1. **Glyph → `lightbulb`** (builder-decided at refine, 2026-06-17 — concept = idea / insight /
+   synthesis). The styleguide gate still **re-confirms** it against the canvas (the glyph add is
+   a visible styleguide change — see the gate criterion below), but it is no longer an open
+   "lightbulb vs notebook-pen" choice. Add `lightbulb` to the `icons.js` LUCIDE map; the worker
+   **verifies the Lucide path geometry against the pinned Lucide version** when adding (the
+   ds-017/ds-020 discipline — copy the upstream `lightbulb` SVG paths verbatim).
 2. **Registry entry.** Add a `concept` entry to `CONTENT_TYPES` (`data.js`):
-   `{ label: "Concept", icon: "<chosen>", color: "var(--ct-concept)", tint: "var(--ct-concept-tint)" }`.
-3. **Tokens.** Add `--ct-concept` / `--ct-concept-tint` to **both** the light and dark theme
-   blocks in `styleguide/styles/agentheim.css`, alongside the existing `--ct-*` content-type
-   token pairs. Pick a hue distinct from the six in use (ticket grey, context teal, vision
-   ochre-brown, map purple, research blue, adr red) — and **not** the reserved selection accent
-   `--accent-ochre-soft` (ADR-0016). A green / lime reads naturally as "synthesis / insight."
+   `{ label: "Concept", icon: "lightbulb", color: "var(--ct-concept)", tint: "var(--ct-concept-tint)" }`
+   — placed after the `adr` entry, keeping the registry's existing order.
+3. **Tokens → a magenta / pink hue** (builder-decided at refine, 2026-06-17 — maximally distinct
+   from the six in use; nearest neighbour is map purple). Add `--ct-concept` / `--ct-concept-tint`
+   to **both** the light and dark theme blocks in `styleguide/styles/agentheim.css`, alongside the
+   existing `--ct-*` pairs. It must stay distinct from the six in use (ticket grey, context teal,
+   vision ochre-brown, map purple, research blue, adr red) and **never** the reserved selection
+   accent `--accent-ochre-soft` (ADR-0016). **Proposed concrete values** (the worker tunes for
+   contrast/feel against the canvas, the gate confirms — mirroring how the existing pairs sit):
+   - light (`:root`): `--ct-concept: #B0479A;` · `--ct-concept-tint: #F7E3F1;`
+   - dark (`.dark, [data-theme="dark"]`): `--ct-concept: #D98AC8;` · `--ct-concept-tint: #2A1626;`
 
 ## Acceptance criteria
-- [ ] `icons.js` LUCIDE map contains the chosen concept glyph (proposed `lightbulb`),
-      path geometry verified against the pinned Lucide version.
-- [ ] `CONTENT_TYPES` (`data.js`) has a `concept` entry with `label`, `icon`, `color`, `tint`.
+- [ ] `icons.js` LUCIDE map contains the `lightbulb` glyph (builder-decided at refine),
+      path geometry copied verbatim from the pinned Lucide version.
+- [ ] `CONTENT_TYPES` (`data.js`) has a `concept` entry — `label: "Concept"`, `icon: "lightbulb"`,
+      `color: "var(--ct-concept)"`, `tint: "var(--ct-concept-tint)"` — placed after `adr`.
 - [ ] `--ct-concept` and `--ct-concept-tint` are defined in **both** the light and the dark
-      theme blocks of `agentheim.css` (a hue distinct from the six existing content types,
-      never `--accent-ochre-soft`).
+      theme blocks of `agentheim.css` as a **magenta / pink** hue (builder-decided at refine;
+      distinct from the six existing content types, never `--accent-ochre-soft`). Proposed:
+      light `#B0479A` / tint `#F7E3F1`, dark `#D98AC8` / tint `#2A1626`.
 - [ ] A `type: 'concept'` row renders through `TreeItem` **without throwing** (the gap that
       blocks aw-075 is closed): `CONTENT_TYPES['concept'].icon` resolves to a real glyph.
 - [ ] Canvas (`styleguide/index.html`, the §04 icon gallery + the library/TreeItem specimen)
@@ -70,6 +78,18 @@ existing non-task types (context / vision / map / research / adr).
       capability with no shipped dashboard consumer yet (the ds-017/ds-018/ds-020 pattern).
 
 ## Notes
+**Refined 2026-06-17** — the two open visual choices the capture deferred "to a gate decision"
+were **locked with the builder** at refine, so the worker has a concrete target and the gate
+becomes a confirmation rather than a decision:
+- **Glyph → `lightbulb`** (over runner-up `notebook-pen` and `sparkles`).
+- **Hue → magenta / pink** (over the originally-proposed green), for maximal distinctness from
+  the six existing content-type hues — concrete proposed values now in *What* item 3.
+Both still ride the styleguide gate re-review (a glyph + token-pair add is a visible change),
+but the builder has pre-confirmed the choices. No orchestrator/specialist handoff was needed —
+this is a pure styleguide-capability task under ADR-0003/ADR-0016 with no domain or cross-BC
+decision; the only ambiguity was visual taste, which is the builder's call. **Promoted backlog
+→ todo.**
+
 Split off from **agentic-workflow-075** during its refine (2026-06-17): aw-075 is the
 rail/search consumer, this is the content-type capability it depends on. aw-075's
 acceptance criterion ("if a `type: 'concept'` row needs a distinct icon the styleguide's

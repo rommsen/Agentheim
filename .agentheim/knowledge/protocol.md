@@ -5,6 +5,28 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 22:50 -- Modeling / Refined: agentic-workflow-077 - Collision-resistant task IDs for multi-user / multi-branch work (replace sequential integers)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Cornered the decision via an architect round. Builder fixed migration policy to **go-forward coexistence** (legacy `aw-NNN` ids kept, no rewrite sweep) and delegated the scheme choice to the architect, which scored A/B/C and recommended **scheme B — a 5-char random Crockford-base32 token with a leading-letter rule** (`agentic-workflow-k3f9q`): zero-coordination, collision-free by construction, short against the already-long BC prefix, and coexisting with legacy all-digit ids via one structural tell. Grounded the change against the implementation: `deriveContext` (`lib/task-lifecycle.mjs`, `/^(.*)-\d+/`) is the one code change; `resolveTaskFile`'s trailing-`-` anchor needs none. Surfaced a real wrinkle the architect missed — the styleguide gate hard-codes the well-known id `design-system-001-styleguide` in `modeling`/`brainstorm`, which breaks if `brainstorm` mints a random token for it in a new project — and made resolving it an explicit ADR criterion. Tightened acceptance criteria, recorded the proposed grammar + the deferred child-task split (refactor + chore, no migration child) in Notes. Decision is now concrete enough for a worker to write ADR-0028; **promoted backlog → todo**.
+**Split into:** — (implementation children created when the decision lands, not now)
+**ADRs written:** — (ADR-0028 authored when the task is worked)
+
+---
+
+## 2026-06-17 22:48 -- Modeling / Refined: design-system-021 - Concept content-type — registry entry + glyph + --ct-concept tokens
+
+**Type:** Modeling / Refine
+**BC:** design-system
+**Status after:** todo
+**Summary:** Locked the two visual choices the capture had deferred "to a gate decision," with the builder, at refine — turning the styleguide gate from a decision into a confirmation. **Glyph → `lightbulb`** (over runner-up `notebook-pen` / `sparkles`). **Hue → magenta / pink** (over the originally-proposed green), for maximal distinctness from the six existing content-type hues (nearest neighbour is map purple); concrete proposed token values baked into *What* item 3 — light `#B0479A`/`#F7E3F1`, dark `#D98AC8`/`#2A1626` — so the worker has a target and the gate just confirms. Verified every technical claim against the live source: `CONTENT_TYPES` (`data.js`) has no `concept` key and `TreeItem` would throw on the deref; `icons.js` has no idea/insight glyph; `agentheim.css` carries the six `--ct-*` pairs in both light `:root` and the dark block, with magenta genuinely unused. No ADR / no specialist handoff — pure styleguide-capability under ADR-0003/ADR-0016, the only open points being visual taste. **Promoted backlog → todo** (its only dependency, the ds-001 styleguide gate, is OPEN). Unblocks `agentic-workflow-075`.
+**Split into:** —
+**ADRs written:** —
+
+---
+
 ## 2026-06-17 22:45 -- Modeling / Refined: design-system-020 - Drawer gains in-place expandable width
 
 **Type:** Modeling / Refine
