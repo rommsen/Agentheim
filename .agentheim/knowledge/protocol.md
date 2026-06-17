@@ -5,6 +5,24 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 10:08 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 5 (first-try PASS: 4 — aw-078, aw-080, aw-075, aw-079; re-dispatched: 1 — aw-074 passed iteration 2; skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 5 (0deadaf aw-078, 6d73214 aw-080, 204d70f aw-074, c40a9c1 aw-075, aca34bc aw-079, + this session-end line)
+**Notes:**
+- Two waves, all five tasks in the single `agentic-workflow` BC. **Wave 1** (3-worker parallel): aw-074 (slide-over expand chevron), aw-078 (deriveContext dual-shape regex), aw-080 (duplicate-id guard) — disjoint files (dashboard / lib / new lib module). **Wave 2** (2-worker parallel): aw-075 (dashboard concepts rail+search) + aw-079 (skills minting-prose sweep) — disjoint files. aw-075 was held from wave 1 (shared `dashboard/dist/` rebuild with aw-074); aw-079 was dependency-blocked on aw-078 until wave 1 cleared it.
+- **aw-074 failed verification iteration 1** — verifier caught a real, user-facing defect: AC#9 unmet, `dashboard/dist/` was a stale bundle (still the old maximize button, no expand wiring). Source AC#1–#8 were all correct. Re-dispatched worker rebuilt dist (`node build.mjs`); PASS on iteration 2. **Lesson reinforced:** any dashboard-source task must rebuild `dist/` or it ships nothing.
+- **Same-BC-README parallel-edit hazard, handled:** aw-074 and aw-080 (wave 1) both edited `contexts/agentic-workflow/README.md` in disjoint sections; their edits coexisted cleanly, and each task's hunk was committed separately via `git apply --cached` hunk-splitting to keep one-task-one-commit. aw-075 (wave 2) also touched the README but aw-079 did not, so no second collision.
+- **Verifier tooling note:** the aw-074 iteration-1 verifier ran `node build.mjs` then `git checkout` to "restore" the tree, which reverted the worker's legitimate dist rebuild. Subsequent verifiers were given an explicit "do NOT run any git-write/checkout" rule. Worth hardening in `agents/verifier.md` so a read-only auditor never mutates the shared working tree.
+- No bounces, failures, escalations, or concept candidates across the session.
+- Pre-existing working-tree noise (deleted `Screenshot 2026-06-17 112241.png`, untracked `dashboard.png`) left untouched.
+
+---
+
 ## 2026-06-18 10:07 -- Task verified and completed: agentic-workflow-079 - Minting call-site token sweep
 
 **Type:** Work / Task completion
