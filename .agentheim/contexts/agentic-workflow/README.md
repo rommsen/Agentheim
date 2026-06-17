@@ -561,10 +561,17 @@ separate BC, but today the whole tool lives in this one.
   pass), **Capturing** (`quick-capture` and `modeling` as two intake doors, `research`
   gated by the `research-reviewer`, `modeling` DISMISS), **Promote & Work** (`modeling`
   PROMOTE → `work`'s parallel TDD workers → the `verifier` gate → one task = one commit)
-  — each a labelled section with honest, skill-accurate caption copy, the human-in-the-loop
-  gates marked, and an empty placeholder diagram slot (`WorkflowSegment`) that **aw-060**
-  fills. It keeps the main-pane reader's centered reading measure (maxWidth 760, margin
-  `0 auto` — aw-040) and stays static / read-only, styleguide consumed unforked.
+  — each a labelled section with honest, skill-accurate caption copy and the human-in-the-loop
+  gates marked. As of **aw-060** each segment is carried by a **hand-authored flow diagram**
+  above its captions: board-local HTML+CSS primitives (`WNode` skill/artifact boxes,
+  `WCheckpoint` edge markers, `WArrow`/`WFanRow` CSS connectors — no inline SVG, no
+  diagramming library, every fill/border a design-system token so light/dark tracks
+  automatically) compose three **honest per-segment topologies** — Preparation fans out to
+  the four foundation outputs, Capturing is a `backlog` **hub** with the refine/research/dismiss
+  **loops**, Promote & Work is a **pipeline** with the `verifier` FAIL→×2→escalate retry loop.
+  Gates render as **checkpoints on edges**, never as agent boxes. The `role="img"` frame
+  carries a real-flow `aria-label`. It keeps the main-pane reader's centered reading measure
+  (maxWidth 760, margin `0 auto` — aw-040) and stays static / read-only, styleguide consumed unforked.
 - **Library / navigation** — the dashboard's discovery surface (agentic-workflow-008): makes the
   *non-task* knowledge base browsable — vision, context map, every BC README, ADRs, research —
   drawn from the **artifact-location half** of the same tree projection the board uses (`tree.locations`

@@ -90,13 +90,15 @@ test('the human-in-the-loop gates are explicitly marked', () => {
     'the page must mark the human-in-the-loop gates (review / escalation)');
 });
 
-test('each segment carries an empty, clearly-marked placeholder diagram slot for aw-060', () => {
+test('each segment carries a diagram slot — the page renders exactly three segments', () => {
   // The diagram slot is a reusable segment primitive: WorkflowSegment renders ONE
-  // clearly-marked, empty placeholder slot, and the page invokes WorkflowSegment
-  // three times — so three slots render, one per segment.
-  assert.match(wf, /aria-label=\$\{`\$\{title\} flow diagram — placeholder/,
-    'WorkflowSegment must render a clearly-marked placeholder diagram slot');
-  assert.match(wf, /[Dd]iagram placeholder/, 'the slot must be visibly marked as a placeholder (empty, no authored diagram)');
+  // `role="img"` diagram frame, and the page invokes WorkflowSegment three times — so
+  // three slots render, one per segment. aw-060 filled the slots with hand-authored
+  // diagrams (asserted in workflow-diagrams.test.mjs); aw-059 only guards that three
+  // segments, each with its own diagram frame, are present and accessible.
+  assert.match(wf, /role="img"/, 'WorkflowSegment must render a role="img" diagram frame');
+  assert.match(wf, /aria-label=\$\{diagramLabel\}/,
+    'the diagram frame must carry a descriptive aria-label (the real flow)');
   const segments = wf.match(/<\$\{WorkflowSegment\}/g) || [];
   assert.equal(segments.length, 3, 'the page must render exactly three segments, each with its own diagram slot');
 });

@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-060
 title: Workflow guide diagrams (hand-authored flow visuals)
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 commit:
 depends_on: [design-system-001, agentic-workflow-059]
 blocks: [agentic-workflow-057]
@@ -108,3 +108,39 @@ captions, the diagram is the primary visual above them):
 - Depends on aw-059 (the slots must exist first) — now **done** (`bae517d`). This is the
   last piece of the umbrella aw-057 — when this lands, aw-057 closes.
 - Frontend gate met: `design-system-001` (styleguide) is in `done/`.
+
+## Outcome
+Replaced aw-059's placeholder diagram slots with three hand-authored flow visuals, one
+per segment, each carried above its existing captions. Built four board-local diagram
+primitives beside `WorkflowSegment`/`WorkflowCaption`/`Wcode` in `dashboard/app/board.js`:
+`WNode` (skill/artifact box, tinted from `--accent-ochre` vs `--surface-1`/`--hairline`
+tokens), `WCheckpoint` (dashed edge-marker pill for gates / human checks — never an agent
+box), `WArrow` (CSS-drawn connector with a rotated bordered arrowhead, `down`/`right`,
+`fail`-tone for the verifier loop, `dashed` for loop-backs), and `WFanRow` (the fan-out
+row). On top of those, three diagram components with HONEST per-segment topologies:
+- `PreparationDiagram` — linear (`brainstorm` → no-code review checkpoint → `vision.md`
+  + `context-map`) then fan-out to the four foundation outputs (infrastructure BC,
+  foundation tasks, walking skeleton, styleguide gate).
+- `CapturingDiagram` — two intake doors (`quick-capture`, `modeling` CAPTURE) converging
+  on a central `backlog` hub, with three loop-back operations (`modeling` REFINE past a
+  human-review checkpoint, `research` past a reviewer checkpoint, `modeling` DISMISS).
+- `PromoteWorkDiagram` — pipeline `modeling` PROMOTE (`backlog → todo`) → user-reviews-todo
+  checkpoint → `work` (parallel TDD) → `verifier` edge checkpoint → `commit`, with the
+  FAIL → re-dispatch ×2 → escalate loop shown in `--obligation` tone. One task = one commit.
+
+No inline SVG, no diagramming library, no new bundled dependency. Every color/border/fill
+is a CSS var so light/dark theme tracking is automatic (asserted: no hardcoded hex in the
+diagram block). Static, read-only (ADR-0017); no motion added (the prefers-reduced-motion
+guard is conditional in the test and currently vacuous). `WorkflowSegment` now takes a
+`diagram` + descriptive `diagramLabel`, keeping `role="img"`; the page passes a real-flow
+`aria-label` per segment (no "placeholder"). aw-058/aw-059 routing wiring untouched.
+
+Added static guard suite `dashboard/test/workflow-diagrams.test.mjs` (9 tests covering the
+three topologies, no-SVG/no-library, edge-checkpoints-not-boxes, token-only colors, and the
+read-only/aria contract). Updated the one now-stale placeholder assertion in
+`dashboard/test/workflow-page-content.test.mjs` to guard the `role="img"` diagram frame
+instead. Rebuilt `dashboard/dist/` (`node build.mjs`). Full `node --test` suite green
+(551 pass, 0 fail). This closes umbrella aw-057.
+
+Key files: `dashboard/app/board.js`, `dashboard/test/workflow-diagrams.test.mjs`,
+`dashboard/test/workflow-page-content.test.mjs`, `dashboard/dist/`.

@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 65
+- **Done:** 66
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `todo/agentic-workflow-060-workflow-guide-diagrams.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `done/agentic-workflow-060-workflow-guide-diagrams.md`
 - **agentic-workflow-063** — Analyze and optimize the committing pattern (refactor) — `done/agentic-workflow-063-optimize-committing-pattern.md`
 - **agentic-workflow-069** — Topbar "What's next" button fires the /agentheim:whats-next skill (replaces the interim raw prompt) (feature) — `done/agentic-workflow-069-whats-next-button-fires-whats-next-skill.md`
 - **agentic-workflow-067** — Topbar stays fixed at the top of the viewport when the board or a document scrolls (bug) — `done/agentic-workflow-067-topbar-sticky-stays-fixed-on-scroll.md`

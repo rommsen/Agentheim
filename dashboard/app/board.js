@@ -1139,18 +1139,121 @@ function SkipPermissionsToggle({ armed, onToggle }) {
     </button>`;
 }
 
-// One numbered WORKFLOW SEGMENT (agentic-workflow-059): a labelled section that
-// frames the segment's title + ordinal, hosts an EMPTY, clearly-marked placeholder
-// diagram slot (aw-060 fills the hand-authored visual), and renders the supporting
-// caption beneath. Presentation only — the honest, skill-accurate copy lives inline
-// in WorkflowPage's children, so the verifier can check the prose there. Composed
-// from styleguide tokens consumed UNFORKED (ADR-0003); honors light/dark by token.
+// ── Workflow diagram primitives (agentic-workflow-060) ──────────────────────
+// Board-local helpers (NOT a design-system primitive — single consumer, content-
+// bound shapes; the seam test failed at refinement). The hand-authored flow visuals
+// for the three workflow segments are built from these. RULES (from aw-060):
+//   • HTML + CSS boxes laid out with flexbox; connectors are CSS-drawn (token-styled
+//     borders / pseudo-edges) — NO inline SVG, NO diagramming library, NO new bundled
+//     runtime dependency.
+//   • Every color / border / fill is a design-system CSS var (ADR-0003, consumed
+//     UNFORKED) so the diagrams track the active light/dark theme automatically.
+//   • Nodes are SKILLS + ARTIFACTS only. Gates / human-in-the-loop checks render as a
+//     marked CHECKPOINT on an edge (WCheckpoint) — never as separate orchestrator /
+//     specialist / verifier / research-reviewer boxes.
+//   • Static (read-only, ADR-0017): no motion by default; any motion added would be
+//     wrapped behind prefers-reduced-motion. There is none today.
+
+// A diagram NODE: a skill or an artifact. `kind` tints the box from tokens —
+//   skill    → accent-ochre outline on accent-tint fill (the verbs that act),
+//   artifact → hairline outline on surface fill (the things produced/moved).
+// `verb` is an optional small mono sub-label (e.g. CAPTURE / REFINE / PROMOTE).
+function WNode({ kind = "skill", label, verb }) {
+  const skill = kind === "skill";
+  return html`
+    <span style=${{
+      display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 1,
+      padding: "5px 9px", borderRadius: "var(--radius-sm)",
+      fontFamily: "var(--font-mono)", fontSize: 11, lineHeight: 1.25, whiteSpace: "nowrap",
+      color: skill ? "var(--accent-ochre)" : "var(--fg-2)",
+      background: skill ? "var(--accent-ochre-tint)" : "var(--surface-1)",
+      border: `1px solid ${skill ? "var(--accent-ochre)" : "var(--hairline-strong)"}`,
+    }}>
+      <span>${label}</span>
+      ${verb ? html`<span style=${{
+        fontSize: 9, letterSpacing: "0.04em", color: "var(--fg-3)",
+      }}>${verb}</span>` : ""}
+    </span>`;
+}
+
+// A CHECKPOINT marker pinned on an edge — the adversarial gate / human-in-the-loop
+// review. NOT a node: it is rendered ON a connector, styled distinctly (dashed
+// outline, no fill) so it reads as "a check the flow must pass", not "an actor".
+// `tone` = "human" (builder review) or "guard" (verifier / research-reviewer).
+function WCheckpoint({ label, tone = "guard" }) {
+  const human = tone === "human";
+  return html`
+    <span aria-hidden="true" style=${{
+      display: "inline-flex", alignItems: "center", gap: 4,
+      padding: "2px 7px", borderRadius: 99,
+      fontFamily: "var(--font-mono)", fontSize: 9.5, letterSpacing: "0.03em",
+      color: human ? "var(--accent-ochre)" : "var(--fg-3)",
+      background: "transparent",
+      border: `1px dashed ${human ? "var(--accent-ochre)" : "var(--hairline-strong)"}`,
+    }}>
+      <span style=${{
+        width: 5, height: 5, borderRadius: 99, flexShrink: 0,
+        background: human ? "var(--accent-ochre)" : "var(--fg-4)",
+      }} />
+      <span>${label}</span>
+    </span>`;
+}
+
+// A CSS-drawn connector. `dir` = "down" | "right". `tone` "default" | "fail"
+// (the verifier FAIL loop) colors the line. `dashed` marks a loop-back edge.
+// The arrowhead is a rotated bordered pseudo-box (no SVG). Optional `mid` slot
+// hosts an edge checkpoint / loop label centered on the line.
+function WArrow({ dir = "down", tone = "default", dashed = false, mid, label }) {
+  const color = tone === "fail" ? "var(--obligation)" : "var(--hairline-strong)";
+  const down = dir === "down";
+  const line = down
+    ? { width: 0, minHeight: 18, borderLeft: `1.5px ${dashed ? "dashed" : "solid"} ${color}` }
+    : { height: 0, minWidth: 26, borderTop: `1.5px ${dashed ? "dashed" : "solid"} ${color}` };
+  const head = {
+    width: 5, height: 5, borderRight: `1.5px solid ${color}`, borderBottom: `1.5px solid ${color}`,
+    transform: down ? "rotate(45deg)" : "rotate(-45deg)", flexShrink: 0,
+    marginTop: down ? -3 : 0, marginLeft: down ? 0 : -3,
+  };
+  return html`
+    <span aria-hidden="true" style=${{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      flexDirection: down ? "column" : "row", gap: mid || label ? 4 : 0,
+    }}>
+      <span style=${{ display: "inline-flex", alignItems: "center", flexDirection: down ? "column" : "row" }}>
+        <span style=${line} />
+        <span style=${head} />
+      </span>
+      ${mid ? mid : ""}
+      ${label ? html`<span style=${{
+        fontFamily: "var(--font-mono)", fontSize: 9, color:
+          tone === "fail" ? "var(--obligation)" : "var(--fg-3)",
+      }}>${label}</span>` : ""}
+    </span>`;
+}
+
+// A row of nodes that a single parent fans out to — used for Preparation's four
+// foundation outputs. Each child sits under its own short down-connector.
+function WFanRow({ children }) {
+  return html`
+    <span style=${{
+      display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 10,
+    }}>${children}</span>`;
+}
+
+// One numbered WORKFLOW SEGMENT (agentic-workflow-059; diagram filled by aw-060): a
+// labelled section that frames the segment's title + ordinal, hosts the hand-authored
+// flow DIAGRAM (passed as `diagram`, with a faithful `diagramLabel` describing the real
+// flow), and renders the supporting caption beneath. Presentation only — the honest,
+// skill-accurate copy lives inline in WorkflowPage's children, so the verifier can
+// check the prose there. Composed from styleguide tokens consumed UNFORKED (ADR-0003);
+// honors light/dark by token.
 //
 // `gate` is the segment's explicit human-in-the-loop marker (ADR-0017 / vision
-// non-goal 3: the human stays in the loop at every gate). The diagram slot is a
-// dashed, labelled placeholder — visibly a "diagram goes here" frame, never an
-// authored diagram (that is aw-060). It is inert and read-only (no fetch, no write).
-function WorkflowSegment({ ordinal, title, gate, children }) {
+// non-goal 3: the human stays in the loop at every gate). The diagram is a static
+// HTML+CSS visual (aw-060) inside a `role="img"` frame — inert and read-only (no
+// fetch, no write). Its `aria-label` summarizes the real flow (the visual is
+// decorative-structural; the prose remains the captions beneath).
+function WorkflowSegment({ ordinal, title, gate, diagram, diagramLabel, children }) {
   return html`
     <section aria-label=${`${title} segment`} style=${{
       display: "flex", flexDirection: "column", gap: 14,
@@ -1167,17 +1270,16 @@ function WorkflowSegment({ ordinal, title, gate, children }) {
       </header>
       <div
         role="img"
-        aria-label=${`${title} flow diagram — placeholder (added in a later pass)`}
+        aria-label=${diagramLabel}
         style=${{
           display: "flex", alignItems: "center", justifyContent: "center",
-          minHeight: 132, padding: "20px 16px",
+          minHeight: 132, padding: "24px 16px",
           borderRadius: "var(--radius-md)",
-          border: "1px dashed var(--hairline-strong)",
+          border: "1px solid var(--hairline)",
           background: "var(--surface-1)",
-          fontFamily: "var(--font-ui)", fontSize: 12, color: "var(--fg-4)",
-          textAlign: "center",
+          overflowX: "auto",
         }}>
-        Diagram placeholder — the ${title} flow diagram is added in a later pass.
+        ${diagram}
       </div>
       <div style=${{ display: "flex", flexDirection: "column", gap: 10 }}>
         ${children}
@@ -1211,13 +1313,109 @@ function Wcode({ children }) {
   }}>${children}</code>`;
 }
 
+// ── The three hand-authored segment diagrams (agentic-workflow-060) ─────────
+// Each takes the HONEST shape of its real flow — the three topologies differ on
+// purpose (not a uniform left-to-right lane). Built from WNode / WCheckpoint /
+// WArrow / WFanRow above: skills + artifacts as nodes, gates as edge checkpoints.
+
+// Segment 1 — PREPARATION: linear, then fan-out. brainstorm → (vision.md +
+// context-map) → fan-out into the four foundation outputs. The whole segment
+// carries the no-code human checkpoint (the builder reviews before anything is
+// stood up).
+function PreparationDiagram() {
+  return html`
+    <span style=${{
+      display: "flex", flexDirection: "column", alignItems: "center", gap: 0,
+      fontFamily: "var(--font-ui)",
+    }}>
+      <${WNode} kind="skill" label="brainstorm" />
+      <${WArrow} dir="down" mid=${html`<${WCheckpoint} label="no-code review" tone="human" />`} />
+      <span style=${{ display: "flex", gap: 10 }}>
+        <${WNode} kind="artifact" label="vision.md" />
+        <${WNode} kind="artifact" label="context-map" />
+      </span>
+      <${WArrow} dir="down" label="fan-out" />
+      <${WFanRow}>
+        <${WNode} kind="artifact" label="infrastructure BC" />
+        <${WNode} kind="artifact" label="foundation tasks" />
+        <${WNode} kind="artifact" label="walking skeleton" />
+        <${WNode} kind="skill" label="styleguide gate" />
+      </${WFanRow}>
+    </span>`;
+}
+
+// Segment 2 — CAPTURING: a backlog HUB with loops, not a line. Two intake doors
+// (quick-capture + modeling CAPTURE) converge on the central backlog node; three
+// operations loop back on it — modeling REFINE, research (carrying the review
+// checkpoint), and modeling DISMISS. The human-in-the-loop checkpoint marks the
+// refine / promote-readiness edge.
+function CapturingDiagram() {
+  return html`
+    <span style=${{
+      display: "flex", alignItems: "center", gap: 14, fontFamily: "var(--font-ui)",
+    }}>
+      <span style=${{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <${WNode} kind="skill" label="quick-capture" />
+        <${WNode} kind="skill" label="modeling" verb="CAPTURE" />
+      </span>
+      <${WArrow} dir="right" label="intake" />
+      <${WNode} kind="artifact" label="backlog" />
+      <span style=${{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style=${{ display: "flex", alignItems: "center", gap: 6 }}>
+          <${WArrow} dir="right" dashed=${true} mid=${html`<${WCheckpoint} label="human review" tone="human" />`} />
+          <${WNode} kind="skill" label="modeling" verb="REFINE" />
+        </span>
+        <span style=${{ display: "flex", alignItems: "center", gap: 6 }}>
+          <${WArrow} dir="right" dashed=${true} mid=${html`<${WCheckpoint} label="reviewer" tone="guard" />`} />
+          <${WNode} kind="skill" label="research" />
+        </span>
+        <span style=${{ display: "flex", alignItems: "center", gap: 6 }}>
+          <${WArrow} dir="right" dashed=${true} label="loop" />
+          <${WNode} kind="skill" label="modeling" verb="DISMISS" />
+        </span>
+      </span>
+    </span>`;
+}
+
+// Segment 3 — PROMOTE & WORK: a pipeline with a retry loop. modeling PROMOTE
+// (backlog → todo) → work (parallel TDD workers) → verifier checkpoint on the
+// edge → commit. The checkpoint shows the FAIL → re-dispatch (×2) → escalate loop
+// back to work; the user-reviews-before-work checkpoint sits on the entry edge.
+function PromoteWorkDiagram() {
+  return html`
+    <span style=${{
+      display: "flex", flexDirection: "column", alignItems: "center", gap: 0,
+      fontFamily: "var(--font-ui)",
+    }}>
+      <span style=${{ display: "flex", alignItems: "center", gap: 8 }}>
+        <${WNode} kind="skill" label="modeling" verb="PROMOTE" />
+        <${WArrow} dir="right" label="backlog → todo" />
+        <${WNode} kind="artifact" label="todo" />
+      </span>
+      <${WArrow} dir="down" mid=${html`<${WCheckpoint} label="user reviews todo" tone="human" />`} />
+      <${WNode} kind="skill" label="work" verb="parallel TDD" />
+      <span style=${{ display: "flex", alignItems: "center", gap: 8 }}>
+        <${WArrow} dir="down" mid=${html`<${WCheckpoint} label="verifier" tone="guard" />`} />
+        <span style=${{
+          display: "inline-flex", alignItems: "center", gap: 4,
+          fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--obligation)",
+        }}>
+          <${WArrow} dir="down" tone="fail" dashed=${true} />
+          <span>FAIL → re-dispatch ×2 → escalate</span>
+        </span>
+      </span>
+      <${WNode} kind="artifact" label="commit" verb="one task = one commit" />
+    </span>`;
+}
+
 // The built-in WORKFLOW guide page (agentic-workflow-058 routing scaffold; real
 // three-segment layout + caption copy added by agentic-workflow-059; diagrams by
 // aw-060). Governed by ADR-0025.
 //
 // It explains Agentheim's workflow as THREE named segments, in order — Preparation,
-// Capturing, Promote & Work — each a labelled section with an empty, clearly-marked
-// placeholder diagram slot (aw-060 fills the visuals) and HONEST, skill-accurate
+// Capturing, Promote & Work — each a labelled section carried by a hand-authored
+// HTML+CSS flow diagram (aw-060: PreparationDiagram / CapturingDiagram /
+// PromoteWorkDiagram, honest per-segment topology) above HONEST, skill-accurate
 // caption copy: it names the real skills/verbs (brainstorm, quick-capture, modeling,
 // research, work) and the real adversarial gates (verifier, research-reviewer), shows
 // quick-capture AND modeling as two distinct intake doors, includes DISMISS, and
@@ -1256,6 +1454,8 @@ function WorkflowPage() {
       <${WorkflowSegment}
         ordinal=${1}
         title="Preparation"
+        diagram=${html`<${PreparationDiagram} />`}
+        diagramLabel="Preparation flow: the brainstorm skill — past a no-code human review checkpoint — produces the vision.md and context-map artifacts, which fan out into four foundation outputs: the infrastructure bounded context, the foundation decision tasks, the walking-skeleton spike, and the styleguide gate."
         gate=${html`No code is written in Preparation. The whole segment is a no-code Socratic dialogue with the builder, who reviews the vision and the bounded contexts before anything is stood up.`}>
         <${WorkflowCaption}>
           <${Wcode}>brainstorm</${Wcode}> is a no-code Socratic dialogue — six conversational
@@ -1273,6 +1473,8 @@ function WorkflowPage() {
       <${WorkflowSegment}
         ordinal=${2}
         title="Capturing"
+        diagram=${html`<${CapturingDiagram} />`}
+        diagramLabel="Capturing flow: two intake doors — the quick-capture skill and the modeling CAPTURE skill — converge on a central backlog hub. Three operations loop back on the backlog: modeling REFINE past a human-review checkpoint, research past a reviewer checkpoint, and modeling DISMISS."
         gate=${html`Refinement is human-in-the-loop. The builder drives the Socratic dialogue; nothing is promoted to <${Wcode}>todo</${Wcode}> from here, and research is not citable until the <${Wcode}>research-reviewer</${Wcode}> passes it.`}>
         <${WorkflowCaption}>
           Two distinct intake doors land tasks in <${Wcode}>backlog/</${Wcode}>:
@@ -1295,6 +1497,8 @@ function WorkflowPage() {
       <${WorkflowSegment}
         ordinal=${3}
         title="Promote & Work"
+        diagram=${html`<${PromoteWorkDiagram} />`}
+        diagramLabel="Promote and Work flow: modeling PROMOTE moves a task from backlog to todo; past a user-reviews-todo checkpoint the work skill runs parallel TDD workers; a verifier checkpoint on the edge guards the commit, with a FAIL re-dispatch loop (up to twice, then escalate) back to work. Every passing task becomes exactly one commit."
         gate=${html`The builder reviews the <${Wcode}>todo</${Wcode}> tasks before <${Wcode}>work</${Wcode}> runs; the <${Wcode}>verifier</${Wcode}> guards every commit; a verification that keeps failing escalates to the builder rather than committing plausible-but-wrong work.`}>
         <${WorkflowCaption}>
           <${Wcode}>modeling</${Wcode}> PROMOTE runs a readiness check and moves a task

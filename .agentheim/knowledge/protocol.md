@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 17:18 -- Task verified and completed: agentic-workflow-060 - Workflow guide diagrams (hand-authored flow visuals)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-060 - Workflow guide diagrams (hand-authored flow visuals)
+**Summary:** Replaced the Workflow guide's three placeholder diagram slots with hand-authored HTML+CSS flow visuals — honest per-segment topologies (Preparation fan-out, Capturing backlog hub with refine/research/dismiss loops, Promote & Work pipeline with the verifier FAIL→×2→escalate retry loop) built from board-local token-driven primitives. Closes umbrella aw-057.
+**Verification:** PASS (iteration 1) — full dashboard suite 551 pass / 0 fail; no inline SVG / no diagramming library, all colors are CSS-var tokens (no hex literals), gates render as edge checkpoints not agent boxes, dist genuinely rebuilt, aw-058/aw-059 routing wiring byte-unchanged.
+**Files changed:** 4 (board.js, workflow-diagrams.test.mjs [new], workflow-page-content.test.mjs, dist/app.js) + BC README
+**Tests added:** 1 new suite (workflow-diagrams.test.mjs) + 1 updated assertion in workflow-page-content.test.mjs
+**ADRs written:** none
+
+---
+
+## 2026-06-17 17:10 -- Batch started: [agentic-workflow-060]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-060 - Workflow guide diagrams (hand-authored flow visuals)
+**Parallel:** no (1 worker) — sole ready task; both deps (design-system-001, agentic-workflow-059) in done/.
+
+---
+
 ## 2026-06-17 17:02 -- Work session ended
 
 **Type:** Work / Session end
