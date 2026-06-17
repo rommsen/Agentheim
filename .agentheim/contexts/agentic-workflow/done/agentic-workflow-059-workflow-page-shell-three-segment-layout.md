@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-059
 title: Workflow page shell + three-segment layout
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 commit:
 depends_on: [design-system-001, agentic-workflow-058]
 blocks: [agentic-workflow-060, agentic-workflow-057]
@@ -85,3 +85,37 @@ primitives consumed **unforked** (ADR-0003), no new bundled dependency.
 - Diagram slots are **placeholders only** in this task — empty, clearly-marked slots that
   aw-060 fills with the hand-authored visuals. Do not author diagrams here (that is aw-060).
 - Frontend gate met: `design-system-001` (styleguide) is in `done/`.
+
+## Outcome
+Replaced aw-058's placeholder `WorkflowPage` body in `dashboard/app/board.js` with the
+real static three-segment guide. Kept the `WorkflowPage` function name and aw-058's
+`onSelectWorkflow` / `mainView === "workflow"` routing untouched (ADR-0025 scaffold not
+re-touched). Added three board-local presentational helpers above the page —
+`WorkflowSegment` (numbered, labelled section + an empty, clearly-marked placeholder
+diagram slot for aw-060 + an explicit human-in-the-loop **Gate** marker),
+`WorkflowCaption`, and `Wcode` (monospace token for naming skills/verbs/artifacts) —
+all composed from styleguide tokens consumed unforked (ADR-0003).
+
+The page renders three named segments in order — **Preparation** (`brainstorm` → vision/
+context-map + foundation pass with the walking-skeleton spike and design-system gate),
+**Capturing** (`quick-capture` and `modeling` CAPTURE as two distinct intake doors,
+`modeling` REFINE, `research` gated by the `research-reviewer`, `modeling` DISMISS), and
+**Promote & Work** (`modeling` PROMOTE → `work`'s parallel TDD workers → the fresh-context
+`verifier` gate, FAIL re-dispatches up to twice then escalates to the builder → one task =
+one commit). Copy names the **verifier** correctly (never "verify"), marks the gates, and
+keeps the main-pane reader's centered measure (maxWidth 760, margin `0 auto`). Static /
+read-only — no `/api/doc` fetch, no `isTaskIntent`, no new bundled dependency.
+
+Key files:
+- `dashboard/app/board.js` — `WorkflowSegment` / `WorkflowCaption` / `Wcode` helpers + the
+  real `WorkflowPage` body (replaced the placeholder).
+- `dashboard/test/workflow-page-content.test.mjs` — new source-reading static guard (9
+  tests): segment order + names, honest skill/verb/gate copy, the verifier-not-"verify"
+  check, three placeholder diagram slots, the 760/`0 auto` reading measure, and the
+  static/read-only/unforked invariants.
+- `dashboard/dist/app.js` (+ rest of `dist/`) — rebuilt via `node build.mjs` so the
+  deployed bundle carries the layout.
+- `dashboard/test/workflow-rail-routing.test.mjs` (aw-058) stays green unchanged.
+
+Full dashboard suite: 515 tests passing. No ADR written (the page follows the AboutPage
+precedent under the existing ADR-0025/0017/0003 decisions; no new decision made).

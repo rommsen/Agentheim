@@ -513,6 +513,15 @@ separate BC, but today the whole tool lives in this one.
   clears the other selections; every board/doc handler resets `mainView` to `"board"`).
   The `mainView` enum is built to extend — **aw-062** added the `"about"` page (the
   builder bio + a Ko-fi support card) as the one-line extension ADR-0025 anticipated.
+  As of **aw-059** the `"workflow"` page carries its real layout: **three named
+  segments** — **Preparation** (`brainstorm` → vision/context-map + the foundation
+  pass), **Capturing** (`quick-capture` and `modeling` as two intake doors, `research`
+  gated by the `research-reviewer`, `modeling` DISMISS), **Promote & Work** (`modeling`
+  PROMOTE → `work`'s parallel TDD workers → the `verifier` gate → one task = one commit)
+  — each a labelled section with honest, skill-accurate caption copy, the human-in-the-loop
+  gates marked, and an empty placeholder diagram slot (`WorkflowSegment`) that **aw-060**
+  fills. It keeps the main-pane reader's centered reading measure (maxWidth 760, margin
+  `0 auto` — aw-040) and stays static / read-only, styleguide consumed unforked.
 - **Library / navigation** — the dashboard's discovery surface (agentic-workflow-008): makes the
   *non-task* knowledge base browsable — vision, context map, every BC README, ADRs, research —
   drawn from the **artifact-location half** of the same tree projection the board uses (`tree.locations`

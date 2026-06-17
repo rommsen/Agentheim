@@ -968,32 +968,176 @@ function SkipPermissionsToggle({ armed, onToggle }) {
     </button>`;
 }
 
-// The built-in WORKFLOW guide page (agentic-workflow-058, governed by ADR-0025).
-// A PLACEHOLDER in this task — it proves the ROUTING (a third main-pane state beside
-// the board and the document reader), not the content; aw-059 supplies the real
-// layout and aw-060 the diagrams. It is a STATIC page built into the bundle: NOT an
-// open-intent (no lifecycle `status`, no on-disk `path`), so it never enters
-// isTaskIntent (ADR-0021, byte-unchanged) and never fetches /api/doc. It is
-// read-only over .agentheim/ (ADR-0017) and composed from styleguide tokens consumed
-// UNFORKED (ADR-0003) — no styleguide edit, no new bundled dependency. The shell
+// One numbered WORKFLOW SEGMENT (agentic-workflow-059): a labelled section that
+// frames the segment's title + ordinal, hosts an EMPTY, clearly-marked placeholder
+// diagram slot (aw-060 fills the hand-authored visual), and renders the supporting
+// caption beneath. Presentation only — the honest, skill-accurate copy lives inline
+// in WorkflowPage's children, so the verifier can check the prose there. Composed
+// from styleguide tokens consumed UNFORKED (ADR-0003); honors light/dark by token.
+//
+// `gate` is the segment's explicit human-in-the-loop marker (ADR-0017 / vision
+// non-goal 3: the human stays in the loop at every gate). The diagram slot is a
+// dashed, labelled placeholder — visibly a "diagram goes here" frame, never an
+// authored diagram (that is aw-060). It is inert and read-only (no fetch, no write).
+function WorkflowSegment({ ordinal, title, gate, children }) {
+  return html`
+    <section aria-label=${`${title} segment`} style=${{
+      display: "flex", flexDirection: "column", gap: 14,
+    }}>
+      <header style=${{ display: "flex", alignItems: "baseline", gap: 10 }}>
+        <span style=${{
+          fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--fg-4)",
+          fontFeatureSettings: '"tnum"',
+        }}>${String(ordinal).padStart(2, "0")}</span>
+        <h2 style=${{
+          margin: 0, fontFamily: "var(--font-ui)", fontSize: 17, fontWeight: 600,
+          letterSpacing: "-0.01em", color: "var(--fg-1)",
+        }}>${title}</h2>
+      </header>
+      <div
+        role="img"
+        aria-label=${`${title} flow diagram — placeholder (added in a later pass)`}
+        style=${{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          minHeight: 132, padding: "20px 16px",
+          borderRadius: "var(--radius-md)",
+          border: "1px dashed var(--hairline-strong)",
+          background: "var(--surface-1)",
+          fontFamily: "var(--font-ui)", fontSize: 12, color: "var(--fg-4)",
+          textAlign: "center",
+        }}>
+        Diagram placeholder — the ${title} flow diagram is added in a later pass.
+      </div>
+      <div style=${{ display: "flex", flexDirection: "column", gap: 10 }}>
+        ${children}
+      </div>
+      <p style=${{
+        margin: 0, fontFamily: "var(--font-ui)", fontSize: 12.5, lineHeight: 1.55,
+        color: "var(--fg-3)",
+        paddingLeft: 12, borderLeft: "2px solid var(--hairline-strong)",
+      }}>
+        <strong style=${{ color: "var(--fg-2)" }}>Gate.</strong> ${gate}
+      </p>
+    </section>`;
+}
+
+// A caption paragraph inside a segment — the supporting prose beneath the (later)
+// diagram. Token-styled, unforked (ADR-0003), comfortable reading measure.
+function WorkflowCaption({ children }) {
+  return html`
+    <p style=${{
+      margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.65,
+      color: "var(--fg-2)",
+    }}>${children}</p>`;
+}
+
+// A monospace inline token for naming a skill / verb / artifact in the captions
+// (e.g. `brainstorm`, `verifier`, vision.md). Keeps the named things visually
+// distinct from prose without forking the styleguide — just the --font-mono token.
+function Wcode({ children }) {
+  return html`<code style=${{
+    fontFamily: "var(--font-mono)", fontSize: 12.5, color: "var(--fg-1)",
+  }}>${children}</code>`;
+}
+
+// The built-in WORKFLOW guide page (agentic-workflow-058 routing scaffold; real
+// three-segment layout + caption copy added by agentic-workflow-059; diagrams by
+// aw-060). Governed by ADR-0025.
+//
+// It explains Agentheim's workflow as THREE named segments, in order — Preparation,
+// Capturing, Promote & Work — each a labelled section with an empty, clearly-marked
+// placeholder diagram slot (aw-060 fills the visuals) and HONEST, skill-accurate
+// caption copy: it names the real skills/verbs (brainstorm, quick-capture, modeling,
+// research, work) and the real adversarial gates (verifier, research-reviewer), shows
+// quick-capture AND modeling as two distinct intake doors, includes DISMISS, and
+// marks the human-in-the-loop gates (no-code brainstorm, user review before work,
+// escalation to the builder after repeated verification failure).
+//
+// It is a STATIC page built into the bundle: NOT an open-intent (no lifecycle
+// `status`, no on-disk `path`), so it never enters isTaskIntent (ADR-0021,
+// byte-unchanged) and never fetches /api/doc. It is read-only over .agentheim/
+// (ADR-0017) and composed from styleguide tokens consumed UNFORKED (ADR-0003) — no
+// styleguide edit, no new bundled dependency. It keeps the main-pane reader's
+// centered reading measure (maxWidth 760, margin "0 auto" — aw-040). The shell
 // selects it via the dedicated onSelectWorkflow handler (NOT the rail's onOpen
-// machinery) and renders it ahead of the document reader and the board.
+// machinery) and renders it per the workflow → about → document → board precedence.
 function WorkflowPage() {
   return html`
     <section aria-label="Workflow guide" style=${{
-      display: "flex", flexDirection: "column", gap: 12, padding: "0 4px",
+      display: "flex", flexDirection: "column", gap: 36,
+      maxWidth: 760, margin: "0 auto", padding: "0 4px",
     }}>
-      <h1 style=${{
-        margin: 0, fontFamily: "var(--font-ui)", fontSize: 22, fontWeight: 600,
-        letterSpacing: "-0.01em", color: "var(--fg-1)",
-      }}>Workflow</h1>
-      <p style=${{
-        margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6,
-        color: "var(--fg-3)", maxWidth: 560,
-      }}>
-        The Agentheim workflow guide lives here. This built-in page is a placeholder —
-        its layout and diagrams arrive in a later pass.
-      </p>
+      <header style=${{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <h1 style=${{
+          margin: 0, fontFamily: "var(--font-ui)", fontSize: 22, fontWeight: 600,
+          letterSpacing: "-0.01em", color: "var(--fg-1)",
+        }}>Workflow</h1>
+        <p style=${{
+          margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.65,
+          color: "var(--fg-3)",
+        }}>
+          Agentheim turns a raw idea into a vision, a vision into a modeled backlog of
+          bounded contexts, and a backlog into parallel, dependency-aware execution. The
+          workflow has three segments — and the human stays in the loop at every gate.
+        </p>
+      </header>
+
+      <${WorkflowSegment}
+        ordinal=${1}
+        title="Preparation"
+        gate=${html`No code is written in Preparation. The whole segment is a no-code Socratic dialogue with the builder, who reviews the vision and the bounded contexts before anything is stood up.`}>
+        <${WorkflowCaption}>
+          <${Wcode}>brainstorm</${Wcode}> is a no-code Socratic dialogue — six conversational
+          modes pressing on the idea until it holds — that produces <${Wcode}>vision.md</${Wcode}>
+          and <${Wcode}>context-map.md</${Wcode}>.
+        </${WorkflowCaption}>
+        <${WorkflowCaption}>
+          A foundation pass then stands up the <strong>infrastructure</strong> bounded
+          context, the <strong>foundation decision tasks</strong>, and a
+          <strong>walking-skeleton spike</strong> — plus, if the vision implies a frontend,
+          the <strong>design-system styleguide gate</strong>.
+        </${WorkflowCaption}>
+      </${WorkflowSegment}>
+
+      <${WorkflowSegment}
+        ordinal=${2}
+        title="Capturing"
+        gate=${html`Refinement is human-in-the-loop. The builder drives the Socratic dialogue; nothing is promoted to <${Wcode}>todo</${Wcode}> from here, and research is not citable until the <${Wcode}>research-reviewer</${Wcode}> passes it.`}>
+        <${WorkflowCaption}>
+          Two distinct intake doors land tasks in <${Wcode}>backlog/</${Wcode}>:
+          <${Wcode}>quick-capture</${Wcode}> (fast, no questions, raw) and
+          <${Wcode}>modeling</${Wcode}> CAPTURE (a Socratic dialogue that corners ambiguity
+          as it captures).
+        </${WorkflowCaption}>
+        <${WorkflowCaption}>
+          <${Wcode}>modeling</${Wcode}> REFINE deepens an existing task; <${Wcode}>research</${Wcode}>
+          feeds external knowledge mid-model and is gated by the <${Wcode}>research-reviewer</${Wcode}>
+          (a fresh-context skeptic) before it can be cited.
+        </${WorkflowCaption}>
+        <${WorkflowCaption}>
+          <${Wcode}>modeling</${Wcode}> DISMISS cascade-deletes an abandoned task and its
+          dependent subtree under a single re-confirmation, so the backlog never silently
+          rots.
+        </${WorkflowCaption}>
+      </${WorkflowSegment}>
+
+      <${WorkflowSegment}
+        ordinal=${3}
+        title="Promote & Work"
+        gate=${html`The builder reviews the <${Wcode}>todo</${Wcode}> tasks before <${Wcode}>work</${Wcode}> runs; the <${Wcode}>verifier</${Wcode}> guards every commit; a verification that keeps failing escalates to the builder rather than committing plausible-but-wrong work.`}>
+        <${WorkflowCaption}>
+          <${Wcode}>modeling</${Wcode}> PROMOTE runs a readiness check and moves a task
+          <${Wcode}>backlog → todo</${Wcode}>. <${Wcode}>work</${Wcode}> then resolves the
+          dependency DAG and dispatches <strong>parallel TDD workers</strong> — independent
+          work runs at once, without two workers colliding on the same file.
+        </${WorkflowCaption}>
+        <${WorkflowCaption}>
+          Each worker's SUCCESS passes a fresh-context <${Wcode}>verifier</${Wcode}> gate
+          before anything is committed. A FAIL re-dispatches the task (up to twice); if it
+          still fails, it escalates to the builder. Every passing task becomes exactly one
+          commit — <strong>one task = one commit</strong>.
+        </${WorkflowCaption}>
+      </${WorkflowSegment}>
     </section>`;
 }
 
