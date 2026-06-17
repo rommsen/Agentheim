@@ -997,6 +997,172 @@ function WorkflowPage() {
     </section>`;
 }
 
+// A small external link (agentic-workflow-062). Every off-app destination on the
+// About page (contact links, the GitHub link) opens in a NEW TAB with a safe
+// `rel="noopener noreferrer"` — never in-app navigation (ADR-0021's routing is for
+// on-disk docs/tasks only; the About page is static chrome). Token-styled, no fork
+// (ADR-0003). It carries the styleguide's existing "leaves the app" affordance icon.
+function AboutLink({ href, label }) {
+  return html`
+    <a
+      className="focusable"
+      href=${href}
+      target="_blank"
+      rel="noopener noreferrer"
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 7,
+        fontFamily: "var(--font-ui)", fontSize: 13, fontWeight: 500,
+        color: "var(--fg-1)", textDecoration: "none",
+        transition: "color var(--duration-fast) var(--ease-base)",
+      }}>
+      <${Icon} name="square-arrow-out-up-right" size=${13.5} color="var(--fg-3)" />
+      <span>${label}</span>
+    </a>`;
+}
+
+// The board-local Ko-fi "buy me a coffee" gradient button (agentic-workflow-062).
+// The styleguide has NO gradient-button primitive, so — following the StoppedOverlay
+// / board-control precedent (ADR-0003) — this is a board-local, token-matched control
+// composed BESIDE the styleguide, never a styleguide fork. WhisperHeim's Ko-fi button
+// uses a blue gradient (#25abfe → #005FAA); here it is adapted to the Agentheim palette
+// by drawing the gradient from the styleguide's own status-accent tokens
+// (--st-doing → --st-todo), so it tracks the active light/dark theme. It is an external
+// link (an <a>, not a write) that opens Ko-fi in a new tab with a safe rel.
+function KofiButton() {
+  const [hover, setHover] = useState(false);
+  return html`
+    <a
+      className="focusable"
+      href="https://ko-fi.com/heimeshoff"
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter=${() => setHover(true)}
+      onMouseLeave=${() => setHover(false)}
+      style=${{
+        display: "inline-flex", alignItems: "center", gap: 8,
+        padding: "11px 22px", borderRadius: "var(--radius-md)",
+        fontFamily: "var(--font-ui)", fontSize: 14.5, fontWeight: 600,
+        color: "var(--surface-0)", textDecoration: "none",
+        background: "linear-gradient(90deg, var(--st-doing) 0%, var(--st-todo) 100%)",
+        opacity: hover ? 0.88 : 1,
+        boxShadow: hover ? "var(--shadow-md)" : "none",
+        transition: "opacity var(--duration-fast) var(--ease-base), box-shadow var(--duration-fast) var(--ease-base)",
+      }}>
+      <${Icon} name="box" size=${15} color="var(--surface-0)" />
+      <span>Buy me a coffee on Ko-fi</span>
+    </a>`;
+}
+
+// A token-styled About card surface (agentic-workflow-062). Both cards share the
+// styleguide's surface + hairline + radius tokens — consumed UNFORKED (ADR-0003),
+// honoring light/dark by construction.
+function AboutCard({ children }) {
+  return html`
+    <div style=${{
+      background: "var(--surface-1)", border: "1px solid var(--hairline)",
+      borderRadius: "var(--radius-lg)", padding: 28,
+    }}>${children}</div>`;
+}
+
+// The built-in About page (agentic-workflow-062, the second built-in static page
+// ADR-0025 anticipated). It gives Agentheim a face — who built it and how to support
+// it — mirroring the TOP TWO cards of WhisperHeim's About page:
+//   1. Profile & contact — a circular profile photo beside a three-paragraph bio,
+//      plus a "Get in touch" list of external contact links.
+//   2. Support & GitHub — a "buy me a coffee" line, the board-local Ko-fi gradient
+//      button, a closing thank-you, and a "View on GitHub" link to the Agentheim repo.
+//
+// It is a built-in STATIC view, NOT an open-intent: it carries no lifecycle `status`
+// and no on-disk `path`, so it never enters isTaskIntent (ADR-0021, byte-unchanged)
+// and never fetches /api/doc. It is read-only over .agentheim/ (ADR-0017) and composed
+// from styleguide tokens consumed UNFORKED (ADR-0003) — no styleguide edit, no new
+// bundled dependency. The shell selects it via the dedicated onSelectAbout handler
+// (NOT the rail's onOpen machinery) and renders it per the workflow → about → document
+// → board precedence. The profile photo is a committed served asset (/heimeshoff.jpg),
+// referenced by URL, never a filesystem path.
+function AboutPage() {
+  return html`
+    <section aria-label="About Agentheim" style=${{
+      display: "flex", flexDirection: "column", gap: 24,
+      maxWidth: 760, margin: "0 auto", padding: "0 4px",
+    }}>
+      <h1 style=${{
+        margin: 0, fontFamily: "var(--font-ui)", fontSize: 22, fontWeight: 600,
+        letterSpacing: "-0.01em", color: "var(--fg-1)",
+      }}>About</h1>
+
+      <!-- Card 1: Profile & contact -->
+      <${AboutCard}>
+        <div style=${{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <img
+            src="/heimeshoff.jpg"
+            alt="Marco Heimeshoff"
+            width=${128} height=${128}
+            style=${{
+              width: 128, height: 128, borderRadius: "50%", objectFit: "cover",
+              flexShrink: 0, border: "2px solid var(--hairline-strong)",
+            }} />
+          <div style=${{ flex: "1 1 320px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+            <p style=${{
+              margin: 0, fontFamily: "var(--font-ui)", fontSize: 15, lineHeight: 1.6, color: "var(--fg-1)",
+            }}>
+              Hi, I'm <strong>Marco Heimeshoff</strong> — trainer, consultant, and conference
+              organiser focused on <strong>Domain-Driven Design</strong> and
+              <strong>collaborative modeling</strong>.
+            </p>
+            <p style=${{
+              margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)",
+            }}>
+              DDD is all about creating a <em>ubiquitous language</em> within
+              <em>bounded contexts</em> — and Agentheim brings that same discipline to
+              building software with Claude Code, so the model corners ambiguity instead
+              of producing plausible-looking mush.
+            </p>
+            <p style=${{
+              margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)",
+            }}>
+              When I'm not helping teams design meaningful software, I enjoy building
+              open-source tools like this one to make life a little smoother.
+            </p>
+          </div>
+        </div>
+
+        <div style=${{ height: 1, background: "var(--hairline)", margin: "24px 0" }} />
+
+        <div style=${{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <h2 style=${{
+            margin: 0, fontFamily: "var(--font-ui)", fontSize: 15, fontWeight: 600, color: "var(--fg-1)",
+          }}>Get in touch</h2>
+          <div style=${{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <${AboutLink} href="https://heimeshoff.de" label="heimeshoff.de" />
+            <${AboutLink} href="https://bsky.app/profile/heimeshoff.de" label="Bluesky · @Heimeshoff.de" />
+            <${AboutLink} href="https://linkedin.com/in/heimeshoff" label="linkedin.com/in/heimeshoff" />
+          </div>
+        </div>
+      </${AboutCard}>
+
+      <!-- Card 2: Support & GitHub -->
+      <${AboutCard}>
+        <div style=${{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, textAlign: "center" }}>
+          <p style=${{
+            margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)", maxWidth: 460,
+          }}>
+            If you enjoy Agentheim and want to support my open-source work, you can buy
+            me a coffee!
+          </p>
+          <${KofiButton} />
+          <p style=${{
+            margin: 0, fontFamily: "var(--font-ui)", fontSize: 13.5, lineHeight: 1.6, color: "var(--fg-3)", maxWidth: 460,
+          }}>
+            Otherwise, just <strong>enjoy using Agentheim for free</strong> — and thanks
+            for giving it a try!
+          </p>
+          <${AboutLink} href="https://github.com/heimeshoff/Agentheim" label="View on GitHub" />
+        </div>
+      </${AboutCard}>
+    </section>`;
+}
+
 // The full-height LEFT RAIL (agentic-workflow-026). It replaces aw-008's horizontal
 // top header with the styleguide §05 "Components in context" layout: a vertical,
 // full-height nav composed from styleguide PRIMITIVES (Glyph / RailItem / TreeGroup
@@ -1019,7 +1185,7 @@ function WorkflowPage() {
 // edge follows the selected DOCUMENT (`selectedId`, fed from selectedDoc), and the
 // Board RailItem returns the main pane to the board (onSelectBoard) and is `active`
 // exactly when no document is selected.
-function ShellRail({ projectName, selectedId, onOpen, onSelectBoard, mainView, onSelectWorkflow }) {
+function ShellRail({ projectName, selectedId, onOpen, onSelectBoard, mainView, onSelectWorkflow, onSelectAbout }) {
   const [groups, setGroups] = useState([]);
 
   // Re-project the rail tree from /api/tree (the non-task half, treeToLibrary). A
@@ -1060,19 +1226,24 @@ function ShellRail({ projectName, selectedId, onOpen, onSelectBoard, mainView, o
       </div>
 
       <!-- Primary nav: the Board item and, directly below it, the built-in Workflow
-           guide item (aw-058, ADR-0025). The tree below IS the library, so there is
-           still no separate Library item. Board is active only when neither the
-           workflow page nor a document is selected; Workflow is active when the third
-           main-pane state is on. The two are mutually exclusive by construction
-           (onSelectWorkflow clears selectedDoc + openIntent; every board/doc handler
+           guide item (aw-058) and the built-in About item (aw-062) — both governed by
+           ADR-0025. The tree below IS the library, so there is still no separate Library
+           item. Board is active ONLY when the main pane shows the board itself
+           (mainView === "board") and no document is selected — so it never highlights
+           alongside the Workflow OR the About page. Workflow / About are each active when
+           their third-main-pane-state value is on. All are mutually exclusive by
+           construction (each onSelect* handler clears the others; every board/doc handler
            resets mainView to "board"), so at most one rail row highlights at once. -->
       <div style=${{ padding: "4px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
         <${RailItem} icon="square-kanban" label="Board"
-          active=${mainView !== "workflow" && !selectedId}
+          active=${mainView === "board" && !selectedId}
           onClick=${() => onSelectBoard && onSelectBoard()} />
         <${RailItem} icon="compass" label="Workflow"
           active=${mainView === "workflow"}
           onClick=${() => onSelectWorkflow && onSelectWorkflow()} />
+        <${RailItem} icon="bot" label="About"
+          active=${mainView === "about"}
+          onClick=${() => onSelectAbout && onSelectAbout()} />
       </div>
 
       <div style=${{ height: 1, background: "var(--hairline)", margin: "12px 16px" }} />
@@ -1464,16 +1635,17 @@ export function DashboardApp() {
   // selection ring and the rail edge never both show.
   const [openIntent, setOpenIntent] = useState(null);
   const [selectedDoc, setSelectedDoc] = useState(null);
-  // The THIRD main-pane view state (aw-058, ADR-0025): "board" | "workflow", default
-  // "board". A built-in STATIC page (the Workflow guide) is neither a task nor a
-  // disk-fetched document, so it does not fit openIntent or selectedDoc — it gets its
-  // own shell flag, NOT a fourth field on any intent shape. Main-pane render
-  // precedence is workflow → document → board. The three are mutually exclusive BY
-  // CONSTRUCTION: onSelectWorkflow clears BOTH selectedDoc and openIntent, and every
-  // handler that lands something else in the main pane (onSelectBoard, onOpen task +
-  // doc branches, onOpenSearch, onOpenFullScreen) resets mainView to "board" — so the
-  // workflow page can never linger under a later board/doc click. The mainView enum is
-  // deliberately easy to extend (aw-062 adds an "about" page as a one-liner).
+  // The THIRD main-pane view state (aw-058 / aw-062, ADR-0025): "board" | "workflow" |
+  // "about", default "board". A built-in STATIC page (the Workflow guide, the About
+  // page) is neither a task nor a disk-fetched document, so it does not fit openIntent
+  // or selectedDoc — it gets its own shell flag, NOT a fourth field on any intent shape.
+  // Main-pane render precedence is workflow → about → document → board. The states are
+  // mutually exclusive BY CONSTRUCTION: each onSelect* handler clears the other selections
+  // (and sets its own value), and every handler that lands something else in the main pane
+  // (onSelectBoard, onOpen task + doc branches, onOpenSearch, onOpenFullScreen) resets
+  // mainView to "board" — so a built-in page can never linger under a later board/doc
+  // click. The enum is deliberately easy to extend: aw-062's "about" page is exactly the
+  // one-line extension ADR-0025 anticipated.
   const [mainView, setMainView] = useState("board");
   const onOpen = useCallback((item) => {
     if (typeof window !== "undefined") window.__agentheimLastOpen = item;
@@ -1496,6 +1668,17 @@ export function DashboardApp() {
   // two rail rows) show at once.
   const onSelectWorkflow = useCallback(() => {
     setMainView("workflow");
+    setSelectedDoc(null);
+    setOpenIntent(null);
+  }, []);
+  // The About RailItem selects the second built-in static page (aw-062, ADR-0025) —
+  // the one-line enum extension the ADR anticipated. Like onSelectWorkflow it is its
+  // OWN handler (not the rail's onOpen machinery): it sets the third main-pane state to
+  // "about" and clears BOTH the selected doc and the open task, so no two surfaces (or
+  // two rail rows) show at once. The About page is static — no isTaskIntent, no
+  // /api/doc fetch, no write (ADR-0021 / ADR-0017).
+  const onSelectAbout = useCallback(() => {
+    setMainView("about");
     setSelectedDoc(null);
     setOpenIntent(null);
   }, []);
@@ -1557,7 +1740,8 @@ export function DashboardApp() {
         <${ShellRail} projectName=${projectName}
           selectedId=${selectedDoc ? selectedDoc.id : null}
           onOpen=${onOpen} onSelectBoard=${onSelectBoard}
-          mainView=${mainView} onSelectWorkflow=${onSelectWorkflow} />
+          mainView=${mainView} onSelectWorkflow=${onSelectWorkflow}
+          onSelectAbout=${onSelectAbout} />
         <div style=${{
           flex: 1, minWidth: 0, display: "flex", flexDirection: "column",
           background: "var(--surface-0)",
@@ -1570,9 +1754,11 @@ export function DashboardApp() {
             <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "22px 24px 40px" }}>
               ${mainView === "workflow"
                 ? html`<${WorkflowPage} />`
-                : selectedDoc
-                  ? html`<${MainPaneReader} doc=${selectedDoc} />`
-                  : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
+                : mainView === "about"
+                  ? html`<${AboutPage} />`
+                  : selectedDoc
+                    ? html`<${MainPaneReader} doc=${selectedDoc} />`
+                    : html`<${DashboardBoard} onOpen=${onOpen} skipPermissions=${skipPermissions} />`}
             </div>
             ${stopped ? html`<${StoppedOverlay} />` : null}
           </div>

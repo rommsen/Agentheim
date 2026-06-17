@@ -43,6 +43,11 @@ const STYLEGUIDE = path.join(
 const ENTRY = path.join(__dirname, 'app', 'app.js');
 const STYLES_DIR = path.join(STYLEGUIDE, 'styles');
 const FONTS_DIR = path.join(STYLES_DIR, 'fonts');
+// Static binary assets owned by the dashboard app (agentic-workflow-062): the About
+// page's profile photo. These live in dashboard/assets/ (the build's SOURCE), copied
+// verbatim into dist/ on every build so they survive the dist wipe below and the
+// static handler serves them by URL (e.g. /heimeshoff.jpg).
+const ASSETS_DIR = path.join(__dirname, 'assets');
 const DIST = path.join(__dirname, 'dist');
 
 const CSS_FILES = ['colors_and_type.css', 'agentheim.css'];
@@ -131,6 +136,11 @@ async function main() {
   // copy above — the woff2 (+ OFL licenses) remain owned by design-system; this
   // pipeline only relocates them into the derived dist artifact.
   await cp(FONTS_DIR, path.join(DIST, 'fonts'), { recursive: true });
+
+  // Copy the dashboard's own static binary assets (agentic-workflow-062) flat into
+  // dist/ root, so the static handler serves each by a top-level URL (the About page
+  // references /heimeshoff.jpg). Copied AFTER the dist wipe so they always survive.
+  await cp(ASSETS_DIR, DIST, { recursive: true });
 
   // Emit the HTML shell.
   await writeFile(path.join(DIST, 'index.html'), indexHtml(), 'utf8');

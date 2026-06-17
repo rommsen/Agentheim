@@ -79,9 +79,9 @@ test('onOpen resets mainView in BOTH branches (task → slide-over and doc → m
 test('the rail mounts a Workflow RailItem BELOW the Board item, active when mainView === "workflow"', () => {
   const rail = fn('ShellRail');
   assert.match(rail, /<\$\{RailItem\}[\s\S]*?label="Workflow"/, 'the rail must have a Workflow RailItem');
-  // Two RailItems now (Board + Workflow); Board first, Workflow directly below.
+  // Board first, Workflow directly below (the About item, aw-062, sits below Workflow).
   const items = rail.match(/<\$\{RailItem\}/g) || [];
-  assert.equal(items.length, 2, 'exactly two nav RailItems: Board and Workflow');
+  assert.ok(items.length >= 2, 'at least the Board and Workflow nav RailItems must render');
   const boardAt = rail.indexOf('label="Board"');
   const wfAt = rail.indexOf('label="Workflow"');
   assert.ok(boardAt > -1 && wfAt > -1, 'both Board and Workflow RailItems must render');
@@ -93,15 +93,16 @@ test('the rail mounts a Workflow RailItem BELOW the Board item, active when main
   assert.match(wf[0], /onClick=\$\{[^}]*onSelectWorkflow/, 'the Workflow item must call onSelectWorkflow on click');
 });
 
-test('the Board RailItem predicate widens to mainView !== "workflow" && !selectedDoc (ADR-0025)', () => {
+test('the Board RailItem predicate excludes every non-board main-pane state (ADR-0025)', () => {
   const rail = fn('ShellRail');
   const board = rail.match(/<\$\{RailItem\}\s+icon=[^>]*?label="Board"[\s\S]*?\/>/);
   assert.ok(board, 'the Board RailItem must be a self-closing element');
-  // Inside ShellRail the selected document is the `selectedId` prop (fed from the
-  // shell's selectedDoc), so the in-scope widening is `mainView !== "workflow" &&
-  // !selectedId` — equivalent to ADR-0025's `!selectedDoc` phrasing.
-  assert.match(board[0], /active=\$\{mainView !== "workflow" && !selectedId\}/,
-    'the Board item is active only when neither the workflow page nor a doc is selected');
+  // aw-062 widened the predicate from `mainView !== "workflow" && !selectedId` to the
+  // exclusive `mainView === "board" && !selectedId`, so adding further built-in views
+  // (About, …) keeps Board un-highlighted without re-enumerating each one. Inside
+  // ShellRail the selected document is the `selectedId` prop (fed from selectedDoc).
+  assert.match(board[0], /active=\$\{mainView === "board" && !selectedId\}/,
+    'the Board item is active only when the main pane shows the board itself and no doc is selected');
   // The library tree selectedId still follows selectedDoc alone (no widening).
   assert.match(rail, /selectedId=\$\{selectedId\}/, 'the tree selectedId still follows the selected document alone');
 });

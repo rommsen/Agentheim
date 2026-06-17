@@ -503,14 +503,16 @@ separate BC, but today the whole tool lives in this one.
   new intent field is needed — the discriminator falls out of the data the board and the rail
   already emit. The shell holds two open-intent states: `openIntent` (task →
   slide-over) and `selectedDoc` (doc → main pane). See ADR-0021. As of **aw-058**
-  (**ADR-0025**) a **third main-pane view state** `mainView` (`"board" | "workflow"`,
-  default `"board"`) sits beside them for **built-in static pages** — a page that is
-  neither a task (no `status`) nor a disk-fetched document (no `path`), selected by its
-  own `onSelectWorkflow` handler, **not** the `onOpen`/`isTaskIntent` machinery
-  (which stays byte-unchanged). Main-pane render precedence is **workflow → document →
-  board**; the three are mutually exclusive *by construction* (`onSelectWorkflow` clears
-  both `selectedDoc` and `openIntent`; every board/doc handler resets `mainView` to
-  `"board"`). The `mainView` enum is built to extend (aw-062 adds an `"about"` page).
+  (**ADR-0025**) a **third main-pane view state** `mainView`
+  (`"board" | "workflow" | "about"`, default `"board"`) sits beside them for
+  **built-in static pages** — a page that is neither a task (no `status`) nor a
+  disk-fetched document (no `path`), selected by its own `onSelectWorkflow` /
+  `onSelectAbout` handler, **not** the `onOpen`/`isTaskIntent` machinery (which stays
+  byte-unchanged). Main-pane render precedence is **workflow → about → document →
+  board**; the states are mutually exclusive *by construction* (each `onSelect*` handler
+  clears the other selections; every board/doc handler resets `mainView` to `"board"`).
+  The `mainView` enum is built to extend — **aw-062** added the `"about"` page (the
+  builder bio + a Ko-fi support card) as the one-line extension ADR-0025 anticipated.
 - **Library / navigation** — the dashboard's discovery surface (agentic-workflow-008): makes the
   *non-task* knowledge base browsable — vision, context map, every BC README, ADRs, research —
   drawn from the **artifact-location half** of the same tree projection the board uses (`tree.locations`
