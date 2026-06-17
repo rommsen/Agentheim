@@ -1,11 +1,11 @@
 ---
 id: design-system-020
 title: Drawer gains in-place expandable width — controlled expand seam + body-top chevron + panel glyph pair
-status: todo
+status: done
 type: feature
 context: design-system
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 depends_on: [design-system-001-styleguide]
 blocks: [agentic-workflow-074]
 tags: [styleguide, drawer, frontend]
@@ -105,3 +105,41 @@ slide-over consumer, this is the Drawer capability it depends on.
 **Prior art:** ds-009 (the maximize action this functionally complements), ds-005 (the
 controlled/uncontrolled seam this API follows), ds-006 (styleguide-owns-look /
 consumer-owns-behavior seam).
+
+## Outcome
+The slide-over `Drawer` gained an **in-place expandable-width** capability — widen the
+panel *where you are*, kept deliberately distinct from ds-009's `onOpenFullScreen`
+("promote out"). Shipped as a styleguide capability only (ADR-0003 unforked); the rail-aware
+wiring + `dist/` rebuild are deferred to the consuming `agentic-workflow-074`.
+
+- **`styleguide/app/drawer-state.js`** (new) — React-free `isExpandControlled(expanded)`:
+  `expanded !== undefined ⇒ controlled` (ds-005 `isControlled` precedent), testable under
+  `node --test`.
+- **`styleguide/app/drawer.js`** — `Drawer` now accepts `expanded` / `onToggleExpand` /
+  `expandedWidth`, resolving controlled-vs-uncontrolled via `isExpandControlled` (own
+  `useState` when uncontrolled, always announces `onToggleExpand`). Panel width selects
+  `isExpanded && expandedWidth ? expandedWidth : COLLAPSED_WIDTH` (`min(560px, 78%)` stays
+  in the primitive — no `248` / no `calc(100vw…)`). The panel `transition` gains a `width …`
+  segment alongside `transform …`, stripped to instant under `prefers-reduced-motion`
+  (`matchMedia`, ADR-0014). A body-top-left `IconButton` above `Markdown` toggles it,
+  flipping "Expand panel"/"Collapse panel" + `panel-right-open`/`panel-right-close`. The
+  `onOpenFullScreen` maximize thread + both header guards are **untouched**.
+- **`styleguide/app/icons.js`** — `panel-right-open` / `panel-right-close` glyphs added
+  (Lucide geometry verbatim: shared rounded frame + right divider `x=15`, chevron in/out).
+- **`styleguide/app/app.js`** — Drawer section (07) gains an `expanded`-driven
+  `ExpandSpecimen` (contained, controlled, `expandedWidth="min(920px, 92%)"`) so the gate
+  has something visible.
+- **`styleguide/test/drawer-expand.test.mjs`** (new) — 11 tests (pure `isExpandControlled`
+  + source-reading static guards for the signature, width selection, no rail literals, the
+  width transition + reduced-motion strip, the body-above-Markdown chevron, the glyphs, the
+  untouched `onOpenFullScreen`, and the canvas specimen). Full styleguide suite: **107 pass**.
+
+No ADR written — this extends the ds-005/ds-006 controlled-seam under ADR-0003 (unforked)
++ ADR-0014 (motion strip); the expand-vs-promote distinction is README prose (ds-013
+precedent). BC README gained a `### Drawer — in-place expandable width (design-system-020)`
+capability section + a gate re-review note (the body-top chevron, the canvas specimen, and
+the two glyphs reopen the gate — re-review before aw-074 ships).
+
+**Gate: REOPENED, pending builder re-review** — visible chevron + canvas specimen + two
+new glyphs; recorded in the BC README, surfaced on the canvas. `dist/` rebuild deferred to
+aw-074.

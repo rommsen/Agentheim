@@ -8,6 +8,11 @@ import { html } from "./html.js";
 import { Icon } from "./icons.js";
 import { TypePill, StatusChip, Markdown } from "./primitives.js";
 import { CONTENT_TYPES } from "./data.js";
+import { isExpandControlled } from "./drawer-state.js";
+
+// The collapsed panel width lives in the primitive; the expanded width is a
+// consumer fact (rail-awareness is the consumer's, ADR-0003 unforked seam).
+const COLLAPSED_WIDTH = "min(560px, 78%)";
 
 // ---- Ghost icon button ----
 export function IconButton({ name, title, onClick, size = 16, "aria-label": ariaLabel }) {
@@ -102,10 +107,34 @@ export function HeaderContextual({ info, onClose, onOpenFullScreen }) {
 }
 
 // ---- Drawer ----
-export function Drawer({ item, headerVariant = "minimal", onClose, onOpenFullScreen, contained = true }) {
+export function Drawer({ item, headerVariant = "minimal", onClose, onOpenFullScreen, expanded, onToggleExpand, expandedWidth, contained = true }) {
   const [render, setRender] = useState(!!item);
   const [shown, setShown] = useState(false);
   const [cur, setCur] = useState(item);
+
+  // In-place expandable width (ds-020), ds-005 controlled/uncontrolled seam:
+  // `expanded` defined ⇒ the consumer owns the truth (the slide-over drives it
+  // and supplies its own rail-aware `expandedWidth`); omitted ⇒ the primitive
+  // holds its own state. Always announce onToggleExpand; write state only when
+  // uncontrolled.
+  const expandControlled = isExpandControlled(expanded);
+  const [selfExpanded, setSelfExpanded] = useState(false);
+  const isExpanded = expandControlled ? expanded : selfExpanded;
+  const toggleExpand = () => {
+    if (!expandControlled) setSelfExpanded((v) => !v);
+    if (onToggleExpand) onToggleExpand();
+  };
+
+  // The width transition is ambient motion; strip it to instant under
+  // prefers-reduced-motion (ADR-0014 motion contract — the existing translateX
+  // slide already honours it via the same media query in CSS). The transform
+  // segment is left intact; only the width segment is conditional.
+  const reduce = typeof window !== "undefined" && typeof window.matchMedia === "function"
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const panelWidth = isExpanded && expandedWidth ? expandedWidth : COLLAPSED_WIDTH;
+  const panelTransition = reduce
+    ? "transform var(--duration-base) var(--ease-base)"
+    : "transform var(--duration-base) var(--ease-base), width var(--duration-base) var(--ease-base)";
 
   useEffect(() => {
     if (item) {
@@ -144,14 +173,14 @@ export function Drawer({ item, headerVariant = "minimal", onClose, onOpenFullScr
       <!-- Panel -->
       <div className="scroll-quiet" style=${{
         position: "absolute", top: 0, right: 0, bottom: 0,
-        width: "min(560px, 78%)",
+        width: panelWidth,
         background: "var(--surface-0)",
         borderLeft: "1px solid var(--hairline)",
         boxShadow: "var(--shadow-drawer)",
         display: "flex", flexDirection: "column",
         transform: shown ? "translateX(0)" : "translateX(100%)",
-        transition: "transform var(--duration-base) var(--ease-base)",
-        willChange: "transform",
+        transition: panelTransition,
+        willChange: "transform, width",
       }}>
         ${headerVariant === "contextual"
           ? html`<${HeaderContextual} info=${info} onClose=${onClose} onOpenFullScreen=${onOpenFullScreen} />`
@@ -159,6 +188,16 @@ export function Drawer({ item, headerVariant = "minimal", onClose, onOpenFullScr
 
         <!-- Scrollable body -->
         <div className="scroll-quiet" style=${{ flex: 1, overflowY: "auto", padding: "30px 40px 56px" }}>
+          <!-- Body-top expand chevron (ds-020): widen the panel WHERE YOU ARE.
+               Sits with the content it widens, distinct from the header's
+               "promote out" maximize. -->
+          <div style=${{ display: "flex", justifyContent: "flex-start", marginBottom: 10, marginLeft: -6 }}>
+            <${IconButton}
+              name=${isExpanded ? "panel-right-close" : "panel-right-open"}
+              title=${isExpanded ? "Collapse panel" : "Expand panel"}
+              aria-label=${isExpanded ? "Collapse panel" : "Expand panel"}
+              onClick=${toggleExpand} />
+          </div>
           <${Markdown} source=${info.body} />
         </div>
       </div>

@@ -11,15 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 2
+- **Todo:** 1
 - **Doing:** 0
-- **Done:** 18
+- **Done:** 19
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
 - **design-system-021** — Concept content-type — registry entry + glyph + --ct-concept tokens for the library/search type (feature) — `todo/design-system-021-concept-content-type.md`
-- **design-system-020** — Drawer gains in-place expandable width — controlled expand seam + body-top chevron + panel glyph pair (feature) — `todo/design-system-020-drawer-expandable-width-chevron.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +27,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **design-system-020** — Drawer gains in-place expandable width — controlled expand seam + body-top chevron + panel glyph pair (feature) — `done/design-system-020-drawer-expandable-width-chevron.md`
 - **design-system-019** — Search results — category headers need more contrast (refactor) — `done/design-system-019-search-category-headers-more-contrast.md`
 - **design-system-016** — Search field + grouped-results popover/listbox styleguide pattern (feature) — `done/design-system-016-search-field-grouped-results-pattern.md`
 - **design-system-018** — Shared Button + Modal + ConfirmDialog primitives (centered, scrim, Esc-to-cancel) (feature) — `done/design-system-018-confirm-dialog-modal.md`

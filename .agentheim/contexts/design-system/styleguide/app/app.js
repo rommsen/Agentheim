@@ -13,7 +13,7 @@ import { Icon } from "./icons.js";
 import { TypePill, StatusChip, MonoId, MetaChip } from "./primitives.js";
 import { EmptyColumn, EmptyDrawer } from "./empty.js";
 import { ColumnHeader, TicketCard } from "./kanban.js";
-import { HeaderMinimal, HeaderContextual, describeItem } from "./drawer.js";
+import { HeaderMinimal, HeaderContextual, describeItem, Drawer } from "./drawer.js";
 import { TreeGroup } from "./library.js";
 import { Collapsible } from "./collapsible.js";
 import { Menu, MenuItem, MenuDivider } from "./menu.js";
@@ -191,10 +191,43 @@ function HeaderFrame({ children, label, note }) {
       </div>
     </div>`;
 }
+// In-place expandable width (design-system-020). The body-top chevron widens the
+// panel WHERE YOU ARE (distinct from the header's "promote out" maximize). Driven
+// here controlled so the expand state is visible for the gate; the live dashboard
+// supplies its own rail-aware expandedWidth (aw-074). Hosted in a contained,
+// relatively-positioned frame so the absolute panel stays inside the specimen.
+function ExpandSpecimen() {
+  const [open, setOpen] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+  return html`
+    <div>
+      <${StateLabel}>In-place expandable width — body-top chevron</${StateLabel}>
+      <div style=${{
+        position: "relative", height: 320, overflow: "hidden",
+        border: "1px solid var(--hairline)", borderRadius: "var(--radius-md)",
+        background: "var(--surface-1)", boxShadow: "var(--shadow-sm)",
+      }}>
+        <${Drawer}
+          item=${open ? SAMPLE_DOC : null}
+          headerVariant="contextual"
+          onClose=${() => setOpen(false)}
+          expanded=${expanded}
+          onToggleExpand=${() => setExpanded((v) => !v)}
+          expandedWidth="min(920px, 92%)" />
+        ${!open && html`<div style=${{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <${Button} onClick=${() => setOpen(true)}>Reopen drawer<//>
+        </div>`}
+      </div>
+      <p style=${{ margin: "10px 2px 0", fontFamily: "var(--font-ui)", fontSize: 12, lineHeight: 1.55, color: "var(--fg-3)" }}>
+        The chevron above the body toggles the panel between <code>min(560px, 78%)</code> and the consumer-supplied <code>expandedWidth</code>, animating the width alongside the slide (stripped to instant under <code>prefers-reduced-motion</code>). The header's maximize "promote out" stays separate and untouched.
+      </p>
+    </div>`;
+}
+
 function DrawerSection() {
   return html`
     <${GuideSection} index="07" title="Slide-over drawer"
-      desc="A document opens in a panel that animates in from the right over 180ms, dimming the board behind it — the same surface for a ticket's description and for any library document. Two header directions: a slim minimal bar, or a contextual band tinted in the content type's color with status and path metadata.">
+      desc="A document opens in a panel that animates in from the right over 180ms, dimming the board behind it — the same surface for a ticket's description and for any library document. Two header directions: a slim minimal bar, or a contextual band tinted in the content type's color with status and path metadata. A body-top chevron widens the panel in place (consumer-supplied width), distinct from the header's promote-to-full-screen maximize.">
       <div style=${{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
         <${HeaderFrame} label="Direction A — Minimal" note="Type pill, file path, and a quiet Open-in-full-screen action. The prose H1 below carries the title.">
           <${HeaderMinimal} info=${describeItem(SAMPLE_DOC)} onClose=${() => {}} onOpenFullScreen=${() => {}} />
@@ -225,6 +258,9 @@ function DrawerSection() {
             <${EmptyDrawer} />
           </div>
         </div>
+      </div>
+      <div style=${{ marginTop: 24 }}>
+        <${ExpandSpecimen} />
       </div>
     </${GuideSection}>`;
 }

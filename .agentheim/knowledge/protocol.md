@@ -5,6 +5,18 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 23:46 -- Task verified and completed: design-system-020 - Drawer gains in-place expandable width
+
+**Type:** Work / Task completion
+**Task:** design-system-020 - Drawer gains in-place expandable width — controlled expand seam + body-top chevron + panel glyph pair
+**Summary:** The slide-over `Drawer` gained an in-place expandable-width capability — a controlled `expanded` / `onToggleExpand` / `expandedWidth` seam driven by a body-top chevron that widens the panel where you are, kept distinct from ds-009's promote-out maximize. Styleguide capability only; the rail-aware wiring and `dist/` rebuild are deferred to aw-074.
+**Verification:** PASS (iteration 1)
+**Files changed:** 6
+**Tests added:** 11 (drawer-expand suite; styleguide suite 107 green)
+**ADRs written:** none
+
+---
+
 ## 2026-06-17 23:45 -- Task verified and completed: agentic-workflow-073 - Dashboard renders the What's next recommendation as a dismissible panel above the board prompt bar
 
 **Type:** Work / Task completion

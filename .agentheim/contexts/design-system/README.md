@@ -284,6 +284,54 @@ job, not this task's — mirrors the `design-system-009` → `agentic-workflow-0
 > Re-review against the canvas **before** the agentic-workflow wiring (`agentic-workflow-047`)
 > ships the title data and rebuilds `dist/`.
 
+### Drawer — in-place expandable width (design-system-020)
+
+The slide-over `Drawer` (`app/drawer.js`) can now **widen in place** — a different
+affordance from `design-system-009`'s `onOpenFullScreen`, which *promotes the task out*
+into the main pane. "Expand" keeps you where you are and makes the reading column wider;
+"promote" leaves the slide-over entirely. The two are deliberately kept distinct.
+
+- **A controlled expand seam (ds-005 pattern).** `Drawer` accepts `expanded` (boolean),
+  `onToggleExpand`, and `expandedWidth` (string). `expanded` defined ⇒ **controlled** (the
+  consumer owns the truth and supplies its own width); omitted ⇒ **uncontrolled** (the
+  primitive holds its own `useState`). The load-bearing `expanded !== undefined ⇒ controlled`
+  resolution is the React-free `isExpandControlled` in `app/drawer-state.js`, testable under
+  `node --test` (mirrors `collapsible-state.js`'s `isControlled`). `onToggleExpand` fires on
+  every toggle; state is written only when uncontrolled.
+- **Styleguide owns the look, consumer owns the width.** The collapsed default
+  `min(560px, 78%)` stays in the primitive (`COLLAPSED_WIDTH`); the expanded width is
+  read from the `expandedWidth` prop. Rail-awareness is a **consumer fact** — there is no
+  `248` literal and no `calc(100vw - …)` in `drawer.js`; the live slide-over passes its own
+  rail-aware value (`agentic-workflow-074`).
+- **A body-top chevron, not a header action.** An `IconButton` renders at the top-left of
+  the **scrollable body, above `Markdown`** — a new slot. It flips label
+  **"Expand panel" / "Collapse panel"** and glyph **`panel-right-open` (collapsed) /
+  `panel-right-close` (expanded)**. The chevron sits with the content it widens; the
+  header's maximize ("promote out") + Close are **untouched**. The header-action placement
+  (chevron grouped beside maximize) was put to the builder and **rejected**.
+- **Width transition + reduced-motion strip (ADR-0014).** The panel `transition` gains a
+  `width …` segment alongside the existing `transform …` slide. Under
+  `prefers-reduced-motion: reduce` (read via `matchMedia`, the modal/menu/search precedent)
+  the **width** segment is stripped to instant; the slide already honours the same contract.
+- **Two new glyphs.** `panel-right-open` / `panel-right-close` added to `app/icons.js`
+  (Lucide geometry verbatim — shared rounded frame + right divider at `x=15`, with the
+  chevron pointing into / out of the content). They read as "widen this right-anchored
+  panel in place," deliberately distinct from `maximize` (four-corner promote).
+
+Per ADR-0003 the capability lives in the styleguide source (consumed unforked); the
+`dist/` rebuild and the rail-aware wiring are **agentic-workflow-074's** job, not this
+task's — mirrors the `design-system-009` → `agentic-workflow-039`,
+`design-system-014` → `agentic-workflow-047` ordering. This task ships the capability with
+no live dashboard consumer yet (the ds-017 / ds-018 live-board pattern).
+
+> **Gate re-review reopened by the Drawer expandable-width change (`design-system-020`).**
+> A body-top chevron now appears on every Drawer surface, the canvas Drawer section (07)
+> gains an `expanded`-driven specimen, and two glyphs join the section-04 icon gallery — a
+> visible styleguide change that reopens the design-system gate per the `design-system-005`
+> / `007` / `009` / `014` / `015` / `017` / `018` precedent. Re-review against
+> `styleguide/index.html` (Drawer section 07 + the section-04 icon gallery) **before**
+> `agentic-workflow-074` wires the live slide-over and rebuilds `dist/`.
+
 ### Menu / Popover — the shared dropdown primitive (design-system-015)
 
 The trigger-plus-dismissible-floating-panel affordance is now a single shared
@@ -510,4 +558,5 @@ the pattern in **section 11** (`SearchSpecimen` — type *design*, *adr*, or *zz
 - Shared `Menu` / `Popover` primitive: `styleguide/app/menu.js` (+ React-free `menu-state.js`), consumed by the dashboard topbar settings gear (design-system-015)
 - Confirm-dialog family: `styleguide/app/button.js`, `styleguide/app/modal.js`, `styleguide/app/confirm-dialog.js` (+ React-free `modal-state.js`); the centered, scrim-backed confirm dialog the board's per-card dismiss will consume (design-system-018)
 - Search field + grouped-results combobox: `styleguide/app/search.js` (+ React-free `search-state.js`); a standalone `--shadow-md` popover (NOT composed on `Menu`, ADR-0024) feeding the dashboard global search (`agentic-workflow-052`, fed by `/api/search` aw-050 + ADR-0023) (design-system-016)
+- Drawer in-place expandable width: `styleguide/app/drawer.js` (+ React-free `drawer-state.js`); a controlled `expanded`/`onToggleExpand`/`expandedWidth` seam with a body-top chevron (`panel-right-open`/`panel-right-close` glyphs), consumed rail-aware by the dashboard slide-over (`agentic-workflow-074`) (design-system-020)
 - BC index: `INDEX.md`
