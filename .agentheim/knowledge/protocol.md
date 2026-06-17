@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 21:25 -- Modeling / Captured: agentic-workflow-077 - Collision-resistant task IDs for multi-user / multi-branch work
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Sequential per-BC integer ids (`aw-072`) are minted by scanning the tree for the next free number — a single-writer assumption that breaks when two people work on separate branches: both pick the same next id for unrelated tasks and collide on merge (filename + frontmatter clash, ambiguous backlinks + `[id]` commit trailers, INDEX double-listing, dismissed-id retirement broken). Captured as a `type: decision` to replace the integer with a coordination-free, collision-resistant id; keystone deliverable is an ADR fixing the scheme, with the implementation sweep + any migration splitting out on refine. Surfaced the central fork (readable branch/author-prefixed counter vs. opaque random/ULID token), the ordering and BC-prefix trade-offs, and the migrate-vs-coexist decision. Linked the three ADRs that encode current id semantics (ADR-0012 anchored filename resolution, ADR-0022 dismissed-id retirement, ADR-0026 `[id]` commit trailer). Architect round recommended next.
+
+---
+
 ## 2026-06-17 21:10 -- Modeling / Refined: agentic-workflow-072 - Done column should be hideable (it can grow infinitely large)
 
 **Type:** Modeling / Refine
