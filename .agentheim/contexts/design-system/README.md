@@ -332,6 +332,57 @@ no live dashboard consumer yet (the ds-017 / ds-018 live-board pattern).
 > `styleguide/index.html` (Drawer section 07 + the section-04 icon gallery) **before**
 > `agentic-workflow-074` wires the live slide-over and rebuilds `dist/`.
 
+### Content type — `concept` joins the registry (design-system-021)
+
+The content-type registry (`app/data.js`, `CONTENT_TYPES`) gained a **seventh**
+type, `concept`, alongside the existing `ticket | context | vision | map | research
+| adr` — so any consumer emitting `{ type: 'concept' }` gets a distinct icon + color
+at a glance, the same shape as the other six. Before this, `CONTENT_TYPES` had no
+`concept` key, so the `TreeItem` deref (`const t = CONTENT_TYPES[item.type]` then
+`<Icon name=${t.icon} … />`) would have thrown on a concept row. This is the
+styleguide capability behind aw-075 (Concepts as a first-class artifact kind in the
+dashboard's left-rail nav group + search category).
+
+- **Glyph → `lightbulb`** (builder-decided at refine — concept = idea / insight /
+  synthesis). Added to `app/icons.js` `LUCIDE` at upstream Lucide geometry (bulb dome
+  path + filament base `M9 18h6` + screw base `M10 22h4`), inner markup only; `Icon`
+  supplies the `<svg>` wrapper. Surfaced in the section-04 interface-set gallery
+  (`foundations2.js`, the curated `ui` array).
+- **Registry entry** — `concept: { label: "Concept", icon: "lightbulb", color:
+  "var(--ct-concept)", tint: "var(--ct-concept-tint)" }`, placed **after** `adr`,
+  preserving registry order. It auto-surfaces in the section-04 content-type set
+  (that DocCard is `Object.entries(CONTENT_TYPES)`-derived).
+- **Tokens → a magenta / pink hue** (builder-decided at refine — maximally distinct
+  from the six in use; nearest neighbour is map purple). `--ct-concept` /
+  `--ct-concept-tint` added to **both** theme blocks of `styles/agentheim.css`: light
+  `#B0479A` / tint `#F7E3F1`, dark `#D98AC8` / tint `#2A1626`. It is distinct from the
+  six existing content types and **never** aliases the reserved selection accent
+  `--accent-ochre-soft` (ADR-0016).
+- **Canvas specimen** — a "Concepts" group of `type: 'concept'` rows joins the demo
+  `LIBRARY`, so the section-09 `TreeSpecimen` renders a live concept `TreeItem`
+  (exercising the previously-throwing deref) and section-04 shows the new glyph in
+  both the interface set and the content-type set.
+
+Per ADR-0003 the change lives in the styleguide source (consumed unforked); the
+`dist/` rebuild + the rail/search wiring are **agentic-workflow-075's** job, not this
+task's — mirrors the `design-system-017` → `agentic-workflow-048`, `design-system-020`
+→ `agentic-workflow-074` ordering. This task ships the capability with no live
+dashboard consumer yet (the ds-017 / ds-018 / ds-020 live-board pattern).
+
+> **Gate re-review reopened by the `concept` content-type (`design-system-021`).** A
+> new content-type glyph (`lightbulb`) joins the section-04 icon gallery + content-type
+> set, a magenta/pink `--ct-concept` token pair lands in both themes, and the
+> section-09 `TreeSpecimen` renders a live `type: 'concept'` row — a visible styleguide
+> change that reopens the design-system gate per the `design-system-005` / `007` /
+> `009` / `014` / `015` / `017` / `018` / `020` precedent. Re-review against
+> `styleguide/index.html` (section 04 icon + content-type sets, section 09 tree) **before**
+> `agentic-workflow-075` wires the Concepts rail group + search category and rebuilds `dist/`.
+
+> Live-board note: the served dashboard `dist/` is a derived artifact (ADR-0003) and was
+> **not** rebuilt here — this change only adds a content type (glyph + registry entry +
+> token pair) to the styleguide source with no shipped dashboard consumer yet; `dist/` is
+> rebuilt by the consuming task (`agentic-workflow-075`) when concept rows actually render.
+
 ### Menu / Popover — the shared dropdown primitive (design-system-015)
 
 The trigger-plus-dismissible-floating-panel affordance is now a single shared
@@ -559,4 +610,5 @@ the pattern in **section 11** (`SearchSpecimen` — type *design*, *adr*, or *zz
 - Confirm-dialog family: `styleguide/app/button.js`, `styleguide/app/modal.js`, `styleguide/app/confirm-dialog.js` (+ React-free `modal-state.js`); the centered, scrim-backed confirm dialog the board's per-card dismiss will consume (design-system-018)
 - Search field + grouped-results combobox: `styleguide/app/search.js` (+ React-free `search-state.js`); a standalone `--shadow-md` popover (NOT composed on `Menu`, ADR-0024) feeding the dashboard global search (`agentic-workflow-052`, fed by `/api/search` aw-050 + ADR-0023) (design-system-016)
 - Drawer in-place expandable width: `styleguide/app/drawer.js` (+ React-free `drawer-state.js`); a controlled `expanded`/`onToggleExpand`/`expandedWidth` seam with a body-top chevron (`panel-right-open`/`panel-right-close` glyphs), consumed rail-aware by the dashboard slide-over (`agentic-workflow-074`) (design-system-020)
+- `concept` content type: `styleguide/app/data.js` (`CONTENT_TYPES.concept`, `lightbulb` glyph, `--ct-concept`/`--ct-concept-tint` magenta tokens in `styles/agentheim.css`); the styleguide capability behind Concepts as a first-class artifact kind in the dashboard rail + search (`agentic-workflow-075`) (design-system-021)
 - BC index: `INDEX.md`

@@ -12,6 +12,7 @@ export const CONTENT_TYPES = {
   map:      { label: "Context map",      icon: "git-fork",      color: "var(--ct-map)",      tint: "var(--ct-map-tint)" },
   research: { label: "Research",         icon: "flask-conical", color: "var(--ct-research)", tint: "var(--ct-research-tint)" },
   adr:      { label: "ADR",             icon: "scale",         color: "var(--ct-adr)",      tint: "var(--ct-adr-tint)" },
+  concept:  { label: "Concept",         icon: "lightbulb",     color: "var(--ct-concept)",  tint: "var(--ct-concept-tint)" },
 };
 
 // ---- Status registry ----
@@ -285,6 +286,13 @@ export const LIBRARY = [
     items: [
       { id: "res-retrieval", type: "research", title: "Retrieval strategies", meta: "research/retrieval.md", body: MD_RESEARCH },
       { id: "res-caching", type: "research", title: "Prompt caching benchmarks", meta: "research/caching.md", body: MD_RESEARCH },
+    ],
+  },
+  {
+    group: "Concepts",
+    items: [
+      { id: "concept-event-sourcing", type: "concept", title: "Event sourcing", meta: "concepts/event-sourcing.md", body: MD_ADR },
+      { id: "concept-bounded-context", type: "concept", title: "Bounded context", meta: "concepts/bounded-context.md", body: MD_CONTEXT },
     ],
   },
 ];

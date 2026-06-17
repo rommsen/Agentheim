@@ -1,11 +1,11 @@
 ---
 id: design-system-021
 title: Concept content-type — registry entry + glyph + --ct-concept tokens for the library/search type
-status: todo
+status: done
 type: feature
 context: design-system
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 depends_on: [design-system-001-styleguide]
 blocks: [agentic-workflow-075]
 tags: [styleguide, icons, content-types, frontend]
@@ -105,5 +105,46 @@ TreeItem icon map lacks, file a design-system child task rather than forking") r
 **Relevant files:**
 - `styleguide/app/icons.js`, `styleguide/app/data.js`,
   `styleguide/styles/agentheim.css`, `styleguide/index.html`, `README.md`.
+
+## Outcome
+Made `concept` a first-class **content type** in the styleguide registry — the
+seventh type alongside `ticket | context | vision | map | research | adr` — closing
+the gap that would have thrown when aw-075 renders a `type: 'concept'` row through
+`TreeItem`.
+
+- **Glyph** — added Lucide `lightbulb` to `app/icons.js` `LUCIDE` (verbatim upstream
+  geometry: bulb dome path + filament base `M9 18h6` + screw base `M10 22h4`, inner
+  markup only) and appended it to the curated section-04 interface-set `ui` array in
+  `app/foundations2.js`.
+- **Registry** — `concept: { label: "Concept", icon: "lightbulb", color:
+  "var(--ct-concept)", tint: "var(--ct-concept-tint)" }` added to `CONTENT_TYPES`
+  (`app/data.js`) **after** `adr`. It auto-surfaces in the section-04 content-type set
+  (that DocCard is `Object.entries(CONTENT_TYPES)`-derived).
+- **Tokens** — `--ct-concept` / `--ct-concept-tint` added to BOTH theme blocks of
+  `styles/agentheim.css` as a magenta/pink hue (light `#B0479A` / `#F7E3F1`, dark
+  `#D98AC8` / `#2A1626`) — distinct from the six in use and never the reserved selection
+  accent `--accent-ochre-soft` (ADR-0016).
+- **Canvas specimen** — a "Concepts" group of `type: 'concept'` rows joins the demo
+  `LIBRARY` (`app/data.js`), so the section-09 `TreeSpecimen` renders a live concept
+  `TreeItem` (exercising the formerly-throwing deref) for the gate re-review.
+- **Tests** — new `test/content-type-concept.test.mjs` (6 source-guard tests mirroring
+  the trash-2 / panel-glyph suites): the `lightbulb` glyph resolves; the `concept`
+  registry entry exists with the right shape placed after `adr`; its icon resolves to a
+  real LUCIDE glyph (the exact `TreeItem` deref — never throws); the token pair is in
+  both themes and never aliases `--accent-ochre-soft`; a `type: 'concept'` library row
+  exists; the gallery surfaces `lightbulb`. Full styleguide suite green: 113/113.
+- **Gate** — visible canvas change (section-04 icon + content-type sets, section-09
+  tree), so it reopens the design-system gate per the ds-005/007/009/014/015/017/018/020
+  precedent; gate-reopen note + capability note added to the BC README.
+- **dist/** — deliberately NOT rebuilt (derived artifact per ADR-0003; aw-075 rebuilds
+  it when concept rows actually render on the board).
+
+Key files:
+- `styleguide/app/icons.js` (LUCIDE `lightbulb`)
+- `styleguide/app/data.js` (`CONTENT_TYPES.concept` + Concepts demo group)
+- `styleguide/styles/agentheim.css` (`--ct-concept` token pair, both themes)
+- `styleguide/app/foundations2.js` (gallery `ui` array)
+- `styleguide/test/content-type-concept.test.mjs` (new tests)
+- `.agentheim/contexts/design-system/README.md` (capability + gate-reopen note)
 </content>
 </invoke>

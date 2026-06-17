@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 23:54 -- Task verified and completed: design-system-021 - Concept content-type — registry entry + glyph + --ct-concept tokens
+
+**Type:** Work / Task completion
+**Task:** design-system-021 - Concept content-type — registry entry + glyph + --ct-concept tokens for the library/search type
+**Summary:** `concept` is now a first-class content type in the styleguide registry — the seventh type (label "Concept", `lightbulb` glyph, magenta `--ct-concept` tokens in both themes) — closing the `TreeItem` deref gap that would have thrown when aw-075 renders a `type: 'concept'` row.
+**Verification:** PASS (iteration 1)
+**Files changed:** 6
+**Tests added:** new content-type-concept suite (styleguide suite 113 green)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 23:49 -- Batch started: [agentic-workflow-077, design-system-021]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-077 - Collision-resistant task IDs for multi-user / multi-branch work, design-system-021 - Concept content-type — registry entry + glyph + --ct-concept tokens
+**Parallel:** yes (2 workers)
+**Notes:** Wave 2 — the two tasks held from wave 1's conflicts. Different BCs, disjoint file sets (aw-077 → lib/ + skills + ADR; ds-021 → styleguide icons/data/css). aw-077 is `type: decision` (keystone = ADR-0028).
+
+---
+
 ## 2026-06-17 23:46 -- Task verified and completed: design-system-020 - Drawer gains in-place expandable width
 
 **Type:** Work / Task completion
