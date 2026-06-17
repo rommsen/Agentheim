@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 10:48 -- Modeling / Captured: agentic-workflow-c4t8m - What's Next columns become their own capped, scrollable cards
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Follow-on to aw-q7m4k — wrap each of the What's Next panel's three section columns in its own board-local, token-matched card, cap each card's height at ~two ticket cards, and scroll content internally on overflow so the advisory strip stays compact at the top of the board instead of eating a quarter of the screen.
+
+---
+
 ## 2026-06-18 10:44 -- Work session ended
 
 **Type:** Work / Session end

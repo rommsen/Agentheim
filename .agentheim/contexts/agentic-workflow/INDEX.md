@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 79
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-c4t8m** — What's Next columns become their own capped, scrollable cards (feature) — `todo/agentic-workflow-c4t8m-whats-next-columns-as-capped-scrollable-cards.md`
 <!-- todo-list:end -->
 
 ### Doing
