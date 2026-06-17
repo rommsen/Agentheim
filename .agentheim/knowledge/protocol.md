@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 20:55 -- Modeling / Captured: agentic-workflow-075 - Concepts are a first-class artifact kind — left-rail nav group + searchable category
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Surface concept pages (the per-BC `contexts/<bc>/concepts/` synthesis pages already carried in the tree projection as `bc.concepts`) as a first-class group/category across the dashboard's two discovery surfaces: a left-rail **Concepts** group between Bounded contexts and Research (`treeToLibrary`), and a searchable **Concepts** category (`enumerateCorpus` + the topbar search grouping). Purely additive to the consuming transforms — no new server data — styleguide consumed unforked. Backlog pending a quick refine to pin concept-title source, exact search-category position, and whether a `type: 'concept'` row needs a design-system icon child task.
+
+---
+
 ## 2026-06-17 20:30 -- Modeling / Captured: agentic-workflow-074 - Slide-over gets an expand/collapse-width chevron, replacing the full-screen button
 
 **Type:** Modeling / Capture
