@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-17
 completed: 2026-06-17
-commit:
+commit: ad4a6f0
 depends_on: [design-system-001]
 blocks: [agentic-workflow-059, agentic-workflow-057, agentic-workflow-062]
 tags: [frontend, ui, routing, scaffold]

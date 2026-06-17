@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 4
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 54
+- **Done:** 58
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,10 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-062** — Dashboard About page — left-rail item below Board, profile bio + Ko-fi support (feature) — `done/agentic-workflow-062-dashboard-about-page.md`
+- **agentic-workflow-061** — Board "Name A→Z / Z→A" sort orders by the title's readable text, in true alphabetical order (bug) — `done/agentic-workflow-061-board-name-sort-true-alphabetical-by-title.md`
+- **agentic-workflow-058** — Workflow rail item + main-pane routing scaffold (third selection state) (feature) — `done/agentic-workflow-058-workflow-rail-item-main-pane-routing-scaffold.md`
+- **agentic-workflow-056** — Left rail — Research group sits above Decisions (bug) — `done/agentic-workflow-056-rail-research-before-decisions.md`
 - **agentic-workflow-055** — Settings menu content is off-center — equal whitespace left and right (bug) — `done/agentic-workflow-055-settings-menu-content-off-center.md`
 - **agentic-workflow-054** — Board prompt bar gets a "Prompt" title; whitespace separates it from the "Board" title (feature) — `done/agentic-workflow-054-prompt-title-and-board-spacing.md`
 - **agentic-workflow-053** — Topbar layout — search on the left, settings gear + Work flush right (bug) — `done/agentic-workflow-053-topbar-right-align-settings-work.md`
@@ -84,12 +88,16 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella → aw-058/059/060) — `backlog/agentic-workflow-057-workflow-guide-page.md`
+- **agentic-workflow-059** — Workflow page shell + three-segment layout (feature) — `backlog/agentic-workflow-059-workflow-page-shell-three-segment-layout.md`
+- **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `backlog/agentic-workflow-060-workflow-guide-diagrams.md`
 - **agentic-workflow-031** — Next-steps overview when work is done — `backlog/agentic-workflow-031-next-steps-overview-when-work-done.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0025** — The dashboard main pane gains a third view state (`mainView`) for built-in static pages, beside the task/document split; reshapes ADR-0021 (proposed) — `../../knowledge/decisions/0025-dashboard-main-pane-third-view-state-builtin-static-page.md`
 - **ADR-0023** — The dashboard's `/api/search` is the read-only server's first content-search endpoint — pure corpus walk, title-first ranking, body excerpts (proposed) — `../../knowledge/decisions/0023-dashboard-search-read-endpoint.md`
 - **ADR-0022** — DISMISS cascades the whole dependent subtree; refuses if it touches doing/ or done/ (proposed) — `../../knowledge/decisions/0022-dismiss-cascades-dependent-subtree.md`
 - **ADR-0021** — The dashboard open-intent splits on artifact kind: tasks → slide-over, non-task documents → main pane (accepted; reshapes ADR-0010 & ADR-0011 §5) — `../../knowledge/decisions/0021-open-intent-split-task-slide-over-doc-main-pane.md`

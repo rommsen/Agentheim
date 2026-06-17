@@ -5,6 +5,156 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 12:55 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 4 (first-try PASS: 4, re-dispatched: 0, skipped: 0) — aw-056 (3b0a749), aw-058 (ad4a6f0), aw-061 (3280619), aw-062 (c9ac4d5)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 4 work + 1 chore bookkeeping
+**Notes:**
+- All four dashboard tasks rebuild the shared `dashboard/dist/app.js` esbuild bundle, so the batch was conflict-serialized to one worker per wave (no safe parallelism). Each passed verification first try.
+- aw-058 unblocked aw-062 mid-run (the About page extends the `mainView` third-view-state scaffold) — picked up automatically in the final wave once aw-058 landed.
+- aw-062's external profile asset (`heimeshoff.jpg`) was resolved from the sibling repo at `C:\src\heimeshoff\tooling\WhisperHeim\src\WhisperHeim\Assets\` and committed into `dashboard/assets/` (build copies it into dist/).
+- Left untouched (pre-existing modeling artifacts from before this session, not work-owned): ADR-0025 (untracked), backlog aw-057/059/060 (untracked), and the ADR-0021 back-annotation pointing at ADR-0025. These belong to the modeling flow; commit them there.
+- Standing open human gate (carried over, unrelated): design-system-019 still awaits a builder canvas re-review.
+- No bounces, no new backlog items, no concept candidates, no ADRs written this run.
+
+---
+
+## 2026-06-17 12:55 -- Task verified and completed: agentic-workflow-062 - Dashboard About page
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-062 - Dashboard About page — left-rail item below Board, profile bio + Ko-fi support
+**Summary:** Extended the aw-058 `mainView` scaffold (ADR-0025) with the second built-in static page — an About page reached from an About RailItem below Workflow. Enum widened to "board"|"workflow"|"about"; precedence workflow → about → document → board; Board active predicate tightened to `mainView === "board" && !selectedId` so it never co-highlights with Workflow/About. Profile & contact card (circular photo + three-paragraph bio + heimeshoff.de/Bluesky/LinkedIn links) and Support & GitHub card (board-local Ko-fi gradient button → ko-fi.com/heimeshoff, View on GitHub → github.com/heimeshoff/Agentheim). Profile photo committed to `dashboard/assets/` and copied into `dist/` by build.mjs after the dist wipe; referenced as `/heimeshoff.jpg`. External links open new-tab with rel="noopener noreferrer". `isTaskIntent`/`main-pane-reader.js` byte-unchanged; styleguide unforked (Ko-fi gradient board-local from --st tokens, honors theme).
+**Verification:** PASS (iteration 1) — verifier confirmed all six handlers reset/clear correctly, icons (bot, square-arrow-out-up-right, box) exist in the registry, `/heimeshoff.jpg` resolves (image/jpeg, copied after dist wipe), byte-unchanged discriminator + reader (verbatim-lock tests + empty diffs), read-only, theme-token styling, dist genuinely rebuilt; dashboard suite 506 pass / 0 fail.
+**Commit:** c9ac4d5
+**Files changed:** 9 (board.js, build.mjs, assets/heimeshoff.jpg, dist/heimeshoff.jpg, dist/app.js, 3 test files, BC README)
+**Tests added:** ~12 (about-rail-routing.test.mjs) + 2 existing test files updated for the third rail item
+**ADRs written:** none (ADR-0025 governs; the board-local Ko-fi gradient noted inline per the ADR-0003 board-control precedent)
+
+---
+
+## 2026-06-17 12:45 -- Batch started: [agentic-workflow-062]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-062 - Dashboard About page — left-rail item below Board, profile bio + Ko-fi support
+**Parallel:** no (1 worker) — sole remaining ready task; unblocked by aw-058 (mainView scaffold). Profile asset resolved at `C:\src\heimeshoff\tooling\WhisperHeim\src\WhisperHeim\Assets\heimeshoff.jpg`.
+
+---
+
+## 2026-06-17 12:40 -- Task verified and completed: agentic-workflow-061 - Board Name sort uses locale-aware collation
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-061 - Board "Name A→Z / Z→A" sort orders by title in true alphabetical order
+**Summary:** Swapped the board `title-asc`/`title-desc` comparators in the pure `board-sort.js` from UTF-16 code-point (`<`/`>` on lowercased title) to a shared `Intl.Collator(undefined, {sensitivity:'base', numeric:true})` so Name orderings collate by readable text — case-insensitive, accents/umlauts near their base letter, numeric runs natural (2 before 10). id-ascending tie-break and missing-title degrade unchanged; mtime comparators byte-unchanged.
+**Verification:** PASS (iteration 1) — verifier confirmed the desc `-0` falls through to the id tie-break (not inverted), case/accent/numeric covered by 5 new tests, mtime comparators + SORT_OPTIONS/labels/DEFAULT_SORT untouched, dist genuinely rebuilt; dashboard suite 491 pass / 0 fail.
+**Commit:** 3280619
+**Files changed:** 3 (board-sort.js, board-sort.test.mjs, dist/app.js)
+**Tests added:** 5
+**ADRs written:** none
+
+---
+
+## 2026-06-17 12:30 -- Batch started: [agentic-workflow-061]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-061 - Board "Name A→Z / Z→A" sort orders by title in true alphabetical order
+**Parallel:** no (1 worker) — aw-062 (now unblocked by aw-058) demoted to the final wave; both rebuild the shared `dashboard/dist/app.js`.
+
+---
+
+## 2026-06-17 12:25 -- Task verified and completed: agentic-workflow-058 - Workflow rail item + main-pane routing scaffold
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-058 - Workflow rail item + main-pane routing scaffold (third selection state)
+**Summary:** Added the third dashboard main-pane view state `mainView` ("board"|"workflow", default "board") with a built-in static Workflow guide placeholder page, a Workflow RailItem below Board, and a dedicated `onSelectWorkflow` handler. Render precedence workflow → document → board; the `setMainView("board")` reset threaded through every existing main-pane handler (onSelectBoard, onOpen both branches, onOpenSearch, onOpenFullScreen) so the three states are mutually exclusive by construction. Governed by ADR-0025. `isTaskIntent`/`main-pane-reader.js` byte-unchanged.
+**Verification:** PASS (iteration 1) — verifier read all five handlers directly (reset present before the onOpen isTaskIntent split, covering both branches), confirmed rail predicates, byte-unchanged discriminator (verbatim-lock test + empty diff), read-only + styleguide unforked, dist genuinely rebuilt; dashboard suite 486 pass / 0 fail.
+**Commit:** ad4a6f0
+**Files changed:** 5 (board.js, dist/app.js, 2 tests, BC README)
+**Tests added:** 12 (workflow-rail-routing.test.mjs) + 1 existing shell test updated
+**ADRs written:** none (ADR-0025 pre-existed; ADR-0021 carries an unrelated pre-existing back-annotation, not part of this commit)
+**Unblocks:** agentic-workflow-062 (About page — extends the mainView enum)
+
+---
+
+## 2026-06-17 12:10 -- Batch started: [agentic-workflow-058]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-058 - Workflow rail item + main-pane routing scaffold (third selection state)
+**Parallel:** no (1 worker) — aw-061 demoted (shares the rebuilt `dashboard/dist/app.js`); aw-062 blocked on aw-058.
+
+---
+
+## 2026-06-17 12:05 -- Task verified and completed: agentic-workflow-056 - Left rail — Research group sits above Decisions
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-056 - Left rail — Research group sits above Decisions
+**Summary:** Reordered the dashboard left-rail library groups so Research renders above Decisions (rail now reads Product → Bounded contexts → Research → Decisions); one-line `GROUP_ORDER` swap in the pure `treeToLibrary` transform, comment fixed, group-order test updated, dist rebuilt.
+**Verification:** PASS (iteration 1) — verifier confirmed GROUP_ORDER reorder + comment, group-order test updated and asserts new order, empty-group omission untouched, dist genuinely rebuilt to carry the change; dashboard suite 474 pass / 0 fail.
+**Commit:** 3b0a749
+**Files changed:** 3
+**Tests added:** 0 (one existing order assertion updated)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 12:00 -- Batch started: [agentic-workflow-056]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-056 - Left rail — Research group sits above Decisions
+**Parallel:** no (1 worker) — aw-058 and aw-061 demoted to later waves (all three rebuild the shared `dashboard/dist/app.js` bundle; conflict-serialized).
+
+---
+
+## 2026-06-17 11:30 -- Modeling / Captured: agentic-workflow-062 - Dashboard About page (profile bio + Ko-fi)
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Builder wants an About item in the dashboard left rail, below Board, opening an About page that mirrors the top two cards of his WhisperHeim app — a profile card describing him as a person (bio + heimeshoff.de / Bluesky / LinkedIn contact links, with a profile photo) and a support card with the Ko-fi button (`https://ko-fi.com/heimeshoff`) + GitHub link. Scope confirmed with the builder: both cards in full, photo included; copy adapted from Whisperheim to Agentheim. Routes as a built-in static page via the `mainView` third-view-state pattern — depends on aw-058 (the routing scaffold) and is exactly the "future About page" ADR-0025 anticipated, so it's a one-line enum extension, not a new shell-state invention. Frontend gate (design-system-001) already met. Renumbered from a momentary 057 collision (a concurrent session had taken 057–061) to 062.
+
+---
+
+## 2026-06-17 11:00 -- Modeling / Captured: agentic-workflow-061 - Board Name sort orders by title in true alphabetical order
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Builder wants the board columns' **Name A→Z / Z→A** sort to order by the title's readable text in true alphabetical order. Investigation: the comparator (`dashboard/app/board-sort.js`) *already* keys on `title`, but compares with raw `<`/`>` on the lowercased string — UTF-16 code-point order, not collation — so case, accented/umlaut letters (ä/ö/ü/ß after `z`), leading digits and punctuation mis-order. Captured as a bug to swap the `title-asc`/`title-desc` comparator to locale-aware collation (`localeCompare` / `Intl.Collator`, `sensitivity:'base'`, `numeric:true`), keeping the id-ascending tie-break and pure/read-only contracts. Filed straight to todo — concrete, comparator-only, worker-ready; styleguide gate (design-system-001) already met.
+
+---
+
+## 2026-06-17 10:30 -- Modeling / Refined: agentic-workflow-057 - Workflow guide page
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog (converted to umbrella)
+**Summary:** Resolved the four open questions flagged at capture. (1) **Rail routing** → an explicit third main-pane state `mainView` (`board`/`workflow`) alongside `selectedDoc`/`openIntent`, *not* a sentinel pseudo-doc; `isTaskIntent` (ADR-0021) stays byte-unchanged; render precedence `workflow → document → board`. Governed by new **ADR-0025** (Proposed), reshaping ADR-0021. (2) **Diagram primitives** → board-local under `dashboard/app/` (seam test fails for a shared design-system primitive — single consumer, content-bound shapes); no design-system child task. (3) **Decomposition** → split into a strict chain aw-058 → aw-059 → aw-060, with aw-057 converted to the umbrella that closes when all three land. (4) **Content accuracy** → corrected the canonical flow the diagrams must depict (name the verifier, quick-capture vs modeling as two doors, add DISMISS, mark human-in-the-loop gates). **aw-058 promoted to todo**; aw-059/aw-060 stay in backlog and promote as predecessors land.
+**Split into:** agentic-workflow-058, agentic-workflow-059, agentic-workflow-060
+**ADRs written:** ADR-0025 (Proposed — dashboard main pane third view state for built-in static pages)
+
+---
+
+## 2026-06-17 10:00 -- Modeling / Captured: agentic-workflow-057 - Workflow guide page
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Builder wants a second left-rail entry, **Workflow** (directly below Board), opening a built-in, mostly-visual guide page in the main content area that explains the Agentheim workflow — split into three segments: **Preparation** (repo setup + brainstorm → vision + context map), **Capturing** (quick-capture / modeling / refinement / research intake loop), and **Promote & Work**. Diagram-rendering approach decided at capture: **hand-authored, styleguide-conformant SVG/HTML+CSS components** (themes via tokens, no bundled diagramming library). Filed to backlog — large new view; refinement to resolve rail-routing-as-third-selection-state (vs ADR-0021 task/doc split), whether the flow-diagram visual becomes a shared design-system primitive, and decomposition. Frontend gate (design-system-001) already met.
+
+---
+
+## 2026-06-17 09:30 -- Modeling / Captured: agentic-workflow-056 - Left rail — Research group sits above Decisions
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Builder wants the left rail's library groups reordered so Research sits above Decisions (rail reads Product → Bounded contexts → Research → Decisions). One-line change to the `GROUP_ORDER` constant in the pure `treeToLibrary` transform (`dashboard/app/library-data.js`); presentation-only, styleguide unforked, dashboard stays read-only. Filed straight to todo — concrete and worker-ready; styleguide gate (design-system-001) already met.
+
+---
+
 ## 2026-06-17 09:12 -- Work session ended
 
 **Type:** Work / Session end
