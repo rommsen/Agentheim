@@ -91,7 +91,13 @@ For each idea in the user's message:
 
 6. **Log to the protocol** — prepend one Capture entry (details below).
 
-7. **Report and stop.** One line per task: `✓ <id> → backlog · "<title>" (<bc>)`. If you
+7. **Commit the captured markdown** — scoped `git add` of just the files this capture
+   touched (the new task file + the BC `INDEX.md` + `protocol.md`), then commit. Details in
+   "Committing" below. This is what keeps the working tree clean after a capture
+   (ADR-0026) — the old behavior left the new task file, INDEX, and protocol all
+   uncommitted.
+
+8. **Report and stop.** One line per task: `✓ <id> → backlog · "<title>" (<bc>)`. If you
    had to guess the BC, say so and invite a re-route in the same breath — e.g. *"routed to
    agentic-workflow on a guess; reply with a BC to move it."* Then stop. Don't ask "want me
    to refine it?" — if they do, they'll say so.
@@ -109,7 +115,6 @@ type: feature
 context: <bc>
 created: <YYYY-MM-DD>
 completed:
-commit:
 depends_on: []
 blocks: []
 tags: [captured]
@@ -186,6 +191,29 @@ first (`# Protocol` / "Chronological log…" / "Newest entries on top." / `---`)
 For a multi-idea dump, one entry per task is fine, but keep each to a single summary line —
 the protocol is a diary, not a transcript.
 
+## Committing
+
+Quick-capture commits its own markdown so the working tree is clean after a capture
+(ADR-0026). After writing the task file(s), updating the index, and logging the protocol:
+
+1. `git add` an **explicit, enumerated** list of *only* this capture's artifacts: the new
+   task file(s), the target BC's `INDEX.md`, and `.agentheim/knowledge/protocol.md`.
+   **Never `git add -A` / `git add .`** — `quick-capture` can run while a `work` or
+   `modeling` session has its own in-flight files on the working tree; a blanket add would
+   bundle or race them. Scoped add is load-bearing for that concurrency (ADR-0026).
+2. Commit silently (no confirmation prompt — capture's whole point is speed) with:
+   ```
+   chore(<bc>): capture <task-id> — <title> [<task-id>]
+   ```
+   The `[<task-id>]` trailer is the `git log` index for this task (there is no `commit:`
+   frontmatter field — ADR-0026 dropped it).
+3. **Multi-idea dump:** one commit **per task** keeps the per-task granularity (each carries
+   its own `[<task-id>]` trailer), which the later refine/work passes rely on. Commit each
+   task with its own scoped add as you write it.
+
+If the project isn't a git repo, skip the commit silently — write the files as before and
+report; the working-tree-clean guarantee only applies under git.
+
 ## Re-routing after the fact
 
 If the user corrects the BC after you report ("no, that's infrastructure"), just **move the
@@ -193,7 +221,10 @@ file**: relocate `backlog/<id>-<slug>.md` to the new BC's `backlog/`, update the
 frontmatter field, remove the index line from the old BC's INDEX and add it to the new
 one's (fixing both Backlog counts), and append a one-line protocol note. Don't re-capture
 or renumber — it's the same task, only its home changed. (If the BC short-code is part of
-the id, keep the original id; ids are stable and renumbering breaks references.)
+the id, keep the original id; ids are stable and renumbering breaks references.) Then
+**commit the re-route** with a scoped add of exactly those touched files (the moved task
+file's new and old paths, both BCs' `INDEX.md`, and `protocol.md`) — never `git add -A` —
+under `chore(<new-bc>): re-route <task-id> → <new-bc> [<task-id>]` (ADR-0026).
 
 ## Handoff to modeling — why "raw" is fine
 

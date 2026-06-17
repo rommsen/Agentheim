@@ -241,6 +241,21 @@ For any global ADR written during the strategic phase (vision-level decisions), 
 
 For each `type: decision` / `type: spike` / `type: feature` task emitted during the architecture-foundation step, insert under the appropriate BC's `<!-- todo-list:start -->` and increment Todo count.
 
+## Committing
+
+`brainstorm` commits the markdown it produced, so the working tree is clean after a session (ADR-0026). After the session's artifacts, indexes, and protocol entry are written:
+
+1. `git add` an **explicit, enumerated** list of *only* the files this session wrote or changed: `.agentheim/vision.md`, `.agentheim/context-map.md` (if produced), each new `contexts/<bc>/README.md` + `contexts/<bc>/INDEX.md`, every foundation task file (decision / walking-skeleton spike / styleguide), `.agentheim/knowledge/index.md`, any **strategic** ADR written this session, and `.agentheim/knowledge/protocol.md`. **Never `git add -A` / `git add .`** — keep the add scoped to this session's files so an unrelated in-flight change isn't swept in (ADR-0026's scoped-add rule).
+2. Commit with a single message for the session:
+   ```
+   chore(<bc-or-global>): brainstorm <topic> — vision created | vision revised | vision extended
+   ```
+   One commit for the session is fine — brainstorm produces one coherent foundation drop, not a stream of independent tasks.
+
+**Do not commit the architect's foundation ADRs.** As the architecture-foundation step already states, those ADR drafts ride in the `Notes` of their `type: decision` tasks and are committed later by `work` when each decision task is executed — never from `brainstorm`. Only the *strategic* ADRs (vision-level decisions made in the Socratic phase) are committed here.
+
+If the project isn't a git repo, skip the commit silently — the working-tree-clean guarantee only applies under git.
+
 ## What you leave behind
 
 At the end of a successful brainstorm:

@@ -131,6 +131,8 @@ PROMOTE and DISMISS are mechanical (readiness check + file move; resolve + casca
 
 6. **Write the task file(s).** Include the user-confirmed `related_adrs`, `related_research`, `prior_art` from step 3 in the frontmatter. See task format below.
 
+7. **Commit the captured markdown** (after the index + protocol updates below). Scoped `git add` of just this capture's artifacts — the new task file(s), the BC `INDEX.md`, `protocol.md`, and any ADR the orchestrator wrote — then `chore(<bc>): capture <task-id> — <title> [<task-id>]`. See "Committing" below.
+
 ## REFINE flow
 
 1. If no specific backlog item was named, list the backlog across all contexts and ask which to refine. Prefer oldest-first or user-priority if flagged.
@@ -150,6 +152,8 @@ PROMOTE and DISMISS are mechanical (readiness check + file move; resolve + casca
 
 6. **Promote if ready.** If refinement made the task ready, move it to `todo/`.
 
+7. **Commit the refinement** (after the index + protocol updates below). Scoped `git add` of just the touched files — the refined task file (and any child task files if it split), the BC `INDEX.md`, `protocol.md`, and any ADR written — then `model(<bc>): refine <task-id> — <title> [<task-id>]` (one trailer per task if the refinement split into several). See "Committing" below.
+
 ## PROMOTE flow
 
 1. Find the task (user may name it by id or title, or describe it).
@@ -162,6 +166,8 @@ PROMOTE and DISMISS are mechanical (readiness check + file move; resolve + casca
 3. If ready, move the file from `backlog/` to `todo/`. Update its frontmatter `status` field.
 
 4. If not ready, tell the user what's missing and offer to switch to the REFINE action on this task.
+
+5. **Commit the promotion** (after the index + protocol updates below). Scoped `git add` of just the moved task file, the BC `INDEX.md`, and `protocol.md` — then `model(<bc>): promote <task-id> — <title> [<task-id>]`. See "Committing" below. (Nothing to commit if the task wasn't ready and stayed in `backlog/`.)
 
 ## DISMISS flow
 
@@ -199,6 +205,8 @@ The boundary mirrors ADR-0007: the raw `.md` deletes are the mechanical core; th
 
 7. **IDs are gone, never reused.** A dismissed number is retired, consistent with "never renumber" — a future capture takes the next free number, never a dismissed one.
 
+8. **Commit the dismissal** (ADR-0026). Scoped `git add` of exactly the files the cascade touched — the deleted task file paths (a delete is staged with `git add`/`git rm`), every `INDEX.md` the set spanned, every surviving task file or ADR whose backlinks were stripped, and `protocol.md` — then **one** commit for the whole cascade: `chore(<bc>): dismiss <id-or-cascade-set>` (name the lead id, or the set if small). **Never `git add -A`** — even though a DISMISS legitimately spans multiple BCs, the add stays an explicit enumeration of only the cascade's files, so a concurrent `work`/`modeling` session's in-flight markdown is never swept in (the scoped-add rule is load-bearing for concurrency, ADR-0026).
+
 ## Task file format
 
 Files live as `contexts/<bc>/<status>/<id>-<slug>.md`. Example: `contexts/auth/backlog/auth-003-password-reset-flow.md`.
@@ -212,7 +220,6 @@ type: feature
 context: auth
 created: 2026-04-24
 completed:
-commit:
 depends_on: []
 blocks: []
 tags: []
@@ -243,7 +250,9 @@ field legend lives here instead:
 
 - `status` — one of `backlog | todo | doing | done` (also the lifecycle folder).
 - `type` — one of `feature | bug | refactor | chore | spike | decision`.
-- `completed` / `commit` — left empty; the worker sets the date and git SHA when done.
+- `completed` — left empty; the worker sets the date when the task is done. (There is no
+  `commit:` field — ADR-0026 dropped it; a task's commit is found in `git log` via the
+  `[<task-id>]` trailer the committing skill writes.)
 - `depends_on` — list of task ids this one waits on; `blocks` is populated automatically by worker / refine.
 - `related_adrs` — ADR ids (e.g. `[0007]`); auto-populated by model at capture/refine, orchestrator appends ADRs it writes.
 - `related_research` — research slugs (e.g. `[auth-tokens-2026-04-24]`); auto-populated by model from the research index.
@@ -407,3 +416,22 @@ Then prepend the appropriate entry right after the `---` on line 4:
 The DISMISS entry is **bare** — it records the cascade set (ids + titles) and the timestamp, no builder-typed reason. One entry per dismiss regardless of how many tasks the cascade removed.
 
 If the action is non-trivial (multiple tasks created from one capture, refinement that produced ADRs, batch promotion), one entry per "thing the user asked for" is enough — don't prepend five entries for a single conversation turn.
+
+## Committing
+
+Each action — CAPTURE, REFINE, PROMOTE, DISMISS — commits its own markdown at the end of the action, so the working tree is clean afterward (ADR-0026). This is the same auto-commit discipline `work` and `quick-capture` follow: the skill that owns the bookkeeping owns the commit of that bookkeeping (ADR-0017).
+
+**Scoped `git add` only — never `git add -A` / `git add .`.** `modeling` sometimes runs concurrently with a `work` session (and with `quick-capture`). Each action `git add`s an explicit, enumerated list of *only* the `.md` files it touched — the task file(s) it wrote or moved, the BC `INDEX.md`(es), `protocol.md`, and any ADR / vision / context-map it produced. A blanket add would sweep in a concurrent worker's un-verified code or another skill's in-flight markdown and bundle or race it into the wrong commit. This is load-bearing for concurrency safety, not a style choice (ADR-0026).
+
+**Message convention** (the `[<task-id>]` trailer is the `git log` index — there is no `commit:` frontmatter field, ADR-0026 dropped it):
+
+| Action | Message |
+|---|---|
+| CAPTURE | `chore(<bc>): capture <task-id> — <title> [<task-id>]` (one commit + trailer per task if a capture produced several) |
+| REFINE | `model(<bc>): refine <task-id> — <title> [<task-id>]` (one trailer per task if it split) |
+| PROMOTE | `model(<bc>): promote <task-id> — <title> [<task-id>]` |
+| DISMISS | `chore(<bc>): dismiss <id-or-cascade-set>` (one commit for the whole cascade) |
+
+`model` is a commit-message `<type>` prefix for modeling's markdown commits — it is **not** a task `type:` (those stay feature/bug/refactor/chore/spike/decision).
+
+Commit **silently** — no confirmation prompt. The user's complaint that drove this doctrine was *leftover uncommitted* markdown; auto-committing the bookkeeping (and only the bookkeeping — never the builder's source code) is the fix, matching `work`. If the project isn't a git repo, skip the commit silently; the working-tree-clean guarantee only applies under git.

@@ -83,12 +83,10 @@ For each SUCCESS that requires verification, in parallel where the workers ran i
 ### Handling the verdict
 
 **`VERDICT: PASS`**
-1. Proceed to the existing "Git authority" section — `git add` + commit the worker's files.
-2. Log "Task verified and completed" to protocol.md (replaces the old "Task completed" entry — see Protocol logging below).
+1. Proceed to the existing "Git authority" section — it does the INDEX/protocol/task-move bookkeeping **before** the commit, then `git add`s everything and commits in one shot (per ADR-0026). Note the protocol entry written there is "Task verified and completed" (replaces the old "Task completed" entry — see Protocol logging below).
 
 **`VERDICT: SKIP`**
-1. Commit exactly as on PASS.
-2. Log "Task completed (verification skipped: <reason>)" to protocol.md.
+1. Commit exactly as on PASS — same before-the-commit bookkeeping. The protocol entry written in the Git authority step is "Task completed (verification skipped: <reason>)".
 
 **`VERDICT: FAIL`, iteration 1 or 2**
 1. Do **not** commit. The worker's changes stay on the working tree but are not added or committed yet.
@@ -145,20 +143,38 @@ When the orchestrator dispatched a parallel batch of N workers and several retur
 
 Git is owned by `work`, not by workers or verifiers. Workers only move files and write content; verifiers only read. This is load-bearing for parallel safety — two writes to git concurrently can race.
 
-After a verifier returns `VERDICT: PASS` (or `VERDICT: SKIP`, or when verification was bypassed per the skip rules above):
+**The doctrine here is ADR-0026: all bookkeeping is written and `git add`ed BEFORE the commit, so a completed task's code + task-move + INDEX + protocol all land in ONE commit and the working tree is clean afterward.** There is no post-commit write step — the old `commit: <sha>` chicken-and-egg (which forced bookkeeping out of the task commit into a separate trailing per-session commit) is gone.
+
+After a verifier returns `VERDICT: PASS` (or `VERDICT: SKIP`, or when verification was bypassed per the skip rules above), do all of this **before** committing:
 
 1. `git status` to see what changed.
-2. `git add` — the files from the worker's `FILE_LIST` plus the moved task file, the updated BC README (if the worker reports `BC_README_UPDATED: yes`), and any ADRs listed in `ADRS_WRITTEN`. **Never `git add -A`** — it sweeps in unrelated changes (user's in-progress work, or a parallel sibling worker's files awaiting their own verification).
-3. Commit with message:
+2. **Write all bookkeeping now (pre-commit):**
+   - The worker already moved the task file `doing → done` and set `status: done` + `completed:`. Confirm that move is on disk.
+   - Apply the BC `INDEX.md` doing → done edits (see "Index updates" below) for this task.
+   - Apply the ADR↔task backlink maintenance and any ADR index inserts (see "Index updates").
+   - Prepend the `protocol.md` entry for this task (see "Protocol logging") — write the final entry now, not after the commit.
+3. `git add` an **explicit, enumerated** list: the files from the worker's `FILE_LIST`, plus the moved task file, the updated BC README (if `BC_README_UPDATED: yes`), any ADRs in `ADRS_WRITTEN`, **and the `INDEX.md` files and `protocol.md` you just edited in step 2**. **Never `git add -A` / `git add .`** — a blanket add sweeps in the user's in-progress work or a parallel sibling worker's files still awaiting their own verification, and a concurrent `modeling` session's in-flight markdown (ADR-0026's scoped-add rule is load-bearing for concurrency safety).
+4. Commit with message:
    ```
    <type>(<bc>): <summary> [<task-id>]
    ```
    where `<type>` comes from the task's frontmatter (feature / bug / refactor / chore / spike / decision), `<bc>` is the bounded context, `<task-id>` is the task id. Example:
    `feature(books): add ReadingSession concept to Book aggregate [books-001]`
-4. Capture the commit SHA.
-5. Update the task file's frontmatter with `commit: <sha>` (you do this — the worker already set status=done and moved the file, you add the SHA the worker didn't have).
 
-One task = one commit. Commit after each verifier passes, not in a batch — that way if the next verification fails we haven't bundled it with an already-passed one. In a parallel batch where verifiers return roughly simultaneously, commit sequentially in the order verifiers return PASS.
+The commit SHA is **not** written back anywhere. A task's commit is discoverable from `git log` via the `[<task-id>]` trailer in the message — that is why the `commit:` frontmatter field is dropped (ADR-0026). Do **not** add a `commit: <sha>` field and do **not** amend the task file after committing.
+
+### One commit per task — and the trivial-squash carve-out
+
+**One task = one commit is the default.** Commit after each verifier passes, not in a batch — that way if the next verification fails we haven't bundled it with an already-passed one. In a parallel batch where verifiers return roughly simultaneously, commit sequentially in the order verifiers return PASS.
+
+**Trivial-squash carve-out (ADR-0026):** a *wave* of trivial follow-up tasks MAY be folded into one commit (carrying one `[<task-id>]` trailer per squashed task) **only when ALL of these hold**:
+
+- **(a) Same BC** — every task in the wave belongs to the same bounded context.
+- **(b) Same file set** — they touch the same files; no task in the wave touches a file no other task in the wave touches.
+- **(c) No-behavior-change tweaks** — each is a copy / chrome / token / formatting tweak layered on the prior one: no new test, no new code path, no acceptance criterion that a test would newly cover. (If a task adds a test or a behavior, it is not trivial — give it its own commit.)
+- **(d) Same batch** — they were dispatched in the same `work` batch and all passed verification.
+
+The aw-064/065/066/067 one-line topbar-chrome tweaks are the canonical example. When in doubt, do **not** squash — one commit per task is always safe. This carve-out bends the vision's "one task = one commit" invariant deliberately; that is why it is recorded in ADR-0026.
 
 If the project isn't a git repo, skip commits silently and note it in the end-of-run summary. (Verification is also auto-skipped in this case — see "When to skip verification".)
 
@@ -166,12 +182,14 @@ If the project isn't a git repo, skip commits silently and note it in the end-of
 
 Indexes track artifact movement. The work skill — **never the worker** — updates them. The worker is scope-restricted; touching `INDEX.md` files from inside a worker would fail verification. Index template lives at `references/index-template.md`.
 
+These edits are part of the bookkeeping that is written and `git add`ed **before** the commit (ADR-0026) — the doing → done INDEX edit, the ADR backlinks, and the protocol entry all land in the same commit as the task. Do them in the Git authority step's pre-commit phase, not after.
+
 Per state transition in `contexts/<bc>/INDEX.md`:
 
 | Transition | Marker edits | Counts |
 |---|---|---|
 | **todo → doing** (Phase 4 step 1) | remove from `<!-- todo-list:start -->` → insert into `<!-- doing-list:start -->` | Todo −1, Doing +1 |
-| **doing → done** (post-PASS commit) | remove from `<!-- doing-list:start -->` → insert at top of `<!-- done-list:start -->` (newest first) | Doing −1, Done +1 |
+| **doing → done** (pre-PASS-commit bookkeeping) | remove from `<!-- doing-list:start -->` → insert at top of `<!-- done-list:start -->` (newest first) | Doing −1, Done +1 |
 | **doing → backlog** (BOUNCED) | remove from `<!-- doing-list:start -->` → insert into `<!-- backlog-list:start -->` | Doing −1, Backlog +1 |
 | **doing → doing** (FAIL iteration N, re-dispatched) | no list move; line stays in doing-list | no count change |
 | **doing → doing-final** (FAIL iteration 3, escalated) | no list move | no count change |
@@ -190,6 +208,8 @@ If `NEW_BACKLOG_ITEMS` are non-empty in the worker SUCCESS, also insert those ta
 ## Protocol logging
 
 `.agentheim/knowledge/protocol.md` is the project's chronological diary. Every `work` event prepends a new entry. Keep entries terse — the diff carries the detail.
+
+The completion entries below are written in the **pre-commit bookkeeping phase** (ADR-0026), so they ride in the task's own commit. Because the commit SHA isn't known until after the commit and isn't written back anywhere, the `**Commit:**` line is **omitted** from these entries — `git log`'s `[<task-id>]` trailer is the SHA index. (The "Batch started" entry is prepended at Phase 4 step 2, before dispatch, and gets committed with the batch's tasks.)
 
 If `protocol.md` doesn't exist, create it with:
 ```markdown
@@ -220,7 +240,6 @@ Entry formats:
 **Task:** <task-id> - [title]
 **Summary:** [worker's 1-line SUMMARY]
 **Verification:** PASS (iteration N)
-**Commit:** <short-sha>
 **Files changed:** N
 **Tests added:** N
 **ADRs written:** [ids or "none"]
@@ -233,7 +252,6 @@ Entry formats:
 **Task:** <task-id> - [title]
 **Summary:** [worker's 1-line SUMMARY]
 **Verification:** SKIPPED — [reason: decision-only task | --no-verify | non-git project]
-**Commit:** <short-sha>
 **Files changed:** N
 
 ---
@@ -371,6 +389,7 @@ When `todo/` is empty and all `doing/` is resolved (or the user interrupts):
 
    ---
    ```
+   This is the one `work` protocol line written *after* a commit (it summarizes the session). To honor ADR-0026's "clean working tree" rule, **commit it** with a scoped add of only `protocol.md`: `git add .agentheim/knowledge/protocol.md` then `chore(<bc>): work session end bookkeeping [<last-task-id>]` (reuse the last completed task's id as the trailer, or `chore: work session end bookkeeping` if the session committed nothing). Do not `git add -A`. This is the *only* bookkeeping-after-commit `work` performs, and it is a single line — every per-task INDEX/protocol edit already rode in its own task commit (the old trailing "record SHAs + INDEX/protocol" commit is gone).
 
 ## Do not model in work
 

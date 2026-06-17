@@ -1,16 +1,15 @@
 ---
 id: agentic-workflow-063
 title: Analyze and optimize the committing pattern
-status: todo
+status: done
 type: refactor
 context: agentic-workflow
 created: 2026-06-17
-completed:
-commit:
+completed: 2026-06-17
 depends_on: []
 blocks: []
 tags: [committing, git, workflow-doctrine]
-related_adrs: [0007, 0017]
+related_adrs: [0007, 0017, 0026]
 related_research: []
 prior_art: [agentic-workflow-003]
 ---
@@ -110,3 +109,46 @@ let the ADR settle it.
 **May split** along the A (work) / B (modeling+capture+brainstorm) seam if the worker
 finds it too large — but the doctrine (C) is one ADR shared by both halves, so prefer
 keeping it as one task.
+
+## Outcome
+
+Kept as one task (A + B + C). Recorded **ADR-0026** (committing doctrine, cross-linking
+ADR-0007 and ADR-0017) and applied it to all four skills:
+
+- **`skills/work/SKILL.md`** — "Git authority" now writes the doing→done task-move + INDEX
+  + ADR-backlinks + protocol entry **before** the commit and `git add`s them with the
+  worker's files, so a task's code + move + INDEX + protocol land in one commit. The
+  post-commit `commit: <sha>` write step is removed. Added the **one-commit-per-task** rule
+  plus a precisely-bounded **trivial-squash carve-out** (same BC / same file set /
+  no-behavior-change / same batch). Reconciled the "Index updates" and "Protocol logging"
+  timing wording (pre-commit), dropped the `**Commit:**` line from both completion protocol
+  templates, and made the end-of-session "Work session ended" line commit itself scoped to
+  `protocol.md`.
+- **`skills/modeling/SKILL.md`** — CAPTURE / REFINE / PROMOTE / DISMISS each commit their own
+  scoped `.md` at end-of-action; added a shared "Committing" section with the scoped-`git add`
+  mandate (never `git add -A`, load-bearing for concurrency with `work`) and the
+  `chore`/`model` message convention. Dropped `commit:` from the task template and the field
+  legend.
+- **`skills/quick-capture/SKILL.md`** — added a commit step + "Committing" section (scoped add
+  of task file + INDEX + protocol, silent, per-task commits for multi-idea dumps); the
+  re-route path now commits too. Dropped `commit:` from the template.
+- **`skills/brainstorm/SKILL.md`** — added a "Committing" section (scoped session commit of
+  vision/context-map/READMEs/INDEXes/foundation tasks/strategic ADRs/protocol), explicitly
+  **not** committing the architect's foundation ADRs (those ride in decision-task Notes).
+
+The **concurrency constraint** is spelled out in every committing instruction (explicit
+enumerated `git add`, never `git add -A`) and in ADR-0026 §5. The `commit:` field is dropped
+globally; the only live skill-prose references that remain explain the drop. ADR-0007's mover
+boundary is left intact (only commit *timing* changed, not where side-effects live).
+
+Updated the BC README: added a **Commit doctrine** ubiquitous-language term and noted the
+trivial-squash carve-out on the **Task** aggregate's "one task = one commit" invariant.
+
+This is a doctrine/prose refactor (no code, no test infrastructure) — TDD does not apply.
+Note the eval workspace under `skills/capture-workspace/` carries historical `commit:`
+fixtures and a stale `capture` skill copy; those are test snapshots and were deliberately
+left untouched.
+
+Key files: `.agentheim/knowledge/decisions/0026-committing-doctrine-bookkeeping-in-task-commit.md`,
+`skills/work/SKILL.md`, `skills/modeling/SKILL.md`, `skills/quick-capture/SKILL.md`,
+`skills/brainstorm/SKILL.md`, `.agentheim/contexts/agentic-workflow/README.md`.

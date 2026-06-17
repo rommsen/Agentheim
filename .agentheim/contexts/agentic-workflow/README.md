@@ -56,6 +56,17 @@ separate BC, but today the whole tool lives in this one.
 - **Protocol** — the chronological project diary, newest on top; every action appends.
 - **Index** — a flat catalog (`knowledge/index.md` + per-BC `INDEX.md`) that *points*,
   never duplicates. The memory layer for prior-art and dependency lookup.
+- **Commit doctrine** — every skill that produces `.agentheim/` markdown commits its own
+  artifacts, scoped, so the working tree is clean after any session (ADR-0026). `work` folds
+  the task-move + `INDEX.md` + `protocol.md` + ADR-backlink bookkeeping into the task commit
+  **before** committing (no post-commit write), and `modeling` / `quick-capture` / `brainstorm`
+  each commit the `.md` they wrote at end-of-action. Every commit is a **scoped `git add`** of
+  only that skill's own files — **never `git add -A`** — which is load-bearing because
+  `modeling` can run concurrently with `work`. A task's commit is found in `git log` via the
+  `[<task-id>]` message trailer; there is **no `commit:` frontmatter field** (ADR-0026 dropped
+  the SHA chicken-and-egg). One task = one commit, with a bounded **trivial-squash carve-out**
+  for a same-BC / same-files / no-behavior-change / same-batch wave of follow-ups (e.g.
+  aw-064/065/066/067). See ADR-0026, ADR-0017, ADR-0007.
 - **Tree projection** — the single read model the dashboard's views (board, slide-over,
   navigation) and the SSE consumer all rebuild from. `GET /api/tree` (built in
   agentic-workflow-005 as `dashboard/tree.mjs`) walks the discovered `.agentheim/` and returns,
@@ -590,7 +601,8 @@ separate BC, but today the whole tool lives in this one.
 ## Aggregates
 
 - **Task** — protects: status always matches its folder (`backlog/` → `todo/` → `doing/` →
-  `done/`); one task = one commit; IDs (`<bc>-NNN`) are stable and never renumbered — a
+  `done/`); one task = one commit (with a bounded **trivial-squash carve-out**, ADR-0026);
+  IDs (`<bc>-NNN`) are stable and never renumbered — a
   **dismissed** id (ADR-0022) is retired, not reused; a future capture takes the next free number.
 - **Vision** — protects: a single, two-minute-readable strategic root per project.
 - **Knowledge base** (protocol + ADRs + research + indexes) — protects: every action is
