@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 09:10 -- Modeling / Refined: agentic-workflow-079 - Minting call-site token sweep
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Grounded the AC against the live prose (verified quick-capture:154, modeling:263 ID-convention, modeling:206 retirement; confirmed `capture-workspace/` fixtures are out-of-scope snapshots). Closed two ADR-0028 §7 gaps the AC was silent on: pinned the walking-skeleton placeholder `infrastructure-XXX` to the reserved literal `infrastructure-001-walking-skeleton`, and mandated brainstorm's non-foundation decision tasks use random tokens (reserved set closed at the two foundation ids). Added a drift guard from the aw-077 precedent — the three inline token-emit statements must be byte-identical and each cite ADR-0028 §1 as canonical. Promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-06-18 09:05 -- Modeling / Promoted: agentic-workflow-078 - deriveContext dual-shape token regex
 
 **Type:** Modeling / Promote
