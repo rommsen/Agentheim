@@ -81,17 +81,28 @@ test('the Refine/Promote buttons seed the explicit-verb commands for the card id
 });
 
 test('Refine is emphasised (primary), Promote is de-emphasised (quiet)', () => {
-  const refine = boardSrc.match(/label="Refine"[\s\S]{0,160}?\/>/);
-  const promote = boardSrc.match(/label="Promote"[\s\S]{0,160}?\/>/);
+  const refine = boardSrc.match(/label="Refine"[\s\S]{0,240}?\/>/);
+  const promote = boardSrc.match(/label="Promote"[\s\S]{0,240}?\/>/);
   assert.ok(refine, 'Refine button literal not found');
   assert.ok(promote, 'Promote button literal not found');
   assert.match(refine[0], /emphasis="primary"/, 'Refine must be emphasis="primary"');
   assert.match(promote[0], /emphasis="quiet"/, 'Promote must be emphasis="quiet"');
 });
 
+// aw-068: the card actions follow the SAME in-theme hover+press scheme as the prompt-bar
+// cards and the topbar launches — both opt into liftOnHover so they brighten (never
+// invert) on hover/press.
+test('both card buttons opt into the shared hover+press scheme (liftOnHover)', () => {
+  const refine = boardSrc.match(/label="Refine"[\s\S]{0,240}?\/>/);
+  const promote = boardSrc.match(/label="Promote"[\s\S]{0,240}?\/>/);
+  assert.ok(refine && promote, 'Refine and Promote button literals not found');
+  assert.match(refine[0], /liftOnHover=\$\{true\}/, 'Refine must opt into liftOnHover');
+  assert.match(promote[0], /liftOnHover=\$\{true\}/, 'Promote must opt into liftOnHover');
+});
+
 test('both card buttons defensively isolate their click (do not bubble to the card onClick)', () => {
-  const refine = boardSrc.match(/label="Refine"[\s\S]{0,160}?\/>/);
-  const promote = boardSrc.match(/label="Promote"[\s\S]{0,160}?\/>/);
+  const refine = boardSrc.match(/label="Refine"[\s\S]{0,240}?\/>/);
+  const promote = boardSrc.match(/label="Promote"[\s\S]{0,240}?\/>/);
   assert.match(refine[0], /isolateClick=\$\{true\}/, 'Refine must isolate its click');
   assert.match(promote[0], /isolateClick=\$\{true\}/, 'Promote must isolate its click');
   // And the LaunchButton actually honors isolateClick with a stopPropagation.

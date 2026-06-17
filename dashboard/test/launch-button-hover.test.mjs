@@ -79,6 +79,21 @@ test('LaunchButton keeps the focusable affordance intact', () => {
   assert.match(lb, /className="focusable"/, 'LaunchButton must keep the focusable class for the :focus affordance');
 });
 
+// aw-068 (press de-inverted): a liftOnHover PRESS must stay in-theme — it keeps the
+// bright hover chrome (--surface-2 fill / --fg-1 text) and only drops the lift shadow.
+// The old press swapped roles (--fg-1 fill + --surface-0 text), which read as a theme
+// inversion (dark-on-press in light mode, light-on-press in dark). The mousedown handler
+// must therefore NOT paint the background --fg-1 nor the text --surface-0.
+test('liftOnHover press does NOT invert the scheme (mousedown stays in-theme)', () => {
+  const lb = fn('LaunchButton');
+  const down = lb.match(/onMouseDown=\$\{[\s\S]*?\}\}/);
+  assert.ok(down, 'LaunchButton must have an onMouseDown handler');
+  assert.doesNotMatch(down[0], /background\s*=\s*"var\(--fg-1\)"/, 'press must not fill the background with --fg-1 (no inversion)');
+  assert.doesNotMatch(down[0], /color\s*=\s*"var\(--surface-0\)"/, 'press must not paint the text --surface-0 (no inversion)');
+  // It DOES settle into the in-theme highlight fill.
+  assert.match(down[0], /background\s*=\s*"var\(--surface-2\)"/, 'press must keep the in-theme --surface-2 highlight fill');
+});
+
 test('armed LaunchButton no longer paints the button-wide --obligation label color or border', () => {
   const lb = fn('LaunchButton');
   // The color/border lines must not branch on `armed` to --obligation anymore.
