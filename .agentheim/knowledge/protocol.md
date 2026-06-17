@@ -5,6 +5,169 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 15:05 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 5 (first-try PASS: 5, re-dispatched: 0, skipped: 0) — aw-059 (bae517d), aw-065 (cf06395), aw-064 (658d130), aw-066 (5d58b6f), aw-067 (35cc892)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 5 work commits
+**Notes:**
+- All five tasks are dashboard frontend work that rebuilds the shared `dashboard/dist/app.js` esbuild bundle (and most edit `dashboard/app/board.js`), so the whole run was conflict-serialized to one worker per wave. Every task passed verification on the first try.
+- A `modeling` session ran CONCURRENTLY with this work loop, promoting aw-065, aw-064, and aw-067 to todo mid-run; the loop picked each up automatically on re-scan. The concurrent edits to `INDEX.md` and `protocol.md` were merged carefully — work commits were scoped to each task's own files (never `git add -A`) to avoid bundling modeling's in-flight artifacts.
+- aw-059 landed the Workflow guide page's real three-segment layout; **aw-060** (the hand-authored diagrams) is now unblocked but stays in `backlog/` until `modeling` PROMOTEs it. **aw-057** (the umbrella) also remains in backlog.
+- The no-ochre / primary-surface emphasis decision (settled in aw-065's refinement) was applied consistently across aw-065 and aw-064 — neither touched the reserved `--accent-ochre-soft` (ADR-0016).
+- No bounces, no failures, no escalations, no new backlog items, no ADRs, no concept candidates this run.
+- Remaining backlog (not promoted, untouched by work): aw-031, aw-057, aw-060, aw-063.
+
+---
+
+## 2026-06-17 15:02 -- Task verified and completed: agentic-workflow-067 - Topbar stays fixed on scroll
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-067 - Topbar stays fixed at the top of the viewport when the board or a document scrolls
+**Summary:** Bounded the `DashboardApp` outer shell frame to the viewport (`height: 100dvh` + `overflow: hidden`, replacing the uncapped `minHeight: 100vh`), so the existing inner `scroll-quiet` region (flex:1, minHeight:0 on its wrapper, overflowY:auto) becomes the sole vertical scroll container. The rail and topbar (search / gear / What's next / Work) are siblings outside the scroll region and now stay fixed; no window scrollbar; the ds-016 search popover is not clipped.
+**Verification:** PASS (iteration 1) — verifier read the source (not just the README), confirmed the flex chain is mechanically correct (bounded parent + minHeight:0 wrapper + overflowY:auto child), the topbar is a sibling above the scroll region, the only overflow:hidden ancestor is the full-viewport frame (popover unclipped), the new test genuinely fails against the old `minHeight:100vh`, styleguide unforked, dist genuinely rebuilt; full dashboard suite 535/535 pass.
+**Commit:** 35cc892
+**Files changed:** 4 (board.js [1-line frame], shell-relayout.test.mjs, dist/app.js, BC README)
+**Tests added:** ~2 (frame-bounded + scroll-region-owns-scroll guards)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 14:56 -- Batch started: [agentic-workflow-067]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-067 - Topbar stays fixed at the top of the viewport when the board or a document scrolls
+**Parallel:** no (1 worker) — sole remaining ready task; the conflict-serialized dashboard chrome batch (aw-059/065/064/066) is now landed.
+
+---
+
+## 2026-06-17 14:54 -- Task verified and completed: agentic-workflow-066 - Left rail Research opens / Decisions collapses by default
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-066 - Left rail — Research group opens by default, Decisions collapses by default
+**Summary:** Flipped the rail render's per-group `defaultOpen` expression in `board.js` from `g.group !== "Research"` to `g.group !== "Decisions"`, so on fresh load Decisions is the single collapsed group and Research (plus Product / Bounded contexts) opens. `TreeGroup` keeps owning runtime open state (still user-toggleable); `treeToLibrary` / `GROUP_ORDER` unchanged.
+**Verification:** PASS (iteration 1) — verifier confirmed the four group defaults (Research/Product/Bounded contexts true, Decisions false) via the new `rail-default-open.test.mjs` (genuinely coupled to the live expression), no runtime open-state logic added, `TreeGroup` unforked, data transform untouched, read-only, dist genuinely rebuilt; full dashboard suite 533/533 pass.
+**Commit:** 5d58b6f
+**Files changed:** 3 (board.js [1-line], rail-default-open.test.mjs [new], dist/app.js)
+**Tests added:** 1 file (four default-open assertions)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 14:50 -- Batch started: [agentic-workflow-066]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-066 - Left rail — Research group opens by default, Decisions collapses by default
+**Parallel:** no (1 worker) — aw-067 is ready too but conflicts on `dashboard/app/board.js` + `dashboard/dist/app.js`; demoted to the next wave.
+
+---
+
+## 2026-06-17 14:48 -- Task verified and completed: agentic-workflow-064 - Topbar "What's next" button + Work restyle
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-064 - Topbar "What's next" launch button + Work button restyle (trailing ↗, primary-surface fill)
+**Summary:** Topbar right group is now `[ ⚙ gear ] [ What's next ] [ Work ↗ ]`. A new standing "What's next" launch (bordered secondary chip, `sun` glyph) fires an interim raw NL prompt (`WHATS_NEXT_COMMAND` constant beside `WORK_COMMAND`, not a slash command — aw-031 is the future process) through `launchOrCopy` (bridge + silent clipboard fallback), threading `skipPermissions`, no `onResult`, read-only. Work keeps its primary-surface fill (NO ochre, ADR-0016 untouched) and now reads `Work ↗` via a new `trailingIcon` prop on the dashboard's `LaunchButton` (glyph `square-arrow-out-up-right`, moved after the label; icon still always rendered per aw-041).
+**Verification:** PASS (iteration 1) — verifier confirmed the three-action order + left-anchored search, the What's-next launch wiring (launchOrCopy / skipPermissions / no onResult / read-only), the raw-prompt constant (modeling-command tests), both glyphs (`sun`, `square-arrow-out-up-right`) present in the registry, Work's primary fill + trailing glyph with no ochre, no regression to other LaunchButton callers, styleguide unforked, dist genuinely rebuilt; full dashboard suite 530/530 pass.
+**Commit:** 658d130
+**Files changed:** 6 (modeling-command.js, board.js, modeling-command.test.mjs, topbar-right-align.test.mjs, dist/app.js, BC README)
+**Tests added:** ~8 (WHATS_NEXT_COMMAND constant + topbar order/wiring guards)
+**ADRs written:** none (no-ochre + interim-prompt decisions settled in refinement)
+
+---
+
+## 2026-06-17 14:40 -- Batch started: [agentic-workflow-064]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-064 - Topbar "What's next" launch button + Work button restyle (trailing ↗, primary-surface fill)
+**Parallel:** no (1 worker) — aw-066 and aw-067 are ready too but all three conflict on `dashboard/app/board.js` + `dashboard/dist/app.js`; conflict-serialized one per wave.
+
+---
+
+## 2026-06-17 14:35 -- Modeling / Refined + Promoted: agentic-workflow-064 - Topbar "What's next" button + Work restyle
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Settled the one open question the capture deferred — what the "What's next" button launches when no skill backs it yet. Builder chose **option (a): interim raw NL prompt now, align later** — a bare `WHATS_NEXT_COMMAND` constant (read-only next-steps overview) beside `WORK_COMMAND` in `modeling-command.js`, fired through the existing bridge; aw-031 ("Next-steps overview when work is done") stays in `related_tasks`, **not** `depends_on`, so the topbar restyle (incl. the ready Work ↗ change) is not blocked behind an undesigned process task. A later one-line follow-up swaps the constant once aw-031 ships a real skill. Splitting the button out from the Work restyle was considered and rejected (both edit the same `BoardTopbar` + `dist/app.js`, conflict-serialize anyway). Also confirmed both glyphs (`sun`, `square-arrow-out-up-right`) already live in the styleguide icon registry — consumed unforked, no design-system child. The shared ochre/token tension was already settled in aw-065's refinement (no ochre; primary-surface emphasis) and propagated here at capture. Updated What/AC/Notes, added a downstream-consumer breadcrumb to aw-031. Frontend gate (design-system-001) done; task is concrete and worker-ready → promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none (interim command is a constant; no decision touches the reserved accent or a new token)
+
+---
+
+## 2026-06-17 14:20 -- Modeling / Captured: agentic-workflow-067 - Topbar stays fixed when the board or a document scrolls
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** The topbar (global search field + settings gear + standing Work launch) scrolls out of view whenever the content under it grows past the viewport — both the board and a long main-pane document (ADR / research / task). Diagnosed the seam: the `DashboardApp` outer shell frame in `dashboard/app/board.js` (~line 1880) is `minHeight: "100vh"` with no height cap and no `overflow: hidden`, so the whole frame (rail + topbar + content) grows and the *window* scrolls; the inner `scroll-quiet` region (`overflowY: auto`, ~line 1898) never gets a bounded height to scroll within. Fix is to cap the frame to the viewport so the existing inner scroll region owns the scroll, leaving rail + topbar fixed — the intended structure already exists. Filed straight to todo: concrete, single-seam, clear AC, frontend gate (design-system-001) satisfied. Flagged the board.js / dist/app.js file-level conflict with in-flight aw-064/aw-065 (no logical dependency — `work` serializes). Prior art aw-026 (built this shell+topbar layout), aw-053 (topbar internal layout).
+
+---
+
+## 2026-06-17 14:10 -- Task verified and completed: agentic-workflow-065 - Prompt-bar buttons redesign (icon tile + title/subtitle cards)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-065 - Prompt-bar buttons redesign — icon tile + title/subtitle cards, Quick Capture emphasised, ⌘↵ hint
+**Summary:** Restyled the board prompt-bar launch row from three flat chips into a new board-local `PromptLaunchCard` (icon tile + bold title + quiet subtitle: Quick Capture/"File it fast", Modeling/"Shape into structure", Research/"Dig deeper"). Quick Capture wears the aw-033 primary-surface emphasis (`--surface-2`/`--fg-1`/`--hairline-strong`); Modeling/Research stay quiet. NO ochre — reserved `--accent-ochre-soft` untouched (ADR-0016). Plus a decorative "Type a prompt to begin" + ⌘↵ chip that fires nothing. The `launchOrCopy` / seeded-command / `skipPermissions` / `onResult` confetti model is byte-identical; aw-038's swallowed Enter untouched.
+**Verification:** PASS (iteration 1) — verifier confirmed the three cards + copy, Quick Capture primary-surface emphasis, no-ochre, the decorative ⌘↵ hint wires nothing, preserved launch model + Enter-swallow, registry icons (plus/compass/search) exist, styleguide unforked, dist genuinely rebuilt; full dashboard suite 521/521 pass.
+**Commit:** cf06395
+**Files changed:** 4 (board.js, board-prompt-bar.test.mjs, dist/app.js, BC README)
+**Tests added:** ~6 (board-prompt-bar.test.mjs extended)
+**ADRs written:** none (the no-ochre decision was settled in refinement; consistent with existing colour law)
+
+---
+
+## 2026-06-17 14:05 -- Batch started: [agentic-workflow-065]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-065 - Prompt-bar buttons redesign — icon tile + title/subtitle cards, Quick Capture emphasised, ⌘↵ hint
+**Parallel:** no (1 worker) — aw-066 is ready too but conflicts on `dashboard/app/board.js` + `dashboard/dist/app.js`, demoted to next wave.
+
+---
+
+## 2026-06-17 14:00 -- Modeling / Refined + Promoted: agentic-workflow-065 - Prompt-bar buttons redesign (icon tile + title/subtitle cards)
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** todo
+**Summary:** Settled the one open question blocking aw-065 — the accent-fill token tension shared with aw-064. The mock paints Quick Capture (and Work) in ochre, but ADR-0016 reserves `--accent-ochre-soft` for the selection accent. Builder chose **no ochre**: Quick Capture's emphasis is the existing **primary-surface** treatment (`--surface-2` / `--fg-1` / `--hairline-strong`, the aw-033 Work chrome), Modeling/Research stay quiet on `--hairline`; icon tiles are neutral. This dissolves the tension — ADR-0016 untouched, no token repurposed, no design-system child, **no new ADR**. Updated What/AC/Notes accordingly, cross-linked aw-064, and propagated the settled decision into aw-064's body (Work keeps its primary-surface fill, only gains the trailing ↗). The ⌘↵ decorative hint and restyle-only interaction were already settled at capture. Frontend gate (design-system-001) done; task is concrete and worker-ready → promoted backlog → todo.
+**Split into:** none
+**ADRs written:** none (decision was *not* to touch the reserved accent — consistent with existing colour law)
+
+---
+
+## 2026-06-17 13:42 -- Task verified and completed: agentic-workflow-059 - Workflow page shell + three-segment layout
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-059 - Workflow page shell + three-segment layout
+**Summary:** Replaced aw-058's placeholder `WorkflowPage` body with the real static three-segment guide — Preparation, Capturing, Promote & Work — each a labelled section with honest, skill-accurate caption copy (quick-capture and modeling as two distinct intake doors, `verifier` named correctly, DISMISS, human-in-the-loop gates marked) and an empty placeholder diagram slot (`WorkflowSegment`) for aw-060. Centered reading measure (maxWidth 760, margin 0 auto, per aw-040); aw-058's mainView routing / isTaskIntent untouched.
+**Verification:** PASS (iteration 1) — verifier confirmed the three named segments in order, skill-accurate copy (`\bverify\b` doesNotMatch test, two-intake-doors test, DISMISS test, gates marked), 3 empty placeholder diagram slots, static/read-only, styleguide unforked, dist genuinely rebuilt; aw-058 routing guards unchanged; full dashboard suite 515/515 pass.
+**Commit:** bae517d
+**Files changed:** 4 (board.js, workflow-page-content.test.mjs [new, 9 tests], dist/app.js, BC README)
+**Tests added:** 9
+**ADRs written:** none
+
+---
+
+## 2026-06-17 13:35 -- Batch started: [agentic-workflow-059]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-059 - Workflow page shell + three-segment layout
+**Parallel:** no (1 worker) — aw-066 is ready too but conflicts on `dashboard/app/board.js` + `dashboard/dist/app.js`, demoted to next wave.
+
+---
+
+## 2026-06-17 13:30 -- Modeling / Captured: agentic-workflow-066 - Rail Research opens / Decisions collapses by default
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** Flip the left-rail Workspace tree's per-group default open state — Research expanded by default, Decisions collapsed by default (Product + Bounded contexts unchanged). Single seam: the `defaultOpen=${g.group !== "Research"}` expression in `board.js`'s rail render becomes `!== "Decisions"`. Finishes the job aw-056 started (Research above Decisions in order); prior art aw-056. Filed straight to todo — concrete, single-line, worker-ready; frontend gate satisfied (design-system-001 done).
+
+---
+
 ## 2026-06-17 13:15 -- Modeling / Captured: agentic-workflow-064 + agentic-workflow-065 - dashboard button redesign from screenshot mock
 
 **Type:** Modeling / Capture

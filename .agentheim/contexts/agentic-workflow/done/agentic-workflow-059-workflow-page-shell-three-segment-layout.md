@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-17
 completed: 2026-06-17
-commit:
+commit: bae517d
 depends_on: [design-system-001, agentic-workflow-058]
 blocks: [agentic-workflow-060, agentic-workflow-057]
 tags: [frontend, ui, docs, onboarding]

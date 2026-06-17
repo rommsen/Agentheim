@@ -6,7 +6,7 @@ type: bug
 context: agentic-workflow
 created: 2026-06-17
 completed: 2026-06-17
-commit:
+commit: 35cc892
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, shell, topbar, layout, scroll]

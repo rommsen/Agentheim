@@ -10,15 +10,14 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 6
-- **Todo:** 1
+- **Backlog:** 4
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 58
+- **Done:** 63
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-059** — Workflow page shell + three-segment layout (feature) — `todo/agentic-workflow-059-workflow-page-shell-three-segment-layout.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,11 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-067** — Topbar stays fixed at the top of the viewport when the board or a document scrolls (bug) — `done/agentic-workflow-067-topbar-sticky-stays-fixed-on-scroll.md`
+- **agentic-workflow-066** — Left rail — Research group opens by default, Decisions collapses by default (feature) — `done/agentic-workflow-066-rail-research-open-decisions-collapsed-by-default.md`
+- **agentic-workflow-064** — Topbar "What's next" launch button + Work button restyle (trailing ↗, primary-surface fill) (feature) — `done/agentic-workflow-064-topbar-whats-next-button-work-restyle.md`
+- **agentic-workflow-065** — Prompt-bar buttons redesign — icon tile + title/subtitle cards, Quick Capture emphasised, ⌘↵ hint (feature) — `done/agentic-workflow-065-prompt-bar-buttons-icon-tile-subtitle-redesign.md`
+- **agentic-workflow-059** — Workflow page shell + three-segment layout (feature) — `done/agentic-workflow-059-workflow-page-shell-three-segment-layout.md`
 - **agentic-workflow-062** — Dashboard About page — left-rail item below Board, profile bio + Ko-fi support (feature) — `done/agentic-workflow-062-dashboard-about-page.md`
 - **agentic-workflow-061** — Board "Name A→Z / Z→A" sort orders by the title's readable text, in true alphabetical order (bug) — `done/agentic-workflow-061-board-name-sort-true-alphabetical-by-title.md`
 - **agentic-workflow-058** — Workflow rail item + main-pane routing scaffold (third selection state) (feature) — `done/agentic-workflow-058-workflow-rail-item-main-pane-routing-scaffold.md`
@@ -89,8 +93,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-064** — Topbar "What's next" launch button + Work button restyle (accent fill, trailing ↗) (feature) — `backlog/agentic-workflow-064-topbar-whats-next-button-work-restyle.md`
-- **agentic-workflow-065** — Prompt-bar buttons redesign — icon tile + title/subtitle cards, Quick Capture emphasised, ⌘↵ hint (feature) — `backlog/agentic-workflow-065-prompt-bar-buttons-icon-tile-subtitle-redesign.md`
 - **agentic-workflow-063** — Analyze and optimize the committing pattern — `backlog/agentic-workflow-063-optimize-committing-pattern.md`
 - **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella → aw-058/059/060) — `backlog/agentic-workflow-057-workflow-guide-page.md`
 - **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `backlog/agentic-workflow-060-workflow-guide-diagrams.md`

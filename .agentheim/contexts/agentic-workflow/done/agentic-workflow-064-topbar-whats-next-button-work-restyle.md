@@ -6,7 +6,7 @@ type: feature
 context: agentic-workflow
 created: 2026-06-17
 completed: 2026-06-17
-commit:
+commit: 658d130
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, frontend, topbar, ui]
