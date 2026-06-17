@@ -5,6 +5,22 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 18:22 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0) — aw-070 (23a6dce)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 2 (5fa4cbd builder's About-page visual polish committed first to clean the tree; 23a6dce aw-070 task work)
+**Notes:**
+- One ready task this run (aw-070 — flat Ko-fi button fill). Before dispatch the working tree carried the builder's unrelated, uncommitted About-page visual polish in the SAME two files aw-070 must touch (board.js + dist/app.js). A clean one-task commit was impossible while they were commingled; surfaced as a choice — builder chose "commit polish first" — so the polish landed on its own (5fa4cbd) and aw-070's verification diff started clean.
+- aw-070 PASS on the first verifier pass. Gradient → solid `var(--st-doing)`, board-local/unforked (ADR-0003), no ochre (ADR-0016), dist rebuilt via esbuild, one new solid-fill test.
+- **Test regression discovered (caused by the polish, not aw-070):** the aw-034 "no @keyframes in board.js" guard (board-prompt-bar.test.mjs) now fails because the polish commit (5fa4cbd) added an `@keyframes aboutRise` entrance animation to board.js. Independently confirmed pre-existing (reproducible on HEAD with aw-070 stashed). Filed as backlog item **aw-071** (bug). The dashboard suite is otherwise 551/552 green; aw-070 adds zero keyframes.
+- Pre-existing working-tree noise (deleted `Screenshot ….png`, untracked `dashboard.png`) left untouched — never `git add`ed. No bounces, failures, escalations, or concept candidates.
+
+---
+
 ## 2026-06-17 18:20 -- Task verified and completed: agentic-workflow-070 - About-page Ko-fi button uses a solid colour, not a gradient
 
 **Type:** Work / Task completion
