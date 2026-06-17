@@ -99,3 +99,42 @@ test('the panel is styleguide-consumed unforked — token-styled, no new design-
   assert.match(panel(), /var\(--surface-1\)/);
   assert.match(panel(), /var\(--hairline\)/);
 });
+
+// The per-column wrapper that the columns.map(...) renders — its style object. The
+// card chrome + cap + scroll live here (aw-c4t8m). Matched from the mapped <div key=...>
+// up to the heading render that follows.
+function columnCard() {
+  const p = panel();
+  const m = p.match(/columns\.map\(\(col, i\) => html`[\s\S]*?<div key=\$\{i\}[\s\S]*?style=\$\{\{[\s\S]*?\}\}>/);
+  assert.ok(m, 'the per-column wrapper card must exist');
+  return m[0];
+}
+
+test('each What\'s Next column is its own card — board-local, token-matched chrome (aw-c4t8m)', () => {
+  const card = columnCard();
+  // Surface fill + --hairline border + radius + padding, all token-referencing
+  // (no hardcoded hex; light/dark aware for free; styleguide consumed unforked, ADR-0003).
+  assert.match(card, /background:\s*"var\(--surface-1\)"/, 'card carries a token surface fill');
+  assert.match(card, /border:\s*"1px solid var\(--hairline\)"/, 'card carries a --hairline border');
+  assert.match(card, /borderRadius:\s*"var\(--radius/, 'card carries a token radius');
+  assert.match(card, /padding:/, 'card carries padding');
+});
+
+test('each column card is height-bounded and scrolls its overflow internally (aw-c4t8m)', () => {
+  const card = columnCard();
+  // A bounded max-height (roughly two ticket cards) keeps the row a compact top strip…
+  assert.match(card, /maxHeight:/, 'the card caps its height');
+  // …and content past the cap scrolls vertically INSIDE the card rather than growing it.
+  assert.match(card, /overflowY:\s*"auto"/, 'overflow scrolls inside the card');
+});
+
+test('the column card uses the quiet styleguide scrollbar treatment (aw-c4t8m)', () => {
+  // The existing styleguide `scroll-quiet` class (agentheim.css) — consumed unforked,
+  // not a bespoke scrollbar.
+  assert.match(columnCard(), /className="scroll-quiet"/, 'the capped card wears the quiet scrollbar');
+});
+
+test('the capped cards keep the responsive auto-fit grid (aw-q7m4k preserved)', () => {
+  // The height cap is layered ON the existing responsive grid — it is not replaced.
+  assert.match(panel(), /gridTemplateColumns:\s*"repeat\(auto-fit, minmax\(220px, 1fr\)\)"/, 'auto-fit grid preserved');
+});

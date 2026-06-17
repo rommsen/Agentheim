@@ -825,12 +825,25 @@ function WhatsNextPanel({ fetchDoc = defaultFetchWhatsNext }) {
           <${Icon} name="x" size=${14} color="currentColor" />
         </button>
       </header>
-      ${/* THREE-COLUMN advisory layout (aw-q7m4k): the leading YAML is stripped (no
-            folded "Front matter" section), and each named body section becomes a column
-            with its heading. Each column's content renders through the UNFORKED styleguide
-            Markdown primitive (ADR-0003) — board-local, token-matched layout, no fork.
+      ${/* THREE-COLUMN advisory layout (aw-q7m4k), each column now its own CAPPED CARD
+            (aw-c4t8m): the leading YAML is stripped (no folded "Front matter" section),
+            and each named body section becomes a column with its heading. Each column's
+            content renders through the UNFORKED styleguide Markdown primitive (ADR-0003).
             Responsive fallback: auto-fit columns with a min track collapse to a single
-            column on a narrow board so the card stays legible. */ ""}
+            column on a narrow board so the card stays legible.
+
+            aw-c4t8m — CARD CHROME + HEIGHT CAP: each column is wrapped in board-local,
+            token-matched card chrome (a --surface-1 fill on a --hairline border, a token
+            radius + padding) — the board-control precedent, styleguide consumed UNFORKED,
+            NO new design-system primitive (ADR-0003). The card is height-bounded to a
+            compact ~two-ticket-card cap (maxHeight) so the advisory strip never grows to a
+            quarter of the viewport regardless of recommendation length; content past the
+            cap scrolls vertically INSIDE the card (overflowY: auto) wearing the existing
+            quiet styleguide scrollbar (the `scroll-quiet` class, agentheim.css) — the card
+            itself never grows past the cap and never pushes the board down. The cap is a
+            sizing INTENT, not a hard spec: 196px is roughly two compact cards tall. The
+            loss-tolerant contract (aw-q7m4k / aw-073) is untouched — fewer/empty/absent
+            columns still render without throwing. */ ""}
       <div style=${{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -838,8 +851,11 @@ function WhatsNextPanel({ fetchDoc = defaultFetchWhatsNext }) {
         alignItems: "start",
       }}>
         ${columns.map((col, i) => html`
-          <div key=${i} style=${{
+          <div key=${i} className="scroll-quiet" style=${{
             display: "flex", flexDirection: "column", gap: 4, minWidth: 0,
+            maxHeight: 196, overflowY: "auto",
+            background: "var(--surface-1)", border: "1px solid var(--hairline)",
+            borderRadius: "var(--radius-md)", padding: "10px 12px",
           }}>
             ${col.heading && html`<div style=${{
               fontFamily: "var(--font-ui)", fontSize: 11.5, fontWeight: 600,

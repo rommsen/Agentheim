@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 11:05 -- Task verified and completed: agentic-workflow-c4t8m - What's Next columns become their own capped, scrollable cards
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-c4t8m - What's Next columns become their own capped, scrollable cards
+**Summary:** Each of the What's Next panel's three section columns now renders as its own board-local, token-matched card (--surface-1 fill, --hairline border, token radius + padding), height-capped to ~two ticket cards (maxHeight 196) with internal overflow scroll via the quiet styleguide scrollbar, so the advisory strip stays a compact top strip regardless of recommendation length.
+**Verification:** PASS (iteration 1)
+**Files changed:** 4 (incl. rebuilt dist/)
+**Tests added:** 4 new card-chrome/cap/scroll/grid guards in whats-next-panel.test.mjs; full dashboard suite 614 pass / 0 fail
+**ADRs written:** none
+
+---
+
+## 2026-06-18 11:02 -- Batch started: [agentic-workflow-c4t8m]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-c4t8m - What's Next columns become their own capped, scrollable cards
+**Parallel:** no (1 worker)
+
+---
+
 ## 2026-06-18 10:48 -- Modeling / Captured: agentic-workflow-c4t8m - What's Next columns become their own capped, scrollable cards
 
 **Type:** Modeling / Capture

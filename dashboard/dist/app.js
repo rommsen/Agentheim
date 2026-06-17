@@ -486,7 +486,7 @@ Failed to fetch \`${e.path}\` from /api/doc.`))}),()=>{u=!1}},[e,r]),v`
       ${""}
       <div style=${{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))",gap:"14px",alignItems:"start"}}>
         ${s.map((c,p)=>v`
-          <div key=${p} style=${{display:"flex",flexDirection:"column",gap:4,minWidth:0}}>
+          <div key=${p} className="scroll-quiet" style=${{display:"flex",flexDirection:"column",gap:4,minWidth:0,maxHeight:196,overflowY:"auto",background:"var(--surface-1)",border:"1px solid var(--hairline)",borderRadius:"var(--radius-md)",padding:"10px 12px"}}>
             ${c.heading&&v`<div style=${{fontFamily:"var(--font-ui)",fontSize:11.5,fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",color:"var(--fg-4)"}}>${c.heading}</div>`}
             <${pr} source=${c.content} />
           </div>`)}

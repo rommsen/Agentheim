@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-c4t8m
 title: What's Next columns become their own capped, scrollable cards
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-18
-completed:
+completed: 2026-06-18
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, whats-next, layout, frontend]
@@ -61,5 +61,27 @@ three-column render aw-q7m4k built, given card chrome and a height cap:
   concrete cap that keeps the strip compact while leaving each card readable.
 - Styleguide gate is **OPEN** (design-system re-approved), so this frontend task is
   promotable; it depends on `design-system-001` per the gate.
+
+## Outcome
+Each of the `WhatsNextPanel`'s three advisory columns (`dashboard/app/board.js`,
+`columns.map(...)`) now renders as its own **board-local, token-matched card** —
+a `--surface-1` fill on a `--hairline` border, `--radius-md` corners, `10px 12px`
+padding — the board-control precedent, styleguide consumed UNFORKED, no new
+design-system primitive (ADR-0003).
+- **Height-capped, internal scroll.** Each card is bounded to `maxHeight: 196` (roughly
+  two compact ticket cards) and scrolls its overflow vertically INSIDE the card
+  (`overflowY: auto`) wearing the existing quiet styleguide scrollbar (the
+  `scroll-quiet` class, agentheim.css) — so the advisory row stays a compact top strip
+  and never pushes the board down regardless of recommendation length.
+- **Responsive + loss-tolerant preserved.** The cap layers ON the existing auto-fit grid
+  (`repeat(auto-fit, minmax(220px, 1fr))`) — cards still collapse to fewer/one on a
+  narrow board — and the aw-q7m4k / aw-073 degraded/absent-artifact contract is untouched
+  (fewer/empty/absent columns still render without throwing).
+- **dist/ rebuilt** via `node build.mjs` (the standing dashboard-source rule) — the cap
+  and `scroll-quiet` chrome ship in `dist/app.js`.
+
+Key files: `dashboard/app/board.js` (`WhatsNextPanel` column wrapper),
+`dashboard/test/whats-next-panel.test.mjs` (4 new chrome/cap/scroll/grid guards),
+`dashboard/dist/` (rebuilt). Full suite 614 green.
 </content>
 </invoke>

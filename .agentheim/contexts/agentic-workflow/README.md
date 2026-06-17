@@ -371,7 +371,12 @@ separate BC, but today the whole tool lives in this one.
   pointers/metadata only -- ADR-0023). Unlike the slide-over / main-pane reader, it is a **glanceable
   advisory card, not a document**: the leading YAML is **stripped** (no folded "Front matter" `<details>`)
   and the **three named body sections** (*where things stand* / *recommended move* / *next*) lay out as
-  **three side-by-side columns** instead of one stacked stream (aw-q7m4k). The body is split by the pure
+  **three side-by-side columns** instead of one stacked stream (aw-q7m4k), each column wrapped in its own
+  **board-local, token-matched CARD** (a `--surface-1` fill on a `--hairline` border, token radius +
+  padding) that is **height-capped** (~two ticket cards, `maxHeight: 196`) and **scrolls its overflow
+  internally** (`overflowY: auto`, the quiet styleguide `scroll-quiet` scrollbar) so the advisory strip
+  stays a compact top strip and never pushes the board down regardless of recommendation length (aw-c4t8m).
+  The body is split by the pure
   **`splitWhatsNextSections`** (`dashboard/app/whats-next-state.js`) -- **loss-tolerant**: a degraded body
   yields whatever columns are parseable, never throws. Each column's content still renders through the
   **unforked styleguide `Markdown` primitive** (ADR-0003) -- board-local token-matched layout (auto-fit
