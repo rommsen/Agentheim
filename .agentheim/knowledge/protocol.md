@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 00:20 -- Modeling / Refined: agentic-workflow-080 - Duplicate task-id guard across the tree
+
+**Type:** Modeling / Refine
+**BC:** agentic-workflow
+**Status after:** backlog
+**Summary:** Refined the ADR-0028 child-task-4 "CI lint" into a concrete deliverable after finding the repo has **no CI** (no `.github/`, no Actions, no root `package.json`). Reframed to a pure, stdlib-only `lib/duplicate-id-check.mjs` scanner unit-tested under `node --test` (mirroring `task-lifecycle.mjs` / `tree.mjs` doctrine), with a live-`.agentheim/`-tree assertion replacing the "passes on current tree" + "CI wiring" criteria. Sharpened id extraction (frontmatter `id`, filename fallback, loss-tolerant), whole-id shape-agnostic comparison (independent of aw-078's `deriveContext`), and concrete file/function names. Renamed file slug `…-ci-lint` → `…-duplicate-task-id-guard`; added related_adrs 0022/0012. Kept `depends_on: []` (genuinely independent of aw-078/079); left in backlog (optional insurance, not promoted).
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-06-18 09:00 -- Modeling / Refined: agentic-workflow-078 - deriveContext dual-shape token regex
 
 **Type:** Modeling / Refine

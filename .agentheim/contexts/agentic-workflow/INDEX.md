@@ -107,7 +107,7 @@ research touching this BC, and concept synthesis pages.
 <!-- backlog-list:start -->
 - **agentic-workflow-078** — `deriveContext` dual-shape token regex in `lib/task-lifecycle.mjs` + tests (refactor) — `backlog/agentic-workflow-078-derivecontext-dual-shape-token-regex.md`
 - **agentic-workflow-079** — Minting call-site token sweep across the three live skills (chore) — `backlog/agentic-workflow-079-minting-call-site-token-sweep.md`
-- **agentic-workflow-080** — Duplicate task-id CI lint (chore, optional insurance) — `backlog/agentic-workflow-080-duplicate-task-id-ci-lint.md`
+- **agentic-workflow-080** — Duplicate task-id guard across the tree (chore, node --test, optional insurance) — `backlog/agentic-workflow-080-duplicate-task-id-guard.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
