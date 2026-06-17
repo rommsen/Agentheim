@@ -379,6 +379,15 @@ separate BC, but today the whole tool lives in this one.
   bare slash command `/agentheim:whats-next` (`WHATS_NEXT_COMMAND`) — the read-only `whats-next` skill
   (aw-069 swapped it from the interim raw prompt aw-064 shipped) — through the same `launchOrCopy` path,
   threading `skipPermissions`, passing no `onResult`, writing no lifecycle state (read-only, ADR-0017).
+  The `whats-next` skill is read-only **over lifecycle**, but it performs **one** *advisory write* (aw-076,
+  ADR-0027): a single-latest, overwritten, git-ignored recommendation artifact at `.agentheim/state/whats-next.md`
+  (frontmatter `generated` ISO-8601 timestamp + three sections — *where things stand* / *recommended move* /
+  *next*). An **advisory write** is an opinion *about* the state, not a change *to* it — distinct from a
+  lifecycle write, so it re-opens neither ADR-0017 nor the skill's read-only-over-lifecycle stance; the skill
+  still moves no task, promotes nothing, edits no `INDEX.md` / `protocol.md`, and runs no `git` action. The
+  `state/` directory is a third top-level write location under `.agentheim/` (sibling of `knowledge/` and
+  `contexts/`), the git-ignored home for advisory machine-written signals; the dashboard reads this artifact
+  (aw-073) and never writes it.
   The topbar's leading slot now hosts the **global search field** (aw-052, see *Global search
   (topbar)* below). The rail is composed
   from styleguide **primitives** (`Glyph` / `RailItem` / `TreeGroup` / `TreeItem`), **not** the demo

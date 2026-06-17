@@ -15,6 +15,11 @@ $RECYCLE.BIN/
 # Sole runtime state on disk (pid/port runfile); never committed. See ADR-0002.
 .agentheim/.dashboard/
 
+### Agentheim advisory state (ADR-0027)
+# Machine-written, single-latest, overwritten advisory signals (e.g. the
+# whats-next recommendation). Transient working state, not versioned knowledge.
+.agentheim/state/
+
 ### Agentheim dashboard build tooling
 # esbuild + framework deps are BUILD-TIME only (ADR-0003); never committed.
 # The committed artifacts are dashboard/dist/, build.mjs, package.json (+ lock).

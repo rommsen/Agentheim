@@ -9,7 +9,7 @@ The `whats-next` skill answers one question: *given everything that's been model
 
 It is the companion to the dashboard's "What's next" button. The builder presses it when a work batch just finished, when the board looks empty, or when they simply can't decide where to put their attention. The answer should read like a sharp colleague who knows the project glancing at the board and telling you, in a sentence or two, where to point yourself next — not a status report, not a backlog dump.
 
-**This skill is read-only.** It reads `.agentheim/` and recommends. It never moves a task, never promotes, never commits, never edits the protocol. The recommendation is the entire output; acting on it is a separate, human-triggered step (`work`, `modeling`, `brainstorm`). Keeping it advisory is what makes it safe to press at any moment.
+**This skill is read-only over lifecycle.** It reads `.agentheim/` and recommends. It never moves a task, never promotes, never commits, never edits the protocol. The recommendation is the entire output; acting on it is a separate, human-triggered step (`work`, `modeling`, `brainstorm`). Keeping it advisory is what makes it safe to press at any moment. It performs **one** write — and only one — the *advisory write* of its recommendation to `.agentheim/state/whats-next.md` (Step 4 below): an opinion *about* the state, not a change *to* it, distinct from a lifecycle write and explicitly carved out by **ADR-0027**. It performs no `git` action of any kind.
 
 ## How to think about this
 
@@ -99,3 +99,43 @@ Talk like a colleague who knows the codebase, not a report generator. It's fine 
 > Everything's shipped — board's clear, no backlog. But the vision still carries one open question you haven't touched: brainstorming on *existing* code, where Agentheim reverse-engineers a vision from a repo that already has code before continuing the Socratic dialogue. That's the biggest unbuilt piece of the stated vision.
 >
 > **Next:** let's `brainstorm` that existing-code path and turn it into a modeled backlog.
+
+## Step 4 — Persist the recommendation (advisory write)
+
+After you've printed the prose answer, persist it once so it survives the terminal it ran in and the dashboard can surface it. This is the skill's **single advisory write** (ADR-0027) — an opinion *about* the state, not a change *to* it. It is **not** a lifecycle write: you still move no task, promote nothing, edit no `INDEX.md` or `protocol.md`, reconcile no ADR backlink, and run **no** `git` command.
+
+Write the recommendation to exactly **one** file — `.agentheim/state/whats-next.md` — and nowhere else. Create the `.agentheim/state/` directory if it does not yet exist (it is a sibling of `knowledge/` and `contexts/`, the home for advisory machine-written signals, and is git-ignored).
+
+The file is **single-latest**: overwrite it in full each run, never append. It is not a log — history lives in `git`, not in a growing file.
+
+Its shape is the frozen interface the dashboard reads (ADR-0027), so keep it exactly:
+
+- **Frontmatter** carrying a `generated` key set to the current **ISO-8601** timestamp (e.g. `generated: 2026-06-17T21:43:00Z`). This is a descriptive staleness cue for the dashboard's rendering only; nothing keys behavior off it.
+- **Three markdown sections**, in this order, mirroring the prose you just spoke:
+  1. **Where things stand** — the one-line orientation on the board's state.
+  2. **Recommended move** — the recommendation and the *why*, anchored to the concrete task / open question / thread you read. (When the project genuinely forks, lay out the two options here, as in your prose — never more than two.)
+  3. **Next** — the single concrete action (which skill to invoke and on what).
+
+Shape template:
+
+```markdown
+---
+generated: 2026-06-17T21:43:00Z
+---
+
+## Where things stand
+
+<one-line orientation>
+
+## Recommended move
+
+<the recommendation + the why>
+
+## Next
+
+<the one concrete action>
+```
+
+**Always write a coherent artifact, even in the empty cases.** When you have little to recommend — `vision.md` is missing so the answer is `brainstorm`, or the board is empty — still write all three sections reflecting *that* answer (where things stand: "no vision yet" / "board is clear"; recommended move + next: `brainstorm` / capture the missing piece). The file is always valid markdown with the `generated` frontmatter and the three sections, so the dashboard never has to special-case an empty or malformed recommendation.
+
+Write the file and stop. Do not commit it, do not stage it, do not touch any other file.

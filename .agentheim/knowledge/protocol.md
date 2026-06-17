@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 21:46 -- Task verified and completed: agentic-workflow-076 - What's next persists its recommendation as a single-latest advisory artifact (advisory write)
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-076 - What's next persists its recommendation as a single-latest advisory artifact (advisory write)
+**Summary:** The `whats-next` skill now performs a single advisory write per ADR-0027 — persisting its recommendation to `.agentheim/state/whats-next.md` (frontmatter `generated` ISO-8601 timestamp + three sections: where things stand / recommended move / next; single-latest, overwritten), while staying read-only over lifecycle and running no git action. `.agentheim/state/` is git-ignored; the frozen interface aw-073 reads is preserved.
+**Verification:** PASS (iteration 1)
+**Files changed:** 3
+**Tests added:** 0 (skill-doctrine + .gitignore change; runtime artifact written by the skill, not this task)
+**ADRs written:** none
+
+---
+
+## 2026-06-17 21:43 -- Batch started: [agentic-workflow-076]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-076 - What's next persists its recommendation as a single-latest advisory artifact (advisory write)
+**Parallel:** no (1 worker)
+**Note:** Second wave — held back from the aw-072 batch on the one-worker-per-BC-README rule (same BC).
+
+---
+
 ## 2026-06-17 21:42 -- Task verified and completed: agentic-workflow-072 - Done column should be hideable (it can grow infinitely large)
 
 **Type:** Work / Task completion

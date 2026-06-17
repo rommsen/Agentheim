@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-076
 title: What's next persists its recommendation as a single-latest advisory artifact (advisory write)
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 depends_on: []
 blocks: [agentic-workflow-073]
 tags: [whats-next, skill, advisory-write]
@@ -43,18 +43,18 @@ The skill stays read-only **over lifecycle**: it still never moves a task, promo
 or edits the protocol. It gains **only** this one advisory write and performs **no** git action.
 
 ## Acceptance criteria
-- [ ] Running the `whats-next` skill writes `.agentheim/state/whats-next.md` with frontmatter
+- [x] Running the `whats-next` skill writes `.agentheim/state/whats-next.md` with frontmatter
       carrying a `generated` ISO-8601 timestamp and three markdown sections (where things stand
       / recommended move / next), **overwriting** any prior file (single-latest, never appended).
-- [ ] The skill writes **no other file**: no `contexts/` move, no `INDEX.md` / `protocol.md`
+- [x] The skill writes **no other file**: no `contexts/` move, no `INDEX.md` / `protocol.md`
       edit, no ADR-backlink change, **no commit, no git action** — its read-only-over-lifecycle
       stance is otherwise unchanged (ADR-0027 §4).
-- [ ] `.agentheim/state/` is added to `.gitignore`, so the advisory artifact never enters
+- [x] `.agentheim/state/` is added to `.gitignore`, so the advisory artifact never enters
       version history.
-- [ ] `skills/whats-next/SKILL.md` gains a final step ("Persist the recommendation — advisory
+- [x] `skills/whats-next/SKILL.md` gains a final step ("Persist the recommendation — advisory
       write") describing the write, and its read-only paragraph gains one carve-out sentence
       naming the single advisory write and pointing at ADR-0027.
-- [ ] When the skill has nothing meaningful to recommend (e.g. missing `vision.md` → it
+- [x] When the skill has nothing meaningful to recommend (e.g. missing `vision.md` → it
       recommends `brainstorm`), it still writes a coherent artifact reflecting that answer —
       the file shape is always valid for the dashboard to read.
 
@@ -76,3 +76,26 @@ drift.
   numbers mid-refine, so this skill task is aw-076 (IDs are never reused).
 
 Prior art: aw-069 (the topbar button that fires this skill).
+
+## Outcome
+Doctrine + git-ignore change implementing ADR-0027's advisory-write contract for the `whats-next`
+skill. No runnable assertions (documentation/skill-doctrine + `.gitignore`), so TDD does not apply.
+
+- **`skills/whats-next/SKILL.md`** — gained a final **Step 4 — Persist the recommendation (advisory
+  write)** that instructs a skill run to write its recommendation to the single file
+  `.agentheim/state/whats-next.md` (creating `state/` if absent), with the frozen interface kept
+  exactly: frontmatter `generated` ISO-8601 timestamp + three sections (*Where things stand* /
+  *Recommended move* / *Next*), single-latest/overwritten-never-appended, a shape template, and the
+  empty-vision/empty-board case still writing a coherent three-section artifact. The opening read-only
+  paragraph gained one carve-out sentence naming the single advisory write and pointing at ADR-0027,
+  and reaffirming the skill runs no `git` action and writes no other file.
+- **`.gitignore`** — added `.agentheim/state/` (with an ADR-0027 comment) so the advisory artifact
+  never enters version history.
+- **agentic-workflow BC README** — added an advisory-write note to the `whats-next` topbar entry,
+  introducing the *advisory write* vs *lifecycle write* domain language, the `.agentheim/state/`
+  third top-level write location, and the path/shape, scoped to ADR-0027.
+
+The artifact `.agentheim/state/whats-next.md` is **not** created by this task — it is written by the
+skill at runtime. This task only authors the doctrine and git-ignores the directory. aw-073 (the
+dashboard render) reads the artifact this doctrine produces; the frozen interface is preserved so its
+reader does not drift. No new ADR (ADR-0027 already governs).
