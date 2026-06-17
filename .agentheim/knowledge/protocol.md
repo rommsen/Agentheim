@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 09:42 -- Task verified and completed: agentic-workflow-078 - deriveContext dual-shape token regex
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-078 - deriveContext dual-shape token regex
+**Summary:** deriveContext now resolves the BC for both legacy all-digit and new leading-letter token id shapes via a u-excluding, end-anchored dual-shape regex (ADR-0028 §4), fallback preserved; resolveTaskFile unchanged with a new token-tailed resolution test.
+**Verification:** PASS (iteration 1)
+**Files changed:** 2
+**Tests added:** 4 (deriveContext both shapes, malformed-token fallback, token-tailed resolveTaskFile)
+**ADRs written:** none
+
+---
+
+## 2026-06-18 09:30 -- Batch started: [agentic-workflow-074, agentic-workflow-078, agentic-workflow-080]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-074 - Slide-over expand/collapse-width chevron, agentic-workflow-078 - deriveContext dual-shape token regex, agentic-workflow-080 - Duplicate task-id guard
+**Parallel:** yes (3 workers)
+
+---
+
 ## 2026-06-18 00:28 -- Modeling / Promoted: agentic-workflow-080 - Duplicate task-id guard across the tree
 
 **Type:** Modeling / Promote

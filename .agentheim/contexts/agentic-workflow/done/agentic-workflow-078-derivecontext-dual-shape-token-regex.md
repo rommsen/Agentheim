@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-078
 title: deriveContext resolves both legacy NNN and new token id shapes (dual-shape regex) + tests
-status: todo
+status: done
 type: refactor
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-18
 depends_on: []
 blocks: [agentic-workflow-079]
 tags: [identity, ids, lib, task-lifecycle, regex]
@@ -65,3 +65,30 @@ id shapes, end-anchored on the bare id, per ADR-0028 §4. Add tests covering bot
   this task implements the ratified grammar. The regex in the AC is the **`u`-excluding** form
   (`[a-hjkmnp-tv-z]` / `[0-9a-hjkmnp-tv-z]`) reconciled during aw-077's verification — do not
   reintroduce the `p-z` span that re-admits the look-alike `u`.
+
+## Outcome (2026-06-18)
+
+`deriveContext` in `lib/task-lifecycle.mjs` now derives the BC for **both** id shapes via the
+ratified `u`-excluding, end-anchored regex
+`/^(.*)-(?:\d+|[a-hjkmnp-tv-z][0-9a-hjkmnp-tv-z]{4})$/` (ADR-0028 §4), with the original
+`m ? m[1] : id` fallback preserved. `deriveContext` is now **exported** so it can be unit-tested
+directly. `resolveTaskFile` was left untouched (ADR-0012's trailing-`-` anchor already covers both
+shapes).
+
+Tests added to `lib/test/task-lifecycle.test.mjs` (7 new, all green; full suite 22/22):
+- legacy all-digit tail `agentic-workflow-077` → `agentic-workflow` (unchanged).
+- new token tail `agentic-workflow-k3f9q` → `agentic-workflow`.
+- malformed leading-digit "token" `agentic-workflow-3f9qx` → id unchanged (fallback, never undefined).
+- no recognizable tail `nodashhere` → id unchanged.
+- look-alike `u` token `agentic-workflow-uuuuu` → id unchanged (the `u`-exclusion holds).
+- token-tailed `<id>-some-slug.md` resolves from the bare id via `applyTaskMove` (ADR-0012, no
+  `resolveTaskFile` change) and the slug rides along across the move.
+- token-tailed task moves with the BC derived end-to-end through `applyTaskMove` (no `context` option).
+
+Key files:
+- `lib/task-lifecycle.mjs` (`deriveContext`, ~line 240 — regex + export).
+- `lib/test/task-lifecycle.test.mjs` (new tests appended).
+
+No new id behavior decision was made (grammar is ratified by ADR-0028), so no ADR written.
+Go-forward coexistence: no id rewrite, no migration. BC README id-scheme line was already current
+from aw-077 — no README change needed.
