@@ -36,8 +36,24 @@ test('a WhatsNextPanel component exists and renders the styleguide Markdown prim
   assert.match(panel(), /<\$\{Markdown\}/, 'the panel must render through the unforked Markdown primitive (ADR-0003)');
 });
 
-test('the panel reads the body through withFrontmatterSection (the aw-043 render path)', () => {
-  assert.match(panel(), /withFrontmatterSection\(body\)/);
+test('the panel DROPS the folded "Front matter" render — no withFrontmatterSection (aw-q7m4k)', () => {
+  // The glanceable card strips the leading YAML rather than folding it into a <details>.
+  assert.doesNotMatch(panel(), /withFrontmatterSection/, 'the panel must not fold a "Front matter" section anymore');
+});
+
+test('the panel splits the body into named columns via splitWhatsNextSections (aw-q7m4k)', () => {
+  assert.match(panel(), /splitWhatsNextSections\(body\)/, 'the body is split into its named sections, not rendered as one stream');
+});
+
+test('the named sections render as a multi-column grid, each heading + Markdown (aw-q7m4k)', () => {
+  const p = panel();
+  // A CSS grid lays the sections out side by side (with a responsive collapse track).
+  assert.match(p, /display:\s*"grid"/, 'the columns lay out in a grid');
+  assert.match(p, /gridTemplateColumns:\s*"repeat\(auto-fit/, 'auto-fit columns collapse on a narrow board');
+  // Each column maps to a heading label + its content through the unforked Markdown.
+  assert.match(p, /columns\.map\(/, 'one column per parsed section');
+  assert.match(p, /col\.heading/, 'each column keeps its section heading');
+  assert.match(p, /<\$\{Markdown\}\s+source=\$\{col\.content\}/, 'each column renders its content through the unforked Markdown primitive');
 });
 
 test('the panel fetches the ADR-0027 artifact via /api/doc, NOT /api/tree', () => {

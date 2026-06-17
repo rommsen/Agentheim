@@ -25,6 +25,8 @@
    backend, framework-free, unit-tested under `node --test` with no DOM.
    ============================================================ */
 
+import { parseFrontmatter } from './frontmatter.js';
+
 // The single in-root path of the advisory artifact (ADR-0027 §2). The panel fetches
 // it via the existing GET /api/doc carrier (the same in-root-guarded body transport
 // the slide-over and main-pane reader use — ADR-0021 / ADR-0023).
@@ -101,6 +103,53 @@ export function saveDismissed(storage, generated) {
 export function isDismissed(storage, generated) {
   if (typeof generated !== 'string' || generated === '') return false;
   return loadDismissed(storage) === generated;
+}
+
+/**
+ * Split the advisory artifact body into its named sections, one per H2 heading — the
+ * pure transform behind the panel's three-column layout (aw-q7m4k). The leading
+ * frontmatter is STRIPPED (via the same parseFrontmatter the dismiss/staleness reads
+ * use, so nothing drifts), then the stripped markdown is cut on each `## ` heading into
+ * ordered `{ heading, content }` columns.
+ *
+ * LOSS-TOLERANT by design (ADR-0027 §4.4 — the body shape is descriptive, never
+ * load-bearing): the artifact always carries three H2 sections (Where things stand /
+ * Recommended move / Next), but this never assumes that. It returns WHATEVER H2 sections
+ * are present, in document order; content before the first H2 is kept as a leading
+ * headingless column; an empty / blank / frontmatter-only / non-string body yields `[]`.
+ * Never throws, never invents a section.
+ *
+ * @param {string} raw — the raw artifact markdown (with or without frontmatter).
+ * @returns {Array<{ heading: string, content: string }>}
+ */
+export function splitWhatsNextSections(raw) {
+  const { body } = parseFrontmatter(typeof raw === 'string' ? raw : '');
+  if (typeof body !== 'string' || body.trim() === '') return [];
+
+  const lines = body.split('\n');
+  const sections = [];
+  let current = null; // { heading, lines: [] }
+  const flush = () => {
+    if (current === null) return;
+    const content = current.lines.join('\n');
+    // Drop a leading headingless section that is only whitespace (the conventional
+    // blank gap before the first heading), but keep a real preamble.
+    if (current.heading === '' && content.trim() === '') return;
+    sections.push({ heading: current.heading, content });
+  };
+
+  for (const line of lines) {
+    const h2 = line.match(/^##\s+(.*\S)\s*$/);
+    if (h2) {
+      flush();
+      current = { heading: h2[1].trim(), lines: [] };
+    } else {
+      if (current === null) current = { heading: '', lines: [] };
+      current.lines.push(line);
+    }
+  }
+  flush();
+  return sections;
 }
 
 const MINUTE = 60 * 1000;

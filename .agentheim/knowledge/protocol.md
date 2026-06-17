@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 10:42 -- Task verified and completed: agentic-workflow-q7m4k - What's Next card drops the front matter and lays its three sections out as columns
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-q7m4k - What's Next card drops the front matter and lays its three sections out as columns
+**Summary:** The dashboard's What's Next advisory panel drops the folded front-matter render and lays its three named sections (where things stand / recommended move / next) out as three side-by-side, loss-tolerant columns, each rendered through the unforked styleguide Markdown primitive.
+**Verification:** PASS (iteration 1)
+**Files changed:** 7 (incl. rebuilt dist/)
+**Tests added:** new `whats-next-sections.test.mjs` splitter suite + adapted `whats-next-panel.test.mjs`; full dashboard suite 610 pass / 0 fail
+**ADRs written:** none
+
+---
+
+## 2026-06-18 10:35 -- Batch started: [agentic-workflow-q7m4k]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-q7m4k - What's Next card drops the front matter and lays its three sections out as columns
+**Parallel:** no (1 worker)
+
+---
+
 ## 2026-06-18 10:30 -- Modeling / Captured: agentic-workflow-q7m4k - What's Next card drops the front matter and lays its three sections out as columns
 
 **Type:** Modeling / Capture

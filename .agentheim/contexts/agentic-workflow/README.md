@@ -368,10 +368,15 @@ separate BC, but today the whole tool lives in this one.
   the What's next feature, the read surface for the skill's *advisory write* (aw-076). It fetches the
   single-latest recommendation artifact (`.agentheim/state/whats-next.md`) through the **existing
   `/api/doc` body carrier** (the in-root-guarded transport, **not** `/api/tree`, which stays
-  pointers/metadata only -- ADR-0023) and renders it through the **same `withFrontmatterSection` +
-  styleguide `Markdown` path** the slide-over / main-pane reader use (aw-043), so the frontmatter folds
-  to a quiet collapsed section and the three body sections render with **no bespoke renderer**, consumed
-  **unforked** (ADR-0003), light/dark aware. It **re-fetches on every SSE `tree-changed` frame** (a new
+  pointers/metadata only -- ADR-0023). Unlike the slide-over / main-pane reader, it is a **glanceable
+  advisory card, not a document**: the leading YAML is **stripped** (no folded "Front matter" `<details>`)
+  and the **three named body sections** (*where things stand* / *recommended move* / *next*) lay out as
+  **three side-by-side columns** instead of one stacked stream (aw-q7m4k). The body is split by the pure
+  **`splitWhatsNextSections`** (`dashboard/app/whats-next-state.js`) -- **loss-tolerant**: a degraded body
+  yields whatever columns are parseable, never throws. Each column's content still renders through the
+  **unforked styleguide `Markdown` primitive** (ADR-0003) -- board-local token-matched layout (auto-fit
+  grid collapsing to one column on a narrow board), **no bespoke renderer, no new design-system child**,
+  light/dark aware. It **re-fetches on every SSE `tree-changed` frame** (a new
   advisory write surfaces live, ADR-0006), shows a **staleness cue** derived from the `generated`
   timestamp (rendering only -- nothing keys behaviour off it, ADR-0027 §4), and is **dismissible**: the
   dismissed state persists across reload in a new versioned `localStorage` store

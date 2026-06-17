@@ -63,12 +63,13 @@ import { isTaskIntent } from "./intent-route.js";
 import { searchResultsToGroups } from "./search-results.js";
 import { createLiveUpdate } from "./live-update.js";
 import { docUrl } from "./slide-over-data.js";
-import { withFrontmatterSection, parseFrontmatter } from "./frontmatter.js";
+import { parseFrontmatter } from "./frontmatter.js";
 import {
   WHATS_NEXT_DOC_PATH,
   isDismissed,
   saveDismissed,
   formatStaleness,
+  splitWhatsNextSections,
 } from "./whats-next-state.js";
 
 /**
@@ -728,10 +729,15 @@ function generatedStamp(body) {
 // `.agentheim/state/whats-next.md` (an ADVISORY write, ADR-0027 — distinct from a
 // lifecycle write; the dashboard stays read-only over it). This panel READS it via
 // the existing GET /api/doc body carrier (ADR-0021/0023 — never /api/tree, which is
-// pointers/metadata only) and renders it through the SAME withFrontmatterSection +
-// styleguide Markdown path the slide-over / main-pane reader use (aw-043), so the
-// frontmatter folds to a quiet collapsed section and the three body sections render
-// with NO bespoke renderer. Consumed unforked (ADR-0003); light/dark aware for free.
+// pointers/metadata only). Unlike the slide-over / main-pane reader, this is a
+// GLANCEABLE advisory card, not a document: the leading YAML is STRIPPED (not folded
+// into a "Front matter" <details>, aw-q7m4k) and the three body sections (Where things
+// stand / Recommended move / Next) lay out as three side-by-side COLUMNS instead of one
+// stacked stream. Each column's content still renders through the unforked styleguide
+// Markdown primitive (ADR-0003) — board-local token-matched layout, NO bespoke renderer,
+// no new design-system child. Consumed unforked; light/dark aware for free. The body is
+// split by splitWhatsNextSections (whats-next-state.js) — LOSS-TOLERANT: a degraded body
+// yields whatever columns are parseable, never throws.
 //
 // Behaviour:
 //   - ABSENT artifact (404 / fetch failure) → renders NOTHING (no shell, no error).
@@ -771,6 +777,12 @@ function WhatsNextPanel({ fetchDoc = defaultFetchWhatsNext }) {
   if (isDismissed(storage, generated)) return null;
 
   const staleness = formatStaleness(generated, Date.now());
+
+  // Strip the leading frontmatter and cut the body into its named sections (aw-q7m4k).
+  // LOSS-TOLERANT: a degraded body yields fewer/empty columns, a non-matching body still
+  // renders what is parseable, an empty body yields []. The dismiss/staleness reads above
+  // come from the SAME parseFrontmatter, so they are independent of this render split.
+  const columns = splitWhatsNextSections(body);
 
   const onDismiss = () => {
     saveDismissed(storage, generated);
@@ -813,10 +825,30 @@ function WhatsNextPanel({ fetchDoc = defaultFetchWhatsNext }) {
           <${Icon} name="x" size=${14} color="currentColor" />
         </button>
       </header>
-      ${/* SAME render path as the slide-over / main-pane reader (aw-043): frontmatter
-            folds to a quiet collapsed section, the three body sections render through
-            the unforked styleguide Markdown primitive (ADR-0003). */ ""}
-      <${Markdown} source=${withFrontmatterSection(body)} />
+      ${/* THREE-COLUMN advisory layout (aw-q7m4k): the leading YAML is stripped (no
+            folded "Front matter" section), and each named body section becomes a column
+            with its heading. Each column's content renders through the UNFORKED styleguide
+            Markdown primitive (ADR-0003) — board-local, token-matched layout, no fork.
+            Responsive fallback: auto-fit columns with a min track collapse to a single
+            column on a narrow board so the card stays legible. */ ""}
+      <div style=${{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: "14px",
+        alignItems: "start",
+      }}>
+        ${columns.map((col, i) => html`
+          <div key=${i} style=${{
+            display: "flex", flexDirection: "column", gap: 4, minWidth: 0,
+          }}>
+            ${col.heading && html`<div style=${{
+              fontFamily: "var(--font-ui)", fontSize: 11.5, fontWeight: 600,
+              letterSpacing: "0.04em", textTransform: "uppercase",
+              color: "var(--fg-4)",
+            }}>${col.heading}</div>`}
+            <${Markdown} source=${col.content} />
+          </div>`)}
+      </div>
     </section>`;
 }
 

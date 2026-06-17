@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-q7m4k
 title: What's Next card drops the front matter and lays its three sections out as columns
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-18
-completed:
+completed: 2026-06-18
 depends_on: [design-system-001]
 blocks: []
 tags: [dashboard, whats-next, layout, frontend]
@@ -61,3 +61,29 @@ Two changes to `WhatsNextPanel` (`dashboard/app/board.js`):
   loss-tolerant so a body that doesn't match the expected shape degrades gracefully.
 - Styleguide gate is **OPEN** (design-system, re-approved) so this frontend task is
   promotable; it depends on `design-system-001` per the gate.
+
+## Outcome
+The `WhatsNextPanel` (`dashboard/app/board.js`) now renders the advisory recommendation as a
+glanceable three-column card instead of one stacked markdown stream:
+
+- **No front matter render.** The folded "Front matter" `<details>` is gone — the leading YAML
+  is stripped (not folded). Dropped the `withFrontmatterSection` import from `board.js`; the
+  `generated` staleness cue and dismiss-keyed-by-`generated` are untouched (both still read the
+  stamp via `generatedStamp` → `parseFrontmatter`, independent of the render split).
+- **Three columns.** A new pure helper **`splitWhatsNextSections`** in
+  `dashboard/app/whats-next-state.js` strips the frontmatter and cuts the body on its `## `
+  headings into ordered `{ heading, content }` columns. The panel lays them out in a token-styled
+  CSS grid (`repeat(auto-fit, minmax(220px, 1fr))`) — each column keeps its heading and renders
+  its content through the **unforked styleguide `Markdown` primitive** (ADR-0003). No forked
+  renderer, no new design-system child.
+- **Responsive fallback (open question resolved):** auto-fit grid with a 220px min track — the
+  three columns collapse to fewer/one column on a narrow board so the card stays legible.
+- **Loss-tolerant (ADR-0027 §4.4):** a missing/empty section yields fewer/empty columns; a
+  malformed or non-string body still renders without throwing; an absent/blank artifact still
+  renders nothing (the aw-073 contract is preserved).
+
+Key files: `dashboard/app/board.js` (panel), `dashboard/app/whats-next-state.js`
+(`splitWhatsNextSections`), `dashboard/test/whats-next-sections.test.mjs` (7 new tests, TDD),
+`dashboard/test/whats-next-panel.test.mjs` (updated source guards). `dashboard/dist/` rebuilt via
+`node build.mjs`. Full suite 610 green. No new ADR: the layout is a presentation choice consistent
+with ADR-0027 (descriptive body shape) and ADR-0003 (unforked Markdown), reversing no decision.
