@@ -5,6 +5,21 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 10:44 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1 — aw-q7m4k; re-dispatched: 0; skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (6ab6478 aw-q7m4k, + this session-end line)
+**Notes:**
+- Single-task session in the `agentic-workflow` BC. aw-q7m4k (What's Next card — strip front matter, three-column layout) passed verification first try; full dashboard suite 610 pass / 0 fail.
+- `dashboard/dist/` rebuilt by the worker (the standing dashboard-source rule that bit aw-074 last session was honored up front this time).
+- Pre-existing working-tree noise (deleted `Screenshot 2026-06-17 112241.png`, untracked `dashboard.png`) left untouched per the prior session's convention.
+
+---
+
 ## 2026-06-18 10:42 -- Task verified and completed: agentic-workflow-q7m4k - What's Next card drops the front matter and lays its three sections out as columns
 
 **Type:** Work / Task completion
