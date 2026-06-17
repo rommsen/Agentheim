@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 17:30 -- Modeling / Closed umbrella: agentic-workflow-057 - Workflow guide page
+
+**Type:** Modeling / Refine (umbrella close)
+**BC:** agentic-workflow
+**From → To:** backlog → done
+**Summary:** `refine agentic-workflow-057` resolved to its disposition: the umbrella's three children — aw-058 (routing scaffold), aw-059 (page shell + three-segment layout), aw-060 (hand-authored diagrams) — are all in `done/`, satisfying the umbrella's own closing condition ("closes when all three children are done"). Nothing left to refine. Closed as `done` (status + completed: 2026-06-17) as a tracking record — it produced no code of its own, the children did. Surfaced as a choice (close / dismiss / leave); user chose close-as-done. No cascade, no ADR.
+
+---
+
 ## 2026-06-17 17:20 -- Work session ended
 
 **Type:** Work / Session end

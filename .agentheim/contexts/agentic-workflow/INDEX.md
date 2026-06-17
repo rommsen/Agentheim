@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
-- **Done:** 66
+- **Done:** 67
 <!-- task-counts:end -->
 
 ### Todo
@@ -26,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella — delivered via aw-058/059/060) — `done/agentic-workflow-057-workflow-guide-page.md`
 - **agentic-workflow-060** — Workflow guide diagrams (hand-authored flow visuals) (feature) — `done/agentic-workflow-060-workflow-guide-diagrams.md`
 - **agentic-workflow-063** — Analyze and optimize the committing pattern (refactor) — `done/agentic-workflow-063-optimize-committing-pattern.md`
 - **agentic-workflow-069** — Topbar "What's next" button fires the /agentheim:whats-next skill (replaces the interim raw prompt) (feature) — `done/agentic-workflow-069-whats-next-button-fires-whats-next-skill.md`
@@ -96,7 +97,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-057** — Workflow guide page — a visual left-rail explainer of the Agentheim workflow (feature, umbrella → aw-058/059/060) — `backlog/agentic-workflow-057-workflow-guide-page.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

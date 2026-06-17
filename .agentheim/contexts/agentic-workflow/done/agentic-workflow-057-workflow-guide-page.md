@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-057
 title: Workflow guide page — a visual left-rail explainer of the Agentheim workflow
-status: backlog
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-17
-completed:
+completed: 2026-06-17
 commit:
 depends_on: [design-system-001, agentic-workflow-058, agentic-workflow-059, agentic-workflow-060]
 blocks: []
@@ -20,6 +20,10 @@ prior_art: [agentic-workflow-026, agentic-workflow-027]
 > three-segment layout) → **aw-060** (hand-authored flow diagrams). This task is the
 > shared spec; it **closes when all three children are done**. Do not work it directly —
 > work the children.
+>
+> **Closed 2026-06-17.** All three children shipped — aw-058 (`58…`), aw-059 (`bae517d`),
+> aw-060 (`e764b0d`). The Workflow guide page is fully delivered; this umbrella is closed
+> as `done` purely as a tracking record (it produced no code of its own — the children did).
 
 ## Why
 A new builder opening the dashboard has no in-product explanation of *how Agentheim
