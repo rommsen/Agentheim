@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 67
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-070** — About-page Ko-fi button uses a solid colour, not a gradient (refactor) — `todo/agentic-workflow-070-kofi-button-solid-colour.md`
 <!-- todo-list:end -->
 
 ### Doing

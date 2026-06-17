@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-17 18:05 -- Modeling / Captured: agentic-workflow-070 - About-page Ko-fi button uses a solid colour, not a gradient
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow
+**Filed to:** todo
+**Summary:** The About-page "Buy me a coffee on Ko-fi" button (`KofiButton`, aw-062) uses a linear-gradient fill; the builder wants a flat opaque colour. Filed ready-to-work: replace the gradient with a solid `var(--st-doing)` (builder's pick over `--st-todo` / Ko-fi blue), everything else unchanged, rebuild `dist/`.
+
+---
+
 ## 2026-06-17 17:30 -- Modeling / Closed umbrella: agentic-workflow-057 - Workflow guide page
 
 **Type:** Modeling / Refine (umbrella close)
