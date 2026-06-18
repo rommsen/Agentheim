@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 80
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **agentic-workflow-h7n2c** — Board prompt bar — Inquire launch button between Modeling and Research (feature) — `todo/agentic-workflow-h7n2c-board-prompt-bar-inquire-button.md`
 <!-- todo-list:end -->
 
 ### Doing

@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 11:48 -- Modeling / Captured: agentic-workflow-h7n2c + design-system-r4k8m - Board prompt bar Inquire button
+
+**Type:** Modeling / Capture
+**BC:** agentic-workflow, design-system
+**Filed to:** todo
+**Summary:** A fourth board-prompt-bar launch card, **Inquire**, between Modeling and Research, seeding `/agentheim:inquire <prompt>` (the read-only codebase-question skill) via the existing bridge path. Captured as two linked todo tasks: design-system-r4k8m adds the missing inquiry glyph to the shared icon set (ds-017 precedent), and agentic-workflow-h7n2c wires the card (depends on the glyph + the styleguide gate). Direct lineage of aw-036 (Research card) / aw-065 (prompt-bar card redesign).
+
+---
+
 ## 2026-06-18 11:42 -- Modeling / Dismissed: agentic-workflow-m3k9p
 
 **Type:** Modeling / Dismiss

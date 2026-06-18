@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 20
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **design-system-r4k8m** — Add an inquiry/question glyph to the shared icon set (feature) — `todo/design-system-r4k8m-inquire-glyph.md`
 <!-- todo-list:end -->
 
 ### Doing
