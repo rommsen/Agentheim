@@ -50,7 +50,7 @@ import { COLUMN_ORDER, treeToColumns } from "./board-data.js";
 import { resolveTheme, saveTheme } from "./theme-state.js";
 import { loadSkipPermissions, saveSkipPermissions } from "./skip-permissions-state.js";
 import { SORT_OPTIONS, DEFAULT_SORT, sortTickets } from "./board-sort.js";
-import { refineCommandFor, promoteCommandFor, dismissCommandFor, quickCaptureCommandFor, modelingCommandFor, researchCommandFor, WORK_COMMAND, WHATS_NEXT_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
+import { refineCommandFor, promoteCommandFor, dismissCommandFor, quickCaptureCommandFor, modelingCommandFor, researchCommandFor, inquireCommandFor, WORK_COMMAND, WHATS_NEXT_COMMAND, STOP_DASHBOARD_COMMAND } from "./modeling-command.js";
 import { launchOrCopy } from "./bridge-launch.js";
 import { groupTickets } from "./board-group.js";
 import { loadViewState, saveViewState, defaultColumnState, visibleColumns } from "./board-view-state.js";
@@ -957,6 +957,12 @@ function BoardPromptBar({ skipPermissions = false }) {
           skipPermissions=${skipPermissions} onResult=${onResult} />
         <${PromptLaunchCard} label="Modeling" subtitle="Shape into structure"
           command=${modelingCommandFor(prompt)} icon="compass"
+          skipPermissions=${skipPermissions} onResult=${onResult} />
+        ${/* aw-h7n2c: Inquire sits BETWEEN Modeling and Research — same quiet/secondary
+              card treatment, the new message-circle-question glyph (design-system-r4k8m),
+              no per-card emphasis. Asks the codebase a question via the inquire skill. */ ""}
+        <${PromptLaunchCard} label="Inquire" subtitle="Ask the codebase"
+          command=${inquireCommandFor(prompt)} icon="message-circle-question"
           skipPermissions=${skipPermissions} onResult=${onResult} />
         <${PromptLaunchCard} label="Research" subtitle="Dig deeper"
           command=${researchCommandFor(prompt)} icon="search"

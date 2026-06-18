@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 80
+- **Done:** 81
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **agentic-workflow-h7n2c** — Board prompt bar — Inquire launch button between Modeling and Research (feature) — `todo/agentic-workflow-h7n2c-board-prompt-bar-inquire-button.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -27,6 +26,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **agentic-workflow-h7n2c** — Board prompt bar — Inquire launch button between Modeling and Research (feature) — `done/agentic-workflow-h7n2c-board-prompt-bar-inquire-button.md`
 - **agentic-workflow-c4t8m** — What's Next columns become their own capped, scrollable cards (feature) — `done/agentic-workflow-c4t8m-whats-next-columns-as-capped-scrollable-cards.md`
 - **agentic-workflow-q7m4k** — What's Next card drops the front matter and lays its three sections out as columns (feature) — `done/agentic-workflow-q7m4k-whats-next-card-three-columns-no-frontmatter.md`
 - **agentic-workflow-079** — Minting call-site token sweep across the three live skills (chore) — `done/agentic-workflow-079-minting-call-site-token-sweep.md`

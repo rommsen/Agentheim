@@ -326,7 +326,7 @@ separate BC, but today the whole tool lives in this one.
   ADR-0018's per-launch mandate trivially. The click is propagation-isolated so dismissing never
   opens the slide-over. The dashboard `dist/` was rebuilt (esbuild) so the deployed app carries the
   change. See ADR-0022, ADR-0017, ADR-0018, ADR-0019, ADR-0003, ADR-0016.
-- **Board prompt bar (Quick Capture / Modeling / Research)** -- the backlog column's former single
+- **Board prompt bar (Quick Capture / Modeling / Inquire / Research)** -- the backlog column's former single
   add-ticket **`+`** first became **two** labelled launch buttons inside the backlog column
   (agentic-workflow-020), then those two buttons were **relocated** (agentic-workflow-023) out of the
   column into a **board-level prompt bar**: a prompt **field** rendered on the **board view
@@ -352,9 +352,14 @@ separate BC, but today the whole tool lives in this one.
   board-local, token-matched elements -- the styleguide stays unforked (ADR-0003).
   **The three launch buttons are icon-tile + title/subtitle cards (aw-065):** a visual restyle of the
   former flat chips into a board-local **`PromptLaunchCard`** -- a square **neutral** icon tile
-  (`plus` / `compass` / `search` from the registry, `--surface-2` fill, never a coloured fill) over a
+  (`plus` / `compass` / `message-circle-question` / `search` from the registry, `--surface-2` fill,
+  never a coloured fill) over a
   bold **title** and a quiet **subtitle** (Quick Capture / "File it fast", Modeling / "Shape into
-  structure", Research / "Dig deeper"). **Quick Capture carries the emphasised treatment via the
+  structure", Inquire / "Ask the codebase", Research / "Dig deeper"). A **fourth** card --
+  **Inquire** (aw-h7n2c) -- sits **between Modeling and Research**, wearing the
+  `message-circle-question` glyph (design-system-r4k8m), in the same quiet/secondary treatment as
+  Modeling/Research; it seeds `/agentheim:inquire <prompt>` (`inquireCommandFor`) to launch the
+  read-only **`inquire`** skill (answers questions *toward* the codebase, ADR-0017). **Quick Capture carries the emphasised treatment via the
   primary surface** -- the aw-033 Work chrome (`--surface-2` fill, `--fg-1` text, `--hairline-strong`
   border); Modeling and Research stay **quiet/secondary** on a plain `--hairline` border. This is
   *emphasis*, not a selected state (no selection model), and it deliberately **does not use ochre** --
@@ -466,7 +471,9 @@ separate BC, but today the whole tool lives in this one.
   the styleguide consumed **unforked**, ADR-0003). The builder **authors a prompt once and hands it to
   whichever authoring skill they pick**: clicking **Quick Capture** seeds `/agentheim:quick-capture <prompt>`
   (the fast idea-dump, renamed in aw-019), **Modeling** seeds `/agentheim:modeling <prompt>` (the
-  full Socratic session), and **Research** (aw-036, a third button beside the pair) seeds
+  full Socratic session), **Inquire** (aw-h7n2c, a fourth card between Modeling and Research) seeds
+  `/agentheim:inquire <prompt>` (the read-only inquire skill), and **Research** (aw-036, a third button
+  beside the pair) seeds
   `/agentheim:research <prompt>` (the research skill), where `<prompt>` is the **trimmed** textarea contents joined to the command
   by a single space. An **empty / whitespace-only** textarea falls back to the **bare** command
   (byte-identical to aw-020). On a **successful launch or landed clipboard copy** the textarea is

@@ -24,12 +24,14 @@ import {
   WHATS_NEXT_COMMAND,
   STOP_DASHBOARD_COMMAND,
   RESEARCH_COMMAND,
+  INQUIRE_COMMAND,
   refineCommandFor,
   promoteCommandFor,
   dismissCommandFor,
   quickCaptureCommandFor,
   modelingCommandFor,
   researchCommandFor,
+  inquireCommandFor,
 } from '../app/modeling-command.js';
 
 test('MODELING_COMMAND is the fully-qualified bare command (not the /modeling alias)', () => {
@@ -337,5 +339,63 @@ test('researchCommandFor preserves interior whitespace (only the ends are trimme
   assert.equal(
     researchCommandFor('  how   does   it   work  '),
     '/agentheim:research how   does   it   work',
+  );
+});
+
+// agentic-workflow-h7n2c: the board prompt bar gains a FOURTH authoring button —
+// Inquire — BETWEEN Modeling and Research. It seeds `/agentheim:inquire <prompt>`
+// from the live textarea, mirroring the aw-023/aw-036 prompt-taking builders exactly:
+// a single space + the trimmed prompt when present, else the bare INQUIRE_COMMAND;
+// missing / non-string / whitespace-only degrades to bare, never "[object Object]",
+// never a doubled space, never a throw.
+
+test('INQUIRE_COMMAND is the fully-qualified bare inquire command', () => {
+  assert.equal(INQUIRE_COMMAND, '/agentheim:inquire');
+});
+
+test('INQUIRE_COMMAND is distinct from the other launch commands and fully-qualified', () => {
+  assert.notEqual(INQUIRE_COMMAND, MODELING_COMMAND);
+  assert.notEqual(INQUIRE_COMMAND, QUICK_CAPTURE_COMMAND);
+  assert.notEqual(INQUIRE_COMMAND, RESEARCH_COMMAND);
+  assert.notEqual(INQUIRE_COMMAND, WORK_COMMAND);
+  assert.match(INQUIRE_COMMAND, /^\/agentheim:/);
+});
+
+test('inquireCommandFor appends a single space + the trimmed prompt', () => {
+  assert.equal(
+    inquireCommandFor('how does the bridge work'),
+    '/agentheim:inquire how does the bridge work',
+  );
+});
+
+test('inquireCommandFor with an empty / missing prompt yields the bare command', () => {
+  assert.equal(inquireCommandFor(), INQUIRE_COMMAND);
+  assert.equal(inquireCommandFor(undefined), INQUIRE_COMMAND);
+  assert.equal(inquireCommandFor(null), INQUIRE_COMMAND);
+  assert.equal(inquireCommandFor(''), INQUIRE_COMMAND);
+});
+
+test('inquireCommandFor collapses a whitespace-only prompt to the bare command (no doubled / trailing space)', () => {
+  assert.equal(inquireCommandFor('   '), INQUIRE_COMMAND);
+  assert.equal(inquireCommandFor('   \n\t '), INQUIRE_COMMAND);
+});
+
+test('inquireCommandFor trims a whitespace-padded prompt before appending (single separating space)', () => {
+  assert.equal(
+    inquireCommandFor('  where is it built  '),
+    '/agentheim:inquire where is it built',
+  );
+});
+
+test('inquireCommandFor with a non-string prompt degrades to the bare command — never "[object Object]", never a throw', () => {
+  assert.equal(inquireCommandFor(42), INQUIRE_COMMAND);
+  assert.equal(inquireCommandFor({}), INQUIRE_COMMAND);
+  assert.equal(inquireCommandFor([]), INQUIRE_COMMAND);
+});
+
+test('inquireCommandFor preserves interior whitespace (only the ends are trimmed)', () => {
+  assert.equal(
+    inquireCommandFor('  what   was   decided  '),
+    '/agentheim:inquire what   was   decided',
   );
 });

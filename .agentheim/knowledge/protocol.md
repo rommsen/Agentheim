@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 12:12 -- Task verified and completed: agentic-workflow-h7n2c - Board prompt bar — Inquire launch button between Modeling and Research
+
+**Type:** Work / Task completion
+**Task:** agentic-workflow-h7n2c - Board prompt bar — Inquire launch button between Modeling and Research
+**Summary:** Added a fourth Inquire PromptLaunchCard between Modeling and Research, wearing the message-circle-question glyph and seeding /agentheim:inquire <prompt> via a new INQUIRE_COMMAND + inquireCommandFor builder; reuses the existing bridge launch path unchanged.
+**Verification:** PASS (iteration 1)
+**Files changed:** 6 (incl. rebuilt dist/app.js)
+**Tests added:** 13 (8 inquireCommandFor/INQUIRE_COMMAND + 5 prompt-bar guards; full dashboard suite 627 green)
+**ADRs written:** none
+
+---
+
+## 2026-06-18 12:08 -- Batch started: [agentic-workflow-h7n2c]
+
+**Type:** Work / Batch start
+**Tasks:** agentic-workflow-h7n2c - Board prompt bar — Inquire launch button between Modeling and Research
+**Parallel:** no (1 worker)
+
+---
+
 ## 2026-06-18 12:05 -- Task verified and completed: design-system-r4k8m - Add an inquiry/question glyph to the shared icon set
 
 **Type:** Work / Task completion

@@ -180,6 +180,57 @@ test('board.js imports researchCommandFor from modeling-command (only the comman
   );
 });
 
+// agentic-workflow-h7n2c: the prompt bar gains a FOURTH authoring button — Inquire —
+// positioned BETWEEN Modeling and Research, so the row reads Quick Capture · Modeling ·
+// Inquire · Research. It seeds inquireCommandFor(prompt) from the live textarea, threads
+// skipPermissions like its siblings, shares the SAME onResult (clear + confetti), wears
+// the new message-circle-question glyph (design-system-r4k8m), and carries NO per-card
+// emphasis — the same quiet/secondary treatment as Modeling/Research (aw-068). It reuses
+// PromptLaunchCard/launchOrCopy unchanged — only the command string + glyph are new.
+test('the prompt bar renders an Inquire card', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  assert.ok(bar, 'BoardPromptBar component must exist');
+  assert.match(bar[0], /label="Inquire"/, 'prompt bar must render an Inquire card');
+});
+
+test('the Inquire card sits BETWEEN Modeling and Research (Quick Capture · Modeling · Inquire · Research order)', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  const qcIdx = bar[0].indexOf('label="Quick Capture"');
+  const moIdx = bar[0].indexOf('label="Modeling"');
+  const inIdx = bar[0].indexOf('label="Inquire"');
+  const reIdx = bar[0].indexOf('label="Research"');
+  assert.ok(qcIdx !== -1 && moIdx !== -1 && inIdx !== -1 && reIdx !== -1, 'all four cards must be present');
+  assert.ok(qcIdx < moIdx, 'Quick Capture must precede Modeling');
+  assert.ok(moIdx < inIdx, 'Modeling must precede Inquire');
+  assert.ok(inIdx < reIdx, 'Inquire must precede Research');
+});
+
+test('the Inquire card carries the subtitle, seeds inquireCommandFor, and wears the message-circle-question glyph', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  const inq = bar[0].match(/label="Inquire"[\s\S]{0,320}?\/>/);
+  assert.ok(inq, 'the Inquire card must be present');
+  assert.match(inq[0], /subtitle="Ask the codebase"/, 'Inquire subtitle must be "Ask the codebase"');
+  assert.match(inq[0], /command=\$\{inquireCommandFor\(prompt\)/, 'Inquire must seed inquireCommandFor(prompt)');
+  assert.match(inq[0], /icon="message-circle-question"/, 'Inquire tile is the message-circle-question glyph (design-system-r4k8m)');
+});
+
+test('the Inquire card threads skipPermissions, shares the prompt-bar onResult, and carries NO emphasis (quiet/secondary like Modeling/Research)', () => {
+  const bar = boardSrc.match(/function BoardPromptBar[\s\S]*?\n}/);
+  const inq = bar[0].match(/label="Inquire"[\s\S]{0,320}?\/>/);
+  assert.ok(inq, 'the Inquire card must be present');
+  assert.match(inq[0], /skipPermissions=\$\{skipPermissions\}/, 'Inquire must carry skipPermissions (armed cue + threaded only when armed)');
+  assert.match(inq[0], /onResult=\$\{onResult\}/, 'Inquire must share the prompt-bar onResult (clear + confetti)');
+  assert.doesNotMatch(inq[0], /emphasis=/, 'Inquire must carry no emphasis — same quiet/secondary treatment as Modeling/Research (aw-068, no ochre)');
+});
+
+test('board.js imports inquireCommandFor from modeling-command (only the command string is new)', () => {
+  assert.match(
+    boardSrc,
+    /import\s*\{[^}]*inquireCommandFor[^}]*\}\s*from\s*"\.\/modeling-command\.js"/,
+    'board.js must import the inquireCommandFor builder',
+  );
+});
+
 // agentic-workflow-026: the shell is relaid-out to the styleguide §05 left-rail
 // layout, and the Work launch MOVES OUT of the prompt bar into the main-column
 // topbar (BoardTopbar). aw-024's two-thirds/one-third split collapses back: the

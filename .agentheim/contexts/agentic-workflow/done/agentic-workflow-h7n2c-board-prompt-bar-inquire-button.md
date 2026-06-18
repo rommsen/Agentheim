@@ -1,11 +1,11 @@
 ---
 id: agentic-workflow-h7n2c
 title: Board prompt bar — Inquire launch button between Modeling and Research
-status: todo
+status: done
 type: feature
 context: agentic-workflow
 created: 2026-06-18
-completed:
+completed: 2026-06-18
 depends_on: [design-system-001, design-system-r4k8m]
 blocks: []
 tags: [dashboard, frontend, bridge, ui]
@@ -68,3 +68,35 @@ Research**, so the row reads **Quick Capture · Modeling · Inquire · Research*
 - The `inquire` skill is read-only over `.agentheim/` and the source — launching it is an
   external side-effect like the other cards, not a lifecycle write; the board stays a
   projection of disk (ADR-0017 / ADR-0001).
+
+## Outcome
+
+A fourth **Inquire** `PromptLaunchCard` now sits in the board prompt bar **between
+Modeling and Research** — the row reads Quick Capture · Modeling · **Inquire** · Research.
+A straight extension of the aw-036 / aw-065 pattern: no new launch infrastructure, only a
+new command string + the new glyph.
+
+- `dashboard/app/modeling-command.js` — added `INQUIRE_COMMAND = "/agentheim:inquire"`
+  and the pure `inquireCommandFor(prompt)` builder, mirroring `researchCommandFor` exactly
+  (single space + trimmed prompt when present, else bare; missing / non-string /
+  whitespace degrades to bare — never `[object Object]`, never a doubled space, never a throw).
+- `dashboard/app/board.js` `BoardPromptBar` — a fourth `PromptLaunchCard` ("Inquire" /
+  "Ask the codebase", icon `message-circle-question`) placed between the Modeling and
+  Research cards, computing its command via `inquireCommandFor(prompt)` at click time,
+  threading the armed `skipPermissions` (field OMITTED when off, never sent `false` — the
+  OFF path is byte-identical via the shared `launchOrCopy`) and sharing the bar's `onResult`
+  (clear textarea + confetti). Quiet/secondary treatment, NO emphasis prop, no ochre
+  (ADR-0016). `PromptLaunchCard` / `launchOrCopy` reused unchanged; no `/api/tree` / SSE /
+  lifecycle-write touch (ADR-0001/0017). The glyph is consumed by name from the shared
+  styleguide registry (design-system-r4k8m), unforked (ADR-0003).
+- Tests: `dashboard/test/modeling-command.test.mjs` (+8 `inquireCommandFor` /
+  `INQUIRE_COMMAND` cases — armed-prompt, empty/missing, whitespace-only, padded, non-string
+  fallback, interior-whitespace, distinctness) and
+  `dashboard/test/board-prompt-bar.test.mjs` (+5 render / order / glyph / thread+no-emphasis /
+  import guards). Full dashboard suite 627 green (was 614).
+- `dashboard/dist/` rebuilt via `node build.mjs` — the served bundle carries
+  `/agentheim:inquire`, the Inquire card, and the `message-circle-question` glyph (verified).
+- BC README — the *Board prompt bar* bullet now lists Inquire as the fourth card between
+  Modeling and Research (heading, card list, glyph list, and the authoring-intents paragraph).
+
+No ADR (no new decision — precedent-following). No new backlog items.

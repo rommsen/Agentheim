@@ -51,6 +51,16 @@ export const QUICK_CAPTURE_COMMAND = '/agentheim:quick-capture';
 // reason MODELING_COMMAND is — it resolves regardless of the builder's alias setup.
 export const RESEARCH_COMMAND = '/agentheim:research';
 
+// The fully-qualified inquire command (agentic-workflow-h7n2c) — the board prompt
+// bar's fourth launch button (between Modeling and Research) hands this exact string
+// to the bridge's POST /run (the extension wraps it as `claude "<prompt>"`, ADR-0018)
+// and copies the same on the bridge-absent fallback. Like the other authoring buttons
+// it CONSUMES the typed prompt (inquireCommandFor), so the bare constant is the
+// empty-prompt fallback only. The `inquire` skill answers questions toward the codebase
+// (read-only over `.agentheim/` and the source, ADR-0017). Bare and fully-qualified for
+// the same reason MODELING_COMMAND is — it resolves regardless of the builder's alias setup.
+export const INQUIRE_COMMAND = '/agentheim:inquire';
+
 // The fully-qualified, bare WORK command (agentic-workflow-024) — what the board
 // prompt bar's right-side action column launches to kick off an EXECUTION run
 // against the ready backlog. Unlike Quick Capture / Modeling (authoring actions that
@@ -148,6 +158,21 @@ export function modelingCommandFor(prompt) {
 export function researchCommandFor(prompt) {
   const trimmed = safePrompt(prompt);
   return trimmed ? `${RESEARCH_COMMAND} ${trimmed}` : RESEARCH_COMMAND;
+}
+
+/**
+ * Build the INQUIRE command, optionally seeded with the board prompt-bar's typed
+ * prompt (aw-h7n2c). The fourth prompt-bar button (between Modeling and Research)
+ * hands the bridge this exact string; the clipboard fallback copies the same. Mirrors
+ * researchCommandFor / quickCaptureCommandFor / modelingCommandFor exactly.
+ * @param {string} [prompt] — the live textarea contents.
+ * @returns {string} `"/agentheim:inquire <prompt>"` for a real prompt (one
+ *   separating space, trimmed ends), else the bare `INQUIRE_COMMAND`. Pure: no
+ *   DOM, no I/O, never throws.
+ */
+export function inquireCommandFor(prompt) {
+  const trimmed = safePrompt(prompt);
+  return trimmed ? `${INQUIRE_COMMAND} ${trimmed}` : INQUIRE_COMMAND;
 }
 
 /**
