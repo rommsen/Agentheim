@@ -5,6 +5,54 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 11:34 -- Capture / Captured: agentic-workflow-m3k9p - Try the dismiss button
+
+**Type:** Capture
+**BC:** agentic-workflow
+**Filed to:** backlog
+**Summary:** Capturing an idea just to try the dismiss button.
+
+---
+
+## 2026-06-18 11:34 -- Release shipped: v0.8.7
+
+**Type:** Release
+**Version:** 0.8.6 → 0.8.7 (patch — large dashboard release: What's Next advisory panel, global search, first-class Concepts, Workflow guide page, collision-resistant task IDs)
+**Manifest:** `.claude-plugin/plugin.json` bumped, committed `f6525b9`
+**Pushed to main:** yes (`b28cb29..f6525b9` on `origin/main`)
+**Tag:** `v0.8.7` (annotated) → `f6525b9`, pushed to origin
+**GitHub Release:** deferred (gh unavailable — notes handed to builder)
+
+---
+
+## 2026-06-18 11:30 -- Research: Structuring a GitHub README for a developer tool (Claude Code plugin + VS Code)
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/readme-structure-developer-tool-2026-06-18.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- Proven section order: logo/tagline + badges → hero screenshot/GIF above the fold → one-paragraph what & why → Install → How it works/Philosophy → Usage → links → Contributing → License.
+- Multi-environment install = one heading, labeled per-environment subsections, simplest path inline + longer paths folded in `<details>` (gum); Claude Code plugin install is two-step (`/plugin marketplace add owner/repo` → `/plugin install name@marketplace`) + `/reload-plugins`.
+- Dashboard screenshot near the top with descriptive alt text, inside `<picture>` + `prefers-color-scheme` for light/dark; exemplars gum / httpie / opencode / awesome-readme.
+
+---
+
+## 2026-06-18 11:32 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1 — aw-c4t8m; re-dispatched: 0; skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 (06f4eb1 aw-c4t8m)
+**Notes:**
+- Single-task session in the `agentic-workflow` BC. aw-c4t8m (What's Next columns become capped, scrollable cards) passed verification first try; full dashboard suite 614 pass / 0 fail.
+- `dashboard/dist/` rebuilt by the worker up front (the standing dashboard-source rule honored; orchestrator confirmed `maxHeight:196` + `scroll-quiet` in the bundle before verifying).
+- **Concurrency note:** a parallel `research` session was mid-commit (its README-structure report + `index.md` + an 11:30 protocol entry were uncommitted in the working tree). To honor the ADR-0026 scoped-add rule, this session-end line was **not** committed separately — committing `protocol.md` would have swept the research session's in-flight entry into a work commit. The line rides in the next protocol writer's commit.
+
+---
+
 ## 2026-06-18 11:05 -- Task verified and completed: agentic-workflow-c4t8m - What's Next columns become their own capped, scrollable cards
 
 **Type:** Work / Task completion
