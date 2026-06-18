@@ -1,11 +1,11 @@
 ---
 id: design-system-r4k8m
 title: Add an inquiry/question glyph to the shared icon set
-status: todo
+status: done
 type: feature
 context: design-system
 created: 2026-06-18
-completed:
+completed: 2026-06-18
 depends_on: []
 blocks: [agentic-workflow-h7n2c]
 tags: [icons, frontend, ui]
@@ -46,3 +46,32 @@ precedent). Consumed unforked by the dashboard (ADR-0003).
 - Pick the glyph key the dashboard task (aw-h7n2c) will import; keep the two in sync.
 - This unblocks agentic-workflow-h7n2c — that task wires the Inquire card and consumes
   this glyph by name.
+
+## Outcome
+Added the Lucide **`message-circle-question`** glyph to the shared icon set so the board's
+Inquire launch card (`agentic-workflow-h7n2c`) can consume it unforked via
+`Icon name="message-circle-question"`.
+
+- **Dictionary entry** — `LUCIDE["message-circle-question"]` added to
+  `styleguide/app/icons.js` with the exact upstream Lucide inner geometry: the chat-bubble
+  outline with tail (`M7.9 20A9 9 0 1 0 4 16.1L2 22Z`), the question-mark curve
+  (`M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3`), and the question-mark dot (`M12 17h.01`). Inner
+  markup only; the wrapping `<svg>` is supplied by `Icon` (API unchanged).
+- **Gallery entry** — appended `"message-circle-question"` to the curated `ui` array in
+  `IconSection` (`styleguide/app/foundations2.js`), so the glyph renders in the section-04
+  "Interface set · 1.5px · monochrome" grid on the canvas. The `ui` array is hand-picked,
+  not auto-derived from `LUCIDE`.
+- **Tests** — added `styleguide/test/icons-inquire.test.mjs` (3 source-guard tests, mirroring
+  the trash-2 guard): the glyph resolves with non-empty inner markup and no self-wrapped
+  `<svg>`; the geometry matches the upstream bubble / question-mark curve / dot; the curated
+  gallery surfaces it. Full styleguide suite green: 116/116.
+- **Gate** — this is a visible canvas change (section 04 gallery), so it reopens the
+  design-system gate per the ds-005/007/009/014/015/017 precedent; gate-reopen note added to
+  the BC README. `dist/` deliberately NOT rebuilt (derived artifact per ADR-0003;
+  agentic-workflow-h7n2c rebuilds it when the Inquire card renders the glyph on the board).
+
+Key files:
+- `styleguide/app/icons.js` (LUCIDE entry)
+- `styleguide/app/foundations2.js` (gallery `ui` array)
+- `styleguide/test/icons-inquire.test.mjs` (new tests)
+- `.agentheim/contexts/design-system/README.md` (gate-reopen note)

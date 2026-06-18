@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-18 12:05 -- Task verified and completed: design-system-r4k8m - Add an inquiry/question glyph to the shared icon set
+
+**Type:** Work / Task completion
+**Task:** design-system-r4k8m - Add an inquiry/question glyph to the shared icon set
+**Summary:** Added the Lucide `message-circle-question` glyph to the shared icon set so the board's Inquire launch card (agentic-workflow-h7n2c) can wear it unforked; surfaced in the section-04 canvas gallery, gate reopened for builder re-review.
+**Verification:** PASS (iteration 1)
+**Files changed:** 4
+**Tests added:** 3 (icons-inquire.test.mjs; full styleguide suite 116/116 green)
+**ADRs written:** none
+
+---
+
+## 2026-06-18 12:00 -- Batch started: [design-system-r4k8m]
+
+**Type:** Work / Batch start
+**Tasks:** design-system-r4k8m - Add an inquiry/question glyph to the shared icon set
+**Parallel:** no (1 worker)
+
+---
+
 ## 2026-06-18 11:48 -- Modeling / Captured: agentic-workflow-h7n2c + design-system-r4k8m - Board prompt bar Inquire button
 
 **Type:** Modeling / Capture

@@ -586,6 +586,19 @@ the pattern in **section 11** (`SearchSpecimen` — type *design*, *adr*, or *zz
 > the live `agentic-workflow-052` topbar search picks up the stronger headers.
 > **Builder confirmation PENDING** — re-review the canvas (`styleguide/index.html` →
 > section 11, Search & grouped-results specimen) and re-confirm the gate OPEN.
+>
+> **Gate re-review reopened by the inquiry glyph (`design-system-r4k8m`).** The shared
+> icon set (`styleguide/app/icons.js`, the `LUCIDE` map) gained a
+> `message-circle-question` glyph at upstream Lucide geometry (chat bubble carrying a
+> question mark — "ask a question toward the codebase") for the board's Inquire launch
+> card (`agentic-workflow-h7n2c`), and it is surfaced in the section-04 interface-set
+> gallery (`foundations2.js`, the curated `ui` array) — a visible styleguide change that
+> reopens the design-system gate per the `design-system-005` / `007` / `009` / `014` /
+> `015` / `017` precedent. `dist/` deliberately NOT rebuilt — a derived artifact
+> (ADR-0003) that the consuming task (`agentic-workflow-h7n2c`) rebuilds when the Inquire
+> card actually renders the glyph on the board. **Builder confirmation PENDING** —
+> re-review the canvas (`styleguide/index.html` → section 04, Iconography interface set)
+> and re-confirm the gate OPEN.
 
 > Live-board note: the served dashboard `dist/` is a derived artifact (ADR-0003) and
 > was rebuilt here (`node build.mjs`), but the bundle is byte-identical — the
