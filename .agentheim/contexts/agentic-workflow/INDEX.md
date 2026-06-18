@@ -10,7 +10,7 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 0
 - **Todo:** 0
 - **Doing:** 0
 - **Done:** 80
@@ -110,7 +110,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **agentic-workflow-m3k9p** — Try the dismiss button — `backlog/agentic-workflow-m3k9p-try-the-dismiss-button.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
